@@ -1,16 +1,44 @@
-import { Link } from 'expo-router';
-import { StyleSheet } from 'react-native';
-
-import { ThemedText } from '@/components/themed-text';
+import { LogoText } from '@/components/generals/LogoText';
 import { ThemedView } from '@/components/themed-view';
+import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
+import { Dimensions, Image, StyleSheet, View } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
 
 export default function ModalScreen() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      router.replace('/auth/login');
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title">This is a modal</ThemedText>
-      <Link href="/" dismissTo style={styles.link}>
-        <ThemedText type="link">Go to home screen</ThemedText>
-      </Link>
+      <View style={styles.backgroundFill} />
+
+      <Image
+        source={require('@/components/generals/Home.png')}
+        style={[styles.backgroundImage, { width: width , height: height}]}
+        resizeMode="cover"
+      />
+
+      {[...Array(5)].map((_, i) => (
+        <View key={i} style={[{ top: i * (height / 5) }]} />
+      ))}
+
+      {[...Array(4)].map((_, i) => (
+        <View
+          key={i}
+          style={[styles.separator, { top: (i + 1) * (height / 5) - 1 }]}
+        />
+      ))}
+
+      <LogoText style={{ zIndex: 10, position: 'relative' }} />
     </ThemedView>
   );
 }
@@ -18,12 +46,23 @@ export default function ModalScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    alignItems: 'center',
+    position: 'relative',
   },
-  link: {
-    marginTop: 15,
-    paddingVertical: 15,
+  backgroundFill: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#164194',
+    zIndex: 0,
+  },
+  backgroundImage: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  separator: {
+    position: 'absolute',
+    width: width * 5,
+    height: 5,
+    transform: [{ rotate: '-15deg' }],
+    zIndex: 5,
   },
 });

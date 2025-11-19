@@ -7,9 +7,9 @@ export default function LoginPage() {
   const router = useRouter();
   const login = loginUseCase(authRepositoryImpl);
 
-  async function handleLogin(email: string, pass: string) {
+  async function handleLogin(guide: string) {
     try {
-      await login(email, pass);
+      await login(guide);
     } catch (err) {
       console.log("Error login:", err);
     }

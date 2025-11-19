@@ -3,15 +3,13 @@ import { authApi } from "./authApi";
 import { authStorage } from "./authStorage";
 
 export const authRepositoryImpl: AuthRepository = {
-  async login(email, password) {
-    const { data } = await authApi.post("/login", { email, password });
+  async login(guide: string) {
+    const { data } = await authApi.post("/login", { guide });
 
     await authStorage.saveToken(data.token);
 
     return {
-      id: data.id,
-      email: data.email,
-      token: data.token,
+      guide: data.guide,
     };
   },
 

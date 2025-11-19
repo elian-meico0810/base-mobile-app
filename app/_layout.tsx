@@ -14,9 +14,12 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        {/* Make `modal` the initial screen so the splash shows first */}
-        <Stack.Screen name="modal" options={{ headerShown: false }} />
+      <Stack
+        screenOptions={{
+          headerShown: false, // <- oculta la cabecera en todas las pantallas
+        }}
+      >
+        <Stack.Screen name="modal" />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

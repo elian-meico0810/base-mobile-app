@@ -1,5 +1,6 @@
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { LogoText } from '@/components/generals/LogoText';
+import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { PrimaryInput } from '@/components/inputs/PrimaryInput';
 import { ThemedView } from '@/components/themed-view';
 import { authRepositoryImpl } from '@/src/auth/infrastructure/authRepositoryImpl';
@@ -53,6 +54,8 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
 
   return (
     <ThemedView style={styles.container}>
+      {/** Validamos si tiene conexion a la red */}
+      <NetworkStatus />
 
       <View style={[styles.backgroundFill, { width, height }]} pointerEvents="none">
         <Image

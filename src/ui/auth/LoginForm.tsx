@@ -4,6 +4,7 @@ import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { PrimaryInput } from '@/components/inputs/PrimaryInput';
 import { ThemedView } from '@/components/themed-view';
 import { authRepositoryImpl } from '@/src/features/auth/infrastructure/login/authRepositoryImpl';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from "react";
 import {
   Dimensions,
@@ -20,6 +21,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
   const isValid = guide.length >= 6;
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
+  const router = useRouter(); // Usa router en lugar de navigation
 
   useEffect(() => {
     const show = Keyboard.addListener("keyboardDidShow", (e) => {
@@ -46,7 +48,15 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
     try {
       const response = await authRepositoryImpl.login(guide);
       if (response?.statusCode == 200) {
-        console.log("respones: ",response.data);
+        // Tu response.data es un JWT token, no un objeto
+        router.push({
+          pathname: '/views/details',
+          params: {
+            guide: Number(guide),
+            token: String(response.data) 
+          }
+
+        });
       } else {
         setErrorMessage(response?.message || "La guía no existe o es incorrecta.");
       }
@@ -76,7 +86,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
       {/* Panel blanco con altura fija */}
       <View style={[
         styles.whitePanel,
-        { height: height - 200 } 
+        { height: height - 200 }
       ]}>
         <View style={styles.content}>
           <View style={styles.topContent}>

@@ -1,8 +1,7 @@
-import { AuthRepository } from "../../domain/login/AuthRepository";
-import { authStorage } from "./authStorage";
+import { DetailsRepository } from "../../domain/details/DetailsRepository";
 
-export const authRepositoryImpl: AuthRepository = {
-  async login(guide: string) {
+export const authRepositoryImpl: DetailsRepository = {
+  async listGuide(guide: number) {
     const payload = {
       idGuia: Number(guide),
       empresa: "Meico",
@@ -26,7 +25,4 @@ export const authRepositoryImpl: AuthRepository = {
 
   },
 
-  async logout() {
-    await authStorage.removeToken();
-  },
 };

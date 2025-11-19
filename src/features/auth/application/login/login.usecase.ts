@@ -1,4 +1,4 @@
-import { AuthRepository } from "../domain/AuthRepository";
+import { AuthRepository } from "../../domain/login/AuthRepository";
 
 export function loginUseCase(repo: AuthRepository) {
   return async (guide: string) => {

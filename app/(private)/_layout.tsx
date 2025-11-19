@@ -1,4 +1,4 @@
-import { authStorage } from "@/src/auth/infrastructure/authStorage";
+import { authStorage } from "@/src/features/auth/infrastructure/login/authStorage";
 import { Slot, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 

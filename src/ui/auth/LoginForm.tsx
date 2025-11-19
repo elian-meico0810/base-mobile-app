@@ -3,7 +3,7 @@ import { LogoText } from '@/components/generals/LogoText';
 import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { PrimaryInput } from '@/components/inputs/PrimaryInput';
 import { ThemedView } from '@/components/themed-view';
-import { authRepositoryImpl } from '@/src/auth/infrastructure/authRepositoryImpl';
+import { authRepositoryImpl } from '@/src/features/auth/infrastructure/login/authRepositoryImpl';
 import { useEffect, useState } from "react";
 import {
   Dimensions,
@@ -46,7 +46,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
     try {
       const response = await authRepositoryImpl.login(guide);
       if (response?.statusCode == 200) {
-        return
+        console.log("respones: ",response.data);
       } else {
         setErrorMessage(response?.message || "La guía no existe o es incorrecta.");
       }

@@ -1,4 +1,4 @@
-import { ApiResponse } from "./ApiResponse";
+import { ApiResponse } from "../ApiResponse";
 import { AuthUser } from "./AuthUser";
 
 export interface AuthRepository {

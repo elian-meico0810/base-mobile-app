@@ -1,3 +1,4 @@
 export interface AuthUser {
-  guide: string;
+  idGuia: number;
+  empresa: string;
 }

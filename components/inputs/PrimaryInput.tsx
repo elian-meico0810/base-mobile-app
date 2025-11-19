@@ -5,16 +5,24 @@ interface PrimaryInputProps extends TextInputProps {
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
+  error?: boolean;
 }
 
-export function PrimaryInput({ value, onChangeText, placeholder, ...rest }: PrimaryInputProps) {
+export function PrimaryInput({ value, onChangeText, placeholder, error, ...rest }: PrimaryInputProps) {
+  const handleChange = (text: string) => {
+    const numericText = text.replace(/[^0-9]/g, '');
+    if (numericText.length > 10) return;
+    onChangeText(numericText);
+  };
+
   return (
     <TextInput
       value={value}
-      onChangeText={onChangeText}
+      onChangeText={handleChange}
       placeholder={placeholder}
-      style={styles.input}
+      style={[styles.input, error && styles.inputError]}
       placeholderTextColor="#A0A0A0"
+      keyboardType="numeric"
       {...rest}
     />
   );
@@ -31,5 +39,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignSelf: 'center',
     fontSize: 14,
+  },
+  inputError: {
+    borderColor: 'red',
   },
 });

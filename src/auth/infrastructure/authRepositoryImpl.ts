@@ -1,15 +1,19 @@
 import { AuthRepository } from "../domain/AuthRepository";
-import { authApi } from "./authApi";
 import { authStorage } from "./authStorage";
 
 export const authRepositoryImpl: AuthRepository = {
   async login(guide: string) {
-    const { data } = await authApi.post("/login", { guide });
-
-    await authStorage.saveToken(data.token);
-
+    const payload = {
+      idGuia: Number(guide),
+      empresa: "Meico",
+    };
+    //const { data } = await authApi.post(API_ROUTES.LOGIN_GUIDE, payload);
+    //return data
     return {
-      guide: data.guide,
+      statusCode: 401,
+      data: null,
+      message: `Error generando token: La guía ${guide} no tiene direcciones pendientes para ser procesadas.`,
+      success: false,
     };
   },
 

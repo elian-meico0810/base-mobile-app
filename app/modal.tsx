@@ -22,7 +22,7 @@ export default function ModalScreen() {
       <View style={styles.backgroundFill} />
 
       <Image
-        source={require('@/components/generals/Home.png')}
+        source={require('@/assets/icons/Home.png')}
         style={[styles.backgroundImage, { width: width , height: height}]}
         resizeMode="cover"
       />

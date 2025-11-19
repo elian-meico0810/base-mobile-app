@@ -18,7 +18,6 @@ export function PrimaryButton({
 }: PrimaryButtonProps) {
   return (
     <TouchableOpacity
-      disabled={disabled}
       style={[styles.button, { backgroundColor: disabled ? '#D9DCE5' : '#164194', width, height }]}
       onPress={onPress}
     >

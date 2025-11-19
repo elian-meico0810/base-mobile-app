@@ -7,9 +7,7 @@ import { authRepositoryImpl } from '@/src/auth/infrastructure/authRepositoryImpl
 import { useEffect, useState } from "react";
 import {
   Dimensions,
-  Image, Keyboard, KeyboardAvoidingView,
-  Platform,
-  ScrollView,
+  Image, Keyboard,
   StyleSheet,
   Text,
   View
@@ -20,15 +18,21 @@ const { width, height } = Dimensions.get('window');
 export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Promise<void> }) {
   const [guide, setGuide] = useState("");
   const isValid = guide.length >= 6;
-  const [keyboardOpenedOnce, setKeyboardOpenedOnce] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    const showListener = Keyboard.addListener("keyboardDidShow", (e) => {
-      setKeyboardOpenedOnce(true);
+    const show = Keyboard.addListener("keyboardDidShow", (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
     });
+
+    const hide = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardHeight(0);
+    });
+
     return () => {
-      showListener.remove();
+      show.remove();
+      hide.remove();
     };
   }, []);
 
@@ -51,10 +55,8 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
     }
   };
 
-
   return (
     <ThemedView style={styles.container}>
-      {/** Validamos si tiene conexion a la red */}
       <NetworkStatus />
 
       <View style={[styles.backgroundFill, { width, height }]} pointerEvents="none">
@@ -71,22 +73,13 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
 
       <LogoText style={styles.logo} />
 
-      {/* Solo muestra el fondo inferior si el teclado se abrió alguna vez */}
-      {keyboardOpenedOnce && <View style={styles.bottomWhiteBackground} />}
-
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.whitePanel}
-      >
-        <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-            justifyContent: "space-between",
-            paddingBottom: keyboardOpenedOnce ? 1 : 20,
-          }}
-          showsVerticalScrollIndicator={false}
-        >
-          <View>
+      {/* Panel blanco con altura fija */}
+      <View style={[
+        styles.whitePanel,
+        { height: height - 200 } 
+      ]}>
+        <View style={styles.content}>
+          <View style={styles.topContent}>
             <Text style={styles.title}>¡Bienvenido!</Text>
             <Text style={styles.subtitle}>
               Ingresa el número de guía para comenzar tu ruta
@@ -105,10 +98,12 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
             {errorMessage !== "" && (
               <Text style={styles.errorText}>{errorMessage}</Text>
             )}
-
           </View>
 
-          <View style={{ width: "100%" }}>
+          <View style={[
+            styles.buttonContainer,
+            { marginBottom: keyboardHeight > 0 ? keyboardHeight + 40 : 20 }
+          ]}>
             <PrimaryButton
               title="Ingresar"
               onPress={handleSubmit}
@@ -117,9 +112,8 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
               height={50}
             />
           </View>
-        </ScrollView>
-
-      </KeyboardAvoidingView>
+        </View>
+      </View>
     </ThemedView>
   );
 }
@@ -132,15 +126,12 @@ const styles = StyleSheet.create({
   },
   backgroundFill: {
     backgroundColor: '#164194',
-
   },
   backgroundImage: {
-    ...StyleSheet.absoluteFillObject,
     zIndex: 1,
   },
   separator: {
     position: 'absolute',
-    width: width * 5,
     height: 5,
     transform: [{ rotate: '-15deg' }],
     zIndex: 2,
@@ -151,13 +142,22 @@ const styles = StyleSheet.create({
     top: 100,
   },
   whitePanel: {
+    position: 'absolute',
     top: 200,
+    left: 0,
+    right: 0,
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     padding: 27,
-    position: 'absolute',
-    bottom: 0,
+    zIndex: 3,
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  topContent: {
+    flex: 1,
   },
   title: {
     fontFamily: "Rubik",
@@ -173,27 +173,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 24,
   },
-  bottomWhiteBackground: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: 100,
-    backgroundColor: '#FFFFFF',
-  },
-  backgroundImageWrapper: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-    zIndex: 1,
-  },
   errorText: {
     color: "red",
     fontSize: 12,
     marginTop: 4,
     textAlign: "center",
   },
-
+  buttonContainer: {
+    width: "100%",
+    alignItems: 'center',
+  },
 });

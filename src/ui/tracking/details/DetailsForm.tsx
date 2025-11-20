@@ -1,7 +1,10 @@
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { LogoText } from '@/components/generals/LogoText';
+import { DetailsGudes } from '@/components/generals/DetailsGudes';
 import { NetworkStatus } from '@/components/generals/NetworkStatus';
+import { TodayDeliveries } from '@/components/generals/TodayDeliveries';
+import { SearchInput } from '@/components/inputs/SearchInput';
 import { ThemedView } from '@/components/themed-view';
+import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from "react";
 import {
@@ -22,10 +25,9 @@ interface DetailsFormProps {
 
 export function DetailsForm({ initialGuide = "", token = "", onSubmit }: DetailsFormProps) {
     const [guide, setGuide] = useState(initialGuide);
-    const [errorMessage, setErrorMessage] = useState("");
-    const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [tokenUser, setToken] = useState<string | null>(null);
-
+    const [data, setData] = useState<GuideDetails[]>([]);
+    const [filteredGuides, setFilteredGuides] = useState(data);
     useEffect(() => {
         const fetchToken = async () => {
             const savedToken = await SecureStore.getItemAsync('user_token');
@@ -33,15 +35,23 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
         };
         fetchToken();
     }, []);
-    const isValid = guide.length >= 6;
 
-    const handleSubmit = () => {
-        if (!isValid) {
-            setErrorMessage("La guía debe tener al menos 6 caracteres.");
-            return;
-        }
-        onSubmit({ guide, token });
-    };
+    useEffect(() => {
+        const fetchData = async () => {
+            const response = await detailsRepositoryImpl.listGuide(Number(guide), tokenUser || token);
+            if (response?.statusCode == 200) {
+                if (response?.data) {
+                    const arrayData = Array.isArray(response.data) ? response.data : [response.data];
+                    setData(arrayData as GuideDetails[]);
+                    setFilteredGuides(arrayData as GuideDetails[]);
+                }
+            } else {
+                setData([]);
+                setFilteredGuides([]);
+            }
+        };
+        fetchData();
+    }, [guide, tokenUser || token]);
 
     return (
         <ThemedView style={styles.container}>
@@ -54,12 +64,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                     resizeMode="cover"
                 />
             </View>
-
-            {[...Array(4)].map((_, i) => (
-                <View key={i} style={[styles.separator, { top: (i + 1) * (height / 5) - 1 }]} />
-            ))}
-
-            <LogoText style={styles.logo} />
+            <DetailsGudes style={styles.logo} guide={Number(guide)} />
 
             {/* Panel blanco con altura fija */}
             <View style={[
@@ -67,31 +72,22 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                 { height: height - 200 }
             ]}>
                 <View style={styles.content}>
+
                     <View style={styles.topContent}>
-                        <Text style={styles.title}>¡Bienvenido!</Text>
-                        <Text style={styles.subtitle}>
-                            Ingresa el número de guía para comenzar tu ruta
-                        </Text>
-
-
-
-                        {errorMessage !== "" && (
-                            <Text style={styles.errorText}>{errorMessage}</Text>
-                        )}
-                    </View>
-
-                    <View style={[
-                        styles.buttonContainer,
-                        { marginBottom: keyboardHeight > 0 ? keyboardHeight + 40 : 20 }
-                    ]}>
-                        <PrimaryButton
-                            title="Ingresar"
-                            onPress={handleSubmit}
-                            disabled={!isValid}
-                            width={328}
-                            height={50}
+                        <TodayDeliveries
+                            style={{ marginTop: -60 }}
+                            data={data}
                         />
+                        <Text style={styles.title}>Tu ruta</Text>
+                        <SearchInput
+                            data={data}
+                            keyExtractor={(item) => `${item.nombreCliente} ${item.codigoCliente}`} // combina campos
+                            onSearch={setFilteredGuides}
+                            placeholder="Buscar por cliente o código"
+                        />
+
                     </View>
+
                 </View>
             </View>
         </ThemedView>
@@ -99,7 +95,6 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
 }
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
         position: 'relative',
         alignItems: 'center',
     },
@@ -125,9 +120,7 @@ const styles = StyleSheet.create({
         top: 200,
         left: 0,
         right: 0,
-        backgroundColor: '#FFFFFF',
-        borderTopLeftRadius: 16,
-        borderTopRightRadius: 16,
+        backgroundColor: '#F9F9FA',
         padding: 27,
         zIndex: 3,
     },
@@ -142,7 +135,7 @@ const styles = StyleSheet.create({
         fontFamily: "Rubik",
         fontWeight: "700",
         fontSize: 24,
-        textAlign: "center",
+        textAlign: "left",
         marginBottom: 8,
     },
     subtitle: {

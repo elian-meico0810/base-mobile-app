@@ -11,8 +11,8 @@ interface PrimaryInputProps extends TextInputProps {
 export function PrimaryInput({ value, onChangeText, placeholder, error, ...rest }: PrimaryInputProps) {
   const handleChange = (text: string) => {
     const numericText = text.replace(/[^0-9]/g, '');
-    if (numericText.length > 10) return;
-    onChangeText(numericText);
+    const limitedText = numericText.slice(0, 10); 
+    onChangeText(limitedText);
   };
 
   return (
@@ -23,6 +23,7 @@ export function PrimaryInput({ value, onChangeText, placeholder, error, ...rest 
       style={[styles.input, error && styles.inputError]}
       placeholderTextColor="#A0A0A0"
       keyboardType="numeric"
+      maxLength={10} // opcional
       {...rest}
     />
   );

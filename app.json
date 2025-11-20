@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "base-mobile-app",
-    "slug": "base-mobile-app",
+    "name": "Meico-Track",
+    "slug": "Meico-Track",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",

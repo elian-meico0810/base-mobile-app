@@ -1,4 +1,5 @@
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LogoText } from '@/components/generals/LogoText';
 import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { TokenExpiredModal } from '@/components/generals/TokenExpiredModal';
@@ -6,6 +7,7 @@ import { PrimaryInput } from '@/components/inputs/PrimaryInput';
 import { ThemedView } from '@/components/themed-view';
 import { authRepositoryImpl } from '@/src/features/auth/infrastructure/login/authRepositoryImpl';
 import { decodeJWT } from '@/src/utils/jwt';
+import NetInfo from '@react-native-community/netinfo';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from "react";
@@ -21,12 +23,13 @@ const { width, height } = Dimensions.get('window');
 
 export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Promise<void> }) {
   const [guide, setGuide] = useState("");
-  const isValid = guide.length >= 6;
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
   const [tokenData, setTokenData] = useState<any>(null);
   const [tokenEncode, setTokeEncode] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const isValid = guide.length >= 5;
   const router = useRouter();
 
   useEffect(() => {
@@ -66,32 +69,35 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
   useEffect(() => {
     const validateToken = async () => {
       try {
-        if (tokenData?.empresa && tokenData?.numeroGuia) {
-          if (tokenData?.exp) {
-            const now = Math.floor(Date.now() / 1000);
-            const exp = tokenData.exp;
-            // const expDate = new Date(exp * 1000);
+        // Primero verificamos conexión
+        const netState = await NetInfo.fetch();
+        if (netState.isConnected) {
 
-            if (exp) {
-              if (now >= exp) {
-                setShowModal(true);
-              } else {
-                // Tu response.data es un JWT token, no un objeto
-                router.push({
-                  pathname: '/views/details',
-                  params: {
-                    guide: Number(tokenData?.numeroGuia),
-                    token: String(tokenEncode)
-                  }
 
-                });
+          // Si hay conexión, validamos token
+          if (tokenData?.empresa && tokenData?.numeroGuia) {
+            if (tokenData?.exp) {
+              const now = Math.floor(Date.now() / 1000);
+              const exp = tokenData.exp;
+
+              if (exp) {
+                if (now >= exp) {
+                  setShowModal(true);
+                } else {
+                  router.push({
+                    pathname: '/views/details',
+                    params: {
+                      guide: Number(tokenData?.numeroGuia),
+                      token: String(tokenEncode)
+                    }
+                  });
+                }
               }
-
             }
           }
         }
       } catch (error) {
-        console.error('Error al leer token:', error);
+        console.error('Error al validar token:', error);
       }
     };
 
@@ -106,11 +112,12 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
       return;
     }
     try {
+      setIsLoading(true);
       const response = await authRepositoryImpl.login(guide);
       if (response?.statusCode == 200) {
         const tokenString = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+        await SecureStore.deleteItemAsync('user_token');
         await SecureStore.setItemAsync('user_token', tokenString);
-
         // Tu response.data es un JWT token, no un objeto
         router.push({
           pathname: '/views/details',
@@ -124,7 +131,9 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
         setErrorMessage(response?.message || "La guía no existe o es incorrecta.");
       }
     } catch (error: any) {
-      setErrorMessage("Error en la consulta de datos.");
+      setErrorMessage(error.response?.data?.message ?? "Error en la consulta de datos.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -189,6 +198,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
           </View>
         </View>
       </View>
+      {isLoading && <LoadingBlue />}
     </ThemedView>
   );
 }

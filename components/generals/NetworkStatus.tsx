@@ -9,6 +9,7 @@ import {
     View
 } from "react-native";
 import { PrimaryButton } from "../buttons/PrimaryButton";
+import { LoadingBlue } from "./LoadingBlue";
 
 const { width, height } = Dimensions.get('window');
 
@@ -32,6 +33,7 @@ export function NetworkStatus() {
     }, []);
 
     const openModal = () => {
+        setVisible(true); // asegurar que se muestre
         Animated.timing(slideAnim, {
             toValue: 0,
             duration: 300,
@@ -49,36 +51,46 @@ export function NetworkStatus() {
         });
     };
 
-
     const retryConnection = async () => {
         setChecking(true);
         try {
-            const state = await NetInfo.fetch();
+            // Creamos un timeout de 10 segundos
+            const delay = new Promise(res => setTimeout(res, 10000));
 
-            if (state.isConnected) {
-                const check = await fetch("https://www.google.com", { method: "HEAD" });
-                if (check.ok) setIsConnected(true);
-                else setIsConnected(false);
-            } else setIsConnected(false);
+            // Verificación real de internet
+            const checkConnection = (async () => {
+                const state = await NetInfo.fetch();
+                let connected = Boolean(state.isConnected && state.isInternetReachable);
 
-            if (isConnected) closeModal();
-        } catch {
+                if (connected) {
+                    const response = await fetch("https://www.google.com", { method: "HEAD" });
+                    connected = response.ok;
+                }
+                setIsConnected(connected);
+            })();
+
+            await Promise.all([delay, checkConnection]);
+
+            if (isConnected) {
+                closeModal();
+            }
+
+        } catch (error) {
             setIsConnected(false);
         } finally {
             setChecking(false);
         }
     };
 
+
     if (!visible) return null;
-    
+
     return (
         <View style={styles.overlay}>
             <Animated.View
                 style={[
                     styles.cardContainer,
-                    {
-                        transform: [{ translateY: slideAnim }],
-                    },
+                    { transform: [{ translateY: slideAnim }] },
                 ]}
             >
                 <View style={styles.card}>
@@ -94,91 +106,26 @@ export function NetworkStatus() {
                     </View>
 
                     <Text style={styles.title}>Sin conexión a internet</Text>
-                    <Text style={styles.subtitle}>Verifica tu conexión e inténtalo nuevamente.</Text>
+                    <Text style={styles.subtitle}>
+                        Verifica tu conexión e inténtalo nuevamente.
+                    </Text>
 
                     <PrimaryButton
                         title="Reintentar"
                         onPress={retryConnection}
-                        disabled={false}
+                        disabled={checking} 
                         width={328}
                         height={50}
                     />
                 </View>
             </Animated.View>
+
+            {checking && <LoadingBlue />}
         </View>
     );
-
-
 }
 
 const styles = StyleSheet.create({
-    modalContainer: {
-        position: "absolute",
-        top: 0,
-        right: 0,
-        bottom: 0,
-        justifyContent: "flex-end",
-        zIndex: 999,
-    },
-
-    card: {
-        width: width,
-        height: 426,
-        backgroundColor: "#fff",
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        padding: 30,
-        alignItems: "center",
-        elevation: 5,
-    },
-
-    icon: {
-        width: 108.49629211425781,
-        height: 193.41,
-        marginBottom: 20,
-        resizeMode: "contain",
-    },
-
-    title: {
-        fontWeight: "700",
-        fontSize: 20,
-        marginBottom: 8,
-        color: "#0B1A33",
-    },
-
-    subtitle: {
-        textAlign: "center",
-        color: "#677",
-        marginBottom: 20,
-    },
-
-    button: {
-        backgroundColor: "#003DA5",
-        paddingVertical: 14,
-        paddingHorizontal: 60,
-        borderRadius: 12,
-        width: "100%",
-        alignItems: "center",
-    },
-
-    buttonText: {
-        color: "#fff",
-        fontSize: 16,
-        fontWeight: "600",
-    },
-    imageWrapper: {
-        justifyContent: "center",
-        alignItems: "center",
-        position: "relative",
-        marginBottom: 20,
-    },
-    errorIcon: {
-        width: 43,
-        height: 31,
-        position: "absolute",
-        top: "40%",
-        resizeMode: "contain",
-    },
     overlay: {
         position: "absolute",
         top: 0,
@@ -189,9 +136,47 @@ const styles = StyleSheet.create({
         justifyContent: "flex-end",
         zIndex: 999,
     },
-
     cardContainer: {
         width: "100%",
     },
-
+    card: {
+        width: width,
+        height: 426,
+        backgroundColor: "#fff",
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        padding: 30,
+        alignItems: "center",
+        elevation: 5,
+    },
+    imageWrapper: {
+        justifyContent: "center",
+        alignItems: "center",
+        position: "relative",
+        marginBottom: 20,
+    },
+    icon: {
+        width: 108,
+        height: 193,
+        marginBottom: 20,
+        resizeMode: "contain",
+    },
+    errorIcon: {
+        width: 43,
+        height: 31,
+        position: "absolute",
+        top: "40%",
+        resizeMode: "contain",
+    },
+    title: {
+        fontWeight: "700",
+        fontSize: 20,
+        marginBottom: 8,
+        color: "#0B1A33",
+    },
+    subtitle: {
+        textAlign: "center",
+        color: "#677",
+        marginBottom: 20,
+    },
 });

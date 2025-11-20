@@ -1,28 +1,18 @@
+import { API_ROUTES } from "@/src/constants/apiRoutes";
+import { authApi } from "@/src/features/auth/infrastructure/authApi";
 import { DetailsRepository } from "../../domain/details/DetailsRepository";
 
-export const authRepositoryImpl: DetailsRepository = {
-  async listGuide(guide: number) {
-    const payload = {
-      idGuia: Number(guide),
-      empresa: "Meico",
-    };
-    //const { data } = await authApi.post(API_ROUTES.LOGIN_GUIDE, payload);
-    //return data
-
-    /*return {
-      statusCode: 401,
-      data: null,
-      message: `Error generando token: La guía ${guide} no tiene direcciones pendientes para ser procesadas.`,
-      success: false,
-    };*/
-    
-    return {
-      statusCode: 200,
-      data: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJudW1lcm9HdWlhIjo3MTM4MCwiZW1wcmVzYSI6Ik1laWNvIiwicGxhY2EiOiJxZWs1NzMiLCJleHAiOjE3NjM2MTQ3NDB9.bj5tTfNMWGELmHEep7NXKwfxf-1_7E5sBLPCdmLn7wg",
-      message: "Guía autenticada con éxito",
-      success: true
+export const detailsRepositoryImpl: DetailsRepository = {
+  async listGuide(guide: number, token: string) {
+    try {
+      const { data } = await authApi.get(`${API_ROUTES.INVOICE_GUIDE_BY_NUMBER_GUDE}${guide}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return data;
+    } catch (error) {
+      throw error;
     }
-
   },
-
 };

@@ -1,6 +1,7 @@
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { LogoText } from '@/components/generals/LogoText';
 import { NetworkStatus } from '@/components/generals/NetworkStatus';
+import { TokenExpiredModal } from '@/components/generals/TokenExpiredModal';
 import { PrimaryInput } from '@/components/inputs/PrimaryInput';
 import { ThemedView } from '@/components/themed-view';
 import { authRepositoryImpl } from '@/src/features/auth/infrastructure/login/authRepositoryImpl';
@@ -25,6 +26,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
   const [errorMessage, setErrorMessage] = useState("");
   const [tokenData, setTokenData] = useState<any>(null);
   const [tokenEncode, setTokeEncode] = useState<any>(null);
+  const [showModal, setShowModal] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -72,7 +74,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
 
             if (exp) {
               if (now >= exp) {
-                await SecureStore.deleteItemAsync('user_token');
+                setShowModal(true);
               } else {
                 // Tu response.data es un JWT token, no un objeto
                 router.push({
@@ -128,6 +130,8 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
 
   return (
     <ThemedView style={styles.container}>
+      <TokenExpiredModal visible={showModal} onClose={() => setShowModal(false)} />
+
       <NetworkStatus />
 
       <View style={[styles.backgroundFill, { width, height }]} pointerEvents="none">

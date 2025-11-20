@@ -26,10 +26,10 @@ export const authRepositoryImpl: AuthRepository = {
 
 
     return {
-        statusCode: 200,
-        data: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJudW1lcm9HdWlhIjo3MTM4MCwiZW1wcmVzYSI6Ik1laWNvIiwicGxhY2EiOiJxZWs1NzMiLCJleHAiOjE3NjM3MDExNDB9.5SdcQLg0f7J-dwFp0H1hXoB6UwEnO-0mCrYRkUBryyY",
-        message: "Guía autenticada con éxito",
-        success: true
+      statusCode: 200,
+      data: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJudW1lcm9HdWlhIjo3MTM4MCwiZW1wcmVzYSI6Ik1laWNvIiwicGxhY2EiOiJxZWs1NzMiLCJleHAiOjE3NjM3MDExNDB9.5SdcQLg0f7J-dwFp0H1hXoB6UwEnO-0mCrYRkUBryyY",
+      message: "Guía autenticada con éxito",
+      success: true
     }
 
   },

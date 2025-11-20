@@ -108,7 +108,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
     setErrorMessage("");
 
     if (!isValid) {
-      setErrorMessage("El número de guía debe tener al menos 6 dígitos.");
+      setErrorMessage("El número de guía debe tener al menos 5 dígitos.");
       return;
     }
     try {

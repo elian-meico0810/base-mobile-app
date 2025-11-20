@@ -1,4 +1,5 @@
 import { DetailsGudes } from '@/components/generals/DetailsGudes';
+import { GuideCard } from '@/components/generals/GuideCard';
 import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { TodayDeliveries } from '@/components/generals/TodayDeliveries';
 import { SearchInput } from '@/components/inputs/SearchInput';
@@ -9,11 +10,10 @@ import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from "react";
 import {
     Dimensions,
-    Image,
-    StyleSheet,
+    Image, ScrollView, StyleSheet,
     Text,
     View
-} from "react-native";
+} from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -85,7 +85,18 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                             onSearch={setFilteredGuides}
                             placeholder="Buscar por cliente o código"
                         />
-
+                        <ScrollView
+                            style={styles.guidesScroll}
+                            contentContainerStyle={{ paddingBottom: 20 }}
+                        >
+                            {filteredGuides.map((item) => (
+                                <GuideCard
+                                    key={item.codigoCliente}
+                                    guide={item}
+                                    onPress={() => console.log('Ir a dirección')}
+                                />
+                            ))}
+                        </ScrollView>
                     </View>
 
                 </View>
@@ -154,5 +165,9 @@ const styles = StyleSheet.create({
     buttonContainer: {
         width: "100%",
         alignItems: 'center',
+    },
+    guidesScroll: {
+        maxHeight: 400,
+        marginTop: 12,
     },
 });

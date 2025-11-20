@@ -2,7 +2,8 @@ import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { LogoText } from '@/components/generals/LogoText';
 import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { ThemedView } from '@/components/themed-view';
-import { useState } from "react";
+import * as SecureStore from 'expo-secure-store';
+import { useEffect, useState } from "react";
 import {
     Dimensions,
     Image,
@@ -23,6 +24,15 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const [guide, setGuide] = useState(initialGuide);
     const [errorMessage, setErrorMessage] = useState("");
     const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const [tokenUser, setToken] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchToken = async () => {
+            const savedToken = await SecureStore.getItemAsync('user_token');
+            setToken(savedToken);
+        };
+        fetchToken();
+    }, []);
     const isValid = guide.length >= 6;
 
     const handleSubmit = () => {
@@ -63,7 +73,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                             Ingresa el número de guía para comenzar tu ruta
                         </Text>
 
-                        
+
 
                         {errorMessage !== "" && (
                             <Text style={styles.errorText}>{errorMessage}</Text>

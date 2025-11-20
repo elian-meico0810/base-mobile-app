@@ -4,7 +4,9 @@ import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { PrimaryInput } from '@/components/inputs/PrimaryInput';
 import { ThemedView } from '@/components/themed-view';
 import { authRepositoryImpl } from '@/src/features/auth/infrastructure/login/authRepositoryImpl';
+import { decodeJWT } from '@/src/utils/jwt';
 import { useRouter } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from "react";
 import {
   Dimensions,
@@ -21,7 +23,9 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
   const isValid = guide.length >= 6;
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
-  const router = useRouter(); // Usa router en lugar de navigation
+  const [tokenData, setTokenData] = useState<any>(null);
+  const [tokenEncode, setTokeEncode] = useState<any>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const show = Keyboard.addListener("keyboardDidShow", (e) => {
@@ -38,6 +42,60 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
     };
   }, []);
 
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const token = await SecureStore.getItemAsync('user_token');
+        if (token) {
+          const data = decodeJWT(token);
+          setTokenData(data);
+          setTokeEncode(token);
+        }
+      } catch (error) {
+        console.error('Error al leer token:', error);
+      }
+    };
+
+    fetchToken();
+  }, []);
+
+
+  useEffect(() => {
+    const validateToken = async () => {
+      try {
+        if (tokenData?.empresa && tokenData?.numeroGuia) {
+          if (tokenData?.exp) {
+            const now = Math.floor(Date.now() / 1000);
+            const exp = tokenData.exp;
+            // const expDate = new Date(exp * 1000);
+
+            if (exp) {
+              if (now >= exp) {
+                await SecureStore.deleteItemAsync('user_token');
+              } else {
+                // Tu response.data es un JWT token, no un objeto
+                router.push({
+                  pathname: '/views/details',
+                  params: {
+                    guide: Number(tokenData?.numeroGuia),
+                    token: String(tokenEncode)
+                  }
+
+                });
+              }
+
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error al leer token:', error);
+      }
+    };
+
+    validateToken();
+  }, [tokenData, tokenEncode]);
+
   const handleSubmit = async () => {
     setErrorMessage("");
 
@@ -48,12 +106,15 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
     try {
       const response = await authRepositoryImpl.login(guide);
       if (response?.statusCode == 200) {
+        const tokenString = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+        await SecureStore.setItemAsync('user_token', tokenString);
+
         // Tu response.data es un JWT token, no un objeto
         router.push({
           pathname: '/views/details',
           params: {
             guide: Number(guide),
-            token: String(response.data) 
+            token: String(response.data)
           }
 
         });

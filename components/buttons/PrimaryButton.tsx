@@ -13,7 +13,7 @@ export function PrimaryButton({
   title,
   onPress,
   disabled = false,
-  width = 328,
+  width = 360,
   height = 50
 }: PrimaryButtonProps) {
   return (

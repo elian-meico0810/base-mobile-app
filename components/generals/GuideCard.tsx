@@ -29,19 +29,21 @@ export function GuideCard({ guide, onPress }: GuideCardProps) {
                 <Text style={styles.address}>{guide.direccion}, {guide.poblacion}</Text>
             </View>
 
+            <View style={styles.addressContainer}>
+                <Ionicons name="cube-outline" size={16} color="#6B7280" style={{ marginRight: 4 }} />
+                <Text style={styles.orders}>{guide.count ?? 0} {"Ordenes"}</Text>
+            </View>
             <TouchableOpacity style={styles.gotoButton} onPress={onPress} activeOpacity={0.8}>
                 <Text style={styles.gotoText}>Ir a la dirección →</Text>
             </TouchableOpacity>
         </View>
-
-
-
     );
 }
 
 const styles = StyleSheet.create({
     card: {
         width: 328,
+        height: 167,
         backgroundColor: '#FFFFFF',
         borderRadius: 8,
         borderWidth: 1,
@@ -97,6 +99,11 @@ const styles = StyleSheet.create({
         color: '#6B7280',
         marginTop: 2,
     },
+    orders: {
+        fontSize: 12,
+        color: '#6B7280',
+        marginTop: 2,
+    },
     addressContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -110,13 +117,21 @@ const styles = StyleSheet.create({
         borderColor: '#164194',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 8,
+        marginTop: 20,
     },
-
     gotoText: {
         fontSize: 14,
         fontWeight: '500',
         color: '#164194',
     },
+    iconBox: {
+        width: 32,
+        height: 32,
+        backgroundColor: '#E5E7EB',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 8,
+        marginRight: 4, 
+    }
 
 });

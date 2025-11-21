@@ -1,3 +1,4 @@
+import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails';
 import { DetailsGudes } from '@/components/generals/DetailsGudes';
 import { GuideCard } from '@/components/generals/GuideCard';
 import { NetworkStatus } from '@/components/generals/NetworkStatus';
@@ -28,6 +29,8 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const [tokenUser, setToken] = useState<string | null>(null);
     const [data, setData] = useState<GuideDetails[]>([]);
     const [filteredGuides, setFilteredGuides] = useState(data);
+    const isValid = guide.length >= 5;
+
     useEffect(() => {
         const fetchToken = async () => {
             const savedToken = await SecureStore.getItemAsync('user_token');
@@ -53,13 +56,22 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
         fetchData();
     }, [guide, tokenUser || token]);
 
+
+    const handleSubmit = async () => {
+
+        try {
+            console.log("holaaaaaa");
+        } catch (error: any) {
+        }
+    };
+
     return (
         <ThemedView style={styles.container}>
             <NetworkStatus />
 
             <View style={[styles.backgroundFill, { width, height }]} pointerEvents="none">
                 <Image
-                    source={require('@/assets/icons/Home.png')}
+                    source={require('@/assets/icons/Welcome.png')}
                     style={[styles.backgroundImage, { width, height }]}
                     resizeMode="cover"
                 />
@@ -74,8 +86,9 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                 <View style={styles.content}>
 
                     <View style={styles.topContent}>
+
                         <TodayDeliveries
-                            style={{ marginTop: -60 }}
+                            style={{ marginTop: -40 }}
                             data={data}
                         />
                         <Text style={styles.title}>Tu ruta</Text>
@@ -98,6 +111,15 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                             ))}
                         </ScrollView>
                     </View>
+                    <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                        <PrimaryButtonDetails
+                            title="Comenzar ruta"
+                            onPress={handleSubmit}
+                            disabled={!isValid}
+                            width={328}
+                            height={44}
+                        />
+                     </View> 
 
                 </View>
             </View>
@@ -131,7 +153,7 @@ const styles = StyleSheet.create({
         top: 200,
         left: 0,
         right: 0,
-        backgroundColor: '#F9F9FA',
+        backgroundColor: 'transparent',
         padding: 27,
         zIndex: 3,
     },

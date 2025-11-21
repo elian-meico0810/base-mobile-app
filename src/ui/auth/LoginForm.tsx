@@ -72,8 +72,6 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
         // Primero verificamos conexión
         const netState = await NetInfo.fetch();
         if (netState.isConnected) {
-
-
           // Si hay conexión, validamos token
           if (tokenData?.empresa && tokenData?.numeroGuia) {
             if (tokenData?.exp) {
@@ -145,7 +143,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
 
       <View style={[styles.backgroundFill, { width, height }]} pointerEvents="none">
         <Image
-          source={require('@/assets/icons/Home.png')}
+          source={require('@/assets/icons/Welcome.png')}
           style={[styles.backgroundImage, { width, height }]}
           resizeMode="cover"
         />
@@ -192,7 +190,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
               title="Ingresar"
               onPress={handleSubmit}
               disabled={!isValid}
-              width={328}
+              width={360}
               height={50}
             />
           </View>
@@ -210,7 +208,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backgroundFill: {
-    backgroundColor: '#164194',
+    backgroundColor: '#143881ff',
   },
   backgroundImage: {
     zIndex: 1,

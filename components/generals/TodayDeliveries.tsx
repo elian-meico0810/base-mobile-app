@@ -33,7 +33,7 @@ export const TodayDeliveries = ({ style, data }: TodayDeliveriesProps) => {
                 <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
             </View>
 
-            <Text style={styles.summaryLink}>Ver resumen de recaudos ▼</Text>
+            {/* <Text style={styles.summaryLink}>Ver resumen de recaudos ▼</Text> */}
         </View>
     );
 };
@@ -41,14 +41,11 @@ export const TodayDeliveries = ({ style, data }: TodayDeliveriesProps) => {
 const styles = StyleSheet.create({
     card: {
         width: width * 0.9,
-        height: height * 0.15,
+        height: height * 0.11,
         backgroundColor: "#FFFFFF",
         borderRadius: 12,
-        padding: 16,
+        padding: 12,
         shadowColor: "#000",
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        shadowOffset: { width: 0, height: 2 },
         marginBottom: 16,
         alignSelf: "center",
         justifyContent: "flex-start",
@@ -59,19 +56,18 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     title: {
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: "700",
         color: "#1F2937",
     },
     progressPercent: {
-        fontSize: 16,
+        fontSize: 20,
         fontWeight: "700",
         color: "#1F2937",
     },
     subtitle: {
-        fontSize: 14,
+        fontSize: 13,
         color: "#6B7280",
-        marginTop: 8,
         marginBottom: 8,
     },
     progressBackground: {
@@ -80,6 +76,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#F9F9FA",
         borderRadius: 100,
         overflow: "hidden",
+        marginTop: 5,
     },
     progressFill: {
         height: "100%",

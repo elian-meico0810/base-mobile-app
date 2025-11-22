@@ -1,5 +1,6 @@
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -34,8 +35,16 @@ export function GuideCard({ guide, onPress }: GuideCardProps) {
                 <Text style={styles.orders}>{guide.count ?? 0} {"Ordenes"}</Text>
             </View>
             <TouchableOpacity style={styles.gotoButton} onPress={onPress} activeOpacity={0.8}>
-                <Text style={styles.gotoText}>Ir a la dirección →</Text>
+                <View style={styles.gotoContent}>
+                    <Text style={styles.gotoText}>Ir a la dirección</Text>
+                    <Image
+                        source={require('@/assets/icons/Direction.png')}
+                        style={styles.gotoIcon}
+                    />
+                </View>
             </TouchableOpacity>
+
+
         </View>
     );
 }
@@ -118,6 +127,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: 20,
+        paddingHorizontal: 12,
     },
     gotoText: {
         fontSize: 14,
@@ -131,7 +141,18 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 8,
-        marginRight: 4, 
-    }
+        marginRight: 4,
+    },
+    gotoContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+
+    },
+    gotoIcon: {
+        width: 11.75,
+        height: 15,
+        tintColor: '#164194',
+        marginLeft: 5
+    },
 
 });

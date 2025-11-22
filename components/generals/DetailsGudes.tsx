@@ -1,7 +1,5 @@
 import { ThemedText } from '@/components/themed-text';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
@@ -25,21 +23,10 @@ export const DetailsGudes = ({ style, guide, onExit }: { style?: any, guide?: nu
 
         return () => clearInterval(interval);
     }, []);
-    const router = useRouter();
-
-    const handleExit = async () => {
-        // Eliminar token
-        await SecureStore.deleteItemAsync('user_token');
-
-        // Esperar 1.2 segundos y redirigir
-        setTimeout(() => {
-            router.replace('/auth/login');
-        }, 1200);
-    };
 
     return (
         <View style={[styles.container, style]}>
-            <TouchableOpacity style={styles.revertContainer} onPress={handleExit} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.revertContainer} onPress={onExit} activeOpacity={0.7}>
                 <Image
                     source={require("@/assets/icons/Revert.png")}
                     style={styles.icon}
@@ -63,6 +50,8 @@ export const DetailsGudes = ({ style, guide, onExit }: { style?: any, guide?: nu
 const styles = StyleSheet.create({
     container: {
         alignItems: 'flex-start',
+        width: '100%',
+        paddingHorizontal: 16,
     },
     revertContainer: {
         flexDirection: 'row',

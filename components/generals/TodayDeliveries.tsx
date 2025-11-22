@@ -2,21 +2,30 @@ import { GuideState } from "@/src/constants/GuideStates";
 import { GuideDetails } from "@/src/features/tracking/domain/details/DetailsGuide";
 import React from "react";
 import { Dimensions, StyleProp, StyleSheet, Text, View, ViewStyle } from "react-native";
+import { TodayDeliveriesSkeleton } from "../skeleton/TodayDeliveriesSkeleton";
 
 const { width, height } = Dimensions.get("window");
 
 interface TodayDeliveriesProps {
     style?: StyleProp<ViewStyle>;
-    data: GuideDetails[];
+    data?: GuideDetails[]; // opcional para poder mostrar skeleton
 }
 
 export const TodayDeliveries = ({ style, data }: TodayDeliveriesProps) => {
 
-    const totalVisits = data.length
-    const totalVisitsPending =  data.filter(item => item.estado === GuideState.Pendiente).length; 
-    const completedVisits = data.filter(item => item.estado === GuideState.Cerrada).length; 
+    if (!data || data.length === 0) {
+        return (
+            <View style={[styles.card, style]}>
+                <TodayDeliveriesSkeleton />
+            </View>
+        );
+    }
 
-    const progress = totalVisits > 0 ? completedVisits / totalVisits : 0; 
+    const totalVisits = data.length;
+    const totalVisitsPending = data.filter(item => item.estado === GuideState.Pendiente).length;
+    const completedVisits = data.filter(item => item.estado === GuideState.Cerrada).length;
+
+    const progress = totalVisits > 0 ? completedVisits / totalVisits : 0;
 
     return (
         <View style={[styles.card, style]}>
@@ -32,8 +41,6 @@ export const TodayDeliveries = ({ style, data }: TodayDeliveriesProps) => {
             <View style={styles.progressBackground}>
                 <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
             </View>
-
-            {/* <Text style={styles.summaryLink}>Ver resumen de recaudos ▼</Text> */}
         </View>
     );
 };
@@ -83,10 +90,13 @@ const styles = StyleSheet.create({
         backgroundColor: "#164194",
         borderRadius: 100,
     },
-    summaryLink: {
-        marginTop: 12,
-        fontSize: 14,
-        color: "#164194",
-        alignSelf: "center",
+    skeletonText: {
+        backgroundColor: "#E0E0E0",
+        borderRadius: 4,
     },
+    skeletonBar: {
+        backgroundColor: "#E0E0E0",
+        borderRadius: 100,
+    },
+
 });

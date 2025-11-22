@@ -1,12 +1,15 @@
 import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails';
 import { DetailsGudes } from '@/components/generals/DetailsGudes';
 import { GuideCard } from '@/components/generals/GuideCard';
+import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { TodayDeliveries } from '@/components/generals/TodayDeliveries';
 import { SearchInput } from '@/components/inputs/SearchInput';
+import { GuideCardSkeleton } from '@/components/skeleton/GuideCardSkeleton';
 import { ThemedView } from '@/components/themed-view';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
+import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from "react";
 import {
@@ -29,6 +32,9 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const [tokenUser, setToken] = useState<string | null>(null);
     const [data, setData] = useState<GuideDetails[]>([]);
     const [filteredGuides, setFilteredGuides] = useState(data);
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+
     const isValid = guide.length >= 5;
 
     useEffect(() => {
@@ -56,7 +62,14 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
         fetchData();
     }, [guide, tokenUser || token]);
 
-
+    const handleExit = async () => {
+        setLoading(true); // mostrar loading
+        await SecureStore.deleteItemAsync('user_token');
+        setTimeout(() => {
+            setLoading(false);
+            router.replace('/auth/login');
+        }, 1200);
+    };
     const handleSubmit = async () => {
 
         try {
@@ -76,7 +89,12 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                     resizeMode="cover"
                 />
             </View>
-            <DetailsGudes style={styles.logo} guide={Number(guide)} />
+
+            <DetailsGudes
+                style={styles.logo}
+                guide={Number(guide)}
+                onExit={handleExit}
+            />
 
             {/* Panel blanco con altura fija */}
             <View style={[
@@ -94,7 +112,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                         <Text style={styles.title}>Tu ruta</Text>
                         <SearchInput
                             data={data}
-                            keyExtractor={(item) => `${item.nombreCliente} ${item.codigoCliente}`} // combina campos
+                            keyExtractor={(item) => `${item.nombreCliente} ${item.codigoCliente}`}
                             onSearch={setFilteredGuides}
                             placeholder="Buscar por cliente o código"
                         />
@@ -102,13 +120,27 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                             style={styles.guidesScroll}
                             contentContainerStyle={{ paddingBottom: 20 }}
                         >
-                            {filteredGuides.map((item) => (
-                                <GuideCard
-                                    key={item.codigoCliente}
-                                    guide={item}
-                                    onPress={() => console.log('Ir a dirección')}
-                                />
-                            ))}
+                            {data.length === 0 ? (
+                                Array.from({ length: 3 }).map((_, i) => (
+                                    <GuideCardSkeleton key={i} />
+                                ))
+                            ) :
+                                // Si ya se cargó data pero la búsqueda no encontró nada
+                                filteredGuides.length === 0 ? (
+                                    <View style={styles.noResultsContainer}>
+                                        <Text style={styles.noResultsTitle}>No encontramos resultados</Text>
+                                        <Text style={styles.noResultsSubtitle}>Ningún registro coincide con la búsqueda</Text>
+                                    </View>
+                                ) : (
+                                    filteredGuides.map((item) => (
+                                        <GuideCard
+                                            key={item.codigoCliente}
+                                            guide={item}
+                                            onPress={() => console.log('Ir a dirección')}
+                                        />
+                                    ))
+                                )
+                            }
                         </ScrollView>
                     </View>
                     <View style={{ alignItems: 'center', marginBottom: 20 }}>
@@ -119,10 +151,12 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                             width={328}
                             height={44}
                         />
-                     </View> 
+                    </View>
 
                 </View>
             </View>
+            {loading && <LoadingBlue />}
+
         </ThemedView>
     );
 }
@@ -191,5 +225,31 @@ const styles = StyleSheet.create({
     guidesScroll: {
         maxHeight: 400,
         marginTop: 12,
+    },
+    noResultsContainer: {
+        width: 328,
+        alignItems: 'center',
+        marginTop: 40,
+    },
+    noResultsTitle: {
+        width: 328,
+        height: 19,
+        fontFamily: "Rubik",
+        fontWeight: "700", 
+        fontSize: 16,      
+        lineHeight: 19,  
+        textAlign: "center",
+        color: "#788095",
+        marginBottom: 8,
+    },
+    noResultsSubtitle: {
+        width: 328,
+        height: 14,
+        fontFamily: "Rubik",
+        fontWeight: "400", 
+        fontSize: 12,   
+        lineHeight: 14,
+        textAlign: "center",
+        color: "#788095",
     },
 });

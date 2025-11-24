@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     revertText: {
         fontFamily: 'Rubik',
         fontWeight: '500',
-        fontSize: 12,
+        fontSize: 15,
         lineHeight: 14,
         letterSpacing: -0.03 * 12,
         textAlign: 'center',
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     date: {
         marginTop: 1,
         color: '#FFFFFF',
-        fontSize: 14,
+        fontSize: 15,
         textAlign: 'left',
         opacity: 0.9
     },

@@ -78,9 +78,9 @@ export function PrimaryButtonDetails({
               {
                 translateX: pan.x.interpolate
                   ? pan.x.interpolate({
-                    inputRange: [0, width - 44 - 12], // 12 es padding horizontal
+                    inputRange: [0, width - 44 - 12], 
                     outputRange: [0, width - 44 - 12],
-                    extrapolate: "clamp", // evita que se salga del rango
+                    extrapolate: "clamp",
                   })
                   : 0,
               },

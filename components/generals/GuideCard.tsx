@@ -3,6 +3,7 @@ import { openChooser } from '@/src/utils/maps/openGoogleMapsByAddress';
 import { cleanSpaces } from '@/src/utils/uitls';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ExceptionModal } from './ExecptionModal';
@@ -17,6 +18,7 @@ interface GuideCardProps {
 export function GuideCard({ guide, onPress, routeStarted }: GuideCardProps) {
     const cleanAddress = `${cleanSpaces(guide.direccion)}, ${cleanSpaces(guide.poblacion)}`;
     const [modalVisible, setModalVisible] = useState(false);
+    const router = useRouter();
 
     const handleGoToMap = async () => {
         const lat = Number(guide.latitud);
@@ -38,75 +40,84 @@ export function GuideCard({ guide, onPress, routeStarted }: GuideCardProps) {
         openChooser(lat, lng);
     };
     return (
-        <View style={styles.card}>
-            <View style={styles.header}>
-                <View style={{ flex: 1 }}>
-                    <Text style={styles.name} numberOfLines={2} ellipsizeMode="tail">
-                        {guide.nombreCliente}
-                    </Text>
-                    <Text style={styles.code}>{guide.codigoCliente}</Text>
-                </View>
+        <TouchableOpacity
+            style={styles.card}
+            activeOpacity={0.8}
+            onPress={() => {
+                // Navegar a la vista de detalles de la guía
+                router.push({
+                    pathname: '/views/indexInvoice', // la ruta a tu pantalla de detalle
+                    params: { guide: JSON.stringify(guide) }, // pasa la data
+                });
+            }}
+        >
+                <View style={styles.header}>
+                    <View style={{ flex: 1 }}>
+                        <Text style={styles.name} numberOfLines={2} ellipsizeMode="tail">
+                            {guide.nombreCliente}
+                        </Text>
+                        <Text style={styles.code}>{guide.codigoCliente}</Text>
+                    </View>
 
-                <View
-                    style={[
-                        styles.statusContainer,
-                        guide.estado !== 'Pendiente' && { backgroundColor: '#DFF5E1' }
-                    ]}
-                >
-                    <Text
+                    <View
                         style={[
-                            styles.status,
-                            guide.estado !== 'Pendiente' && { color: '#1F9144' }
+                            styles.statusContainer,
+                            guide.estado !== 'Pendiente' && { backgroundColor: '#DFF5E1' }
                         ]}
                     >
-                        {guide.estado}
+                        <Text
+                            style={[
+                                styles.status,
+                                guide.estado !== 'Pendiente' && { color: '#1F9144' }
+                            ]}
+                        >
+                            {guide.estado}
+                        </Text>
+                    </View>
+
+                </View>
+
+                <View style={styles.addressContainer}>
+                    <Ionicons name="location-outline" size={16} color="#6B7280" style={{ marginRight: 4 }} />
+                    <Text style={styles.address}>{cleanAddress}</Text>
+                </View>
+
+                <View style={styles.addressContainer}>
+                    <Ionicons name="cube-outline" size={16} color="#6B7280" style={{ marginRight: 4 }} />
+                    <Text style={styles.orders}>
+                        {guide.facturas?.length ?? 0} Ordenes
                     </Text>
                 </View>
+                <TouchableOpacity
+                    style={styles.gotoButton}
+                    activeOpacity={0.8}
+                    onPress={() => {
+                        if (!routeStarted) {
+                            setModalVisible(true);
+                            return;
+                        }
 
-            </View>
+                        handleGoToMap();
+                    }}
+                >
+                    <View style={styles.gotoContent}>
+                        <Text style={styles.gotoText}>Ir a la dirección</Text>
+                        <Image source={require('@/assets/icons/Direction.png')} style={styles.gotoIcon} />
+                    </View>
+                </TouchableOpacity>
 
-            <View style={styles.addressContainer}>
-                <Ionicons name="location-outline" size={16} color="#6B7280" style={{ marginRight: 4 }} />
-                <Text style={styles.address}>{cleanAddress}</Text>
-            </View>
-
-            <View style={styles.addressContainer}>
-                <Ionicons name="cube-outline" size={16} color="#6B7280" style={{ marginRight: 4 }} />
-                <Text style={styles.orders}>
-                    {guide.facturas?.length ?? 0} Ordenes
-                </Text>
-            </View>
-            <TouchableOpacity
-                style={styles.gotoButton}
-                activeOpacity={0.8}
-                onPress={() => {
-                    if (!routeStarted) {
-                        setModalVisible(true);
-                        return;
+                <ExceptionModal
+                    visible={modalVisible}
+                    onClose={() => setModalVisible(false)}
+                    title={routeStarted ? "Sin ubicación disponible" : "Alerta !!"}
+                    message={
+                        routeStarted
+                            ? "Esta guía no contiene coordenadas válidas para navegar."
+                            : "Debe comenzar ruta para realizar esta acción."
                     }
-
-                    handleGoToMap();
-                }}
-            >
-                <View style={styles.gotoContent}>
-                    <Text style={styles.gotoText}>Ir a la dirección</Text>
-                    <Image source={require('@/assets/icons/Direction.png')} style={styles.gotoIcon} />
-                </View>
-            </TouchableOpacity>
-
-            <ExceptionModal
-                visible={modalVisible}
-                onClose={() => setModalVisible(false)}
-                title={routeStarted ? "Sin ubicación disponible" : "Alerta !!"}
-                message={
-                    routeStarted
-                        ? "Esta guía no contiene coordenadas válidas para navegar."
-                        : "Debe comenzar ruta para realizar esta acción."
-                }
-                buttonLabel="Entendido"
-            />
-        </View>
-
+                    buttonLabel="Entendido"
+                />
+        </TouchableOpacity>
     );
 }
 

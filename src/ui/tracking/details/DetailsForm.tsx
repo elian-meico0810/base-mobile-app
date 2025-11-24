@@ -1,5 +1,6 @@
 import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails';
 import { DetailsGudes } from '@/components/generals/DetailsGudes';
+import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { GuideCard } from '@/components/generals/GuideCard';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { NetworkStatus } from '@/components/generals/NetworkStatus';
@@ -9,6 +10,8 @@ import { GuideCardSkeleton } from '@/components/skeleton/GuideCardSkeleton';
 import { ThemedView } from '@/components/themed-view';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
+import { getDeviceDateTime } from '@/src/utils/uitls';
+import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from "react";
@@ -33,6 +36,12 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const [data, setData] = useState<GuideDetails[]>([]);
     const [filteredGuides, setFilteredGuides] = useState(data);
     const [loading, setLoading] = useState(false);
+    const [routeStarted, setRouteStarted] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalTitle, setModalTitle] = useState("");
+    const [modalMessage, setModalMessage] = useState("");
+    const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
+    const [date, setDate] = useState<string | null>(null);
     const router = useRouter();
 
     const isValid = guide.length >= 5;
@@ -63,18 +72,57 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     }, [guide, tokenUser || token]);
 
     const handleExit = async () => {
-        setLoading(true); // mostrar loading
+        setLoading(true);
         await SecureStore.deleteItemAsync('user_token');
+        setDate(null);
         setTimeout(() => {
             setLoading(false);
             router.replace('/auth/login');
         }, 1200);
     };
+
     const handleSubmit = async () => {
 
         try {
-            console.log("holaaaaaa");
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                setModalTitle("Permiso denegado !!");
+                setModalMessage("Se requiere acceso a la ubicación.");
+                setLoading(false);
+                setModalVisible(true);
+                return;
+            }
+            setLoading(true);
+            const initDate = getDeviceDateTime()
+            setDate(initDate)
+            const location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Highest,
+            });
+            const response = await detailsRepositoryImpl.sendRouteInit(
+                {
+                    codigoGuia: String(guide),
+                    latitud: String(location.coords.latitude),
+                    longitud: String(location.coords.longitude),
+                    fechaHoraDispositivo: initDate
+                },
+                token
+            );
+            if (response?.data?.statusCode == 200) {
+                setRouteStarted(true);
+                setLoading(false);
+
+            } else {
+                setModalTitle("Error !!");
+                setModalMessage(response?.data?.message ?? "Ocurrio un error inesperado.");
+                setModalVisible(true);
+            }
+
         } catch (error: any) {
+            setModalTitle("Error !!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -94,6 +142,8 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                 style={styles.logo}
                 guide={Number(guide)}
                 onExit={handleExit}
+                date={date ? date : undefined}
+                routeStarted={routeStarted}
             />
 
             {/* Panel blanco con altura fija */}
@@ -108,6 +158,8 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                         <TodayDeliveries
                             style={{ marginTop: -40 }}
                             data={data}
+                            routeStarted={routeStarted}
+
                         />
                         <Text style={styles.title}>Tu ruta</Text>
                         <SearchInput
@@ -137,22 +189,32 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                                             key={item.codigoCliente}
                                             guide={item}
                                             onPress={() => console.log('Ir a dirección')}
+                                            routeStarted={routeStarted}
                                         />
                                     ))
                                 )
                             }
                         </ScrollView>
                     </View>
-                    <View style={{ alignItems: 'center', marginBottom: 20 }}>
-                        <PrimaryButtonDetails
-                            title="Comenzar ruta"
-                            onPress={handleSubmit}
-                            disabled={!isValid}
-                            width={328}
-                            height={44}
-                        />
-                    </View>
 
+                    {!routeStarted && (
+                        <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                            <PrimaryButtonDetails
+                                title="Comenzar ruta"
+                                onPress={handleSubmit}
+                                disabled={!isValid}
+                                width={328}
+                                height={44}
+                            />
+                        </View>
+                    )}
+                    <ExceptionModal
+                        visible={modalVisible}
+                        onClose={() => setModalVisible(false)}
+                        title={modalTitle}
+                        message={modalMessage}
+                        buttonLabel={modalButtonLabel}
+                    />
                 </View>
             </View>
             {loading && <LoadingBlue />}
@@ -235,9 +297,9 @@ const styles = StyleSheet.create({
         width: 328,
         height: 19,
         fontFamily: "Rubik",
-        fontWeight: "700", 
-        fontSize: 16,      
-        lineHeight: 19,  
+        fontWeight: "700",
+        fontSize: 16,
+        lineHeight: 19,
         textAlign: "center",
         color: "#788095",
         marginBottom: 8,
@@ -246,8 +308,8 @@ const styles = StyleSheet.create({
         width: 328,
         height: 14,
         fontFamily: "Rubik",
-        fontWeight: "400", 
-        fontSize: 12,   
+        fontWeight: "400",
+        fontSize: 12,
         lineHeight: 14,
         textAlign: "center",
         color: "#788095",

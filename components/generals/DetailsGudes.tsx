@@ -1,11 +1,11 @@
 import { ThemedText } from '@/components/themed-text';
+import { formatTime } from '@/src/utils/uitls';
 import { Image } from 'expo-image';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-export const DetailsGudes = ({ style, guide, onExit }: { style?: any, guide?: number, onExit?: () => void }) => {
+export const DetailsGudes = ({ style, guide, onExit, date, routeStarted }: { style?: any, guide?: number, onExit?: () => void, date?: string, routeStarted?: boolean }) => {
     const [dateText, setDateText] = useState('');
-
     useEffect(() => {
         const interval = setInterval(() => {
             const now = new Date();
@@ -34,14 +34,34 @@ export const DetailsGudes = ({ style, guide, onExit }: { style?: any, guide?: nu
                 <ThemedText type="title" style={styles.revertText}>
                     Salir de ruta
                 </ThemedText>
-            </TouchableOpacity>
 
-            <ThemedText type="title" style={styles.meico}>
-                Ruta {guide}
-            </ThemedText>
+
+            </TouchableOpacity>
+            <View style={styles.routeRow}>
+                <ThemedText type="title" style={styles.meico}>
+                    Ruta {guide}
+                </ThemedText>
+
+                <View
+                    style={[
+                        styles.statusContainer,
+                        routeStarted && { backgroundColor: '#DFF5E1' }
+                    ]}
+                >
+                    <Text
+                        style={[
+                            styles.status,
+                            routeStarted && { color: '#1F9144' }
+                        ]}
+                    >
+                        {routeStarted ? 'En Cruso' : 'Pendiente'}
+                    </Text>
+                </View>
+            </View>
+
 
             <ThemedText type="default" style={styles.date}>
-                {dateText}
+                {date ? formatTime(date) : dateText}
             </ThemedText>
         </View>
     );
@@ -51,13 +71,11 @@ const styles = StyleSheet.create({
     container: {
         alignItems: 'flex-start',
         width: '100%',
-        paddingHorizontal: 16,
+        paddingHorizontal: 18,
     },
     revertContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginTop: -2,
-
     },
     revertText: {
         fontFamily: 'Rubik',
@@ -71,11 +89,9 @@ const styles = StyleSheet.create({
 
     },
     meico: {
-        width: '100%',
+        fontFamily: 'Rubik',
+        fontWeight: '700',
         color: '#FFFFFF',
-        textAlign: 'left',
-        marginRight: 180,
-        marginTop: 8,
     },
     date: {
         marginTop: 1,
@@ -89,6 +105,30 @@ const styles = StyleSheet.create({
         height: 16,
         marginRight: 4,
         marginTop: -15,
+    },
+    routeRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%',
+        marginTop: 8,
+    },
+    statusContainer: {
+        backgroundColor: '#E8EEF9',
+        borderRadius: 12,
+        paddingVertical: 4,
+        paddingHorizontal: 8,
+        minWidth: 78,
+        height: 31,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
+    status: {
+        fontFamily: 'Rubik',
+        fontWeight: '400',
+        fontSize: 12,
+        color: '#4F74C4',
     },
 
 });

@@ -11,9 +11,16 @@ export interface GuideDetails {
   poblacion: string;
   codigoCliente: string;
   nombreCliente: string;
-  count?: number;
   latitud: string;       
   longitud: string;     
   estado: string;     
   facturas: Factura[];
+}
+
+
+export interface RuteInitPorps {
+  codigoGuia: string,
+  latitud: string,
+  longitud: string,
+  fechaHoraDispositivo: string
 }

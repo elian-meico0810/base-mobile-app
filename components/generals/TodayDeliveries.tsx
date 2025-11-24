@@ -1,7 +1,8 @@
 import { GuideState } from "@/src/constants/GuideStates";
 import { GuideDetails } from "@/src/features/tracking/domain/details/DetailsGuide";
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Dimensions, StyleProp, StyleSheet, Text, View, ViewStyle } from "react-native";
+import { Dimensions, StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from "react-native";
 import { TodayDeliveriesSkeleton } from "../skeleton/TodayDeliveriesSkeleton";
 
 const { width, height } = Dimensions.get("window");
@@ -9,9 +10,11 @@ const { width, height } = Dimensions.get("window");
 interface TodayDeliveriesProps {
     style?: StyleProp<ViewStyle>;
     data?: GuideDetails[]; // opcional para poder mostrar skeleton
+    routeStarted?: boolean
+
 }
 
-export const TodayDeliveries = ({ style, data }: TodayDeliveriesProps) => {
+export const TodayDeliveries = ({ style, data, routeStarted }: TodayDeliveriesProps) => {
 
     if (!data || data.length === 0) {
         return (
@@ -20,6 +23,11 @@ export const TodayDeliveries = ({ style, data }: TodayDeliveriesProps) => {
             </View>
         );
     }
+    const cardStyle = [
+        styles.card,
+        style,
+        { height: height * (routeStarted ? 0.15 : 0.11) } // altura dinámica
+    ];
 
     const totalVisits = data.length;
     const totalVisitsPending = data.filter(item => item.estado === GuideState.Pendiente).length;
@@ -28,7 +36,7 @@ export const TodayDeliveries = ({ style, data }: TodayDeliveriesProps) => {
     const progress = totalVisits > 0 ? completedVisits / totalVisits : 0;
 
     return (
-        <View style={[styles.card, style]}>
+        <View style={cardStyle}>
             <View style={styles.headerRow}>
                 <Text style={styles.title}>Entregas de hoy</Text>
                 <Text style={styles.progressPercent}>{Math.round(progress * 100)}%</Text>
@@ -41,6 +49,19 @@ export const TodayDeliveries = ({ style, data }: TodayDeliveriesProps) => {
             <View style={styles.progressBackground}>
                 <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
             </View>
+            {routeStarted && (
+                <TouchableOpacity style={styles.summaryButton}>
+                    <View style={styles.summaryButtonContent}>
+                        <Text style={styles.summaryButtonText}>Ver resumen de recaudos</Text>
+                        <Ionicons
+                            name="chevron-down"
+                            size={16}
+                            color="#164194"
+                            style={{ marginLeft: 4, alignSelf: "center" }}
+                        />
+                    </View>
+                </TouchableOpacity>
+            )}
         </View>
     );
 };
@@ -98,5 +119,19 @@ const styles = StyleSheet.create({
         backgroundColor: "#E0E0E0",
         borderRadius: 100,
     },
+    summaryButton: {
+        marginTop: 12,
+    },
+    summaryButtonContent: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center"
+    },
+    summaryButtonText: {
+        fontSize: 13,
+        fontWeight: "600",
+        color: "#164194",
+    },
+
 
 });

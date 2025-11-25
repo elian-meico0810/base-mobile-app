@@ -1,5 +1,5 @@
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
-import { InfoInvoiceForm } from '@/src/ui/tracking/details/InfoInvoiceForm';
+import { InfoInvoiceForm } from '@/src/ui/tracking/invoices/InfoInvoiceForm';
 import { Stack, useLocalSearchParams } from 'expo-router';
 
 export default function IndexInvoiceScreen() {

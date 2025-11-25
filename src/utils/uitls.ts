@@ -31,3 +31,7 @@ export function formatTime(dateStr: string): string {
 }
 
 
+
+export function formatNumber(num: number) {
+    return num.toLocaleString("es-CO");
+}

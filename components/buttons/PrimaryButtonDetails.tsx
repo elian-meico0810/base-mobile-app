@@ -7,6 +7,11 @@ interface PrimaryButtonProps {
   disabled?: boolean;
   width?: number;
   height?: number;
+  titleColor?: string;
+  buttonColor?: string;
+  buttonColorEnd?: string;
+  textCenter?: boolean;
+  circleColor?: string;
 }
 
 export function PrimaryButtonDetails({
@@ -15,41 +20,40 @@ export function PrimaryButtonDetails({
   disabled = false,
   width = 328,
   height = 44,
+  titleColor = "#FFFFFF",
+  buttonColor = "#164194",
+  buttonColorEnd = "#0E2B68",
+  circleColor = "#0E2B68",
 }: PrimaryButtonProps) {
   const pan = useRef(new Animated.ValueXY()).current;
 
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => !disabled,
-      onPanResponderMove: (e, gestureState) => {
-        let newX = Math.max(0, Math.min(gestureState.dx, width - 44 - 12));
+      onPanResponderMove: (_, gestureState) => {
+        let newX = Math.max(0, Math.min(gestureState.dx, width - 56));
         pan.setValue({ x: newX, y: 0 });
       },
-
-      onPanResponderRelease: (e, gestureState) => {
-        // Si arrastra más de la mitad, se considera "completado"
+      onPanResponderRelease: (_, gestureState) => {
         if (gestureState.dx > width / 2) {
           Animated.spring(pan, {
-            toValue: { x: width - 44, y: 0 }, // extremo derecho menos tamaño de flecha
-            useNativeDriver: false,
-          }).start(() => onPress()); // ejecutar acción al llegar
+            toValue: { x: width - 56, y: 0 },
+            useNativeDriver: false
+          }).start(() => onPress());
         } else {
-          // Vuelve al inicio
           Animated.spring(pan, {
             toValue: { x: 0, y: 0 },
-            useNativeDriver: false,
+            useNativeDriver: false
           }).start();
         }
-      },
+      }
     })
   ).current;
 
   return (
     <View style={[styles.container, { width, height }]}>
-      {/* Track de fondo */}
       <View style={[styles.track, { width, height }]} />
 
-      {/* Botón arrastrable */}
       <Animated.View
         style={[
           styles.button,
@@ -58,42 +62,40 @@ export function PrimaryButtonDetails({
             height,
             backgroundColor: disabled
               ? "#D9DCE5"
-              : pan.x.interpolate
-                ? pan.x.interpolate({
-                  inputRange: [0, width - 44 - 12],
-                  outputRange: ["#164194", "#0E2B68"],
-                  extrapolate: "clamp",
-                })
-                : "#164194",
+              : pan.x.interpolate({
+                inputRange: [0, width - 56],
+                outputRange: [buttonColor, buttonColorEnd],
+                extrapolate: "clamp",
+              }),
           },
         ]}
       >
+        {/* 🔥 Texto centrado SIEMPRE */}
+        <View style={styles.centerTextContainer}>
+          <Text style={[styles.buttonText, { color: titleColor }]}>
+            {title}
+          </Text>
+        </View>
 
-        {/* Contenido arrastrable */}
+        {/* 🔥 Flecha que se mueve */}
         <Animated.View
           style={{
-            flexDirection: "row",
-            alignItems: "center",
             transform: [
               {
-                translateX: pan.x.interpolate
-                  ? pan.x.interpolate({
-                    inputRange: [0, width - 44 - 12], 
-                    outputRange: [0, width - 44 - 12],
-                    extrapolate: "clamp",
-                  })
-                  : 0,
+                translateX: pan.x.interpolate({
+                  inputRange: [0, width - 56],
+                  outputRange: [0, width - 56],
+                  extrapolate: "clamp",
+                }),
               },
             ],
           }}
           {...panResponder.panHandlers}
         >
-          <View style={styles.arrowContainerInline}>
+          <View style={[styles.arrowContainerInline, { backgroundColor: circleColor }]}>
             <Text style={styles.arrow}>→</Text>
           </View>
-          <Text style={[styles.buttonText, { marginLeft: 10 }]}>{title}</Text>
         </Animated.View>
-
       </Animated.View>
     </View>
   );
@@ -113,29 +115,18 @@ const styles = StyleSheet.create({
     borderRadius: 30,
   },
   button: {
+    borderRadius: 30,
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 30,
-    paddingHorizontal: 12,
+  },
+  centerTextContainer: {
+    position: "absolute",
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
   },
   buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
     fontSize: 16,
-  },
-  arrowContainer: {
-    position: "absolute",
-    left: 0,
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#0E2B68",
-    borderRadius: 22,
-  },
-  arrow: {
-    color: "#fff",
-    fontSize: 18,
     fontWeight: "bold",
   },
   arrowContainerInline: {
@@ -145,5 +136,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#0E2B68",
     justifyContent: "center",
     alignItems: "center",
+  },
+  arrow: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
   },
 });

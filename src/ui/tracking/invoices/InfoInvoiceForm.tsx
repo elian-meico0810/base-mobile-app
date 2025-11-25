@@ -1,8 +1,11 @@
 import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails';
-import { DeliveryStatus } from '@/components/checkbox/DeliveryStatus';
+import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { ThemedView } from '@/components/themed-view';
+import { DeliveryStatus } from '@/src/features/tracking/components/checkbox/DeliveryStatus';
+import { DetailsInvoiceQR } from '@/src/features/tracking/components/screens/DetailsInvoiceQR';
+import { InfoPayments } from '@/src/features/tracking/components/screens/InfoPayments';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { cleanSpaces } from '@/src/utils/uitls';
 import { Image } from 'expo-image';
@@ -22,6 +25,13 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(false);
+    const [showPayment, setShowPayment] = useState(false);
+    const [showDetailInvoiceQR, setShowDetailInvoiceQR] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalTitle, setModalTitle] = useState("");
+    const [modalMessage, setModalMessage] = useState("");
+    const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
+
     const isValid = true;
 
     const router = useRouter();
@@ -34,6 +44,34 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
             console.log("entro ala funcion")
             setRouteStarted(true);
 
+        } catch (error: any) {
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const submitData = async () => {
+
+        try {
+            console.log("entro ala funcion")
+        } catch (error: any) {
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const validateButton = async () => {
+        try {
+            setShowDetailInvoiceQR(false);
+            setShowPayment(false);
+            if (!routeStarted) {
+                setModalTitle("Alerta !!");
+                setModalMessage("Debe indicar que ya llegó al lugar de la dirección para poder ejecutar esta acción.");
+                setModalVisible(true);
+
+            }
         } catch (error: any) {
             throw error;
         } finally {
@@ -127,19 +165,19 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
                             {'$ ' + (Number(25500) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                         </Text>
                     </View>
-                    <TouchableOpacity style={styles.qrButton} onPress={() => console.log('Generar QR de pago')}>
+                    <TouchableOpacity style={styles.qrButton} onPress={() => { validateButton(), setShowDetailInvoiceQR(true) }}>
                         <View style={styles.qrButtonContent}>
                             <Image
                                 source={require('@/assets/icons/GenerateQR.png')}
                                 style={styles.qrButtonIcon}
-                                resizeMode="contain"
                             />
                             <Text style={styles.qrButtonText}>Generar QR de pago</Text>
                         </View>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.qrButtonDetail} onPress={() => console.log('Generar QR de pago')}>
+                    <TouchableOpacity style={styles.qrButtonDetail} onPress={() => { validateButton(), setShowPayment(true) }}>
                         <Text style={styles.qrButtonText}>Detalle de pagos</Text>
                     </TouchableOpacity>
+
                 </View>
             </View>
             <View style={styles.headerContainerTwo}>
@@ -153,13 +191,45 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
 
             <View style={styles.footer}>
                 <PrimaryButtonDetails
-                    title="Ya llegue"
-                    onPress={handleSubmit}
+                    key={routeStarted ? "cerrar" : "llegue"} 
+                    title={routeStarted ? "Cerrar pedido" : "Ya llegué"}
+                    onPress={routeStarted ? submitData : handleSubmit}
                     disabled={!isValid}
                     width={328}
                     height={44}
+                    buttonColor={routeStarted ? "#DDDFE8" : undefined}
+                    buttonColorEnd={routeStarted ? "#DDDFE8" : undefined}
+                    titleColor={routeStarted ? "#FFFFFF" : undefined}
+                    circleColor={routeStarted ? "#788095" : undefined}
                 />
+
             </View>
+            <ExceptionModal
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                title={modalTitle}
+                message={modalMessage}
+                buttonLabel={modalButtonLabel}
+            />
+            {(showPayment && routeStarted) && (
+                <InfoPayments
+                    title="Detalle de pagos"
+                    subTitle="La factura no tiene pagos registrados"
+                    description="Los pagos asociados a esta factura aparecerán aquí"
+                    onClose={() => setShowPayment(false)}
+                    width={width}
+                />
+
+            )}
+            {(showDetailInvoiceQR && routeStarted) && (
+                <DetailsInvoiceQR
+                    data={guide}
+                    onClose={() => setShowDetailInvoiceQR(false)}
+                    onChangePhone={() => console.log("Cambiar teléfono")}
+                    width={width}
+
+                />
+            )}
             {loading && <LoadingBlue />}
 
         </ThemedView>
@@ -172,7 +242,7 @@ const styles = StyleSheet.create({
         width: width,
         height: height,
         alignItems: 'center',
-        position: 'relative',
+        position: 'absolute',
     },
     background: {
         position: 'absolute',
@@ -370,5 +440,25 @@ const styles = StyleSheet.create({
     qrButtonIcon: {
         width: 16,
         height: 16,
+    },
+    bottomSheet: {
+        width: "100%",
+        height: 237,
+        backgroundColor: "#E8EEF9",
+        borderTopLeftRadius: 16,
+        borderTopRightRadius: 16,
+        padding: 16,
+    },
+    closeButton: {
+        position: "absolute",
+        top: 10,
+        right: 16,
+        padding: 8,
+        backgroundColor: "#0E2B68",
+        borderRadius: 8,
+    },
+    closeText: {
+        color: "#fff",
+        fontWeight: "bold",
     },
 });

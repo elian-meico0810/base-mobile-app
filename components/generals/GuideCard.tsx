@@ -44,6 +44,7 @@ export function GuideCard({ guide, onPress, routeStarted }: GuideCardProps) {
             style={styles.card}
             activeOpacity={0.8}
             onPress={() => {
+                if(!routeStarted) return;
                 // Navegar a la vista de detalles de la guía
                 router.push({
                     pathname: '/views/indexInvoice', // la ruta a tu pantalla de detalle

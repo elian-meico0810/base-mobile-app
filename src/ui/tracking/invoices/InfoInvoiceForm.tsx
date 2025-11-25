@@ -4,6 +4,7 @@ import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { ThemedView } from '@/components/themed-view';
 import { DeliveryStatus } from '@/src/features/tracking/components/checkbox/DeliveryStatus';
+import { ChangePhoneModal } from '@/src/features/tracking/components/screens/ChangePhoneModal';
 import { DetailsInvoiceQR } from '@/src/features/tracking/components/screens/DetailsInvoiceQR';
 import { InfoPayments } from '@/src/features/tracking/components/screens/InfoPayments';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
@@ -31,6 +32,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
+    const [showChangePhone, setShowChangePhone] = useState(false);
+    const [phone, setPhone] = useState("");
 
     const isValid = true;
 
@@ -191,7 +194,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
 
             <View style={styles.footer}>
                 <PrimaryButtonDetails
-                    key={routeStarted ? "cerrar" : "llegue"} 
+                    key={routeStarted ? "cerrar" : "llegue"}
                     title={routeStarted ? "Cerrar pedido" : "Ya llegué"}
                     onPress={routeStarted ? submitData : handleSubmit}
                     disabled={!isValid}
@@ -225,11 +228,25 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
                 <DetailsInvoiceQR
                     data={guide}
                     onClose={() => setShowDetailInvoiceQR(false)}
-                    onChangePhone={() => console.log("Cambiar teléfono")}
+                    onChangePhone={() => {
+                        setShowDetailInvoiceQR(false); 
+                        setShowChangePhone(true);      
+                    }}
                     width={width}
+                    phone={phone}
 
                 />
             )}
+            <ChangePhoneModal
+                visible={showChangePhone}
+                onClose={() => setShowChangePhone(false)}
+                onConfirm={(newPhone) => {
+                    setPhone(newPhone);
+                    setShowChangePhone(false);
+                    setShowDetailInvoiceQR(true);   
+                }}
+            />
+
             {loading && <LoadingBlue />}
 
         </ThemedView>

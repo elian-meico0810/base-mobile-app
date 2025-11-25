@@ -12,6 +12,8 @@ interface DetailsInvoiceQRProps {
     disabled?: boolean;
     width?: number;
     height?: number;
+    phone?: string;
+
 }
 
 interface Invoice {
@@ -21,7 +23,7 @@ interface Invoice {
     valorTotal: number;
 }
 
-export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width = 360, height = 300 }: DetailsInvoiceQRProps) {
+export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone }: DetailsInvoiceQRProps) {
 
     const dataInvoice: Invoice = data?.facturas?.[0] ?? {
         dfr: 0,
@@ -29,7 +31,6 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
         valorRecaudar: 0,
         valorTotal: 0
     };
-
     return (
         <View style={styles.overlay} pointerEvents="box-none">
 
@@ -65,7 +66,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                     <View style={styles.phoneRow}>
                         <TextInput
                             style={styles.phoneInput}
-                            value={"0"}
+                            value={phone ?? ""}
                             editable={false}
                         />
                         <TouchableOpacity onPress={onChangePhone}>

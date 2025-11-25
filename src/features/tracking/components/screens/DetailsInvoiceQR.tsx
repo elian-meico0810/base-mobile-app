@@ -1,6 +1,8 @@
+import { SecondaryButton } from "@/components/buttons/SecondaryButton";
+import { LoadingBlue } from "@/components/generals/LoadingBlue";
 import { Row } from "@/components/generals/Row";
 import { formatNumber } from "@/src/utils/uitls";
-import React from "react";
+import React, { useState } from "react";
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 interface DetailsInvoiceQRProps {
@@ -13,6 +15,7 @@ interface DetailsInvoiceQRProps {
     width?: number;
     height?: number;
     phone?: string;
+    onGenerateQR?: (qrType: string) => void; // Nueva prop callback
 
 }
 
@@ -23,13 +26,59 @@ interface Invoice {
     valorTotal: number;
 }
 
-export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone }: DetailsInvoiceQRProps) {
+export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone, onGenerateQR }: DetailsInvoiceQRProps) {
+    const [loading, setLoading] = useState(false);
 
     const dataInvoice: Invoice = data?.facturas?.[0] ?? {
         dfr: 0,
         numeroFactura: "",
         valorRecaudar: 0,
         valorTotal: 0
+    };
+
+    const paymentGateway = async () => {
+        try {
+            // setLoading(true);
+            if (onGenerateQR) {
+                onGenerateQR('Pasarela de Pago');
+            }
+
+            // const response = await detailsRepositoryImpl.sendPaymentGetway(
+            //     {
+            //         documento: '001',
+            //         linkFisico: 'true',
+            //         linkVirtual: 'true',
+            //     },
+            //     'token'
+            // );
+        } catch (error: any) {
+            throw error;
+        } finally {
+            setLoading(false);
+
+        }
+    };
+
+    const generateQR = async () => {
+        try {
+            // setLoading(true);
+            if (onGenerateQR) {
+                onGenerateQR('Aplicación Bancaria');
+            }
+            // const response = await detailsRepositoryImpl.generateQR(
+            //     {
+            //         numdoc: '001',
+            //         tipodoc: 'true',
+            //         cus_no: 'true',
+            //     },
+            //     'token'
+            // );
+        } catch (error: any) {
+            throw error;
+        } finally {
+            setLoading(false);
+
+        }
     };
     return (
         <View style={styles.overlay} pointerEvents="box-none">
@@ -76,18 +125,28 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                 </View>
 
                 <Text style={styles.QrTitle}>Generar QR de pago</Text>
-
                 <View style={styles.buttonsContainer}>
-                    <TouchableOpacity style={styles.button}>
-                        <Text style={styles.buttonText}>Pasarela de Pago</Text>
-                    </TouchableOpacity>
+                    <SecondaryButton
+                        title="Pasarela de Pago"
+                        onPress={paymentGateway}
+                        disabled={disabled}
+                        width={350}
+                        height={48}
+                    />
 
-                    <TouchableOpacity style={styles.button}>
-                        <Text style={styles.buttonText}>Aplicación Bancaria</Text>
-                    </TouchableOpacity>
+                    <SecondaryButton
+                        title="Aplicación Bancaria"
+                        onPress={generateQR}
+                        disabled={disabled}
+                        width={350}
+                        height={48}
+                    />
                 </View>
 
+
             </View>
+            {loading && <LoadingBlue />}
+
         </View>
     );
 }

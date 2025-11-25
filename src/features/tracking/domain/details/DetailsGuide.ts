@@ -17,10 +17,21 @@ export interface GuideDetails {
   facturas: Factura[];
 }
 
-
 export interface RuteInitPorps {
   codigoGuia: string,
   latitud: string,
   longitud: string,
   fechaHoraDispositivo: string
+}
+
+export interface PaymentGetwayPorps {
+  documento: string,
+  linkFisico: string,
+  linkVirtual: string,
+}
+
+export interface GenerateQRPorps {
+  numdoc: string,
+  tipodoc: string,
+  cus_no: string,
 }

@@ -7,6 +7,7 @@ import { DeliveryStatus } from '@/src/features/tracking/components/checkbox/Deli
 import { ChangePhoneModal } from '@/src/features/tracking/components/screens/ChangePhoneModal';
 import { DetailsInvoiceQR } from '@/src/features/tracking/components/screens/DetailsInvoiceQR';
 import { InfoPayments } from '@/src/features/tracking/components/screens/InfoPayments';
+import { ViewQrModal } from '@/src/features/tracking/components/screens/ViewQrModal';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { cleanSpaces } from '@/src/utils/uitls';
 import { Image } from 'expo-image';
@@ -33,6 +34,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
     const [modalMessage, setModalMessage] = useState("");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [showChangePhone, setShowChangePhone] = useState(false);
+    const [ModalgenerateQR, setModalgenerateQR] = useState(false);
     const [phone, setPhone] = useState("");
 
     const isValid = true;
@@ -41,6 +43,14 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
     const handleGoBack = () => {
         router.back();
     };
+
+    const handleGenerateQR = (qrType: string) => {
+        setModalgenerateQR(true);
+        setShowDetailInvoiceQR(false);
+        setShowPayment(false);
+        console.log("qrType: ", qrType)
+    };
+
     const handleSubmit = async () => {
 
         try {
@@ -229,21 +239,40 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
                     data={guide}
                     onClose={() => setShowDetailInvoiceQR(false)}
                     onChangePhone={() => {
-                        setShowDetailInvoiceQR(false); 
-                        setShowChangePhone(true);      
+                        setShowDetailInvoiceQR(false);
+                        setShowChangePhone(true);
                     }}
                     width={width}
                     phone={phone}
+                    onGenerateQR={handleGenerateQR}
+
 
                 />
             )}
+
+            {ModalgenerateQR && (
+                <ViewQrModal
+                    data={guide}
+                    onClose={() => 
+                        setModalgenerateQR(false)
+                    }
+                    onChangePhone={() => {
+                        setShowDetailInvoiceQR(false);
+                        setShowPayment(false); 
+                        setShowChangePhone(true);
+                    }}
+                    width={width}
+                    phone={phone}
+                />
+            )}
+
             <ChangePhoneModal
                 visible={showChangePhone}
                 onClose={() => setShowChangePhone(false)}
                 onConfirm={(newPhone) => {
                     setPhone(newPhone);
                     setShowChangePhone(false);
-                    setShowDetailInvoiceQR(true);   
+                    setShowDetailInvoiceQR(true);
                 }}
             />
 

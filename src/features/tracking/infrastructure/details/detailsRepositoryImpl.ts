@@ -1,6 +1,6 @@
 import { API_ROUTES } from "@/src/constants/apiRoutes";
 import { authApi } from "@/src/features/auth/infrastructure/authApi";
-import { RuteInitPorps } from "../../domain/details/DetailsGuide";
+import { GenerateQRPorps, PaymentGetwayPorps, RuteInitPorps } from "../../domain/details/DetailsGuide";
 import { DetailsRepository } from "../../domain/details/DetailsRepository";
 
 export const detailsRepositoryImpl: DetailsRepository = {
@@ -90,7 +90,33 @@ export const detailsRepositoryImpl: DetailsRepository = {
     } catch (error) {
       throw error;
     }
+  },
+
+  async sendPaymentGetway(data: PaymentGetwayPorps, token: string) {
+    try {
+      const response = await authApi.post(API_ROUTES.SEND_PAYMENT_GATEWAY, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async generateQR(data: GenerateQRPorps, token: string) {
+    try {
+      const response = await authApi.post(API_ROUTES.GENERATE_QR, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      return response;
+    } catch (error) {
+      throw error;
+    }
   }
-
-
 };

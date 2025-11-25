@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
 
-interface PrimaryButtonProps {
+interface SecondaryButtonProps {
   title: string;
   onPress: () => void;
   disabled?: boolean;
@@ -9,19 +9,35 @@ interface PrimaryButtonProps {
   height?: number;
 }
 
-export function PrimaryButton({
+export function SecondaryButton({
   title,
   onPress,
   disabled = false,
   width = 360,
   height = 50
-}: PrimaryButtonProps) {
+}: SecondaryButtonProps) {
   return (
     <TouchableOpacity
-      style={[styles.button, { backgroundColor: disabled ? '#D9DCE5' : '#164194', width, height }]}
+      style={[
+        styles.button,
+        {
+          width,
+          height,
+          backgroundColor: disabled ? "#F2F3F7" : "#FFFFFF",
+          borderColor: disabled ? "#A5ACC1" : "#164194",
+        }
+      ]}
+      disabled={disabled}
       onPress={onPress}
     >
-      <Text style={styles.buttonText}>{title}</Text>
+      <Text
+        style={[
+          styles.buttonText,
+          { color: disabled ? "#A5ACC1" : "#164194" }
+        ]}
+      >
+        {title}
+      </Text>
     </TouchableOpacity>
   );
 }
@@ -32,10 +48,11 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
   },
   buttonText: {
-    color: '#fff',
     fontWeight: "bold",
     fontSize: 16,
   },
 });
+

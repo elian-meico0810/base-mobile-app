@@ -57,6 +57,12 @@ export function ChangePhoneModal({ visible, onClose, onConfirm }: ChangePhoneMod
         Keyboard.dismiss();
         setTimeout(onClose, 100);
     };
+    
+    useEffect(() => {
+        if (visible) {
+            keyboardHeight.setValue(0);
+        }
+    }, [visible]);
 
     return (
         <Modal
@@ -68,13 +74,13 @@ export function ChangePhoneModal({ visible, onClose, onConfirm }: ChangePhoneMod
         >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <View style={styles.overlay}>
-                    <TouchableOpacity 
-                        style={styles.backdrop} 
-                        activeOpacity={1} 
-                        onPress={handleClose} 
+                    <TouchableOpacity
+                        style={styles.backdrop}
+                        activeOpacity={1}
+                        onPress={handleClose}
                     />
 
-                    <Animated.View 
+                    <Animated.View
                         style={[
                             styles.modalContainer,
                             { marginBottom: keyboardHeight }

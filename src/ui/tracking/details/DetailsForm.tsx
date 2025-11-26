@@ -195,13 +195,13 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                     </View>
 
                     {!routeStarted && (
-                        <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                        <View style={{ alignItems: 'center', marginBottom: 25 }}>
                             <PrimaryButtonDetails
                                 title="Comenzar ruta"
                                 onPress={handleSubmit}
                                 disabled={!isValid}
                                 width={328}
-                                height={44}
+                                height={43}
                             />
                         </View>
                     )}

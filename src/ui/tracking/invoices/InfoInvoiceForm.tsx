@@ -39,6 +39,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
     const [modalgenerateQR, setModalgenerateQR] = useState(false);
     const [sendWhatsApp, SetSendWhatsApp] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [showSuccessQRp, setShowSuccessQRP] = useState(false);
     const [qrBase64, setQrBase64] = useState<string>('');
     const [qrType, setQrType] = useState<string>('');
     const [phone, setPhone] = useState("");
@@ -61,6 +62,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
     const handlSendWhatsApp = async () => {
         try {
             if (qrType == TypeQr.PASARELA) {
+                setShowSuccessQRP(true);
+                setModalgenerateQR(false);
                 // setModalVisible(true);
 
                 // const response = await detailsRepositoryImpl.reportWhatsApp(
@@ -236,15 +239,15 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
                     onStatusChange={(status) => console.log('Estado seleccionado:', status)}
                 />
             </View>
-
-            <View style={styles.footer}>
+ 
+            <View style={[styles.footer, { marginBottom: 10 }]}>
                 <PrimaryButtonDetails
                     key={routeStarted ? "cerrar" : "llegue"}
                     title={routeStarted ? "Cerrar pedido" : "Ya llegué"}
                     onPress={routeStarted ? submitData : handleSubmit}
                     disabled={!isValid}
                     width={328}
-                    height={44}
+                    height={43}
                     buttonColor={routeStarted ? "#DDDFE8" : undefined}
                     buttonColorEnd={routeStarted ? "#DDDFE8" : undefined}
                     titleColor={routeStarted ? "#FFFFFF" : undefined}
@@ -332,6 +335,14 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
                 />
             )}
 
+            {showSuccessQRp && (
+                <TopSuccessAlert
+                    visible={showSuccessQRp}
+                    message="Envió exitoso"
+                    subtitle="Enviamos el QR de pago al número 2612152672"
+                    onHide={() => setShowSuccessQRP(false)}
+                />
+            )}
 
             {loading && <LoadingBlue />}
 

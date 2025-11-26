@@ -160,7 +160,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                         onPress={paymentGateway}
                         disabled={disabled}
                         width={350}
-                        height={48}
+                        height={43}
                     />
 
                     <SecondaryButton
@@ -168,7 +168,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                         onPress={generateQR}
                         disabled={disabled}
                         width={350}
-                        height={48}
+                        height={43}
                     />
                 </View>
 

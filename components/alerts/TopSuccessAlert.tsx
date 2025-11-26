@@ -5,11 +5,12 @@ import { Animated, StyleSheet, Text, View } from "react-native";
 interface Props {
     visible: boolean;
     message: string;
+    subtitle?: string; // Prop opcional para el subtítulo
     duration?: number;
     onHide: () => void;
 }
 
-export function TopSuccessAlert({ visible, message, duration = 2000, onHide }: Props) {
+export function TopSuccessAlert({ visible, message, subtitle, duration = 2000, onHide }: Props) {
     const slideAnim = useRef(new Animated.Value(-80)).current; 
     const opacityAnim = useRef(new Animated.Value(0)).current;
 
@@ -56,12 +57,20 @@ export function TopSuccessAlert({ visible, message, duration = 2000, onHide }: P
                 { transform: [{ translateY: slideAnim }], opacity: opacityAnim }
             ]}
         >
-            <View style={styles.content}>
+            <View style={[
+                styles.content,
+                subtitle ? styles.contentWithSubtitle : styles.contentWithoutSubtitle
+            ]}>
                 <View style={styles.iconCircle}>
                     <AntDesign name="check" size={14} color="#141D32" />
                 </View>
 
-                <Text style={styles.text}>{message}</Text>
+                <View style={styles.textContainer}>
+                    <Text style={styles.text}>{message}</Text>
+                    {subtitle && (
+                        <Text style={styles.subtitle}>{subtitle}</Text>
+                    )}
+                </View>
             </View>
         </Animated.View>
     );
@@ -81,11 +90,17 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         width: 328,
-        height: 40,
         backgroundColor: "#141D32",
         borderRadius: 8,
         paddingHorizontal: 12,
         gap: 8,
+    },
+    contentWithoutSubtitle: {
+        height: 40,
+    },
+    contentWithSubtitle: {
+        height: 56, 
+        paddingVertical: 8,
     },
     iconCircle: {
         width: 19.5,
@@ -95,10 +110,21 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
+    textContainer: {
+        flex: 1,
+        justifyContent: "center",
+    },
     text: {
         color: "#FFFFFF",
         fontFamily: "Rubik",
         fontWeight: "800",
         fontSize: 14,
+    },
+    subtitle: {
+        color: "#FFFFFF",
+        fontFamily: "Rubik",
+        fontWeight: "600",
+        fontSize: 12, // Tamaño xs
+        marginTop: 2,
     },
 });

@@ -184,14 +184,14 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
 
           <View style={[
             styles.buttonContainer,
-            { marginBottom: keyboardHeight > 0 ? keyboardHeight + 40 : 20 }
+            { marginBottom: keyboardHeight > 0 ? keyboardHeight + 40 : 25 }
           ]}>
             <PrimaryButton
               title="Ingresar"
               onPress={handleSubmit}
               disabled={!isValid}
-              width={360}
-              height={50}
+              width={328}
+              height={43}
             />
           </View>
         </View>

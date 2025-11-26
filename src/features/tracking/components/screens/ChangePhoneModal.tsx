@@ -97,7 +97,13 @@ export function ChangePhoneModal({ visible, onClose, onConfirm, onAlert }: Chang
                             <TextInput
                                 value={phone}
                                 onChangeText={setPhone}
-                                style={styles.input}
+                                style={[
+                                    styles.input,
+                                    {
+                                        width: 350,      
+                                        height: 43,      
+                                    }
+                                ]}
                                 placeholder="Número de teléfono"
                                 keyboardType="number-pad"
                                 maxLength={10}
@@ -115,7 +121,8 @@ export function ChangePhoneModal({ visible, onClose, onConfirm, onAlert }: Chang
                                         onAlert();
                                     }, 300);
                                 }}
-
+                                width={350}
+                                height={43}
 
                                 disabled={!isValid}
                             />

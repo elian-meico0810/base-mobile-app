@@ -242,14 +242,14 @@ export default function RenderQRView({
                     onPress={handleSendWhatsApp}
                     disabled={disabled || !localQRData || isQRGenerating}
                     width={350}
-                    height={48}
+                    height={43}
                 />
                 <SecondaryButton
                     title="Cambiar tipo de QR"
                     onPress={handleChangeTypeWithClean} 
                     disabled={disabled || isQRGenerating}
                     width={350}
-                    height={48}
+                    height={43}
                 />
             </View>
         </>

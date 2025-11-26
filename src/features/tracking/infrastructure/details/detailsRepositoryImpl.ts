@@ -105,7 +105,7 @@ export const detailsRepositoryImpl: DetailsRepository = {
         statusCode: 200,
         data: {
           "linkPagoFisico": null,
-          "linkPagoVirtual": "https://portal.meico.com.co/pagos/#/facturas/registro-pagos/"
+          "linkPagoVirtual": "https://qa-portal.meico.co/pagos/#/facturas/registro-pagos/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJtaXNzaW9ucyI6WyIwMDE2Il0sImRvY3VtZW50byI6eyJudW1lcm8iOiIxNjAwNDkyNiIsImNvZGlnb0NsaWVudGUiOiIwMDAwMDAwNDA2NjIiLCJ0aXBvRG9jdW1lbnRvIjoiRmFjdHVyYSJ9LCJ0aXBvRG9jdW1lbnRvIjoiRmFjdHVyYSIsIm51bWVyb0RvY3VtZW50byI6IjE2MDA0OTI2IiwiY29kaWdvQ2xpZW50ZSI6IjAwMDAwMDA0MDY2MiIsImV4cCI6MTc2NDE3OTQxNywidGlwbyI6IlZJUlRVQUwiLCJwZXJtaXRpclZhbG9yTWF5b3IiOnRydWV9.jJrHHSrH9_XtRw_gztZxYzWwpfZGzWVVnVYuCbZFrV4"
         },
         message: "Operación exitosa",
         success: true

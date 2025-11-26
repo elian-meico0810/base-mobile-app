@@ -1,5 +1,6 @@
-import React from "react";
-import { Image, Text, TextInput, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, Image, Linking, Text, TextInput, TouchableOpacity, View } from "react-native";
+import QRCode from 'react-native-qrcode-svg';
 import { SvgXml } from "react-native-svg";
 import { PrimaryButton } from "../buttons/PrimaryButton";
 import { SecondaryButton } from "../buttons/SecondaryButton";
@@ -42,52 +43,95 @@ export default function RenderQRView({
     formatNumber,
     Row,
 }: Props) {
+    const [isQRGenerating, setIsQRGenerating] = useState(false);
+    const [localQRData, setLocalQRData] = useState<string | undefined>(qrData);
+
+    useEffect(() => {
+        // Sincronizar con el prop qrData cuando cambia
+        setLocalQRData(qrData);
+    }, [qrData]);
+
+    useEffect(() => {
+        // Activar loading cuando cambia localQRData o qrType
+        if (localQRData && qrType) {
+            setIsQRGenerating(true);
+            
+            const timer = setTimeout(() => {
+                setIsQRGenerating(false);
+            }, 800);
+            
+            return () => clearTimeout(timer);
+        } else {
+            setIsQRGenerating(false);
+        }
+    }, [localQRData, qrType]);
+
+    // Función para limpiar el QR cuando se presiona "Cambiar"
+    const handleChangeTypeWithClean = () => {
+        // Primero limpia el QR local
+        setLocalQRData(undefined);
+        setIsQRGenerating(true);
+        
+        // Luego ejecuta la función original después de un breve delay
+        setTimeout(() => {
+            handleChangeQRType();
+        }, 100);
+    };
 
     const getQRType = () => {
-        if (!qrData) return "empty";
+        if (!localQRData) return "empty";
+
+        if (qrType === "Pasarela de Pago" && localQRData.startsWith("http")) {
+            return "payment-link-to-qr";
+        }
 
         // Base64
-        const isBase64 = /^[A-Za-z0-9+/]+={0,2}$/.test(qrData);
+        const isBase64 = /^[A-Za-z0-9+/]+={0,2}$/.test(localQRData);
         if (isBase64) {
             try {
-                const decoded = decodeBase64(qrData);
+                const decoded = decodeBase64(localQRData);
                 if (decoded.includes("<svg")) return "svg-base64";
             } catch (_) { }
         }
 
         // Si es URL
-        if (qrData.startsWith("http")) {
-            if (qrData.match(/\.(png|jpg|jpeg|gif|webp)$/i)) {
+        if (localQRData.startsWith("http")) {
+            if (localQRData.match(/\.(png|jpg|jpeg|gif|webp)$/i)) {
                 return "image-url";
             }
-
             return "payment-link";
         }
 
-        if (qrData.startsWith("data:image/")) return "base64-image";
-        if (qrData.length > 100) return "base64-raw-image";
+        if (localQRData.startsWith("data:image/")) return "base64-image";
+        if (localQRData.length > 100) return "base64-raw-image";
 
         return "unknown";
     };
 
-
     const normalizeSvgSize = (svg: string) => {
-        // Si no tiene viewBox, lo agregamos
         if (!svg.includes("viewBox")) {
             svg = svg.replace("<svg", `<svg viewBox="0 0 1024 1024"`);
         }
 
-        // ELIMINAR width y height del SVG para evitar distorsión
         svg = svg.replace(/width="[^"]*"/g, "");
         svg = svg.replace(/height="[^"]*"/g, "");
 
         return svg;
     };
 
-
-
     const renderQRContent = () => {
         const type = getQRType();
+
+        if (isQRGenerating) {
+            return (
+                <View style={styles.qrPlaceholder}>
+                    <ActivityIndicator size="large" color="#0000ff" />
+                    <Text style={styles.qrPlaceholderText}>
+                        {type === "payment-link-to-qr" ? "Generando QR..." : "Cargando..."}
+                    </Text>
+                </View>
+            );
+        }
 
         switch (type) {
             case "empty":
@@ -97,11 +141,28 @@ export default function RenderQRView({
                     </View>
                 );
 
+            case "payment-link-to-qr":
+                return (
+                    <View style={styles.qrContainer}>
+                        <Text style={styles.qrDescription}>Escanea este QR para ir al portal de pago</Text>
+                        <QRCode
+                            value={localQRData}
+                            size={200}
+                            backgroundColor="white"
+                            color="black"
+                        />
+                        <TouchableOpacity
+                            style={styles.linkContainer}
+                            onPress={() => localQRData && Linking.openURL(localQRData)}
+                        >
+                            <Text style={styles.linkUrl}>Abrir link directamente</Text>
+                        </TouchableOpacity>
+                    </View>
+                );
+
             case "svg-base64": {
-                let svgDecoded = decodeBase64(qrData!);
-
+                let svgDecoded = decodeBase64(localQRData!);
                 const svgNormalized = normalizeSvgSize(svgDecoded);
-
                 return (
                     <View style={styles.svgContainer}>
                         <SvgXml xml={svgNormalized} width={200} height={300} />
@@ -110,15 +171,25 @@ export default function RenderQRView({
             }
 
             case "image-url":
-                return <Image source={{ uri: qrData }} style={styles.qrImage} resizeMode="contain" />;
+                return <Image source={{ uri: localQRData }} style={styles.qrImage} resizeMode="contain" />;
+
+            case "payment-link":
+                return (
+                    <View style={styles.linkContainer}>
+                        <Text style={styles.linkText}>Link de pago:</Text>
+                        <TouchableOpacity onPress={() => localQRData && Linking.openURL(localQRData)}>
+                            <Text style={styles.linkUrl}>{localQRData}</Text>
+                        </TouchableOpacity>
+                    </View>
+                );
 
             case "base64-image":
-                return <Image source={{ uri: qrData }} style={styles.qrImage} resizeMode="contain" />;
+                return <Image source={{ uri: localQRData }} style={styles.qrImage} resizeMode="contain" />;
 
             case "base64-raw-image":
                 return (
                     <Image
-                        source={{ uri: `data:image/png;base64,${qrData}` }}
+                        source={{ uri: `data:image/png;base64,${localQRData}` }}
                         style={styles.qrImage}
                         resizeMode="contain"
                     />
@@ -129,12 +200,13 @@ export default function RenderQRView({
                     <View style={styles.qrPlaceholder}>
                         <Text style={styles.qrPlaceholderText}>Formato QR no soportado</Text>
                         <Text style={styles.qrDescription}>
-                            Longitud: {qrData?.length}
+                            Longitud: {localQRData?.length}
                         </Text>
                     </View>
                 );
         }
     };
+
     return (
         <>
             <Text style={styles.title}>QR de pago</Text>
@@ -169,14 +241,14 @@ export default function RenderQRView({
                 <PrimaryButton
                     title="Enviar por Whatsapp"
                     onPress={handleSendWhatsApp}
-                    disabled={disabled || !qrData}
+                    disabled={disabled || !localQRData || isQRGenerating}
                     width={350}
                     height={48}
                 />
                 <SecondaryButton
                     title="Cambiar tipo de QR"
-                    onPress={handleChangeQRType}
-                    disabled={disabled}
+                    onPress={handleChangeTypeWithClean} 
+                    disabled={disabled || isQRGenerating}
                     width={350}
                     height={48}
                 />

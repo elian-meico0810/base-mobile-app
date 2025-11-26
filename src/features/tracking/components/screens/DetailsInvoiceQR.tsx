@@ -59,7 +59,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                     documento: {
                         numero: String(dataInvoice?.numeroFactura),
                         codigoCliente: String(dataInvoice?.numeroFactura),
-                        tipoDocumento: "TD_FACTURA",
+                        tipoDocumento: "Factura",
                     },
                     linkFisico: false,
                     linkVirtual: true,
@@ -93,7 +93,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
             const response = await detailsRepositoryImpl.generateQR(
                 {
                     numdoc: String(dataInvoice?.numeroFactura),
-                    tipodoc: 'TD_FACTURA',
+                    tipodoc: 'Factura',
                     cus_no: String(dataInvoice?.numeroFactura),
                 },
                 ENV_DEV.KEY_APP

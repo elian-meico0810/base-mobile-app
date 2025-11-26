@@ -1,7 +1,9 @@
+import { PaymentPendingAlert } from '@/components/alerts/PaymentPendingAlert';
 import { TopSuccessAlert } from '@/components/alerts/TopSuccessAlert';
 import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
+import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { ThemedView } from '@/components/themed-view';
 import { TypeQr } from '@/src/constants/GuideStates';
@@ -11,11 +13,12 @@ import { DetailsInvoiceQR } from '@/src/features/tracking/components/screens/Det
 import { InfoPayments } from '@/src/features/tracking/components/screens/InfoPayments';
 import { ViewQrModal } from '@/src/features/tracking/components/screens/ViewQrModal';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { cleanSpaces } from '@/src/utils/uitls';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useState } from "react";
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -23,9 +26,10 @@ interface InfoInvoiceFormProps {
     initialGuide?: GuideDetails;
     token?: string;
     onSubmit: (params: { guide: GuideDetails; token: string }) => void | Promise<void>;
+    numberGuide?: number
 }
 
-export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvoiceFormProps) {
+export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuide }: InfoInvoiceFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(false);
@@ -37,9 +41,11 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [showChangePhone, setShowChangePhone] = useState(false);
     const [modalgenerateQR, setModalgenerateQR] = useState(false);
-    const [sendWhatsApp, SetSendWhatsApp] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [showSuccessQRp, setShowSuccessQRP] = useState(false);
+    const [showPaymentPending, setShowPaymentPending] = useState(false);
+    const [data, setData] = useState<null>(null);
+    const [refreshing, setRefreshing] = useState(false);
     const [qrBase64, setQrBase64] = useState<string>('');
     const [qrType, setQrType] = useState<string>('');
     const [phone, setPhone] = useState("");
@@ -58,27 +64,14 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
         if (type) setQrType(type);
     };
 
-
     const handlSendWhatsApp = async () => {
         try {
             if (qrType == TypeQr.PASARELA) {
                 setShowSuccessQRP(true);
                 setModalgenerateQR(false);
-                // setModalVisible(true);
-
-                // const response = await detailsRepositoryImpl.reportWhatsApp(
-                //     {
-                //         whatsapp: String(phone),
-                //         nombre_cliente: String(guide?.nombreCliente),
-                //         link_pago: String(qrBase64),
-                //     },
-                //     ENV_DEV.KEY_APP
-                // );
-                // if (response?.statusCode != 200) {
-                //     setModalTitle("Alerta !!");
-                //     setModalMessage(response?.message ?? "Ocurrio un error inesperado.");
-                //     setModalVisible(true);
-                // }
+                setTimeout(() => {
+                    setShowPaymentPending(true);
+                }, 3000);
             }
         } catch (error: any) {
             setModalTitle("Error !!");
@@ -88,12 +81,11 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
             setLoading(false);
         }
     }
-    const handleSubmit = async () => {
 
+    const handleSubmit = async () => {
         try {
             console.log("entro ala funcion")
             setRouteStarted(true);
-
         } catch (error: any) {
             throw error;
         } finally {
@@ -102,7 +94,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
     };
 
     const submitData = async () => {
-
         try {
             console.log("entro ala funcion")
         } catch (error: any) {
@@ -120,7 +111,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
                 setModalTitle("Alerta !!");
                 setModalMessage("Debe indicar que ya llegó al lugar de la dirección para poder ejecutar esta acción.");
                 setModalVisible(true);
-
             }
         } catch (error: any) {
             throw error;
@@ -128,6 +118,41 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
             setLoading(false);
         }
     };
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+
+        try {
+            setTimeout(async () => {
+
+                //  Ejecutar la petición cuando termine el timeout
+                const response = await detailsRepositoryImpl.listGuide(
+                    Number(numberGuide),
+                    token
+                );
+                if (response?.statusCode === 200 && response?.data && Array.isArray(response.data)) {
+                    const clienteFiltrado = response.data.filter(item =>
+                        item.codigoCliente === guide?.codigoCliente
+                    );
+                    if (clienteFiltrado.length > 0) {
+                        const clienteEncontrado = clienteFiltrado[0];
+
+                        setGuide(prevGuide => ({
+                            ...prevGuide,
+                            ...clienteEncontrado
+                        }));
+                    }
+                }
+                setRefreshing(false);
+            }, 2000);
+        } catch (error) {
+            setRefreshing(false);
+        }
+    };
+
+
+    const newValue = Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.valorTotal)
+
     return (
         <ThemedView style={styles.container}>
             <NetworkStatus />
@@ -143,103 +168,128 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
                 <Text style={styles.headerTitle}>Entrega de pedido</Text>
                 <View style={styles.placeholder} />
             </View>
+            {refreshing && <LoadingSunburst />}
 
-            {/* Card blanco centrado */}
-            <View style={styles.card}>
-                {/* Encabezado */}
-                <View style={styles.cardHeader}>
-                    <View
-                        style={[
-                            styles.statusContainer,
-                            guide?.estado !== 'Pendiente' && { backgroundColor: '#DFF5E1' },
-                        ]}
-                    >
-                        <Text
-                            style={[
-                                styles.status,
-                                guide?.estado !== 'Pendiente' && { color: '#1F9144' },
-                            ]}
-                        >
-                            {guide?.estado ?? 'Pendiente'}
-                        </Text>
-                    </View>
-                </View>
-
-                {/* Información del minimercado */}
-                <View style={styles.merchantInfo}>
-                    <Text style={styles.merchantName}>{guide?.nombreCliente ?? ''}</Text>
-                    <Text style={styles.documentNumber}>{guide?.codigoCliente ?? '0'}</Text>
-                    <Text style={styles.address}>{cleanSpaces(guide?.direccion)}, {cleanSpaces(guide?.poblacion)}</Text>
-                </View>
-
-                {/* Línea divisoria */}
-                <View style={styles.orderInfo}>
-
-                    <View style={styles.divider} />
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Método de pago</Text>
-                        <Text style={styles.value}>Contra-Entrega</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>N° de factura</Text>
-                        <Text style={styles.value}>{guide?.facturas[0]?.numeroFactura ?? '0'}</Text>
-                    </View>
-                    <View style={styles.divider} />
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Subtotal</Text>
-                        <Text style={styles.value}>{'$ ' + (Number(guide?.facturas[0]?.valorTotal) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Descuento financiero</Text>
-                        <Text style={[styles.value, { color: '#1F9144' }]}>
-                            {'$ - ' + Number(guide?.facturas[0]?.dfr).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
-                        </Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.labelTotal}>Total</Text>
-                        <Text style={[styles.value, { color: '#141D32', fontWeight: '800' }]}>
-                            {'$ ' + Number(guide?.facturas[0]?.valorRecaudar).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
-                        </Text>
-                    </View>
-
-                    <View style={styles.dividerTwo} />
-
-                    {/* Información del pedido */}
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Valor recaudado</Text>
-                        <Text style={styles.value}>{'$ ' + Number(guide?.facturas[0]?.valorTotal).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
-                    </View>
-
-                    <View style={styles.row}>
-                        <Text style={styles.labelTotal}>Valor a recaudar</Text>
-                        <Text style={[styles.value, { color: '#C62828', fontWeight: '800' }]}>
-                            {'$ ' + (Number(guide?.facturas[0]?.valorRecaudar) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
-                        </Text>
-                    </View>
-                    <TouchableOpacity style={styles.qrButton} onPress={() => { validateButton(), setShowDetailInvoiceQR(true) }}>
-                        <View style={styles.qrButtonContent}>
-                            <Image
-                                source={require('@/assets/icons/GenerateQR.png')}
-                                style={styles.qrButtonIcon}
-                            />
-                            <Text style={styles.qrButtonText}>Generar QR de pago</Text>
-                        </View>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.qrButtonDetail} onPress={() => { validateButton(), setShowPayment(true) }}>
-                        <Text style={styles.qrButtonText}>Detalle de pagos</Text>
-                    </TouchableOpacity>
-
-                </View>
-            </View>
-            <View style={styles.headerContainerTwo}>
-                <Text style={styles.headerTitleTWO}>Estado de entrega</Text>
-            </View>
-            <View style={{ height: 200 }}>
-                <DeliveryStatus
-                    onStatusChange={(status) => console.log('Estado seleccionado:', status)}
+            {/* Alert de pago pendiente */}
+            <View style={styles.paymentAlertContainer}>
+                <PaymentPendingAlert
+                    visible={true}
+                    title="Pago pendiente"
+                    subtitle="Después de realizar el pago, desliza hacia abajo para actualizar el estado."
+                    duration={30000000}
+                    onHide={() => setShowPaymentPending(false)}
                 />
             </View>
- 
+
+            <ScrollView
+                style={styles.scrollView}
+                contentContainerStyle={styles.scrollContent}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={false}
+                        onRefresh={onRefresh}
+                    />
+                }
+                showsVerticalScrollIndicator={false}
+            >
+
+                {/* Card blanco centrado */}
+                <View style={styles.card}>
+                    {/* Encabezado */}
+                    <View style={styles.cardHeader}>
+                        <View
+                            style={[
+                                styles.statusContainer,
+                                guide?.estado !== 'Pendiente' && { backgroundColor: '#DFF5E1' },
+                            ]}
+                        >
+                            <Text
+                                style={[
+                                    styles.status,
+                                    guide?.estado !== 'Pendiente' && { color: '#1F9144' },
+                                ]}
+                            >
+                                {guide?.estado ?? 'Pendiente'}
+                            </Text>
+                        </View>
+                    </View>
+
+                    {/* Información del minimercado */}
+                    <View style={styles.merchantInfo}>
+                        <Text style={styles.merchantName}>{guide?.nombreCliente ?? ''}</Text>
+                        <Text style={styles.documentNumber}>{guide?.codigoCliente ?? '0'}</Text>
+                        <Text style={styles.address}>{cleanSpaces(guide?.direccion)}, {cleanSpaces(guide?.poblacion)}</Text>
+                    </View>
+
+                    {/* Línea divisoria */}
+                    <View style={styles.orderInfo}>
+                        <View style={styles.divider} />
+                        <View style={styles.row}>
+                            <Text style={styles.label}>Método de pago</Text>
+                            <Text style={styles.value}>Contra-Entrega</Text>
+                        </View>
+                        <View style={styles.row}>
+                            <Text style={styles.label}>N° de factura</Text>
+                            <Text style={styles.value}>{guide?.facturas[0]?.numeroFactura ?? '0'}</Text>
+                        </View>
+                        <View style={styles.divider} />
+                        <View style={styles.row}>
+                            <Text style={styles.label}>Subtotal</Text>
+                            <Text style={styles.value}>{'$ ' + (Number(guide?.facturas[0]?.valorTotal) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
+                        </View>
+                        <View style={styles.row}>
+                            <Text style={styles.label}>Descuento financiero</Text>
+                            <Text style={[styles.value, { color: '#1F9144' }]}>
+                                {'$ - ' + Number(guide?.facturas[0]?.dfr).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                            </Text>
+                        </View>
+                        <View style={styles.row}>
+                            <Text style={styles.labelTotal}>Total</Text>
+                            <Text style={[styles.value, { color: '#141D32', fontWeight: '800' }]}>
+                                {'$ ' + Number(guide?.facturas[0]?.valorTotal).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                            </Text>
+                        </View>
+
+                        <View style={styles.dividerTwo} />
+
+                        {/* Información del pedido */}
+                        <View style={styles.row}>
+                            <Text style={styles.label}>Valor recaudado</Text>
+                            <Text style={styles.value}>{'$ ' + Number(guide?.facturas[0]?.valorTotal).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
+                        </View>
+
+                        <View style={styles.row}>
+                            <Text style={styles.labelTotal}>Valor a recaudar</Text>
+                            <Text style={[styles.value, { color: '#C62828', fontWeight: '800', fontSize: 16 }]}>
+                                {'$ ' + (Number(newValue) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                            </Text>
+                        </View>
+                        <TouchableOpacity style={styles.qrButton} onPress={() => { validateButton(), setShowDetailInvoiceQR(true) }}>
+                            <View style={styles.qrButtonContent}>
+                                <Image
+                                    source={require('@/assets/icons/GenerateQR.png')}
+                                    style={styles.qrButtonIcon}
+                                />
+                                <Text style={styles.qrButtonText}>Generar QR de pago</Text>
+                            </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.qrButtonDetail} onPress={() => { validateButton(), setShowPayment(true) }}>
+                            <Text style={styles.qrButtonText}>Detalle de pagos</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                <View style={styles.headerContainerTwo}>
+                    <Text style={styles.headerTitleTWO}>Estado de entrega</Text>
+                </View>
+
+                <View style={{ height: 200 }}>
+                    <DeliveryStatus
+                        onStatusChange={(status) => console.log('Estado seleccionado:', status)}
+                    />
+                </View>
+            </ScrollView>
+
             <View style={[styles.footer, { marginBottom: 10 }]}>
                 <PrimaryButtonDetails
                     key={routeStarted ? "cerrar" : "llegue"}
@@ -253,8 +303,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
                     titleColor={routeStarted ? "#FFFFFF" : undefined}
                     circleColor={routeStarted ? "#788095" : undefined}
                 />
-
             </View>
+
             <ExceptionModal
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
@@ -262,6 +312,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
                 message={modalMessage}
                 buttonLabel={modalButtonLabel}
             />
+
             {(showPayment && routeStarted) && (
                 <InfoPayments
                     title="Detalle de pagos"
@@ -270,8 +321,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
                     onClose={() => setShowPayment(false)}
                     width={width}
                 />
-
             )}
+
             {(showDetailInvoiceQR && routeStarted) && (
                 <DetailsInvoiceQR
                     data={guide}
@@ -283,17 +334,13 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
                     width={width}
                     phone={phone}
                     onGenerateQR={handleGenerateQR}
-
-
                 />
             )}
 
             {modalgenerateQR && (
                 <ViewQrModal
                     data={guide}
-                    onClose={() =>
-                        setModalgenerateQR(false)
-                    }
+                    onClose={() => setModalgenerateQR(false)}
                     onChangePhone={() => {
                         setShowDetailInvoiceQR(false);
                         setShowPayment(false);
@@ -308,7 +355,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
                         setModalgenerateQR(false);
                     }}
                     onSendWhatsApp={handlSendWhatsApp}
-
                 />
             )}
 
@@ -345,7 +391,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
             )}
 
             {loading && <LoadingBlue />}
-
         </ThemedView>
     );
 }
@@ -370,7 +415,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 16,
         paddingTop: 35,
-        paddingBottom: 20,
+        paddingBottom: 5,
         backgroundColor: '#F9F9FA',
     },
     backButton: {
@@ -392,6 +437,11 @@ const styles = StyleSheet.create({
     },
     placeholder: {
         width: 40,
+    },
+    paymentAlertContainer: {
+        width: '100%',
+        paddingHorizontal: 16,
+        marginBottom: 10,
     },
     card: {
         width: 360,
@@ -425,7 +475,6 @@ const styles = StyleSheet.create({
     documentNumber: {
         fontFamily: 'Rubik',
         fontWeight: '600',
-        fontStyle: 'normal',
         fontSize: 12,
         lineHeight: 16,
         color: '#141D32',
@@ -434,7 +483,6 @@ const styles = StyleSheet.create({
     address: {
         fontFamily: 'Rubik',
         fontWeight: '600',
-        fontStyle: 'normal',
         fontSize: 12,
         lineHeight: 16,
         color: '#141D32',
@@ -459,12 +507,10 @@ const styles = StyleSheet.create({
     row: {
         flexDirection: 'row',
         alignItems: 'center',
-
     },
     label: {
         fontFamily: 'Rubik',
         fontWeight: '400',
-        fontStyle: 'normal',
         fontSize: 12,
         color: '#141D32',
         flex: 1,
@@ -472,7 +518,6 @@ const styles = StyleSheet.create({
     value: {
         fontFamily: 'Rubik',
         fontWeight: '600',
-        fontStyle: 'normal',
         fontSize: 12,
         color: '#141D32',
         textAlign: 'right',
@@ -480,7 +525,6 @@ const styles = StyleSheet.create({
     labelTotal: {
         fontFamily: 'Rubik',
         fontWeight: '800',
-        fontStyle: 'normal',
         fontSize: 12,
         color: '#141D32',
         flex: 1,
@@ -488,7 +532,6 @@ const styles = StyleSheet.create({
     status: {
         fontFamily: 'Rubik',
         fontWeight: '400',
-        fontStyle: 'normal',
         fontSize: 12,
         color: '#4F74C4',
     },
@@ -555,24 +598,14 @@ const styles = StyleSheet.create({
         width: 16,
         height: 16,
     },
-    bottomSheet: {
-        width: "100%",
-        height: 237,
-        backgroundColor: "#E8EEF9",
-        borderTopLeftRadius: 16,
-        borderTopRightRadius: 16,
-        padding: 16,
+    scrollView: {
+        flex: 1,
+        width: '100%',
+        marginTop: 100,
     },
-    closeButton: {
-        position: "absolute",
-        top: 10,
-        right: 16,
-        padding: 8,
-        backgroundColor: "#0E2B68",
-        borderRadius: 8,
-    },
-    closeText: {
-        color: "#fff",
-        fontWeight: "bold",
+    scrollContent: {
+        alignItems: 'center',
+        paddingBottom: 100,
     },
 });
+

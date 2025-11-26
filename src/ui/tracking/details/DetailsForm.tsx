@@ -187,6 +187,8 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                                             guide={item}
                                             onPress={() => console.log('Ir a dirección')}
                                             routeStarted={routeStarted}
+                                            numberGuide={String(guide)}
+                                            token={token}
                                         />
                                     ))
                                 )

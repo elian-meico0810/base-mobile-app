@@ -6,6 +6,7 @@ export default function IndexInvoiceScreen() {
     const params = useLocalSearchParams();
     const token = params.token as string;
     const guideParam = params.guide as string;
+    const numberGuide = params.numberGuide as string;
     const guideObj: GuideDetails = guideParam ? JSON.parse(guideParam) : {} as GuideDetails;
     return (
         <>
@@ -19,6 +20,7 @@ export default function IndexInvoiceScreen() {
                 initialGuide={guideObj}
                 token={token || ""}
                 onSubmit={async ({ guide, token }) => { }}
+                numberGuide={Number(numberGuide)}
             />
         </>
     );

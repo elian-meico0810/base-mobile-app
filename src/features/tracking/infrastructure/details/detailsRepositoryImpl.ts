@@ -1,6 +1,6 @@
 import { API_ROUTES } from "@/src/constants/apiRoutes";
-import { authApi } from "@/src/features/auth/infrastructure/authApi";
-import { GenerateQRPorps, PaymentGatewayProps, RuteInitPorps } from "../../domain/details/DetailsGuide";
+import { authApi, authDevApi } from "@/src/features/auth/infrastructure/authApi";
+import { GenerateQRPorps, PaymentGatewayProps, ReportWhatsAppQRPorps, RuteInitPorps } from "../../domain/details/DetailsGuide";
 import { DetailsRepository } from "../../domain/details/DetailsRepository";
 
 export const detailsRepositoryImpl: DetailsRepository = {
@@ -94,7 +94,7 @@ export const detailsRepositoryImpl: DetailsRepository = {
 
   async sendPaymentGetway(data: PaymentGatewayProps, key: string) {
     try {
-      
+
       // const response = await authDevApi.post(API_ROUTES.SEND_PAYMENT_GATEWAY, data, {
       //   headers: {
       //     "api-key": key,
@@ -133,6 +133,20 @@ export const detailsRepositoryImpl: DetailsRepository = {
         message: "Operación exitosa",
         success: true
       }
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async reportWhatsApp(data: ReportWhatsAppQRPorps, key: string) {
+    try {
+      const response = await authDevApi.post(API_ROUTES.REPORT_NOTIFICTION_WHATSAPP, data, {
+        headers: {
+          "api-key": key,
+          "Content-Type": "application/json",
+        },
+      });
+      return response;
     } catch (error) {
       throw error;
     }

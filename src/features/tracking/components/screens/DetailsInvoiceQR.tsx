@@ -3,6 +3,7 @@ import { ExceptionModal } from "@/components/generals/ExecptionModal";
 import { LoadingBlue } from "@/components/generals/LoadingBlue";
 import { Row } from "@/components/generals/Row";
 import { ENV_DEV } from "@/src/constants/apiRoutes";
+import { TypeQr } from "@/src/constants/GuideStates";
 import { formatNumber } from "@/src/utils/uitls";
 import React, { useState } from "react";
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
@@ -52,7 +53,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
 
             setLoading(true);
             if (onGenerateQR) {
-                onGenerateQR('Pasarela de Pago');
+                onGenerateQR(TypeQr.PASARELA );
             }
             const response = await detailsRepositoryImpl.sendPaymentGetway(
                 {
@@ -67,7 +68,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                 ENV_DEV.KEY_APP
             );
             setLoading(false);
-            onGenerateQR?.('Pasarela de Pago', response?.data?.linkPagoVirtual);
+            onGenerateQR?.(TypeQr.PASARELA , response?.data?.linkPagoVirtual);
         } catch (error: any) {
             throw error;
         } finally {
@@ -88,7 +89,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
 
             setLoading(true);
             if (onGenerateQR) {
-                onGenerateQR('Aplicación Bancaria');
+                onGenerateQR(TypeQr.BANCARIA);
             }
             const response = await detailsRepositoryImpl.generateQR(
                 {
@@ -99,7 +100,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                 ENV_DEV.KEY_APP
             );
             setLoading(false);
-            onGenerateQR?.('Aplicación Bancaria', response?.data?.qr);
+            onGenerateQR?.(TypeQr.BANCARIA, response?.data?.qr);
         } catch (error: any) {
             throw error;
         } finally {

@@ -4,6 +4,7 @@ import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { ThemedView } from '@/components/themed-view';
+import { TypeQr } from '@/src/constants/GuideStates';
 import { DeliveryStatus } from '@/src/features/tracking/components/checkbox/DeliveryStatus';
 import { ChangePhoneModal } from '@/src/features/tracking/components/screens/ChangePhoneModal';
 import { DetailsInvoiceQR } from '@/src/features/tracking/components/screens/DetailsInvoiceQR';
@@ -35,7 +36,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
     const [modalMessage, setModalMessage] = useState("");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [showChangePhone, setShowChangePhone] = useState(false);
-    const [ModalgenerateQR, setModalgenerateQR] = useState(false);
+    const [modalgenerateQR, setModalgenerateQR] = useState(false);
+    const [sendWhatsApp, SetSendWhatsApp] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [qrBase64, setQrBase64] = useState<string>('');
     const [qrType, setQrType] = useState<string>('');
@@ -46,14 +48,43 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
     const handleGoBack = () => {
         router.back();
     };
+
     const handleGenerateQR = (type: string, qr?: string) => {
         setModalgenerateQR(true);
         setShowDetailInvoiceQR(false);
         setShowPayment(false);
-        if (qr) setQrBase64(qr);  
+        if (qr) setQrBase64(qr);
         if (type) setQrType(type);
     };
 
+
+    const handlSendWhatsApp = async () => {
+        try {
+            if (qrType == TypeQr.PASARELA) {
+                // setModalVisible(true);
+
+                // const response = await detailsRepositoryImpl.reportWhatsApp(
+                //     {
+                //         whatsapp: String(phone),
+                //         nombre_cliente: String(guide?.nombreCliente),
+                //         link_pago: String(qrBase64),
+                //     },
+                //     ENV_DEV.KEY_APP
+                // );
+                // if (response?.statusCode != 200) {
+                //     setModalTitle("Alerta !!");
+                //     setModalMessage(response?.message ?? "Ocurrio un error inesperado.");
+                //     setModalVisible(true);
+                // }
+            }
+        } catch (error: any) {
+            setModalTitle("Error !!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    }
     const handleSubmit = async () => {
 
         try {
@@ -254,7 +285,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
                 />
             )}
 
-            {ModalgenerateQR && (
+            {modalgenerateQR && (
                 <ViewQrModal
                     data={guide}
                     onClose={() =>
@@ -273,6 +304,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
                         setShowDetailInvoiceQR(true);
                         setModalgenerateQR(false);
                     }}
+                    onSendWhatsApp={handlSendWhatsApp}
 
                 />
             )}

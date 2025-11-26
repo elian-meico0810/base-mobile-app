@@ -11,3 +11,9 @@ export enum GuideState {
 export const validStates: string[] = [
     GuideState.Pendiente
 ];
+
+
+export enum TypeQr {
+    PASARELA = "Pasarela de Pago",
+    BANCARIA = "Aplicación Bancaria"
+}

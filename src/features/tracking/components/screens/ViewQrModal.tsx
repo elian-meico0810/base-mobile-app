@@ -59,16 +59,20 @@ export function ViewQrModal({
     };
 
     const handleSendWhatsApp = () => {
-        if (!phone || !/^\d{10}$/.test(phone)) {
-            setModalTitle("Alerta !!");
-            setModalMessage("Debe ingresar un número de teléfono válido de 10 dígitos.");
-            setModalVisible(true);
-            return;
+        try {
+            if (!phone || !/^\d{10}$/.test(phone)) {
+                setModalTitle("Alerta !!");
+                setModalMessage("Debe ingresar un número de teléfono válido de 10 dígitos.");
+                setModalVisible(true);
+                return;
+            }
+            if (onSendWhatsApp && typeof onSendWhatsApp === 'function') {
+                onSendWhatsApp();
+            }
+        } catch (error) {
+            throw error;
         }
 
-        if (onSendWhatsApp) {
-            onSendWhatsApp();
-        }
     };
 
     const handleChangeQRType = () => {

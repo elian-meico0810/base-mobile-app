@@ -34,9 +34,14 @@ export interface PaymentGatewayProps {
   linkVirtual: boolean;
 }
 
-
 export interface GenerateQRPorps {
   numdoc: string,
   tipodoc: string,
   cus_no: string,
+}
+
+export interface ReportWhatsAppQRPorps {
+  whatsapp: string,
+  nombre_cliente: string,
+  link_pago: string,
 }

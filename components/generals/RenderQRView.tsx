@@ -1,3 +1,4 @@
+import { TypeQr } from "@/src/constants/GuideStates";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Image, Linking, Text, TextInput, TouchableOpacity, View } from "react-native";
 import QRCode from 'react-native-qrcode-svg';
@@ -47,12 +48,10 @@ export default function RenderQRView({
     const [localQRData, setLocalQRData] = useState<string | undefined>(qrData);
 
     useEffect(() => {
-        // Sincronizar con el prop qrData cuando cambia
         setLocalQRData(qrData);
     }, [qrData]);
 
     useEffect(() => {
-        // Activar loading cuando cambia localQRData o qrType
         if (localQRData && qrType) {
             setIsQRGenerating(true);
             
@@ -81,7 +80,7 @@ export default function RenderQRView({
     const getQRType = () => {
         if (!localQRData) return "empty";
 
-        if (qrType === "Pasarela de Pago" && localQRData.startsWith("http")) {
+        if (qrType === TypeQr.PASARELA && localQRData.startsWith("http")) {
             return "payment-link-to-qr";
         }
 

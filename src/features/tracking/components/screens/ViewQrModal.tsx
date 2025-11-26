@@ -15,8 +15,8 @@ interface ViewQrModalQRProps {
     width?: number;
     height?: number;
     phone?: string;
-    qrData?: string; // Base64 o URL del QR
-    qrType?: string; // Tipo de QR: 'Pasarela de Pago' o 'Aplicación Bancaria'
+    qrData?: string;
+    qrType?: string;
     onSendWhatsApp?: () => void;
     onChangeQRType?: () => void;
 }
@@ -56,18 +56,15 @@ export function ViewQrModal({
     const handleSendWhatsApp = () => {
         if (onSendWhatsApp) {
             onSendWhatsApp();
-        } else {
-            console.log("Enviar QR por WhatsApp");
         }
     };
 
     const handleChangeQRType = () => {
         if (onChangeQRType) {
             onChangeQRType();
-        } else {
-            setCurrentView('main');
         }
     };
+
 
     return (
         <View style={styles.overlay}>
@@ -125,7 +122,6 @@ const styles = StyleSheet.create({
     backgroundOverlay: {
         ...StyleSheet.absoluteFillObject,
         backgroundColor: "rgba(0,0,0,0.5)",
-        zIndex: 1,
     },
     container: {
         height: 750,
@@ -225,7 +221,6 @@ const styles = StyleSheet.create({
         color: "#141D32",
         marginTop: 20,
     },
-    // Estilos para la vista QR
     qrContainer: {
         backgroundColor: "#FFFFFF",
         borderRadius: 12,
@@ -233,7 +228,7 @@ const styles = StyleSheet.create({
         marginTop: 20,
         alignItems: "center",
         justifyContent: "center",
-        minHeight: 200,
+        height: 220,
     },
     qrTypeText: {
         fontFamily: "Rubik",
@@ -243,10 +238,11 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     qrImage: {
-        width: 200,
-        height: 200,
-        borderRadius: 8,
+        width: 180,
+        height: 180,
+        alignSelf: "center",
     },
+
     qrPlaceholder: {
         alignItems: "center",
         justifyContent: "center",

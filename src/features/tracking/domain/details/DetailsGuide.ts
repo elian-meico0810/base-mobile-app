@@ -24,11 +24,16 @@ export interface RuteInitPorps {
   fechaHoraDispositivo: string
 }
 
-export interface PaymentGetwayPorps {
-  documento: string,
-  linkFisico: string,
-  linkVirtual: string,
+export interface PaymentGatewayProps {
+  documento: {
+    numero: string;
+    codigoCliente: string;
+    tipoDocumento: string;
+  };
+  linkFisico: boolean;
+  linkVirtual: boolean;
 }
+
 
 export interface GenerateQRPorps {
   numdoc: string,

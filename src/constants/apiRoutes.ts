@@ -5,5 +5,10 @@ export const API_ROUTES = {
   SEND_ROUTE_INIT:"rutas/inicio/",
   // Back contado anticipado
   SEND_PAYMENT_GATEWAY: "pagos/generar-link-pasarela/",
-  GENERATE_QR: "/pagos/generar_qr_bancolombia/"
+  GENERATE_QR: "pagos/generar_qr_bancolombia/"
 };
+
+
+export const ENV_DEV = {
+  KEY_APP: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX25hbWUiOiJhcGltZWljb3RyYWNrQG1laWNvLmNvbS5jbyIsImVtYWlsIjoiYXBpbWVpY290cmFja0BtZWljby5jb20uY28iLCJkaXNwbGF5X25hbWUiOiJBUEkgIiwiZXhwIjo4ODE1NjA2MTM5NCwicGVybWlzc2lvbnMiOlsiQUxMIl0sImNsaWVudF9pZCI6Im1laWNvX3RyYWNrIn0.CfrDOgJNIyJww6XPOxU1U86F_8r5GYEHSR3TRrqp_aU"
+}

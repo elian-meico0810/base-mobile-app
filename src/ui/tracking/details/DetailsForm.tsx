@@ -112,9 +112,6 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                 setLoading(false);
 
             } else {
-                setModalTitle("Error !!");
-                setModalMessage(response?.data?.message ?? "Ocurrio un error inesperado.");
-                setModalVisible(true);
             }
 
         } catch (error: any) {

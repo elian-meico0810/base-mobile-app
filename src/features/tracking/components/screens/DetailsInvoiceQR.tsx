@@ -1,9 +1,11 @@
 import { SecondaryButton } from "@/components/buttons/SecondaryButton";
 import { LoadingBlue } from "@/components/generals/LoadingBlue";
 import { Row } from "@/components/generals/Row";
+import { ENV_DEV } from "@/src/constants/apiRoutes";
 import { formatNumber } from "@/src/utils/uitls";
 import React, { useState } from "react";
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { detailsRepositoryImpl } from "../../infrastructure/details/detailsRepositoryImpl";
 
 interface DetailsInvoiceQRProps {
     data?: {
@@ -15,8 +17,7 @@ interface DetailsInvoiceQRProps {
     width?: number;
     height?: number;
     phone?: string;
-    onGenerateQR?: (qrType: string) => void; // Nueva prop callback
-
+    onGenerateQR?: (qrType: string, qrBase64?: string) => void;
 }
 
 interface Invoice {
@@ -38,19 +39,24 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
 
     const paymentGateway = async () => {
         try {
-            // setLoading(true);
+            setLoading(true);
             if (onGenerateQR) {
                 onGenerateQR('Pasarela de Pago');
             }
-
-            // const response = await detailsRepositoryImpl.sendPaymentGetway(
-            //     {
-            //         documento: '001',
-            //         linkFisico: 'true',
-            //         linkVirtual: 'true',
-            //     },
-            //     'token'
-            // );
+            const response = await detailsRepositoryImpl.sendPaymentGetway(
+                {
+                    documento: {
+                        numero: "16004926",
+                        codigoCliente: "000000040662",
+                        tipoDocumento: "TD_FACTURA",
+                    },
+                    linkFisico: false,
+                    linkVirtual: true,
+                },
+                ENV_DEV.KEY_APP
+            );
+            setLoading(false);
+            onGenerateQR?.('Pasarela de Pago', response?.data?.linkPagoVirtual);
         } catch (error: any) {
             throw error;
         } finally {
@@ -61,25 +67,28 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
 
     const generateQR = async () => {
         try {
-            // setLoading(true);
+            setLoading(true);
             if (onGenerateQR) {
                 onGenerateQR('Aplicación Bancaria');
             }
-            // const response = await detailsRepositoryImpl.generateQR(
-            //     {
-            //         numdoc: '001',
-            //         tipodoc: 'true',
-            //         cus_no: 'true',
-            //     },
-            //     'token'
-            // );
+            const response = await detailsRepositoryImpl.generateQR(
+                {
+                    numdoc: '41096142',
+                    tipodoc: 'TD_FACTURA',
+                    cus_no: '000000180065',
+                },
+                ENV_DEV.KEY_APP
+            );
+            setLoading(false);
+            onGenerateQR?.('Aplicación Bancaria', response?.data?.qr);
         } catch (error: any) {
             throw error;
         } finally {
             setLoading(false);
-
         }
     };
+
+
     return (
         <View style={styles.overlay} pointerEvents="box-none">
 

@@ -35,20 +35,21 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [showChangePhone, setShowChangePhone] = useState(false);
     const [ModalgenerateQR, setModalgenerateQR] = useState(false);
+    const [qrBase64, setQrBase64] = useState<string>('');
+    const [qrType, setQrType] = useState<string>('');
     const [phone, setPhone] = useState("");
 
     const isValid = true;
-
     const router = useRouter();
     const handleGoBack = () => {
         router.back();
     };
-
-    const handleGenerateQR = (qrType: string) => {
+    const handleGenerateQR = (type: string, qr?: string) => {
         setModalgenerateQR(true);
         setShowDetailInvoiceQR(false);
         setShowPayment(false);
-        console.log("qrType: ", qrType)
+        if (qr) setQrBase64(qr);  // guardamos el base64 recibido
+        if (type) setQrType(type);
     };
 
     const handleSubmit = async () => {
@@ -145,23 +146,23 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
                     </View>
                     <View style={styles.row}>
                         <Text style={styles.label}>N° de factura</Text>
-                        <Text style={styles.value}>123456789</Text>
+                        <Text style={styles.value}>{guide?.facturas[0]?.numeroFactura ?? '0'}</Text>
                     </View>
                     <View style={styles.divider} />
                     <View style={styles.row}>
                         <Text style={styles.label}>Subtotal</Text>
-                        <Text style={styles.value}>{'$ ' + (Number(30000) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
+                        <Text style={styles.value}>{'$ ' + (Number(guide?.facturas[0]?.valorTotal) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
                     </View>
                     <View style={styles.row}>
                         <Text style={styles.label}>Descuento financiero</Text>
                         <Text style={[styles.value, { color: '#1F9144' }]}>
-                            {'$ - ' + Number(4500).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                            {'$ - ' + Number(guide?.facturas[0]?.dfr).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                         </Text>
                     </View>
                     <View style={styles.row}>
                         <Text style={styles.labelTotal}>Total</Text>
                         <Text style={[styles.value, { color: '#141D32', fontWeight: '800' }]}>
-                            {'$ ' + Number(25500).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                            {'$ ' + Number(guide?.facturas[0]?.valorRecaudar).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                         </Text>
                     </View>
 
@@ -170,12 +171,13 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
                     {/* Información del pedido */}
                     <View style={styles.row}>
                         <Text style={styles.label}>Valor recaudado</Text>
-                        <Text style={styles.value}>{'$ ' + Number(0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
+                        <Text style={styles.value}>{'$ ' + Number(guide?.facturas[0]?.valorTotal).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
                     </View>
+
                     <View style={styles.row}>
                         <Text style={styles.labelTotal}>Valor a recaudar</Text>
                         <Text style={[styles.value, { color: '#C62828', fontWeight: '800' }]}>
-                            {'$ ' + (Number(25500) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                            {'$ ' + (Number(guide?.facturas[0]?.valorRecaudar) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                         </Text>
                     </View>
                     <TouchableOpacity style={styles.qrButton} onPress={() => { validateButton(), setShowDetailInvoiceQR(true) }}>
@@ -253,16 +255,23 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
             {ModalgenerateQR && (
                 <ViewQrModal
                     data={guide}
-                    onClose={() => 
+                    onClose={() =>
                         setModalgenerateQR(false)
                     }
                     onChangePhone={() => {
                         setShowDetailInvoiceQR(false);
-                        setShowPayment(false); 
+                        setShowPayment(false);
                         setShowChangePhone(true);
                     }}
                     width={width}
                     phone={phone}
+                    qrData={qrBase64}
+                    qrType={qrType}
+                    onChangeQRType={() => {
+                        setShowDetailInvoiceQR(true);
+                        setModalgenerateQR(false);
+                    } }
+
                 />
             )}
 

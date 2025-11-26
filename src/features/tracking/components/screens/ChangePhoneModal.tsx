@@ -1,5 +1,4 @@
 import { PrimaryButton } from "@/components/buttons/PrimaryButton";
-import { ExceptionModal } from "@/components/generals/ExecptionModal";
 import React, { useEffect, useState } from "react";
 import {
     Animated,
@@ -18,15 +17,13 @@ interface ChangePhoneModalProps {
     visible: boolean;
     onClose: () => void;
     onConfirm: (phone: string) => void;
+    onAlert: () => void;
+
 }
 
-export function ChangePhoneModal({ visible, onClose, onConfirm }: ChangePhoneModalProps) {
+export function ChangePhoneModal({ visible, onClose, onConfirm, onAlert }: ChangePhoneModalProps) {
     const [phone, setPhone] = useState("");
     const [keyboardHeight] = useState(new Animated.Value(0));
-    const [modalTitle, setModalTitle] = useState("");
-    const [modalMessage, setModalMessage] = useState("");
-    const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
-    const [modalVisible, setModalVisible] = useState(false);
     const isValid = phone.length === 10;
 
     useEffect(() => {
@@ -110,22 +107,23 @@ export function ChangePhoneModal({ visible, onClose, onConfirm }: ChangePhoneMod
                             <PrimaryButton
                                 title="Confirmar"
                                 onPress={() => {
+                                    if (!isValid) return;
                                     Keyboard.dismiss();
-                                    setTimeout(() => onConfirm(phone), 100);
+                                    setTimeout(() => {
+                                        onConfirm(phone);
+                                        onClose();
+                                        onAlert();
+                                    }, 300);
                                 }}
+
+
                                 disabled={!isValid}
                             />
                         </View>
                     </Animated.View>
                 </View>
             </TouchableWithoutFeedback>
-            <ExceptionModal
-                visible={modalVisible}
-                onClose={() => setModalVisible(false)}
-                title={modalTitle}
-                message={modalMessage}
-                buttonLabel={modalButtonLabel}
-            />
+
         </Modal>
     );
 }

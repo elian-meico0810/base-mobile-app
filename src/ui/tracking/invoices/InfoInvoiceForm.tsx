@@ -1,3 +1,4 @@
+import { TopSuccessAlert } from '@/components/alerts/TopSuccessAlert';
 import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
@@ -35,6 +36,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [showChangePhone, setShowChangePhone] = useState(false);
     const [ModalgenerateQR, setModalgenerateQR] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
     const [qrBase64, setQrBase64] = useState<string>('');
     const [qrType, setQrType] = useState<string>('');
     const [phone, setPhone] = useState("");
@@ -48,7 +50,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
         setModalgenerateQR(true);
         setShowDetailInvoiceQR(false);
         setShowPayment(false);
-        if (qr) setQrBase64(qr);  // guardamos el base64 recibido
+        if (qr) setQrBase64(qr);  
         if (type) setQrType(type);
     };
 
@@ -283,7 +285,21 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
                     setShowChangePhone(false);
                     setShowDetailInvoiceQR(true);
                 }}
+                onAlert={() => {
+                    setTimeout(() => {
+                        setShowSuccess(true);
+                    }, 100);
+                }}
             />
+
+            {showSuccess && (
+                <TopSuccessAlert
+                    visible={showSuccess}
+                    message="Número de teléfono actualizado"
+                    onHide={() => setShowSuccess(false)}
+                />
+            )}
+
 
             {loading && <LoadingBlue />}
 

@@ -1,3 +1,4 @@
+import { ExceptionModal } from "@/components/generals/ExecptionModal";
 import { LoadingBlue } from "@/components/generals/LoadingBlue";
 import RenderQRView from "@/components/generals/RenderQRView";
 import { Row } from "@/components/generals/Row";
@@ -45,6 +46,10 @@ export function ViewQrModal({
 }: ViewQrModalQRProps) {
     const [loading, setLoading] = useState(false);
     const [currentView, setCurrentView] = useState<ViewType>('main');
+    const [modalTitle, setModalTitle] = useState("");
+    const [modalMessage, setModalMessage] = useState("");
+    const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
+    const [modalVisible, setModalVisible] = useState(false);
 
     const dataInvoice: Invoice = data?.facturas?.[0] ?? {
         dfr: 0,
@@ -54,6 +59,13 @@ export function ViewQrModal({
     };
 
     const handleSendWhatsApp = () => {
+        if (!phone || !/^\d{10}$/.test(phone)) {
+            setModalTitle("Alerta !!");
+            setModalMessage("Debe ingresar un número de teléfono válido de 10 dígitos.");
+            setModalVisible(true);
+            return;
+        }
+
         if (onSendWhatsApp) {
             onSendWhatsApp();
         }
@@ -101,6 +113,13 @@ export function ViewQrModal({
             </View>
 
             {loading && <LoadingBlue />}
+            <ExceptionModal
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                title={modalTitle}
+                message={modalMessage}
+                buttonLabel={modalButtonLabel}
+            />
         </View>
     );
 

@@ -1,16 +1,16 @@
 import { SecondaryButton } from "@/components/buttons/SecondaryButton";
+import { ExceptionModal } from "@/components/generals/ExecptionModal";
 import { LoadingBlue } from "@/components/generals/LoadingBlue";
 import { Row } from "@/components/generals/Row";
 import { ENV_DEV } from "@/src/constants/apiRoutes";
 import { formatNumber } from "@/src/utils/uitls";
 import React, { useState } from "react";
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { GuideDetails } from "../../domain/details/DetailsGuide";
 import { detailsRepositoryImpl } from "../../infrastructure/details/detailsRepositoryImpl";
 
 interface DetailsInvoiceQRProps {
-    data?: {
-        facturas: Invoice[];
-    };
+    data?: GuideDetails;
     onClose: () => void;
     onChangePhone?: () => void;
     disabled?: boolean;
@@ -29,6 +29,10 @@ interface Invoice {
 
 export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone, onGenerateQR }: DetailsInvoiceQRProps) {
     const [loading, setLoading] = useState(false);
+    const [modalTitle, setModalTitle] = useState("");
+    const [modalMessage, setModalMessage] = useState("");
+    const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
+    const [modalVisible, setModalVisible] = useState(false);
 
     const dataInvoice: Invoice = data?.facturas?.[0] ?? {
         dfr: 0,
@@ -39,6 +43,13 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
 
     const paymentGateway = async () => {
         try {
+            if (!phone || !/^\d{10}$/.test(phone)) {
+                setModalTitle("Alerta !!");
+                setModalMessage("Debe ingresar un número de teléfono válido de 10 dígitos.");
+                setModalVisible(true);
+                return;
+            }
+
             setLoading(true);
             if (onGenerateQR) {
                 onGenerateQR('Pasarela de Pago');
@@ -46,8 +57,8 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
             const response = await detailsRepositoryImpl.sendPaymentGetway(
                 {
                     documento: {
-                        numero: "16004926",
-                        codigoCliente: "000000040662",
+                        numero: String(dataInvoice?.numeroFactura),
+                        codigoCliente: String(dataInvoice?.numeroFactura),
                         tipoDocumento: "TD_FACTURA",
                     },
                     linkFisico: false,
@@ -67,15 +78,23 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
 
     const generateQR = async () => {
         try {
+
+            if (!phone || !/^\d{10}$/.test(phone)) {
+                setModalTitle("Alerta !!");
+                setModalMessage("Debe ingresar un número de teléfono válido de 10 dígitos.");
+                setModalVisible(true);
+                return;
+            }
+
             setLoading(true);
             if (onGenerateQR) {
                 onGenerateQR('Aplicación Bancaria');
             }
             const response = await detailsRepositoryImpl.generateQR(
                 {
-                    numdoc: '41096142',
+                    numdoc: String(dataInvoice?.numeroFactura),
                     tipodoc: 'TD_FACTURA',
-                    cus_no: '000000180065',
+                    cus_no: String(dataInvoice?.numeroFactura),
                 },
                 ENV_DEV.KEY_APP
             );
@@ -152,7 +171,13 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                     />
                 </View>
 
-
+                <ExceptionModal
+                    visible={modalVisible}
+                    onClose={() => setModalVisible(false)}
+                    title={modalTitle}
+                    message={modalMessage}
+                    buttonLabel={modalButtonLabel}
+                />
             </View>
             {loading && <LoadingBlue />}
 

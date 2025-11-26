@@ -1,4 +1,5 @@
 import { PrimaryButton } from "@/components/buttons/PrimaryButton";
+import { ExceptionModal } from "@/components/generals/ExecptionModal";
 import React, { useEffect, useState } from "react";
 import {
     Animated,
@@ -22,6 +23,10 @@ interface ChangePhoneModalProps {
 export function ChangePhoneModal({ visible, onClose, onConfirm }: ChangePhoneModalProps) {
     const [phone, setPhone] = useState("");
     const [keyboardHeight] = useState(new Animated.Value(0));
+    const [modalTitle, setModalTitle] = useState("");
+    const [modalMessage, setModalMessage] = useState("");
+    const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
+    const [modalVisible, setModalVisible] = useState(false);
     const isValid = phone.length === 10;
 
     useEffect(() => {
@@ -57,7 +62,7 @@ export function ChangePhoneModal({ visible, onClose, onConfirm }: ChangePhoneMod
         Keyboard.dismiss();
         setTimeout(onClose, 100);
     };
-    
+
     useEffect(() => {
         if (visible) {
             keyboardHeight.setValue(0);
@@ -114,6 +119,13 @@ export function ChangePhoneModal({ visible, onClose, onConfirm }: ChangePhoneMod
                     </Animated.View>
                 </View>
             </TouchableWithoutFeedback>
+            <ExceptionModal
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                title={modalTitle}
+                message={modalMessage}
+                buttonLabel={modalButtonLabel}
+            />
         </Modal>
     );
 }

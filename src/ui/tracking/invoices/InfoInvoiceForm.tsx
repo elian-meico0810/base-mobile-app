@@ -270,7 +270,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit }: InfoInvo
                     onChangeQRType={() => {
                         setShowDetailInvoiceQR(true);
                         setModalgenerateQR(false);
-                    } }
+                    }}
 
                 />
             )}

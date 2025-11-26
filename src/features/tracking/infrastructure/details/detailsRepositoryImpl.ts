@@ -94,6 +94,7 @@ export const detailsRepositoryImpl: DetailsRepository = {
 
   async sendPaymentGetway(data: PaymentGatewayProps, key: string) {
     try {
+      
       // const response = await authDevApi.post(API_ROUTES.SEND_PAYMENT_GATEWAY, data, {
       //   headers: {
       //     "api-key": key,

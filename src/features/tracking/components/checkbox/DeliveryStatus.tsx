@@ -154,8 +154,8 @@ export function DeliveryStatus({ onStatusChange, EntryVisible, onOpenRefusedModa
 
             </TouchableOpacity>
 
-   
         </ScrollView>
+        
     );
 }
 

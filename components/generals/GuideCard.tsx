@@ -161,7 +161,6 @@ const styles = StyleSheet.create({
     status: {
         fontFamily: 'Rubik',
         fontWeight: '400',
-        fontStyle: 'normal',
         fontSize: 12,
         lineHeight: 22,
         color: '#4F74C4',
@@ -169,7 +168,6 @@ const styles = StyleSheet.create({
     code: {
         fontFamily: 'Rubik',
         fontWeight: '400',
-        fontStyle: 'normal',
         fontSize: 12,
         lineHeight: 12,
         color: '#141D32',

@@ -110,7 +110,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const handleSubmit = async () => {
         try {
-            setvalidateIsBotton(true);
             setLoading(true);
             const location = await Location.getCurrentPositionAsync({
                 accuracy: Location.Accuracy.Highest,
@@ -125,6 +124,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 token
             );
             if (response?.statusCode === 200) {
+                setvalidateIsBotton(true);
                 setEntryVisible(true);
                 setRouteStarted(true);
             } else {
@@ -135,6 +135,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 setModalVisible(true);
             }
         } catch (error: any) {
+            setValidateException(true);
+            btnRef.current?.reset();
             setModalTitle("Error !!");
             setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
@@ -639,11 +641,11 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 <OptionsRefused
                     onClose={() => setShowModalRefused(false)}
                     width={width}
-                    onPress={()=> {
+                    onPress={() => {
                         setvalidateIsBotton(false);
                         console.log("Cerrar desde InfoInvoiceForm", (validateIsBotton));
                     }
-                        }
+                    }
                 />
             )}
             {loading && <LoadingBlue />}

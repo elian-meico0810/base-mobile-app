@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-export const DetailsGudes = ({ style, guide, onExit, date, routeStarted }: { style?: any, guide?: number, onExit?: () => void, date?: string, routeStarted?: boolean }) => {
+export const DetailsGudes = ({ style, guide, onExit, date, routeStarted, statusName }: { style?: any, guide?: number, onExit?: () => void, date?: string, routeStarted?: boolean, statusName?: string }) => {
     const [dateText, setDateText] = useState('');
     useEffect(() => {
         const interval = setInterval(() => {
@@ -37,11 +37,11 @@ export const DetailsGudes = ({ style, guide, onExit, date, routeStarted }: { sty
 
 
             </TouchableOpacity>
+
             <View style={styles.routeRow}>
                 <ThemedText type="title" style={styles.meico}>
                     Ruta {guide}
                 </ThemedText>
-
                 <View
                     style={[
                         styles.statusContainer,
@@ -51,12 +51,13 @@ export const DetailsGudes = ({ style, guide, onExit, date, routeStarted }: { sty
                     <Text
                         style={[
                             styles.status,
-                            routeStarted && { color: '#1F9144' }
+                            statusName && { color: '#1F9144' }
                         ]}
                     >
-                        {routeStarted ? 'En Cruso' : 'Pendiente'}
+                        {statusName ?? null}
                     </Text>
                 </View>
+
             </View>
 
 

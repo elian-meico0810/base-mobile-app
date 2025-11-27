@@ -10,13 +10,12 @@ const { width, height } = Dimensions.get("window");
 interface TodayDeliveriesProps {
     style?: StyleProp<ViewStyle>;
     data?: GuideDetails[]; // opcional para poder mostrar skeleton
-    routeStarted?: boolean
-
+    routeStarted?: boolean;
+    waitingForPermission?: boolean;
 }
 
-export const TodayDeliveries = ({ style, data, routeStarted }: TodayDeliveriesProps) => {
-
-    if (!data || data.length === 0) {
+export const TodayDeliveries = ({ style, data, routeStarted , waitingForPermission}: TodayDeliveriesProps) => {
+    if (!data || data.length === 0 || waitingForPermission) {
         return (
             <View style={[styles.card, style]}>
                 <TodayDeliveriesSkeleton />

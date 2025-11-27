@@ -12,9 +12,8 @@ interface GuideCardProps {
     guide: GuideDetails;
     onPress?: () => void;
     routeStarted: boolean;
-    numberGuide?: string
-    token?: string
-
+    numberGuide?: string;
+    token?: string;
 }
 
 export function GuideCard({ guide, onPress, routeStarted, numberGuide, token }: GuideCardProps) {
@@ -111,7 +110,7 @@ export function GuideCard({ guide, onPress, routeStarted, numberGuide, token }: 
                 onClose={() => setModalVisible(false)}
                 title={routeStarted ? "Sin ubicación disponible" : "Alerta !!"}
                 message={
-                    routeStarted
+                    (routeStarted)
                         ? "Esta guía no contiene coordenadas válidas para navegar."
                         : "Debe comenzar ruta para realizar esta acción."
                 }

@@ -8,6 +8,7 @@ import { TodayDeliveries } from '@/components/generals/TodayDeliveries';
 import { SearchInput } from '@/components/inputs/SearchInput';
 import { GuideCardSkeleton } from '@/components/skeleton/GuideCardSkeleton';
 import { ThemedView } from '@/components/themed-view';
+import { StatusInvoice } from '@/src/constants/GuideStates';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { getDeviceDateTime } from '@/src/utils/uitls';
@@ -41,7 +42,9 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const [validateException, setValidateException] = useState(false);
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
+    const [statusValue, setStatusValue] = useState("");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
+    const [waitingForPermission, setWaitingForPermission] = useState(false);
     const [date, setDate] = useState<string | null>(null);
     const btnRef = useRef<any>(null);
     const router = useRouter();
@@ -57,14 +60,73 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     }, []);
 
     useEffect(() => {
+        const fetchPermissions = async () => {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                setValidateException(true);
+                btnRef.current?.reset();
+                setModalTitle("Permiso denegado !!");
+                setModalMessage("Se requiere acceso a la ubicación.");
+                setLoading(false);
+                setModalVisible(true);
+                setWaitingForPermission(true);
+                return;
+            } else {
+                setWaitingForPermission(false);
+            }
+        };
+        fetchPermissions();
+    }, []);
+
+    useEffect(() => {
+        if (!modalVisible && waitingForPermission) {
+            const recheckPermissions = async () => {
+                const { status } = await Location.requestForegroundPermissionsAsync();
+                if (status !== 'granted') {
+                    setModalVisible(true);
+                } else {
+                    setWaitingForPermission(false);
+                    setValidateException(false);
+                }
+            };
+            recheckPermissions();
+        }
+    }, [modalVisible, waitingForPermission]);
+
+    useEffect(() => {
         const fetchData = async () => {
             const response = await detailsRepositoryImpl.listGuide(Number(guide), tokenUser || token);
             if (response?.statusCode == 200) {
                 if (response?.data) {
                     const arrayData = Array.isArray(response.data) ? response.data : [response.data];
-                    setData(arrayData as GuideDetails[]);
-                    setFilteredGuides(arrayData as GuideDetails[]);
+
+                    const sortedData = arrayData
+                        .filter(item => typeof item !== 'string')
+                        .sort((a, b) => {
+                            const aIsPending = (a as GuideDetails).estado?.toLowerCase() === "pendiente";
+                            const bIsPending = (b as GuideDetails).estado?.toLowerCase() === "pendiente";
+
+                            if (aIsPending && !bIsPending) {
+                                return -1;
+                            } else if (!aIsPending && bIsPending) {
+                                return 1;
+                            } else {
+                                return 0;
+                            }
+                        });
+
+                    const hasInCourse = sortedData.some(item =>
+                        (item as GuideDetails).estado?.toLowerCase() === StatusInvoice.CLOSE.toLowerCase()
+                    );
+
+                    // Asignar la variable según el resultado
+                    const statusValue = hasInCourse ? StatusInvoice.IN_COURSE : StatusInvoice.PENDING;
+                    setStatusValue(statusValue);
+
+                    setData(sortedData as GuideDetails[]);
+                    setFilteredGuides(sortedData as GuideDetails[]);
                 }
+
             } else {
                 setData([]);
                 setFilteredGuides([]);
@@ -86,16 +148,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const handleSubmit = async () => {
 
         try {
-            const { status } = await Location.requestForegroundPermissionsAsync();
-            if (status !== 'granted') {
-                setValidateException(true);
-                btnRef.current?.reset();
-                setModalTitle("Permiso denegado !!");
-                setModalMessage("Se requiere acceso a la ubicación.");
-                setLoading(false);
-                setModalVisible(true);
-                return;
-            }
+
             setLoading(true);
             const initDate = getDeviceDateTime()
             setDate(initDate)
@@ -149,9 +202,9 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                 onExit={handleExit}
                 date={date ? date : undefined}
                 routeStarted={routeStarted}
+                statusName={statusValue}
             />
 
-            {/* Panel blanco con altura fija */}
             <View style={[
                 styles.whitePanel,
                 { height: height - 200 }
@@ -164,6 +217,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                             style={{ marginTop: -40 }}
                             data={data}
                             routeStarted={routeStarted}
+                            waitingForPermission={waitingForPermission}
 
                         />
                         <Text style={styles.title}>Tu ruta</Text>
@@ -177,7 +231,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                             style={styles.guidesScroll}
                             contentContainerStyle={{ paddingBottom: 20 }}
                         >
-                            {data.length === 0 ? (
+                            {((data.length === 0 ) || ( waitingForPermission))? (
                                 Array.from({ length: 3 }).map((_, i) => (
                                     <GuideCardSkeleton key={i} />
                                 ))
@@ -194,7 +248,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                                             key={item.codigoCliente}
                                             guide={item}
                                             onPress={() => console.log('Ir a dirección')}
-                                            routeStarted={routeStarted}
+                                            routeStarted={statusValue == StatusInvoice.IN_COURSE ? true : routeStarted}
                                             numberGuide={String(guide)}
                                             token={token}
                                         />
@@ -204,7 +258,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                         </ScrollView>
                     </View>
 
-                    {!routeStarted && (
+                    {(!routeStarted && (statusValue && statusValue != StatusInvoice.IN_COURSE)) && (
                         <View style={{ alignItems: 'center', marginBottom: 25 }}>
                             <PrimaryButtonDetails
                                 ref={btnRef}

@@ -150,5 +150,172 @@ export const detailsRepositoryImpl: DetailsRepository = {
     } catch (error) {
       throw error;
     }
+  },
+
+  async successfulBillPayment(guide: number, key: string) {
+    try {
+      // const response = await authDevApi.get(`${API_ROUTES.PAYMENT_SUCCESS_FUL}${guide}/`, {
+      //   headers: {
+      //     "api-key": key,
+      //     "Content-Type": "application/json",
+      //   },
+      // });
+      return {
+        "statusCode": 200,
+        "data": {
+          "numeroFactura": 9325897,
+          "nombreEstablecimiento": "000000032254",
+          "totalFactura": 29698.32,
+          "saldoPendiente": 0,
+          "numeroContacto": "",
+          "pagos": [
+            {
+              "id": 49,
+              "numeroDeposito": "9325897-20250926085604155",
+              "fechaDeposito": "2025-09-26T08:56:04.290514",
+              "valorPagado": "29698.00",
+              "canal": "Pasarela virtual",
+              "numeroDocumento": "9325897",
+              "estado": "APPROVED",
+              "referencia": "9325897-14-176"
+            },
+            {
+              "id": 51,
+              "numeroDeposito": "9325897-20250926091526082",
+              "fechaDeposito": "2025-09-26T09:15:26.264034",
+              "valorPagado": "29698.00",
+              "canal": "Pasarela virtual",
+              "numeroDocumento": "9325897",
+              "estado": "APPROVED",
+              "referencia": "9325897-14-173"
+            },
+            {
+              "id": 55,
+              "numeroDeposito": "9325897-20250926121943717",
+              "fechaDeposito": "2025-09-26T12:19:43.770399",
+              "valorPagado": "29698.00",
+              "canal": "Pasarela virtual",
+              "numeroDocumento": "9325897",
+              "estado": "APPROVED",
+              "referencia": "9325897-14-174"
+            },
+            {
+              "id": 56,
+              "numeroDeposito": "9325897-20250926122340111",
+              "fechaDeposito": "2025-09-26T12:23:40.182314",
+              "valorPagado": "29698.00",
+              "canal": "Pasarela virtual",
+              "numeroDocumento": "9325897",
+              "estado": "APPROVED",
+              "referencia": "9325897-14-175"
+            },
+            {
+              "id": 62,
+              "numeroDeposito": "9325897-20250929163439544",
+              "fechaDeposito": "2025-09-29T16:34:49.569403",
+              "valorPagado": "1.00",
+              "canal": "Pasarela virtual",
+              "numeroDocumento": "9325897",
+              "estado": "APPROVED",
+              "referencia": "9325897-14-192"
+            },
+            {
+              "id": 63,
+              "numeroDeposito": "9325897-20250929165334148",
+              "fechaDeposito": "2025-09-29T16:53:41.911949",
+              "valorPagado": "1.00",
+              "canal": "Pasarela virtual",
+              "numeroDocumento": "9325897",
+              "estado": "APPROVED",
+              "referencia": "9325897-14-192"
+            },
+            {
+              "id": 64,
+              "numeroDeposito": "9325897-20250930092323930",
+              "fechaDeposito": "2025-09-30T09:23:24.008394",
+              "valorPagado": "1.00",
+              "canal": "Pasarela virtual",
+              "numeroDocumento": "9325897",
+              "estado": "APPROVED",
+              "referencia": "9325897-14-192"
+            },
+            {
+              "id": 65,
+              "numeroDeposito": "9325897-20250930092509674",
+              "fechaDeposito": "2025-09-30T09:25:09.741043",
+              "valorPagado": "1.00",
+              "canal": "Pasarela virtual",
+              "numeroDocumento": "9325897",
+              "estado": "APPROVED",
+              "referencia": "9325897-14-192"
+            },
+            {
+              "id": 66,
+              "numeroDeposito": "9325897-20250930092751826",
+              "fechaDeposito": "2025-09-30T09:27:51.902863",
+              "valorPagado": "1.00",
+              "canal": "Pasarela virtual",
+              "numeroDocumento": "9325897",
+              "estado": "APPROVED",
+              "referencia": "9325897-14-192"
+            },
+            {
+              "id": 67,
+              "numeroDeposito": "9325897-20250930093255582",
+              "fechaDeposito": "2025-09-30T09:32:55.657085",
+              "valorPagado": "1.00",
+              "canal": "Pasarela virtual",
+              "numeroDocumento": "9325897",
+              "estado": "APPROVED",
+              "referencia": "9325897-14-192"
+            },
+            {
+              "id": 68,
+              "numeroDeposito": "9325897-20250930093459756",
+              "fechaDeposito": "2025-09-30T09:34:59.822916",
+              "valorPagado": "1.00",
+              "canal": "Pasarela virtual",
+              "numeroDocumento": "9325897",
+              "estado": "APPROVED",
+              "referencia": "9325897-14-192"
+            },
+            {
+              "id": 69,
+              "numeroDeposito": "9325897-20250930093711675",
+              "fechaDeposito": "2025-09-30T09:37:11.885568",
+              "valorPagado": "1.00",
+              "canal": "Pasarela virtual",
+              "numeroDocumento": "9325897",
+              "estado": "APPROVED",
+              "referencia": "9325897-14-192"
+            },
+            {
+              "id": 70,
+              "numeroDeposito": "9325897-20250930095232961",
+              "fechaDeposito": "2025-09-30T09:52:33.027702",
+              "valorPagado": "1.00",
+              "canal": "Pasarela virtual",
+              "numeroDocumento": "9325897",
+              "estado": "APPROVED",
+              "referencia": "9325897-14-192"
+            },
+            {
+              "id": 75,
+              "numeroDeposito": "9325897-20250930114721871",
+              "fechaDeposito": "2025-09-30T11:47:21.929064",
+              "valorPagado": "1.00",
+              "canal": "Pasarela virtual",
+              "numeroDocumento": "9325897",
+              "estado": "APPROVED",
+              "referencia": "9325897-14-192"
+            }
+          ]
+        },
+        "message": "Operacion exitosa",
+        "success": true
+      }
+    } catch (error) {
+      throw error;
+    }
   }
 };

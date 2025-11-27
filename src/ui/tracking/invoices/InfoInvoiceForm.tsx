@@ -13,12 +13,12 @@ import { ChangePhoneModal } from '@/src/features/tracking/components/screens/Cha
 import { DetailsInvoiceQR } from '@/src/features/tracking/components/screens/DetailsInvoiceQR';
 import { InfoPayments } from '@/src/features/tracking/components/screens/InfoPayments';
 import { ViewQrModal } from '@/src/features/tracking/components/screens/ViewQrModal';
-import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { GuideDetails, Invoice } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { cleanSpaces } from '@/src/utils/uitls';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dimensions, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
@@ -49,6 +49,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [RefreshingOnPress, setRefreshingOnPress] = useState(false);
     const [EntryVisible, setEntryVisible] = useState(false);
     const [modalRefused, setShowModalRefused] = useState(false);
+    const [paymentSuccessful, setPaymentSuccessful] = useState<Invoice | undefined>();
     const [qrBase64, setQrBase64] = useState<string>('');
     const [qrType, setQrType] = useState<string>('');
     const [phone, setPhone] = useState("");
@@ -58,6 +59,23 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const handleGoBack = () => {
         router.back();
     };
+    useEffect(() => {
+        const fetchGuide = async () => {
+            try {
+                const respones = await detailsRepositoryImpl.successfulBillPayment(
+                    Number(numberGuide),
+                    token
+                );
+                if (respones?.statusCode === 200) {
+                    setPaymentSuccessful(respones.data as Invoice);
+                }
+            } catch (error) {
+                throw error;
+            }
+        };
+
+        fetchGuide();
+    }, [Number(numberGuide), token]);
 
     const handleGenerateQR = (type: string, qr?: string) => {
         setModalgenerateQR(true);
@@ -141,8 +159,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     if (clienteFiltrado.length > 0) {
                         const clienteEncontrado = clienteFiltrado[0];
 
-                        setGuide(prevGuide => ({
-                            ...prevGuide,
+                        setGuide({
                             idDireccion: clienteEncontrado.idDireccion,
                             direccion: clienteEncontrado.direccion,
                             poblacion: clienteEncontrado.poblacion,
@@ -152,8 +169,36 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             longitud: clienteEncontrado.longitud,
                             estado: clienteEncontrado.estado,
                             facturas: clienteEncontrado.facturas
-                        }));
+                        });
+
                     }
+                }
+
+
+                const responeData = await detailsRepositoryImpl.successfulBillPayment(
+                    Number(numberGuide),
+                    token
+                );
+                if (responeData?.statusCode === 200) {
+                    const invoice = responeData.data as Invoice;
+                    setPaymentSuccessful({
+                        numeroFactura: invoice.numeroFactura,
+                        nombreEstablecimiento: invoice.nombreEstablecimiento,
+                        totalFactura: invoice.totalFactura,
+                        saldoPendiente: invoice.saldoPendiente,
+                        numeroContacto: invoice.numeroContacto,
+                        pagos: invoice.pagos?.map(pago => ({
+                            id: pago.id,
+                            numeroDeposito: pago.numeroDeposito,
+                            fechaDeposito: pago.fechaDeposito,
+                            valorPagado: pago.valorPagado,
+                            canal: pago.canal,
+                            numeroDocumento: pago.numeroDocumento,
+                            estado: pago.estado,
+                            referencia: pago.referencia
+                        }))
+                    });
+
                 }
                 setRefreshing(false);
             }, 2000);
@@ -467,7 +512,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     description="Los pagos asociados a esta factura aparecerán aquí"
                     onClose={() => setShowPayment(false)}
                     width={width}
-                    payments={paymentsData}
+                    payments={paymentSuccessful?.pagos ? paymentSuccessful?.pagos : paymentsData}
                 />
             )}
 

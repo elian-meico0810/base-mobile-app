@@ -6,7 +6,8 @@ export const API_ROUTES = {
   // Back contado anticipado
   SEND_PAYMENT_GATEWAY: "pagos/generar-link-pasarela/",
   GENERATE_QR: "pagos/generar_qr_bancolombia/",
-  REPORT_NOTIFICTION_WHATSAPP: "pagos/transportista_enviar_linkpago_whatsapp/"
+  REPORT_NOTIFICTION_WHATSAPP: "pagos/transportista_enviar_linkpago_whatsapp/",
+  PAYMENT_SUCCESS_FUL: "facturas/pagos-all/"
 };
 
 

@@ -140,7 +140,7 @@ export function DeliveryStatus({ onStatusChange, EntryVisible, onOpenRefusedModa
                     <View style={styles.textContent}>
                         <Text style={styles.checkboxLabel}>Rechazo de entrega</Text>
                         <Text style={styles.checkboxDescription}>
-                            El cliente rechazó la entrega del pedido.
+                            El cliente no recibió ninguno de los productos.
                         </Text>
                     </View>
 

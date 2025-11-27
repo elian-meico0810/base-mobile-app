@@ -45,3 +45,23 @@ export interface ReportWhatsAppQRPorps {
   nombre_cliente: string,
   link_pago: string,
 }
+
+export interface Payment {
+    id: number;
+    numeroDeposito: string;
+    fechaDeposito: string;
+    valorPagado: string;
+    canal: string;
+    numeroDocumento: string;
+    estado: string;
+    referencia: string;
+}
+
+export interface Invoice {
+    numeroFactura: number;
+    nombreEstablecimiento: string;
+    totalFactura: number;
+    saldoPendiente: number;
+    numeroContacto: string;
+    pagos: Payment[];
+}

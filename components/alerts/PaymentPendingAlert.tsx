@@ -6,43 +6,50 @@ interface Props {
     visible: boolean;
     title: string;
     subtitle: string;
-    duration?: number;
     onHide: () => void;
-    topMargin?: number; // ← Nueva prop opcional
+    topMargin?: number;
 }
 
-
-export function PaymentPendingAlert({ visible, title, subtitle, duration = 5000, onHide, topMargin }: Props) {
+export function PaymentPendingAlert({ 
+    visible, 
+    title, 
+    subtitle, 
+    onHide, 
+    topMargin = 24 
+}: Props) {
     const slideAnim = useRef(new Animated.Value(-80)).current;
     const opacityAnim = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
         if (visible) {
+            // Mostrar animación
             Animated.parallel([
                 Animated.timing(slideAnim, {
                     toValue: 0,
+                    duration: 300,
                     useNativeDriver: true,
                 }),
                 Animated.timing(opacityAnim, {
                     toValue: 1,
+                    duration: 300,
                     useNativeDriver: true,
                 })
             ]).start();
 
-            const timeout = setTimeout(() => {
-                Animated.parallel([
-                    Animated.timing(opacityAnim, {
-                        toValue: 0,
-                        useNativeDriver: true,
-                    }),
-                    Animated.timing(slideAnim, {
-                        toValue: -80,
-                        useNativeDriver: true,
-                    })
-                ]).start(() => onHide());
-            }, duration);
-
-            return () => clearTimeout(timeout);
+        } else {
+            // Ocultar animación
+            Animated.parallel([
+                Animated.timing(opacityAnim, {
+                    toValue: 0,
+                    duration: 300,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(slideAnim, {
+                    toValue: -80,
+                    duration: 300,
+                    useNativeDriver: true,
+                })
+            ]).start();
         }
     }, [visible]);
 
@@ -52,7 +59,11 @@ export function PaymentPendingAlert({ visible, title, subtitle, duration = 5000,
         <Animated.View
             style={[
                 styles.container,
-                { transform: [{ translateY: slideAnim }], opacity: opacityAnim }
+                { 
+                    transform: [{ translateY: slideAnim }], 
+                    opacity: opacityAnim,
+                    top: topMargin
+                }
             ]}
         >
             <View style={styles.alertBox}>
@@ -74,16 +85,15 @@ export function PaymentPendingAlert({ visible, title, subtitle, duration = 5000,
 const styles = StyleSheet.create({
     container: {
         position: "absolute",
-        top: 0,
+        top: 24, // valor por defecto
         left: 0,
         right: 0,
-        zIndex: 999999,
+        zIndex: 100, // zIndex bajo para que quede debajo de modales
         alignItems: "center",
-        paddingTop: 24,
     },
     alertBox: {
         width: 350,
-        minHeight: 54,     // antes 65 — se adapta sin aplastar
+        minHeight: 54,
         backgroundColor: "#E8EEF9",
         borderWidth: 1,
         borderColor: "#4F74C4",

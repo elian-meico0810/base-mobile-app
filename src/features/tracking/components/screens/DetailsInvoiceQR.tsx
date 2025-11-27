@@ -19,6 +19,8 @@ interface DetailsInvoiceQRProps {
     height?: number;
     phone?: string;
     onGenerateQR?: (qrType: string, qrBase64?: string) => void;
+    onPressPayment: () => void;
+
 }
 
 interface Invoice {
@@ -28,7 +30,7 @@ interface Invoice {
     valorTotal: number;
 }
 
-export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone, onGenerateQR }: DetailsInvoiceQRProps) {
+export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone, onGenerateQR, onPressPayment}: DetailsInvoiceQRProps) {
     const [loading, setLoading] = useState(false);
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
@@ -68,6 +70,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                 ENV_DEV.KEY_APP
             );
             setLoading(false);
+            onPressPayment();
             onGenerateQR?.(TypeQr.PASARELA , response?.data?.linkPagoVirtual);
         } catch (error: any) {
             throw error;
@@ -100,6 +103,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                 ENV_DEV.KEY_APP
             );
             setLoading(false);
+            onPressPayment();
             onGenerateQR?.(TypeQr.BANCARIA, response?.data?.qr);
         } catch (error: any) {
             throw error;

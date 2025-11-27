@@ -8,6 +8,7 @@ import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { ThemedView } from '@/components/themed-view';
 import { TypeQr } from '@/src/constants/GuideStates';
 import { DeliveryStatus } from '@/src/features/tracking/components/checkbox/DeliveryStatus';
+import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
 import { ChangePhoneModal } from '@/src/features/tracking/components/screens/ChangePhoneModal';
 import { DetailsInvoiceQR } from '@/src/features/tracking/components/screens/DetailsInvoiceQR';
 import { InfoPayments } from '@/src/features/tracking/components/screens/InfoPayments';
@@ -44,8 +45,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [showSuccess, setShowSuccess] = useState(false);
     const [showSuccessQRp, setShowSuccessQRP] = useState(false);
     const [showPaymentPending, setShowPaymentPending] = useState(false);
-    const [data, setData] = useState<null>(null);
     const [refreshing, setRefreshing] = useState(false);
+    const [RefreshingOnPress, setRefreshingOnPress] = useState(false);
+    const [EntryVisible, setEntryVisible] = useState(false);
+    const [modalRefused, setShowModalRefused] = useState(false);
     const [qrBase64, setQrBase64] = useState<string>('');
     const [qrType, setQrType] = useState<string>('');
     const [phone, setPhone] = useState("");
@@ -84,6 +87,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const handleSubmit = async () => {
         try {
+            setEntryVisible(true)
             console.log("entro ala funcion")
             setRouteStarted(true);
         } catch (error: any) {
@@ -139,7 +143,15 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
                         setGuide(prevGuide => ({
                             ...prevGuide,
-                            ...clienteEncontrado
+                            idDireccion: clienteEncontrado.idDireccion,
+                            direccion: clienteEncontrado.direccion,
+                            poblacion: clienteEncontrado.poblacion,
+                            codigoCliente: clienteEncontrado.codigoCliente,
+                            nombreCliente: clienteEncontrado.nombreCliente,
+                            latitud: clienteEncontrado.latitud,
+                            longitud: clienteEncontrado.longitud,
+                            estado: clienteEncontrado.estado,
+                            facturas: clienteEncontrado.facturas
                         }));
                     }
                 }
@@ -168,23 +180,25 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 <Text style={styles.headerTitle}>Entrega de pedido</Text>
                 <View style={styles.placeholder} />
             </View>
-            {refreshing && <LoadingSunburst />}
+            {(refreshing && RefreshingOnPress) && <LoadingSunburst />}
 
             {/* Alert de pago pendiente */}
             <View style={styles.paymentAlertContainer}>
                 <PaymentPendingAlert
-                    visible={true}
+                    visible={RefreshingOnPress}
                     title="Pago pendiente"
                     subtitle="Después de realizar el pago, desliza hacia abajo para actualizar el estado."
-                    duration={30000000}
                     onHide={() => setShowPaymentPending(false)}
                 />
             </View>
 
+
             <ScrollView
-                style={styles.scrollView}
-                contentContainerStyle={styles.scrollContent}
-                refreshControl={
+                style={[styles.scrollView, { marginTop: RefreshingOnPress ? 90 : 8 }]}
+                contentContainerStyle={[
+                    styles.scrollContent,
+                    // Ajustar el padding cuando no hay alerta
+                ]} refreshControl={
                     <RefreshControl
                         refreshing={false}
                         onRefresh={onRefresh}
@@ -260,19 +274,29 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
                         <View style={styles.row}>
                             <Text style={styles.labelTotal}>Valor a recaudar</Text>
-                            <Text style={[styles.value, { color: '#C62828', fontWeight: '800', fontSize: 16 }]}>
+                            <Text style={[
+                                styles.value,
+                                {
+                                    color: Number(newValue) === 0 ? '#1F9144' : '#C62828',
+                                    fontWeight: '800',
+                                    fontSize: 16
+                                }
+                            ]}>
                                 {'$ ' + (Number(newValue) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                             </Text>
                         </View>
-                        <TouchableOpacity style={styles.qrButton} onPress={() => { validateButton(), setShowDetailInvoiceQR(true) }}>
-                            <View style={styles.qrButtonContent}>
-                                <Image
-                                    source={require('@/assets/icons/GenerateQR.png')}
-                                    style={styles.qrButtonIcon}
-                                />
-                                <Text style={styles.qrButtonText}>Generar QR de pago</Text>
-                            </View>
-                        </TouchableOpacity>
+                        {newValue != 0 && (
+                            <TouchableOpacity style={styles.qrButton} onPress={() => { validateButton(), setShowDetailInvoiceQR(true) }}>
+                                <View style={styles.qrButtonContent}>
+                                    <Image
+                                        source={require('@/assets/icons/GenerateQR.png')}
+                                        style={styles.qrButtonIcon}
+                                    />
+                                    <Text style={styles.qrButtonText}>Generar QR de pago</Text>
+                                </View>
+                            </TouchableOpacity>
+                        )}
+
                         <TouchableOpacity style={styles.qrButtonDetail} onPress={() => { validateButton(), setShowPayment(true) }}>
                             <Text style={styles.qrButtonText}>Detalle de pagos</Text>
                         </TouchableOpacity>
@@ -283,9 +307,11 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     <Text style={styles.headerTitleTWO}>Estado de entrega</Text>
                 </View>
 
-                <View style={{ height: 200 }}>
+                <View>
                     <DeliveryStatus
                         onStatusChange={(status) => console.log('Estado seleccionado:', status)}
+                        EntryVisible={EntryVisible}
+                        onOpenRefusedModal={() => setShowModalRefused(true)}
                     />
                 </View>
             </ScrollView>
@@ -296,7 +322,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     title={routeStarted ? "Cerrar pedido" : "Ya llegué"}
                     onPress={routeStarted ? submitData : handleSubmit}
                     disabled={!isValid}
-                    width={328}
+                    width={350}
                     height={43}
                     buttonColor={routeStarted ? "#DDDFE8" : undefined}
                     buttonColorEnd={routeStarted ? "#DDDFE8" : undefined}
@@ -334,6 +360,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     width={width}
                     phone={phone}
                     onGenerateQR={handleGenerateQR}
+                    onPressPayment={() => setRefreshingOnPress(true)}
                 />
             )}
 
@@ -390,6 +417,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 />
             )}
 
+            {modalRefused && (
+                <OptionsRefused
+                    onClose={() => setShowModalRefused(false)}
+                    width={width}
+                />
+            )}
             {loading && <LoadingBlue />}
         </ThemedView>
     );
@@ -607,5 +640,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingBottom: 100,
     },
+
 });
 

@@ -202,7 +202,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                                 title="Comenzar ruta"
                                 onPress={handleSubmit}
                                 disabled={!isValid}
-                                width={328}
+                                width={350}
                                 height={43}
                             />
                         </View>

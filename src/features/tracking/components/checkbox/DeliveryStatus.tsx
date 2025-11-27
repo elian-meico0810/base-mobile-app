@@ -1,14 +1,24 @@
 import { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface DeliveryStatusProps {
-    onStatusChange?: (status: 'total' | 'parcial' | null) => void;
+    onStatusChange?: (status: 'total' | 'parcial' | 'rechazo' | 'rechazo' | null) => void;
+    EntryVisible?: boolean;
+    onOpenRefusedModal?: () => void;
+    onHandelSubmit?: () => void;
 }
+const { width, height } = Dimensions.get('window');
 
-export function DeliveryStatus({ onStatusChange }: DeliveryStatusProps) {
-    const [selectedStatus, setSelectedStatus] = useState<'total' | 'parcial' | null>(null);
-
-    const handleStatusSelect = (status: 'total' | 'parcial') => {
+export function DeliveryStatus({ onStatusChange, EntryVisible, onOpenRefusedModal, onHandelSubmit }: DeliveryStatusProps) {
+    const [selectedStatus, setSelectedStatus] = useState<'total' | 'parcial' | 'rechazo' | null>(null);
+    const [modalVisible, setModalVisible] = useState(false);
+    console.log('EntryVisible:', modalVisible);
+    const handleStatusSelect = (status: 'total' | 'parcial' | 'rechazo') => {
+        if (!EntryVisible) return;
+        if (status === 'rechazo') {
+            onOpenRefusedModal?.();
+            console.log('Rechazo seleccionado');
+        }
         const newStatus = selectedStatus === status ? null : status;
         setSelectedStatus(newStatus);
         onStatusChange?.(newStatus);
@@ -18,35 +28,33 @@ export function DeliveryStatus({ onStatusChange }: DeliveryStatusProps) {
         <ScrollView
             style={styles.scrollContainer}
             contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={true}
         >
-            {/* Checkbox Entrega total */}
+            {/* Entrega total */}
             <TouchableOpacity
                 style={[
                     styles.checkboxContainer,
-                    selectedStatus === 'total' && styles.checkboxSelected
+                    selectedStatus === 'total' && styles.checkboxSelected,
+                    !EntryVisible && styles.disabled
                 ]}
                 onPress={() => handleStatusSelect('total')}
+                disabled={!EntryVisible}
             >
                 <View style={styles.checkboxContent}>
-                    {/* Ícono a la izquierda */}
                     <View style={styles.iconLeft}>
                         <View style={[
                             styles.iconContainer,
-                            selectedStatus === 'total' && styles.iconContainerSelected
+                            // selectedStatus === 'total' && styles.iconContainerSelected
                         ]}>
                             <Image
                                 source={require('@/assets/icons/Check.png')}
                                 style={[
                                     styles.icon,
-                                    selectedStatus === 'total' && styles.iconSelected
+                                    // selectedStatus === 'total' && styles.iconSelected
                                 ]}
-                                resizeMode="contain"
                             />
                         </View>
                     </View>
 
-                    {/* Texto en el centro */}
                     <View style={styles.textContent}>
                         <Text style={styles.checkboxLabel}>Entrega total</Text>
                         <Text style={styles.checkboxDescription}>
@@ -54,44 +62,40 @@ export function DeliveryStatus({ onStatusChange }: DeliveryStatusProps) {
                         </Text>
                     </View>
 
-                    {/* Checkbox circular a la derecha */}
                     <View style={styles.checkboxRight}>
                         <View style={styles.checkbox}>
-                            {selectedStatus === 'total' && (
-                                <View style={styles.checkboxInner} />
-                            )}
+                            {selectedStatus === 'total' && <View style={styles.checkboxInner} />}
                         </View>
                     </View>
                 </View>
             </TouchableOpacity>
 
-            {/* Checkbox Entrega parcial */}
+            {/* Entrega parcial */}
             <TouchableOpacity
                 style={[
                     styles.checkboxContainer,
-                    selectedStatus === 'parcial' && styles.checkboxSelected
+                    selectedStatus === 'parcial' && styles.checkboxSelected,
+                    !EntryVisible && styles.disabled
                 ]}
                 onPress={() => handleStatusSelect('parcial')}
+                disabled={!EntryVisible}
             >
                 <View style={styles.checkboxContent}>
-                    {/* Ícono a la izquierda */}
                     <View style={styles.iconLeft}>
                         <View style={[
                             styles.iconContainer,
-                            selectedStatus === 'parcial' && styles.iconContainerSelected
+                            // selectedStatus === 'parcial' && styles.iconContainerSelected
                         ]}>
                             <Image
                                 source={require('@/assets/icons/Warning.png')}
                                 style={[
                                     styles.icon,
-                                    selectedStatus === 'parcial' && styles.iconSelected
+                                    // selectedStatus === 'parcial' && styles.iconSelected
                                 ]}
-                                resizeMode="contain"
                             />
                         </View>
                     </View>
 
-                    {/* Texto en el centro */}
                     <View style={styles.textContent}>
                         <Text style={styles.checkboxLabel}>Entrega parcial</Text>
                         <Text style={styles.checkboxDescription}>
@@ -99,16 +103,58 @@ export function DeliveryStatus({ onStatusChange }: DeliveryStatusProps) {
                         </Text>
                     </View>
 
-                    {/* Checkbox circular a la derecha */}
                     <View style={styles.checkboxRight}>
                         <View style={styles.checkbox}>
-                            {selectedStatus === 'parcial' && (
-                                <View style={styles.checkboxInner} />
-                            )}
+                            {selectedStatus === 'parcial' && <View style={styles.checkboxInner} />}
                         </View>
                     </View>
                 </View>
             </TouchableOpacity>
+
+            {/* Rechazo */}
+            <TouchableOpacity
+                style={[
+                    styles.checkboxContainer,
+                    selectedStatus === 'rechazo' && styles.checkboxSelected,
+                    !EntryVisible && styles.disabled
+                ]}
+                onPress={() => handleStatusSelect('rechazo')}
+                disabled={!EntryVisible}
+            >
+                <View style={styles.checkboxContent}>
+                    <View style={styles.iconLeft}>
+                        <View style={[
+                            styles.iconContainer,
+                            // selectedStatus === 'rechazo' && styles.iconContainerSelected
+                        ]}>
+                            <Image
+                                source={require('@/assets/icons/Close.png')}
+                                style={[
+                                    styles.icon,
+                                    // selectedStatus === 'rechazo' && styles.iconSelected
+                                ]}
+                            />
+                        </View>
+                    </View>
+
+                    <View style={styles.textContent}>
+                        <Text style={styles.checkboxLabel}>Rechazo de entrega</Text>
+                        <Text style={styles.checkboxDescription}>
+                            El cliente rechazó la entrega del pedido.
+                        </Text>
+                    </View>
+
+                    <View style={styles.checkboxRight}>
+                        <View style={styles.checkbox}>
+                            {selectedStatus === 'rechazo' && <View style={styles.checkboxInner} />}
+                        </View>
+                    </View>
+                </View>
+
+
+            </TouchableOpacity>
+
+   
         </ScrollView>
     );
 }
@@ -135,8 +181,7 @@ const styles = StyleSheet.create({
         paddingLeft: 16,
     },
     checkboxSelected: {
-        borderColor: '#4F74C4',
-        backgroundColor: '#F8F9FF',
+        borderColor: '#164194',
     },
     checkboxContent: {
         flexDirection: 'row',
@@ -160,16 +205,16 @@ const styles = StyleSheet.create({
         borderColor: '#F0F1F5',
     },
     iconContainerSelected: {
-        backgroundColor: '#4F74C4',
+        backgroundColor: '#164194',
         borderColor: '#4F74C4',
     },
     icon: {
         width: 16,
         height: 16,
-        tintColor: '#666666', // Color gris por defecto
+        tintColor: '#666666',
     },
     iconSelected: {
-        tintColor: '#FFFFFF', // Color blanco cuando está seleccionado (sobre fondo azul)
+        tintColor: '#FFFFFF',
     },
     textContent: {
         flex: 1,
@@ -192,7 +237,7 @@ const styles = StyleSheet.create({
     checkboxInner: {
         width: 12,
         height: 12,
-        backgroundColor: '#4F74C4',
+        backgroundColor: '#164194',
         borderRadius: 6,
     },
     checkboxLabel: {
@@ -210,4 +255,8 @@ const styles = StyleSheet.create({
         lineHeight: 12,
         color: '#788095',
     },
+    disabled: {
+        opacity: 0.5,
+        pointerEvents: 'none'
+    }
 });

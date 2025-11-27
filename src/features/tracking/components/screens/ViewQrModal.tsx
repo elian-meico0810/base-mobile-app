@@ -44,7 +44,6 @@ export function ViewQrModal({
     onSendWhatsApp,
     onChangeQRType
 }: ViewQrModalQRProps) {
-    console.log("Rendering ViewQrModal with qrType:", onClose);
     const [loading, setLoading] = useState(false);
     const [currentView, setCurrentView] = useState<ViewType>('main');
     const [modalTitle, setModalTitle] = useState("");
@@ -100,9 +99,7 @@ export function ViewQrModal({
                 <TouchableOpacity
                     style={styles.closeButton}
                     onPress={() => {
-                        console.log("close pressed (ViewQrModal) — onClose typeof:", typeof onClose);
                         if (typeof onClose === "function") onClose();
-                        else console.warn("onClose no es una función:", onClose);
                     }}
                 >
                     <Text style={styles.closeText}>X</Text>

@@ -13,8 +13,10 @@ import { ChangePhoneModal } from '@/src/features/tracking/components/screens/Cha
 import { DetailsInvoiceQR } from '@/src/features/tracking/components/screens/DetailsInvoiceQR';
 import { InfoPayments } from '@/src/features/tracking/components/screens/InfoPayments';
 import { ViewQrModal } from '@/src/features/tracking/components/screens/ViewQrModal';
-import { GuideDetails, Invoice } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
+import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
 import { cleanSpaces } from '@/src/utils/uitls';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -62,7 +64,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     useEffect(() => {
         const fetchGuide = async () => {
             try {
-                const respones = await detailsRepositoryImpl.successfulBillPayment(
+                const respones = await invoiceRepositoryImpl.successfulBillPayment(
                     Number(numberGuide),
                     token
                 );
@@ -105,8 +107,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const handleSubmit = async () => {
         try {
-            setEntryVisible(true)
-            console.log("entro ala funcion")
+            setLoading(true);
+            setEntryVisible(true);
             setRouteStarted(true);
         } catch (error: any) {
             throw error;
@@ -175,7 +177,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 }
 
 
-                const responeData = await detailsRepositoryImpl.successfulBillPayment(
+                const responeData = await invoiceRepositoryImpl.successfulBillPayment(
                     Number(numberGuide),
                     token
                 );
@@ -451,7 +453,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                 {'$ ' + (Number(newValue) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                             </Text>
                         </View>
-                        {newValue != 0 && (
+                        {/* {newValue != 0 && ( */}
                             <TouchableOpacity style={styles.qrButton} onPress={() => { validateButton(), setShowDetailInvoiceQR(true) }}>
                                 <View style={styles.qrButtonContent}>
                                     <Image
@@ -461,7 +463,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                     <Text style={styles.qrButtonText}>Generar QR de pago</Text>
                                 </View>
                             </TouchableOpacity>
-                        )} 
+                        {/* )}  */}
 
                         <TouchableOpacity style={styles.qrButtonDetail} onPress={() => { validateButton(), setShowPayment(true) }}>
                             <Text style={styles.qrButtonText}>Detalle de pagos</Text>

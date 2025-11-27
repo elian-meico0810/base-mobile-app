@@ -8,7 +8,7 @@ import { formatNumber } from "@/src/utils/uitls";
 import React, { useState } from "react";
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { GuideDetails } from "../../domain/details/DetailsGuide";
-import { detailsRepositoryImpl } from "../../infrastructure/details/detailsRepositoryImpl";
+import { invoiceRepositoryImpl } from "../../infrastructure/invoices/invoiceRepositoryImpl";
 
 interface DetailsInvoiceQRProps {
     data?: GuideDetails;
@@ -57,7 +57,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
             if (onGenerateQR) {
                 onGenerateQR(TypeQr.PASARELA );
             }
-            const response = await detailsRepositoryImpl.sendPaymentGetway(
+            const response = await invoiceRepositoryImpl.sendPaymentGetway(
                 {
                     documento: {
                         numero: String(dataInvoice?.numeroFactura),
@@ -94,7 +94,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
             if (onGenerateQR) {
                 onGenerateQR(TypeQr.BANCARIA);
             }
-            const response = await detailsRepositoryImpl.generateQR(
+            const response = await invoiceRepositoryImpl.generateQR(
                 {
                     numdoc: String(dataInvoice?.numeroFactura),
                     tipodoc: 'Factura',

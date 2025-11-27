@@ -1,6 +1,5 @@
-
-import React, { forwardRef, useImperativeHandle, useRef } from "react";
-import { Animated, PanResponder, StyleSheet, Text, View } from "react-native";
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { Animated, PanResponder, PanResponderInstance, StyleSheet, Text, View } from "react-native";
 
 interface PrimaryButtonProps {
   title: string;
@@ -33,8 +32,8 @@ export const PrimaryButtonDetails = forwardRef(
     ref
   ) => {
     const pan = useRef(new Animated.ValueXY()).current;
+    const [panResponder, setPanResponder] = useState<PanResponderInstance | null>(null);
 
-    /** 🔥 Método para resetear la bolita */
     const reset = () => {
       Animated.spring(pan, {
         toValue: { x: 0, y: 0 },
@@ -42,19 +41,29 @@ export const PrimaryButtonDetails = forwardRef(
       }).start();
     };
 
-    /** 🔥 Exponer reset() al padre */
     useImperativeHandle(ref, () => ({
       reset,
     }));
 
-    const panResponder = useRef(
-      PanResponder.create({
+    useEffect(() => {
+      const newPanResponder = PanResponder.create({
         onStartShouldSetPanResponder: () => !disabled,
+        onMoveShouldSetPanResponder: () => !disabled,
+        onPanResponderGrant: () => {
+          // Ampliar el área de respuesta
+          return true;
+        },
         onPanResponderMove: (_, gestureState) => {
+          if (disabled) return;
           let newX = Math.max(0, Math.min(gestureState.dx, width - 56));
           pan.setValue({ x: newX, y: 0 });
         },
         onPanResponderRelease: (_, gestureState) => {
+          if (disabled) {
+            reset();
+            return;
+          }
+          
           if (gestureState.dx > width / 2) {
             Animated.spring(pan, {
               toValue: { x: width - 56, y: 0 },
@@ -63,7 +72,6 @@ export const PrimaryButtonDetails = forwardRef(
               try {
                 await onPress();
               } catch (e) {
-                console.log("❌ Error en onPress:", e);
                 if (autoReset) reset(); 
               }
             });
@@ -71,13 +79,38 @@ export const PrimaryButtonDetails = forwardRef(
             reset(); 
           }
         },
-      })
-    ).current;
+        onPanResponderTerminate: () => {
+          if (!disabled) reset();
+        },
+      });
+
+      setPanResponder(newPanResponder);
+    }, [disabled, width, onPress, autoReset]);
+
+    useEffect(() => {
+      if (disabled) {
+        reset();
+      }
+    }, [disabled]);
+
+    if (!panResponder) {
+      return (
+        <View style={[styles.container, { width, height }]}>
+          <View style={[styles.track, { width, height }]} />
+          <View style={[styles.button, { width, height, backgroundColor: "#D9DCE5" }]}>
+            <View style={styles.centerTextContainer}>
+              <Text style={styles.buttonText}>{title}</Text>
+            </View>
+          </View>
+        </View>
+      );
+    }
 
     return (
       <View style={[styles.container, { width, height }]}>
         <View style={[styles.track, { width, height }]} />
 
+        {/* Capa del botón con el color de fondo */}
         <Animated.View
           style={[
             styles.button,
@@ -94,7 +127,7 @@ export const PrimaryButtonDetails = forwardRef(
             },
           ]}
         >
-          {/* 🔥 Texto centrado */}
+          {/* Texto que cambia de color según la posición de la bolita */}
           <View style={styles.centerTextContainer}>
             <Animated.Text
               style={[
@@ -102,7 +135,7 @@ export const PrimaryButtonDetails = forwardRef(
                 {
                   color: pan.x.interpolate({
                     inputRange: [0, width - 56],
-                    outputRange: ["#FFFFFF", buttonColor],
+                    outputRange: [titleColor, buttonColor], // Cambia de blanco al color del botón
                     extrapolate: "clamp",
                   }),
                 },
@@ -112,22 +145,43 @@ export const PrimaryButtonDetails = forwardRef(
             </Animated.Text>
           </View>
 
-          {/* 🔥 Flecha que se mueve */}
+          {/* Capa adicional que "cubre" el texto con el color de la bolita según la posición */}
           <Animated.View
-            style={{
-              transform: [
-                {
-                  translateX: pan.x.interpolate({
-                    inputRange: [0, width - 56],
-                    outputRange: [0, width - 56],
-                    extrapolate: "clamp",
-                  }),
-                },
-              ],
-            }}
+            style={[
+              styles.textMask,
+              {
+                width: pan.x.interpolate({
+                  inputRange: [0, width - 56],
+                  outputRange: [0, width], // Se expande según la posición
+                  extrapolate: "clamp",
+                }),
+                backgroundColor: disabled ? "#A0A4B0" : circleColor, // Color de la bolita
+              },
+            ]}
+          />
+
+          {/* Contenedor más grande para el área sensible */}
+          <Animated.View
+            style={[
+              styles.touchArea,
+              {
+                transform: [
+                  {
+                    translateX: pan.x.interpolate({
+                      inputRange: [0, width - 56],
+                      outputRange: [0, width - 56],
+                      extrapolate: "clamp",
+                    }),
+                  },
+                ],
+              },
+            ]}
             {...panResponder.panHandlers}
           >
-            <View style={[styles.arrowContainerInline, { backgroundColor: circleColor }]}>
+            {/* Flecha que se mueve */}
+            <View style={[styles.arrowContainerInline, { 
+              backgroundColor: disabled ? "#A0A4B0" : circleColor 
+            }]}>
               <Text style={styles.arrow}>→</Text>
             </View>
           </Animated.View>
@@ -136,7 +190,6 @@ export const PrimaryButtonDetails = forwardRef(
     );
   }
 );
-
 
 const styles = StyleSheet.create({
   container: {
@@ -155,22 +208,28 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     flexDirection: "row",
     alignItems: "center",
+    overflow: "hidden",
   },
   centerTextContainer: {
     position: "absolute",
     width: "100%",
     justifyContent: "center",
     alignItems: "center",
+    zIndex: 1,
   },
   buttonText: {
     fontSize: 16,
     fontWeight: "bold",
   },
+  touchArea: {
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 3,
+  },
   arrowContainerInline: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#0E2B68",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -178,5 +237,11 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  textMask: {
+    position: "absolute",
+    height: "100%",
+    left: 0,
+    zIndex: 2, 
   },
 });

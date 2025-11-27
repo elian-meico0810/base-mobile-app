@@ -14,7 +14,8 @@ export function OptionsRefused({
     onClose,
     disabled = false,
     width = 360,
-    height = 510
+    height = 510,
+    onPress
 }: OptionsRefusedProps) {
     const [selectedStatus, setSelectedStatus] = useState<'Dinero' | 'Dueño' | 'Tienda' | 'Productos' | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
@@ -25,6 +26,7 @@ export function OptionsRefused({
     };
     const handleSubmit = () => {
         onClose?.();
+        onPress?.();
         console.log('Estado seleccionado para enviar:', selectedStatus);
     }
     return (

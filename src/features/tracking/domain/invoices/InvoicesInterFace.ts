@@ -46,3 +46,9 @@ export interface Invoice {
     numeroContacto: string;
     pagos: Payment[];
 }
+
+export interface OpneAddressesProps {
+    latitud: string;
+    longitud: string;
+    fechaHoraDispositivo: string;
+}

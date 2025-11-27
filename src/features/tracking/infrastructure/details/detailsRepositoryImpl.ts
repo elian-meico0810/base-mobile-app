@@ -86,7 +86,7 @@ export const detailsRepositoryImpl: DetailsRepository = {
       // "message": "Inicio de ruta registrado exitosamente",
       // "success": true
       // }
-      return response;
+      return (typeof response.data === "string") ?  JSON.parse(response.data) : response.data;
     } catch (error) {
       throw error;
     }

@@ -111,7 +111,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                 },
                 token
             );
-            if (response?.data?.statusCode == 200) {
+            if (response?.statusCode == 200) {
                 setRouteStarted(true);
                 setLoading(false);
             } else {

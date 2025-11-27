@@ -17,10 +17,11 @@ import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuid
 import { Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
-import { cleanSpaces } from '@/src/utils/uitls';
+import { cleanSpaces, getDeviceDateTime } from '@/src/utils/uitls';
 import { Image } from 'expo-image';
+import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Dimensions, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
@@ -51,12 +52,14 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [RefreshingOnPress, setRefreshingOnPress] = useState(false);
     const [EntryVisible, setEntryVisible] = useState(false);
     const [modalRefused, setShowModalRefused] = useState(false);
+    const [validateException, setValidateException] = useState(false);
     const [paymentSuccessful, setPaymentSuccessful] = useState<Invoice | undefined>();
     const [qrBase64, setQrBase64] = useState<string>('');
     const [qrType, setQrType] = useState<string>('');
     const [phone, setPhone] = useState("");
+    const [validateIsBotton, setvalidateIsBotton] = useState(false);
+    const btnRef = useRef<any>(null);
 
-    const isValid = true;
     const router = useRouter();
     const handleGoBack = () => {
         router.back();
@@ -107,11 +110,34 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const handleSubmit = async () => {
         try {
+            setvalidateIsBotton(true);
             setLoading(true);
-            setEntryVisible(true);
-            setRouteStarted(true);
+            const location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Highest,
+            });
+            const response = await invoiceRepositoryImpl.openAddresses(
+                {
+                    latitud: String(location.coords.latitude),
+                    longitud: String(location.coords.longitude),
+                    fechaHoraDispositivo: getDeviceDateTime()
+                },
+                guide?.idDireccion || 0,
+                token
+            );
+            if (response?.statusCode === 200) {
+                setEntryVisible(true);
+                setRouteStarted(true);
+            } else {
+                setValidateException(true);
+                btnRef.current?.reset();
+                setModalTitle("Alerta !!");
+                setModalMessage(response?.message || "No se pudo iniciar la ruta. Intente nuevamente.");
+                setModalVisible(true);
+            }
         } catch (error: any) {
-            throw error;
+            setModalTitle("Error !!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
         } finally {
             setLoading(false);
         }
@@ -119,9 +145,28 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const submitData = async () => {
         try {
-            console.log("entro ala funcion")
+            setLoading(true);
+            const response = await invoiceRepositoryImpl.closeAddresses(
+                guide?.idDireccion || 0,
+                token
+            );
+            if (response?.statusCode === 200) {
+                setEntryVisible(true);
+                setRouteStarted(true);
+                router.push(
+                    `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+                );
+            } else {
+                setValidateException(true);
+                btnRef.current?.reset();
+                setModalTitle("Alerta !!");
+                setModalMessage(response?.message || "No se pudo iniciar la ruta. Intente nuevamente.");
+                setModalVisible(true);
+            }
         } catch (error: any) {
-            throw error;
+            setModalTitle("Error !!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
         } finally {
             setLoading(false);
         }
@@ -148,7 +193,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
         try {
             setTimeout(async () => {
-
                 //  Ejecutar la petición cuando termine el timeout
                 const response = await detailsRepositoryImpl.listGuide(
                     Number(numberGuide),
@@ -454,15 +498,15 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             </Text>
                         </View>
                         {/* {newValue != 0 && ( */}
-                            <TouchableOpacity style={styles.qrButton} onPress={() => { validateButton(), setShowDetailInvoiceQR(true) }}>
-                                <View style={styles.qrButtonContent}>
-                                    <Image
-                                        source={require('@/assets/icons/GenerateQR.png')}
-                                        style={styles.qrButtonIcon}
-                                    />
-                                    <Text style={styles.qrButtonText}>Generar QR de pago</Text>
-                                </View>
-                            </TouchableOpacity>
+                        <TouchableOpacity style={styles.qrButton} onPress={() => { validateButton(), setShowDetailInvoiceQR(true) }}>
+                            <View style={styles.qrButtonContent}>
+                                <Image
+                                    source={require('@/assets/icons/GenerateQR.png')}
+                                    style={styles.qrButtonIcon}
+                                />
+                                <Text style={styles.qrButtonText}>Generar QR de pago</Text>
+                            </View>
+                        </TouchableOpacity>
                         {/* )}  */}
 
                         <TouchableOpacity style={styles.qrButtonDetail} onPress={() => { validateButton(), setShowPayment(true) }}>
@@ -486,16 +530,18 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
             <View style={[styles.footer, { marginBottom: 10 }]}>
                 <PrimaryButtonDetails
+                    ref={btnRef}
+                    autoReset={validateException}
                     key={routeStarted ? "cerrar" : "llegue"}
                     title={routeStarted ? "Cerrar pedido" : "Ya llegué"}
                     onPress={routeStarted ? submitData : handleSubmit}
-                    disabled={!isValid}
+                    disabled={validateIsBotton}
                     width={328}
                     height={43}
-                    buttonColor={routeStarted ? "#DDDFE8" : undefined}
-                    buttonColorEnd={routeStarted ? "#DDDFE8" : undefined}
+                    buttonColor={validateIsBotton ? "#DDDFE8" : undefined}
+                    buttonColorEnd={validateIsBotton ? "#DDDFE8" : undefined}
                     titleColor={routeStarted ? "#FFFFFF" : undefined}
-                    circleColor={routeStarted ? "#788095" : undefined}
+                    circleColor={validateIsBotton ? "#788095" : undefined}
                 />
             </View>
 
@@ -593,6 +639,11 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 <OptionsRefused
                     onClose={() => setShowModalRefused(false)}
                     width={width}
+                    onPress={()=> {
+                        setvalidateIsBotton(false);
+                        console.log("Cerrar desde InfoInvoiceForm", (validateIsBotton));
+                    }
+                        }
                 />
             )}
             {loading && <LoadingBlue />}

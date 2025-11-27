@@ -1,10 +1,10 @@
 import { API_ROUTES } from "@/src/constants/apiRoutes";
-import { authDevApi } from "@/src/features/auth/infrastructure/authApi";
-import { GenerateQRPorps, PaymentGatewayProps, ReportWhatsAppQRPorps } from "../../domain/invoices/InvoicesInterFace";
+import { authApi, authDevApi } from "@/src/features/auth/infrastructure/authApi";
+import { GenerateQRPorps, OpneAddressesProps, PaymentGatewayProps, ReportWhatsAppQRPorps } from "../../domain/invoices/InvoicesInterFace";
 import { InvoicesRepository, } from "../../domain/invoices/InvoicesRepository";
 
 export const invoiceRepositoryImpl: InvoicesRepository = {
- 
+
   async sendPaymentGetway(data: PaymentGatewayProps, key: string) {
     try {
 
@@ -230,5 +230,44 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
     } catch (error) {
       throw error;
     }
+  },
+
+  async openAddresses(data: OpneAddressesProps, addresseId: number, token: string) {
+    try {
+      const response = await authApi.post(
+        `${API_ROUTES.OPEN_ADDRESSES}${addresseId}/`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      // Aquí devuelves solo el JSON que envió el servidor
+      return (typeof response.data === "string") ?  JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async closeAddresses( addresseId: number, token: string) {
+    try {
+      const response = await authApi.post(
+        `${API_ROUTES.CLOSE_ADDRESSES}${addresseId}/`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      // Aquí devuelves solo el JSON que envió el servidor
+      return (typeof response.data === "string") ?  JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
   }
+
 };

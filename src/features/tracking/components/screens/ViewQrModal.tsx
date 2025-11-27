@@ -44,6 +44,7 @@ export function ViewQrModal({
     onSendWhatsApp,
     onChangeQRType
 }: ViewQrModalQRProps) {
+    console.log("Rendering ViewQrModal with qrType:", onClose);
     const [loading, setLoading] = useState(false);
     const [currentView, setCurrentView] = useState<ViewType>('main');
     const [modalTitle, setModalTitle] = useState("");
@@ -96,9 +97,17 @@ export function ViewQrModal({
             {/* MODAL — ahora SIN pointerEvents="box-none" */}
             <View style={[styles.container, { width }]}>
                 {/* BOTÓN X */}
-                <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                <TouchableOpacity
+                    style={styles.closeButton}
+                    onPress={() => {
+                        console.log("close pressed (ViewQrModal) — onClose typeof:", typeof onClose);
+                        if (typeof onClose === "function") onClose();
+                        else console.warn("onClose no es una función:", onClose);
+                    }}
+                >
                     <Text style={styles.closeText}>X</Text>
                 </TouchableOpacity>
+
 
                 {/* Renderizar contenido */}
                 <RenderQRView
@@ -141,10 +150,14 @@ const styles = StyleSheet.create({
         backgroundColor: "transparent",
         zIndex: 9999,
         elevation: 9999,
+        pointerEvents: "box-none",
+
     },
     backgroundOverlay: {
         ...StyleSheet.absoluteFillObject,
         backgroundColor: "rgba(0,0,0,0.5)",
+        zIndex: 0,
+
     },
     container: {
         height: 750,
@@ -154,17 +167,19 @@ const styles = StyleSheet.create({
         paddingTop: 16,
         paddingHorizontal: 16,
         paddingBottom: 24,
-        zIndex: 2,
+        zIndex: 10,
     },
     closeButton: {
         position: "absolute",
         right: 16,
         top: 16,
+        zIndex: 10,
     },
     closeText: {
         fontSize: 16,
         color: "#788095",
         fontWeight: "bold",
+        zIndex: 20,
     },
     title: {
         fontFamily: "Rubik",

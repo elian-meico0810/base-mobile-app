@@ -190,7 +190,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
               title="Ingresar"
               onPress={handleSubmit}
               disabled={!isValid}
-              width={350}
+              width={328}
               height={43}
             />
           </View>

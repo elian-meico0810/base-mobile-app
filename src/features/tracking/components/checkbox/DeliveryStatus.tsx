@@ -11,8 +11,6 @@ const { width, height } = Dimensions.get('window');
 
 export function DeliveryStatus({ onStatusChange, EntryVisible, onOpenRefusedModal, onHandelSubmit }: DeliveryStatusProps) {
     const [selectedStatus, setSelectedStatus] = useState<'total' | 'parcial' | 'rechazo' | null>(null);
-    const [modalVisible, setModalVisible] = useState(false);
-    console.log('EntryVisible:', modalVisible);
     const handleStatusSelect = (status: 'total' | 'parcial' | 'rechazo') => {
         if (!EntryVisible) return;
         if (status === 'rechazo') {

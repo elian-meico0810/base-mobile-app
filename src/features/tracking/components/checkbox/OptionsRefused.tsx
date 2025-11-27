@@ -175,7 +175,7 @@ export function OptionsRefused({
                         title="Continuar"
                         onPress={handleSubmit}
                         disabled={false}
-                        width={350}
+                        width={328}
                         height={43}
                     />
                 </ScrollView>

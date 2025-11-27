@@ -461,7 +461,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                     <Text style={styles.qrButtonText}>Generar QR de pago</Text>
                                 </View>
                             </TouchableOpacity>
-                        )}
+                        )} 
 
                         <TouchableOpacity style={styles.qrButtonDetail} onPress={() => { validateButton(), setShowPayment(true) }}>
                             <Text style={styles.qrButtonText}>Detalle de pagos</Text>
@@ -488,7 +488,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     title={routeStarted ? "Cerrar pedido" : "Ya llegué"}
                     onPress={routeStarted ? submitData : handleSubmit}
                     disabled={!isValid}
-                    width={350}
+                    width={328}
                     height={43}
                     buttonColor={routeStarted ? "#DDDFE8" : undefined}
                     buttonColorEnd={routeStarted ? "#DDDFE8" : undefined}
@@ -534,7 +534,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             {modalgenerateQR && (
                 <ViewQrModal
                     data={guide}
-                    onClose={() => setModalgenerateQR(false)}
+                    onClose={() => {
+                        console.log("Cerrar desde InfoInvoiceForm");
+                        setModalgenerateQR(false);
+                    }}
                     onChangePhone={() => {
                         setShowDetailInvoiceQR(false);
                         setShowPayment(false);

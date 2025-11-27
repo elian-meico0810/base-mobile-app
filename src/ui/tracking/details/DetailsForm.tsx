@@ -14,7 +14,7 @@ import { getDeviceDateTime } from '@/src/utils/uitls';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     Dimensions,
     Image, ScrollView, StyleSheet,
@@ -38,10 +38,12 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
+    const [validateException, setValidateException] = useState(false);
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [date, setDate] = useState<string | null>(null);
+    const btnRef = useRef<any>(null);
     const router = useRouter();
 
     const isValid = guide.length >= 5;
@@ -86,6 +88,8 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
         try {
             const { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
+                setValidateException(true);
+                btnRef.current?.reset();
                 setModalTitle("Permiso denegado !!");
                 setModalMessage("Se requiere acceso a la ubicación.");
                 setLoading(false);
@@ -110,8 +114,12 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
             if (response?.data?.statusCode == 200) {
                 setRouteStarted(true);
                 setLoading(false);
-
             } else {
+                setValidateException(true);
+                btnRef.current?.reset();
+                setModalTitle("Alerta !!");
+                setModalMessage(response?.data?.message ?? "Ocurrio un error inesperado.");
+                setModalVisible(true);
             }
 
         } catch (error: any) {
@@ -199,11 +207,13 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                     {!routeStarted && (
                         <View style={{ alignItems: 'center', marginBottom: 25 }}>
                             <PrimaryButtonDetails
+                                ref={btnRef}
                                 title="Comenzar ruta"
                                 onPress={handleSubmit}
                                 disabled={!isValid}
-                                width={350}
+                                width={328}
                                 height={43}
+                                autoReset={validateException}
                             />
                         </View>
                     )}

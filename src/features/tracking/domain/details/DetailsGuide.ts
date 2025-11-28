@@ -24,3 +24,10 @@ export interface RuteInitPorps {
   fechaHoraDispositivo: string
 }
 
+export interface RuteByCodeGuide {
+  id: string,
+  codigo_guia: number,
+  estado_id: number,
+  fecha_inicio: string,
+  fecha_finalizacion: string
+}

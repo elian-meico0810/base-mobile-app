@@ -1,4 +1,5 @@
 import { ThemedText } from '@/components/themed-text';
+import { StatusInvoice } from '@/src/constants/GuideStates';
 import { formatTime } from '@/src/utils/uitls';
 import { Image } from 'expo-image';
 import React, { useEffect, useState } from 'react';
@@ -45,13 +46,13 @@ export const DetailsGudes = ({ style, guide, onExit, date, routeStarted, statusN
                 <View
                     style={[
                         styles.statusContainer,
-                        routeStarted && { backgroundColor: '#DFF5E1' }
+                       ( (statusName != StatusInvoice.PENDING) &&( routeStarted)) && { backgroundColor: '#DFF5E1' }
                     ]}
                 >
                     <Text
                         style={[
                             styles.status,
-                            statusName && { color: '#1F9144' }
+                            (statusName != StatusInvoice.PENDING) && { color: '#1F9144' }
                         ]}
                     >
                         {statusName ?? null}

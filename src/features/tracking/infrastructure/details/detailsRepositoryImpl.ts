@@ -86,11 +86,37 @@ export const detailsRepositoryImpl: DetailsRepository = {
       // "message": "Inicio de ruta registrado exitosamente",
       // "success": true
       // }
-      return (typeof response.data === "string") ?  JSON.parse(response.data) : response.data;
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {
       throw error;
     }
   },
 
- 
+  async closeRouteInit(data: RuteInitPorps, token: string) {
+    try {
+      const response = await authApi.post(API_ROUTES.CLOSE_ROUTE, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async listRouteByCodeGuide(guide: number, token: string) {
+    try {
+      const { data } = await authApi.get(`${API_ROUTES.GET_ROUTE_BY_CODE_GUIDE}${guide}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return data
+
+    } catch (error) {
+      throw error;
+    }
+  },
 };

@@ -511,7 +511,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         </TouchableOpacity>
                         {/* )}  */}
 
-                        <TouchableOpacity style={styles.qrButtonDetail} onPress={() => { validateButton(), setShowPayment(true) }}>
+                        <TouchableOpacity style={styles.qrButtonDetail} onPress={() => { setShowPayment(true) }}>
                             <Text style={styles.qrButtonText}>Detalle de pagos</Text>
                         </TouchableOpacity>
                     </View>

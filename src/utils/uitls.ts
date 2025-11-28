@@ -16,22 +16,28 @@ export function getDeviceDateTime() {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
-
-// Opción 1: declaración de función
 export function formatTime(dateStr: string): string {
   const d = new Date(dateStr);
+
+  // Día / Mes / Año (2 dígitos)
+  const day = d.getDate().toString().padStart(2, "0");
+  const month = (d.getMonth() + 1).toString().padStart(2, "0");
+  const year = d.getFullYear().toString().slice(-2); // 2025 → 25
+
+  // Hora
   let hours = d.getHours();
-  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const minutes = d.getMinutes().toString().padStart(2, "0");
+  const ampm = hours >= 12 ? "pm" : "am";
+
   hours = hours % 12;
   if (hours === 0) hours = 12;
-  const hh = hours.toString().padStart(2, '0');
-  const mm = d.getMinutes().toString().padStart(2, '0');
-  const ss = d.getSeconds().toString().padStart(2, '0');
-  return `Inicio de ruta a las ${hh}:${mm} ${ampm}`;
+
+  return `Inicio ruta ${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
 }
 
 
 
+
 export function formatNumber(num: number) {
-    return num.toLocaleString("es-CO");
+  return num.toLocaleString("es-CO");
 }

@@ -8,7 +8,7 @@ import { TodayDeliveries } from '@/components/generals/TodayDeliveries';
 import { SearchInput } from '@/components/inputs/SearchInput';
 import { GuideCardSkeleton } from '@/components/skeleton/GuideCardSkeleton';
 import { ThemedView } from '@/components/themed-view';
-import { StatusInvoice } from '@/src/constants/GuideStates';
+import { StatusInvoice, StatusInvoiceID } from '@/src/constants/GuideStates';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { getDeviceDateTime } from '@/src/utils/uitls';
@@ -43,9 +43,11 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [statusValue, setStatusValue] = useState("");
+    const [runApiFinish, setRunApiFinish] = useState(false);
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [waitingForPermission, setWaitingForPermission] = useState(false);
     const [date, setDate] = useState<string | null>(null);
+
     const btnRef = useRef<any>(null);
     const router = useRouter();
 
@@ -115,26 +117,100 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                             }
                         });
 
-                    const hasInCourse = sortedData.some(item =>
-                        (item as GuideDetails).estado?.toLowerCase() === StatusInvoice.CLOSE.toLowerCase()
+                    const hasInCourse = sortedData.every(
+                        item => (item as GuideDetails).estado?.toLowerCase() === StatusInvoice.CLOSE_TWO.toLowerCase()
                     );
 
-                    // Asignar la variable según el resultado
-                    const statusValue = hasInCourse ? StatusInvoice.IN_COURSE : StatusInvoice.PENDING;
-                    setStatusValue(statusValue);
+                    if (hasInCourse) {
+                        await finshRoute();
+                    }
 
+                    // Asignar la variable según el resultado
                     setData(sortedData as GuideDetails[]);
                     setFilteredGuides(sortedData as GuideDetails[]);
+                    await getStatusStyle();
                 }
 
             } else {
                 setData([]);
                 setFilteredGuides([]);
             }
+
         };
         fetchData();
     }, [guide, tokenUser || token]);
 
+    const getStatusStyle = async () => {
+        try {
+            const responseQuery = await detailsRepositoryImpl.listRouteByCodeGuide(Number(guide), tokenUser || token);
+            if (responseQuery?.statusCode == 200) {
+                if (typeof responseQuery.data === "object" && !Array.isArray(responseQuery.data)) {
+                    switch (responseQuery?.data?.estado_id) {
+                        case StatusInvoiceID.IN_COURSE:
+                            setStatusValue(StatusInvoice.IN_COURSE);
+                            setDate(await SecureStore.getItemAsync('expiration_date'));
+                            setRunApiFinish(false);
+                            break;
+
+                        case StatusInvoiceID.PENDING:
+                            setStatusValue(StatusInvoice.PENDING);
+                            setRunApiFinish(false);
+                            break;
+
+                        case StatusInvoiceID.CLOSE:
+                            setDate(await SecureStore.getItemAsync('expiration_date'));
+                            setStatusValue(StatusInvoice.CLOSE);
+                            setRunApiFinish(true);
+                            break;
+
+                        default:
+                            setStatusValue("No tine estado");
+                    }
+
+                }
+            }
+
+            if (runApiFinish) {
+                await finshRoute();
+            }
+        } catch (error: any) {
+            setModalTitle("Error !!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    const finshRoute = async () => {
+        try {
+            const location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Highest,
+            });
+
+            const responseData = await detailsRepositoryImpl.closeRouteInit(
+                {
+                    codigoGuia: String(guide),
+                    latitud: String(location.coords.latitude),
+                    longitud: String(location.coords.longitude),
+                    fechaHoraDispositivo: getDeviceDateTime()
+                },
+                token
+            );
+            if (responseData?.statusCode != 200) {
+                setModalTitle("Alerta !!");
+                setModalMessage(responseData?.message ?? "Ocurrio un error inesperado.");
+                setModalVisible(true);
+            }
+        } catch (error: any) {
+            setModalTitle("Error !!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    }
     const handleExit = async () => {
         setLoading(true);
         await SecureStore.deleteItemAsync('user_token');
@@ -152,6 +228,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
             setLoading(true);
             const initDate = getDeviceDateTime()
             setDate(initDate)
+            await SecureStore.setItemAsync('expiration_date', initDate);
             const location = await Location.getCurrentPositionAsync({
                 accuracy: Location.Accuracy.Highest,
             });
@@ -165,6 +242,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                 token
             );
             if (response?.statusCode == 200) {
+                await getStatusStyle();
                 setRouteStarted(true);
                 setLoading(false);
             } else {
@@ -231,7 +309,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                             style={styles.guidesScroll}
                             contentContainerStyle={{ paddingBottom: 20 }}
                         >
-                            {((data.length === 0 ) || ( waitingForPermission))? (
+                            {((data.length === 0) || (waitingForPermission)) ? (
                                 Array.from({ length: 3 }).map((_, i) => (
                                     <GuideCardSkeleton key={i} />
                                 ))
@@ -248,7 +326,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                                             key={item.codigoCliente}
                                             guide={item}
                                             onPress={() => console.log('Ir a dirección')}
-                                            routeStarted={statusValue == StatusInvoice.IN_COURSE ? true : routeStarted}
+                                            routeStarted={statusValue != StatusInvoice.PENDING ? true : routeStarted}
                                             numberGuide={String(guide)}
                                             token={token}
                                         />
@@ -258,7 +336,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                         </ScrollView>
                     </View>
 
-                    {(!routeStarted && (statusValue && statusValue != StatusInvoice.IN_COURSE)) && (
+                    {(!routeStarted && (statusValue && statusValue == StatusInvoice.PENDING)) && (
                         <View style={{ alignItems: 'center', marginBottom: 25 }}>
                             <PrimaryButtonDetails
                                 ref={btnRef}

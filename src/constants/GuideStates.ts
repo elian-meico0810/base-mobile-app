@@ -31,5 +31,13 @@ seguimiento para mostrar accciones  */
 export enum StatusInvoice {
     IN_COURSE = "En curso",
     PENDING = "Pendiente",
-    CLOSE = "Cerrada"
+    CLOSE = "Finalizada",
+    CLOSE_TWO = "Cerrada"
+}
+
+
+export enum StatusInvoiceID {
+    IN_COURSE = 8,
+    PENDING = 7,
+    CLOSE = 9
 }

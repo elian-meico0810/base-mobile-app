@@ -1,4 +1,5 @@
 import { PaymentPendingAlert } from '@/components/alerts/PaymentPendingAlert';
+import { TopErrorAlert } from '@/components/alerts/TopErrorAlert';
 import { TopSuccessAlert } from '@/components/alerts/TopSuccessAlert';
 import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
@@ -47,11 +48,14 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [modalgenerateQR, setModalgenerateQR] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [showSuccessQRp, setShowSuccessQRP] = useState(false);
+    const [showErrorQRP, setShowErrorQRP] = useState(false);
+    console.log("Mostrar error QR: ", showErrorQRP);
     const [showPaymentPending, setShowPaymentPending] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [RefreshingOnPress, setRefreshingOnPress] = useState(false);
     const [EntryVisible, setEntryVisible] = useState(false);
     const [modalRefused, setShowModalRefused] = useState(false);
+    const [uploadPhoto, setUploadPhoto] = useState(false);
     const [validateException, setValidateException] = useState(false);
     const [paymentSuccessful, setPaymentSuccessful] = useState<Invoice | undefined>();
     const [qrBase64, setQrBase64] = useState<string>('');
@@ -64,6 +68,16 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const handleGoBack = () => {
         router.back();
     };
+
+    useEffect(() => {
+        if (modalRefused) {
+            console.log("Modal rechazo abierto");  
+            setShowDetailInvoiceQR(false);
+            setModalgenerateQR(false);
+        }
+    }, [modalRefused]);
+
+
     useEffect(() => {
         const fetchGuide = async () => {
             try {
@@ -75,7 +89,11 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     setPaymentSuccessful(respones.data as Invoice);
                 }
             } catch (error) {
-                throw error;
+                setModalTitle("Error !!");
+                setModalMessage("Ocurrio un error inesperado.");
+                setModalVisible(true);
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -183,8 +201,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 setModalMessage("Debe indicar que ya llegó al lugar de la dirección para poder ejecutar esta acción.");
                 setModalVisible(true);
             }
-        } catch (error: any) {
-            throw error;
+        } catch (error) {
+            setModalTitle("Error !!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
         } finally {
             setLoading(false);
         }
@@ -252,7 +272,15 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             }, 2000);
         } catch (error) {
             setRefreshing(false);
+            setModalTitle("Error !!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
         }
+    };
+
+    const uploadPhotoSubmit = () => {
     };
 
     const paymentsData = [
@@ -526,6 +554,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         onStatusChange={(status) => console.log('Estado seleccionado:', status)}
                         EntryVisible={EntryVisible}
                         onOpenRefusedModal={() => setShowModalRefused(true)}
+                        onUploadPhoto={() => setUploadPhoto(true)}
                     />
                 </View>
             </ScrollView>
@@ -556,7 +585,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 buttonLabel={modalButtonLabel}
             />
 
-            {(showPayment && routeStarted) && (
+            {(showPayment) && (
                 <InfoPayments
                     title="Detalle de pagos"
                     subTitle="La factura no tiene pagos registrados"
@@ -579,6 +608,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     phone={phone}
                     onGenerateQR={handleGenerateQR}
                     onPressPayment={() => setRefreshingOnPress(true)}
+                    onErrorPayment={() => setShowErrorQRP(true)}
                 />
             )}
 
@@ -586,7 +616,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 <ViewQrModal
                     data={guide}
                     onClose={() => {
-                        console.log("Cerrar desde InfoInvoiceForm");
                         setModalgenerateQR(false);
                     }}
                     onChangePhone={() => {
@@ -638,15 +667,22 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 />
             )}
 
+            {showErrorQRP && (
+                <TopErrorAlert
+                    visible={showErrorQRP}
+                    message="No pudimos generar el QR"
+                    subtitle="Ocurrió un error al generar el QR, inténtalo nuevamente"
+                    onHide={() => setShowErrorQRP(false)}
+                />
+            )}
+
             {modalRefused && (
                 <OptionsRefused
-                    onClose={() => setShowModalRefused(false)}
+                    onClose={() => {setShowModalRefused(false)}}
                     width={width}
                     onPress={() => {
-                        setvalidateIsBotton(false);
-                        console.log("Cerrar desde InfoInvoiceForm", (validateIsBotton));
-                    }
-                    }
+                        setvalidateIsBotton(false)
+                    }}
                 />
             )}
             {loading && <LoadingBlue />}

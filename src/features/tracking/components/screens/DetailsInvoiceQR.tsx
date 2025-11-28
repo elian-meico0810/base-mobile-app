@@ -20,6 +20,7 @@ interface DetailsInvoiceQRProps {
     phone?: string;
     onGenerateQR?: (qrType: string, qrBase64?: string) => void;
     onPressPayment: () => void;
+    onErrorPayment?: () => void;
 
 }
 
@@ -30,7 +31,7 @@ interface Invoice {
     valorTotal: number;
 }
 
-export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone, onGenerateQR, onPressPayment}: DetailsInvoiceQRProps) {
+export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone, onGenerateQR, onPressPayment, onErrorPayment }: DetailsInvoiceQRProps) {
     const [loading, setLoading] = useState(false);
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
@@ -55,13 +56,13 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
 
             setLoading(true);
             if (onGenerateQR) {
-                onGenerateQR(TypeQr.PASARELA );
+                onGenerateQR(TypeQr.PASARELA);
             }
             const response = await invoiceRepositoryImpl.sendPaymentGetway(
                 {
                     documento: {
                         numero: String(dataInvoice?.numeroFactura),
-                        codigoCliente: String(dataInvoice?.numeroFactura),
+                        codigoCliente: String(data?.codigoCliente),
                         tipoDocumento: "Factura",
                     },
                     linkFisico: false,
@@ -69,20 +70,24 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                 },
                 ENV_DEV.KEY_APP
             );
-            setLoading(false);
-            onPressPayment();
-            onGenerateQR?.(TypeQr.PASARELA , response?.data?.linkPagoVirtual);
+            if (response?.statusCode === 200) {
+                setLoading(false);
+                onPressPayment();
+                onGenerateQR?.(TypeQr.PASARELA, response?.data?.linkPagoVirtual);
+            } else {
+                onErrorPayment?.();
+            }
         } catch (error: any) {
-            throw error;
+            setModalTitle("Error !!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
         } finally {
             setLoading(false);
-
         }
     };
 
     const generateQR = async () => {
         try {
-
             if (!phone || !/^\d{10}$/.test(phone)) {
                 setModalTitle("Alerta !!");
                 setModalMessage("Debe ingresar un número de teléfono válido de 10 dígitos.");
@@ -94,19 +99,26 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
             if (onGenerateQR) {
                 onGenerateQR(TypeQr.BANCARIA);
             }
+
             const response = await invoiceRepositoryImpl.generateQR(
                 {
                     numdoc: String(dataInvoice?.numeroFactura),
-                    tipodoc: 'Factura',
-                    cus_no: String(dataInvoice?.numeroFactura),
+                    tipodoc: 'TD_FACTURA',
+                    cus_no: String(data?.codigoCliente),
                 },
                 ENV_DEV.KEY_APP
             );
-            setLoading(false);
-            onPressPayment();
-            onGenerateQR?.(TypeQr.BANCARIA, response?.data?.qr);
+            if (response?.statusCode === 200) {
+                setLoading(false);
+                onPressPayment();
+                onGenerateQR?.(TypeQr.BANCARIA, response?.data?.qr);
+            } else {
+                onErrorPayment?.();
+            }
         } catch (error: any) {
-            throw error;
+            setModalTitle("Error !!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
         } finally {
             setLoading(false);
         }

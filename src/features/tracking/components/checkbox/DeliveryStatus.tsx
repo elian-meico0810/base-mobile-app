@@ -1,3 +1,4 @@
+import { AddEvidenceButton } from '@/components/inputs/AddEvidenceButton';
 import { useState } from 'react';
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -6,10 +7,11 @@ interface DeliveryStatusProps {
     EntryVisible?: boolean;
     onOpenRefusedModal?: () => void;
     onHandelSubmit?: () => void;
+    onUploadPhoto?: () => void;
 }
 const { width, height } = Dimensions.get('window');
 
-export function DeliveryStatus({ onStatusChange, EntryVisible, onOpenRefusedModal, onHandelSubmit }: DeliveryStatusProps) {
+export function DeliveryStatus({ onStatusChange, EntryVisible, onOpenRefusedModal, onHandelSubmit, onUploadPhoto }: DeliveryStatusProps) {
     const [selectedStatus, setSelectedStatus] = useState<'total' | 'parcial' | 'rechazo' | null>(null);
     const handleStatusSelect = (status: 'total' | 'parcial' | 'rechazo') => {
         if (!EntryVisible) return;
@@ -38,21 +40,17 @@ export function DeliveryStatus({ onStatusChange, EntryVisible, onOpenRefusedModa
                 disabled={!EntryVisible}
             >
                 <View style={styles.checkboxContent}>
+                    {/* ICONO IZQUIERDO */}
                     <View style={styles.iconLeft}>
-                        <View style={[
-                            styles.iconContainer,
-                            // selectedStatus === 'total' && styles.iconContainerSelected
-                        ]}>
+                        <View style={styles.iconContainer}>
                             <Image
                                 source={require('@/assets/icons/Check.png')}
-                                style={[
-                                    styles.icon,
-                                    // selectedStatus === 'total' && styles.iconSelected
-                                ]}
+                                style={styles.icon}
                             />
                         </View>
                     </View>
 
+                    {/* TEXTO */}
                     <View style={styles.textContent}>
                         <Text style={styles.checkboxLabel}>Entrega total</Text>
                         <Text style={styles.checkboxDescription}>
@@ -60,12 +58,20 @@ export function DeliveryStatus({ onStatusChange, EntryVisible, onOpenRefusedModa
                         </Text>
                     </View>
 
+                    {/* CHECK DERECHA */}
                     <View style={styles.checkboxRight}>
                         <View style={styles.checkbox}>
                             {selectedStatus === 'total' && <View style={styles.checkboxInner} />}
                         </View>
                     </View>
                 </View>
+                {/* BOTÓN DE AGREGAR EVIDENCIA */}
+                {selectedStatus === 'total' && (
+                    <AddEvidenceButton onPress={() => {
+                        onUploadPhoto?.();
+                        console.log("Agregar evidencia")
+                    }} />
+                )}
             </TouchableOpacity>
 
             {/* Entrega parcial */}
@@ -107,6 +113,14 @@ export function DeliveryStatus({ onStatusChange, EntryVisible, onOpenRefusedModa
                         </View>
                     </View>
                 </View>
+                {/* BOTÓN DE AGREGAR EVIDENCIA */}
+                {selectedStatus === 'parcial' && (
+                    <AddEvidenceButton onPress={() => {
+                        onUploadPhoto?.();
+                        console.log("Agregar evidencia")
+                    }} />
+                )}
+
             </TouchableOpacity>
 
             {/* Rechazo */}
@@ -148,12 +162,10 @@ export function DeliveryStatus({ onStatusChange, EntryVisible, onOpenRefusedModa
                         </View>
                     </View>
                 </View>
-
-
             </TouchableOpacity>
 
         </ScrollView>
-        
+
     );
 }
 

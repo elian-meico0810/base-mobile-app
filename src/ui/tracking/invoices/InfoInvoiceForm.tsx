@@ -529,6 +529,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     />
                 </View>
             </ScrollView>
+            <View style={styles.redBackground} />
 
             <View style={[styles.footer, { marginBottom: 10 }]}>
                 <PrimaryButtonDetails
@@ -865,6 +866,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingBottom: 100,
     },
-
+    redBackground: {
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 90,
+        backgroundColor: "#F9F9FA",
+        zIndex: 0,
+    },
 });
 

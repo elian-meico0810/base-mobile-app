@@ -108,7 +108,7 @@ export function GuideCard({ guide, onPress, routeStarted, numberGuide, token }: 
             <ExceptionModal
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
-                title={routeStarted ? "Sin ubicación disponible" : "Alerta !!"}
+                title={routeStarted ? "Sin ubicación disponible" : "¡Alerta!"}
                 message={
                     (routeStarted)
                         ? "Esta guía no contiene coordenadas válidas para navegar."

@@ -1,9 +1,10 @@
 import { PrimaryButton } from "@/components/buttons/PrimaryButton";
+import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface OptionsRefusedProps {
-    onPress?: () => void;
+    onPress?: (selectedStatus: 'Dinero' | 'Dueño' | 'Tienda' | 'Productos' | null) => void;
     onClose?: () => void;
     disabled?: boolean;
     width?: number;
@@ -14,21 +15,32 @@ export function OptionsRefused({
     onClose,
     disabled = false,
     width = 360,
-    height = 510,
+    height = 510, 
     onPress
 }: OptionsRefusedProps) {
     const [selectedStatus, setSelectedStatus] = useState<'Dinero' | 'Dueño' | 'Tienda' | 'Productos' | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
-    const handleStatusSelect = (status: 'Dinero' | 'Dueño' | 'Tienda' | 'Productos') => {
+    
+    // Usar el prop height como valor inicial, pero luego controlarlo dinámicamente
+    const [dynamicHeight, setDynamicHeight] = useState(height);
 
+    const handleStatusSelect = (status: 'Dinero' | 'Dueño' | 'Tienda' | 'Productos') => {
         const newStatus = selectedStatus === status ? null : status;
         setSelectedStatus(newStatus);
+
+        if (newStatus === 'Tienda') {
+            setDynamicHeight(540);
+        } else {
+            setDynamicHeight(510);
+        }
     };
+
     const handleSubmit = () => {
         onClose?.();
-        onPress?.();
+        onPress?.(selectedStatus); // Pasar el estado seleccionado al padre
         console.log('Estado seleccionado para enviar:', selectedStatus);
     }
+
     return (
         <View style={styles.overlay}>
             {/* Fondo gris semi-transparente */}
@@ -38,20 +50,20 @@ export function OptionsRefused({
                 activeOpacity={1}
             />
 
-            {/* Panel de contenido */}
-            <View style={[styles.container, { width, height }]}>
-                {/* Fondo del panel */}
-                <View style={[styles.track, { width, height }]} />
+            {/* Panel de contenido - USAR dynamicHeight aquí */}
+            <View style={[styles.container, { width, height: dynamicHeight }]}>
+                {/* Fondo del panel - USAR dynamicHeight aquí también */}
+                <View style={[styles.track, { width, height: dynamicHeight }]} />
 
                 {/* Botón de cerrar */}
                 <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                    <Text style={styles.closeText}>X</Text>
+                    <Text style={styles.closeText}>×</Text>
                 </TouchableOpacity>
 
                 {/* Título */}
                 <View style={styles.titleContainer}>
                     <Text style={styles.title}>Motivo del rechazo</Text>
-                <Text style={styles.subTitle}>Selecciona el motivo correspondiente</Text>
+                    <Text style={styles.subTitle}>Selecciona el motivo correspondiente</Text>
                 </View>
 
                 <ScrollView
@@ -117,7 +129,8 @@ export function OptionsRefused({
                     </TouchableOpacity>
 
 
-                    {/* Tienda cerrada */}
+
+                    {/* Opción Tienda cerrada */}
                     <TouchableOpacity
                         style={[
                             styles.checkboxContainer,
@@ -125,12 +138,15 @@ export function OptionsRefused({
                         ]}
                         onPress={() => handleStatusSelect('Tienda')}
                     >
+                        {selectedStatus === 'Tienda' && (
+                            <View style={styles.evidenceBox}>
+                                <Ionicons name="alert-circle" size={14} color="#4F74C4" />
+                                <Text style={styles.evidenceText}>Este motivo requiere de carga de evidencia</Text>
+                            </View>
+                        )}
                         <View style={styles.checkboxContent}>
                             <View style={styles.iconLeft}>
-                                <View style={[
-                                    styles.iconContainer,
-                                    // selectedStatus === 'parcial' && styles.iconContainerSelected
-                                ]}>
+                                <View style={styles.iconContainer}>
                                     <View style={styles.checkboxRight}>
                                         <View style={styles.checkbox}>
                                             {selectedStatus === 'Tienda' && <View style={styles.checkboxInner} />}
@@ -138,12 +154,13 @@ export function OptionsRefused({
                                     </View>
                                 </View>
                             </View>
+
                             <View style={styles.textContent}>
                                 <Text style={styles.checkboxLabel}>Tienda cerrada</Text>
                             </View>
-
                         </View>
                     </TouchableOpacity>
+
 
                     {/* Productos dañados */}
                     <TouchableOpacity
@@ -230,8 +247,8 @@ const styles = StyleSheet.create({
     },
     closeText: {
         color: "#788095",
-        fontSize: 14,
-        fontWeight: "bold",
+        fontSize: 24, // Aumenté el tamaño
+        fontWeight: "300",
     },
     titleContainer: {
         marginBottom: 20,
@@ -252,7 +269,7 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
     },
     checkboxContainer: {
-        width: 350,
+        width: '100%', // Cambié de 350 a 100%
         minHeight: 56,
         backgroundColor: '#FFFFFF',
         borderColor: '#F0F1F5',
@@ -261,6 +278,7 @@ const styles = StyleSheet.create({
         paddingTop: 16,
         paddingBottom: 16,
         paddingLeft: 16,
+        paddingRight: 16,
     },
     checkboxSelected: {
         borderColor: '#164194',
@@ -322,9 +340,26 @@ const styles = StyleSheet.create({
     subTitle: {
         fontFamily: "Rubik",
         fontWeight: "400",
-        fontSize: 14,      
-        marginTop: 8,   
+        fontSize: 14,
+        marginTop: 8,
         color: "#4B5363",
     },
-
+    evidenceBox: {
+        width: '100%',
+        height: 24,
+        backgroundColor: "#E8EEF9",
+        borderRadius: 40,
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 8,
+        marginBottom: 8,
+        gap: 4,
+    },
+    evidenceText: {
+        color: "#4F74C4",
+        fontFamily: "Rubik",
+        fontWeight: "600",
+        fontSize: 12,
+        lineHeight: 12,
+    },
 });

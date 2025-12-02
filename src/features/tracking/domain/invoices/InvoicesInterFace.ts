@@ -52,3 +52,17 @@ export interface OpneAddressesProps {
     longitud: string;
     fechaHoraDispositivo: string;
 }
+
+export interface CreateEntregaProps {
+    ruta: string;
+    documentMeico: string;
+    direccion: number;
+    causal: string;
+    estado: string;
+    files: EvidenceFile[];
+}
+
+export interface EvidenceFile {
+    tipoEntrega: string;
+    rutaArchivo: string;    // base64 o dataURL
+}

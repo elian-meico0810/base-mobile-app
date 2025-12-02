@@ -7,6 +7,7 @@ export const API_ROUTES = {
   OPEN_ADDRESSES: "direcciones/llegada/",
   CLOSE_ADDRESSES:"direcciones/cerrar/",
   GET_ROUTE_BY_CODE_GUIDE:"rutas/guia-by-codigo-guia/",
+  CREATE_DELIVERY:"entregas/create-entrega/",
   // Back contado anticipado
   SEND_PAYMENT_GATEWAY: "pagos/generar-link-pasarela/",
   GENERATE_QR: "pagos/generar_qr_bancolombia/",

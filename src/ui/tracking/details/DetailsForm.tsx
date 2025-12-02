@@ -67,7 +67,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
             if (status !== 'granted') {
                 setValidateException(true);
                 btnRef.current?.reset();
-                setModalTitle("Permiso denegado !!");
+                setModalTitle("Permiso denegado ¡Alerta!");
                 setModalMessage("Se requiere acceso a la ubicación.");
                 setLoading(false);
                 setModalVisible(true);
@@ -174,7 +174,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                 await finshRoute();
             }
         } catch (error: any) {
-            setModalTitle("Error !!");
+            setModalTitle("¡Error!");
             setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {
@@ -199,12 +199,12 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                 token
             );
             if (responseData?.statusCode != 200) {
-                setModalTitle("Alerta !!");
+                setModalTitle("¡Alerta!");
                 setModalMessage(responseData?.message ?? "Ocurrio un error inesperado.");
                 setModalVisible(true);
             }
         } catch (error: any) {
-            setModalTitle("Error !!");
+            setModalTitle("¡Error!");
             setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {
@@ -248,13 +248,13 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
             } else {
                 setValidateException(true);
                 btnRef.current?.reset();
-                setModalTitle("Alerta !!");
+                setModalTitle("¡Alerta!");
                 setModalMessage(response?.data?.message ?? "Ocurrio un error inesperado.");
                 setModalVisible(true);
             }
 
         } catch (error: any) {
-            setModalTitle("Error !!");
+            setModalTitle("¡Error!");
             setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {

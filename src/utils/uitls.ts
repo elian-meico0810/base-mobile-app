@@ -35,9 +35,34 @@ export function formatTime(dateStr: string): string {
   return `Inicio ruta ${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
 }
 
+// Función para obtener el mime type desde la extensión del archivo
+export const getMimeType = (uri: string): string => {
+    const extension = uri.split('.').pop()?.toLowerCase();
+    switch (extension) {
+        case 'jpg':
+        case 'jpeg':
+            return 'image/jpeg';
+        case 'png':
+            return 'image/png';
+        case 'gif':
+            return 'image/gif';
+        case 'webp':
+            return 'image/webp';
+        case 'heic':
+        case 'heif':
+            return 'image/heic';
+        case 'bmp':
+            return 'image/bmp';
+        default:
+            return 'image/jpeg'; // Valor por defecto
+    }
+};
 
-
-
+// Función para crear un data URI completo
+export const createDataUri = (base64: string, uri: string): string => {
+    const mimeType = getMimeType(uri);
+    return `data:${mimeType};base64,${base64}`;
+};
 export function formatNumber(num: number) {
   return num.toLocaleString("es-CO");
 }

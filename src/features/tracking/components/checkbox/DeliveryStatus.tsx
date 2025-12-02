@@ -3,16 +3,28 @@ import { useState } from 'react';
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface DeliveryStatusProps {
-    onStatusChange?: (status: 'total' | 'parcial' | 'rechazo' | 'rechazo' | null) => void;
+    onStatusChange?: (status: 'total' | 'parcial' | 'rechazo' | null) => void;
     EntryVisible?: boolean;
     onOpenRefusedModal?: () => void;
     onHandelSubmit?: () => void;
     onUploadPhoto?: () => void;
+    isCompleted?: boolean; // ← NUEVO: para saber si está completado
+    selectedStatus?: 'total' | 'parcial' | 'rechazo' | null; // ← NUEVO: estado actual
 }
 const { width, height } = Dimensions.get('window');
 
-export function DeliveryStatus({ onStatusChange, EntryVisible, onOpenRefusedModal, onHandelSubmit, onUploadPhoto }: DeliveryStatusProps) {
-    const [selectedStatus, setSelectedStatus] = useState<'total' | 'parcial' | 'rechazo' | null>(null);
+export function DeliveryStatus({
+    onStatusChange,
+    EntryVisible,
+    onOpenRefusedModal,
+    onHandelSubmit,
+    onUploadPhoto,
+    isCompleted = false,
+    selectedStatus: externalStatus
+}: DeliveryStatusProps) {
+    const [internalStatus, setInternalStatus] = useState<'total' | 'parcial' | 'rechazo' | null>(null);
+
+    const selectedStatus = externalStatus !== undefined ? externalStatus : internalStatus;
     const handleStatusSelect = (status: 'total' | 'parcial' | 'rechazo') => {
         if (!EntryVisible) return;
         if (status === 'rechazo') {
@@ -20,7 +32,12 @@ export function DeliveryStatus({ onStatusChange, EntryVisible, onOpenRefusedModa
             console.log('Rechazo seleccionado');
         }
         const newStatus = selectedStatus === status ? null : status;
-        setSelectedStatus(newStatus);
+
+        // Actualizar estado interno solo si no hay estado externo
+        if (externalStatus === undefined) {
+            setInternalStatus(newStatus);
+        }
+
         onStatusChange?.(newStatus);
     };
 
@@ -42,36 +59,64 @@ export function DeliveryStatus({ onStatusChange, EntryVisible, onOpenRefusedModa
                 <View style={styles.checkboxContent}>
                     {/* ICONO IZQUIERDO */}
                     <View style={styles.iconLeft}>
-                        <View style={styles.iconContainer}>
+                        <View style={[
+                            styles.iconContainer,
+                        ]}>
                             <Image
                                 source={require('@/assets/icons/Check.png')}
-                                style={styles.icon}
+                                style={[
+                                    styles.icon,
+                                ]}
                             />
                         </View>
                     </View>
 
                     {/* TEXTO */}
                     <View style={styles.textContent}>
-                        <Text style={styles.checkboxLabel}>Entrega total</Text>
-                        <Text style={styles.checkboxDescription}>
+                        <Text style={[
+                            styles.checkboxLabel,
+                        ]}>Entrega total</Text>
+                        <Text style={[
+                            styles.checkboxDescription,
+                        ]}>
                             Todos los productos fueron recibidos correctamente.
                         </Text>
                     </View>
 
                     {/* CHECK DERECHA */}
                     <View style={styles.checkboxRight}>
-                        <View style={styles.checkbox}>
-                            {selectedStatus === 'total' && <View style={styles.checkboxInner} />}
+                        <View style={[
+                            styles.checkbox,
+                        ]}>
+                            {selectedStatus === 'total' && (
+                                <View style={[
+                                    styles.checkboxInner,
+                                ]} />
+                            )}
                         </View>
                     </View>
                 </View>
-                {/* BOTÓN DE AGREGAR EVIDENCIA */}
+
+                {/* BOTÓN DE AGREGAR EVIDENCIA - SOLO SI NO ESTÁ COMPLETADO */}
                 {selectedStatus === 'total' && (
-                    <AddEvidenceButton onPress={() => {
-                        onUploadPhoto?.();
-                        console.log("Agregar evidencia")
-                    }} />
+                    isCompleted ? (
+                        <AddEvidenceButton
+                            title="Evidencias cargadas"
+                            backgroundColor="#EAF7ED"
+                            textColor="#1F9144"
+                            iconColor="#1F9144"
+                            onPress={onUploadPhoto}
+                            showEndIcon={true}
+                            spaced={true}
+                        />
+                    ) : (
+                        <AddEvidenceButton
+                            onPress={onUploadPhoto}
+                        />
+                    )
                 )}
+
+
             </TouchableOpacity>
 
             {/* Entrega parcial */}
@@ -88,38 +133,61 @@ export function DeliveryStatus({ onStatusChange, EntryVisible, onOpenRefusedModa
                     <View style={styles.iconLeft}>
                         <View style={[
                             styles.iconContainer,
-                            // selectedStatus === 'parcial' && styles.iconContainerSelected
                         ]}>
                             <Image
                                 source={require('@/assets/icons/Warning.png')}
                                 style={[
                                     styles.icon,
-                                    // selectedStatus === 'parcial' && styles.iconSelected
                                 ]}
                             />
                         </View>
                     </View>
 
                     <View style={styles.textContent}>
-                        <Text style={styles.checkboxLabel}>Entrega parcial</Text>
-                        <Text style={styles.checkboxDescription}>
+                        <Text style={[
+                            styles.checkboxLabel,
+                        ]}>Entrega parcial</Text>
+                        <Text style={[
+                            styles.checkboxDescription,
+                        ]}>
                             Algunos productos de la orden no fueron entregados.
                         </Text>
                     </View>
 
                     <View style={styles.checkboxRight}>
-                        <View style={styles.checkbox}>
-                            {selectedStatus === 'parcial' && <View style={styles.checkboxInner} />}
+                        <View style={[
+                            styles.checkbox,
+                        ]}>
+                            {selectedStatus === 'parcial' && (
+                                <View style={[
+                                    styles.checkboxInner,
+                                ]} />
+                            )}
                         </View>
                     </View>
                 </View>
-                {/* BOTÓN DE AGREGAR EVIDENCIA */}
+
+                {/* BOTÓN DE AGREGAR EVIDENCIA - SOLO SI NO ESTÁ COMPLETADO */}
                 {selectedStatus === 'parcial' && (
-                    <AddEvidenceButton onPress={() => {
-                        onUploadPhoto?.();
-                        console.log("Agregar evidencia")
-                    }} />
+                    isCompleted ? (
+                        <AddEvidenceButton
+                            title="Evidencias cargadas"
+                            backgroundColor="#EAF7ED"
+                            textColor="#1F9144"
+                            iconColor="#1F9144"
+                            onPress={onUploadPhoto}
+                            showEndIcon={true}
+                            spaced={true}
+                        />
+                    ) : (
+                        <AddEvidenceButton
+                            onPress={onUploadPhoto}
+                        />
+                    )
                 )}
+
+
+                {/* MENSAJE CUANDO ESTÁ COMPLETADO */}
 
             </TouchableOpacity>
 
@@ -131,41 +199,60 @@ export function DeliveryStatus({ onStatusChange, EntryVisible, onOpenRefusedModa
                     !EntryVisible && styles.disabled
                 ]}
                 onPress={() => handleStatusSelect('rechazo')}
-                disabled={!EntryVisible}
+                disabled={!EntryVisible} // ← Deshabilitar si está completado
             >
                 <View style={styles.checkboxContent}>
                     <View style={styles.iconLeft}>
                         <View style={[
                             styles.iconContainer,
-                            // selectedStatus === 'rechazo' && styles.iconContainerSelected
                         ]}>
                             <Image
                                 source={require('@/assets/icons/Close.png')}
                                 style={[
                                     styles.icon,
-                                    // selectedStatus === 'rechazo' && styles.iconSelected
                                 ]}
                             />
                         </View>
                     </View>
 
                     <View style={styles.textContent}>
-                        <Text style={styles.checkboxLabel}>Rechazo de entrega</Text>
-                        <Text style={styles.checkboxDescription}>
+                        <Text style={[
+                            styles.checkboxLabel,
+                        ]}>Rechazo de entrega</Text>
+                        <Text style={[
+                            styles.checkboxDescription,
+                        ]}>
                             El cliente no recibió ninguno de los productos.
                         </Text>
                     </View>
 
                     <View style={styles.checkboxRight}>
-                        <View style={styles.checkbox}>
-                            {selectedStatus === 'rechazo' && <View style={styles.checkboxInner} />}
+                        <View style={[
+                            styles.checkbox,
+                        ]}>
+                            {selectedStatus === 'rechazo' && (
+                                <View style={[
+                                    styles.checkboxInner,
+                                ]} />
+                            )}
                         </View>
                     </View>
                 </View>
+                {selectedStatus === 'rechazo' && (
+                    isCompleted ? (
+                        <AddEvidenceButton
+                            title="Evidencias cargadas"
+                            backgroundColor="#EAF7ED"
+                            textColor="#1F9144"
+                            iconColor="#1F9144"
+                            onPress={onUploadPhoto}
+                            showEndIcon={true}
+                            spaced={true}
+                        />
+                    ) : null
+                )}
             </TouchableOpacity>
-
         </ScrollView>
-
     );
 }
 
@@ -193,6 +280,21 @@ const styles = StyleSheet.create({
     checkboxSelected: {
         borderColor: '#164194',
     },
+    completedMessage: {
+        marginTop: 8,
+        padding: 8,
+        backgroundColor: '#D1FAE5',
+        borderRadius: 4,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    completedMessageText: {
+        color: '#065F46',
+        fontSize: 12,
+        fontWeight: '500',
+        marginLeft: 4,
+    },
+    // ESTILOS EXISTENTES
     checkboxContent: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -214,17 +316,10 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#F0F1F5',
     },
-    iconContainerSelected: {
-        backgroundColor: '#164194',
-        borderColor: '#4F74C4',
-    },
     icon: {
         width: 16,
         height: 16,
         tintColor: '#666666',
-    },
-    iconSelected: {
-        tintColor: '#FFFFFF',
     },
     textContent: {
         flex: 1,
@@ -233,6 +328,7 @@ const styles = StyleSheet.create({
     checkboxRight: {
         justifyContent: 'center',
         alignItems: 'center',
+        position: 'relative',
     },
     checkbox: {
         width: 24,
@@ -247,7 +343,7 @@ const styles = StyleSheet.create({
     checkboxInner: {
         width: 12,
         height: 12,
-        backgroundColor: '#164194',
+        backgroundColor: '#164194', // ← AZUL (antes de completar)
         borderRadius: 6,
     },
     checkboxLabel: {
@@ -268,5 +364,13 @@ const styles = StyleSheet.create({
     disabled: {
         opacity: 0.5,
         pointerEvents: 'none'
-    }
+    },
+    iconCircle: {
+        width: 24,
+        height: 24,
+        borderRadius: 6,
+        backgroundColor: "#F9F9FA",
+        justifyContent: "center",
+        alignItems: "center",
+    },
 });

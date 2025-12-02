@@ -48,7 +48,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
     const paymentGateway = async () => {
         try {
             if (!phone || !/^\d{10}$/.test(phone)) {
-                setModalTitle("Alerta !!");
+                setModalTitle("¡Alerta!");
                 setModalMessage("Debe ingresar un número de teléfono válido de 10 dígitos.");
                 setModalVisible(true);
                 return;
@@ -78,7 +78,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                 onErrorPayment?.();
             }
         } catch (error: any) {
-            setModalTitle("Error !!");
+            setModalTitle("¡Error!");
             setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {
@@ -89,7 +89,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
     const generateQR = async () => {
         try {
             if (!phone || !/^\d{10}$/.test(phone)) {
-                setModalTitle("Alerta !!");
+                setModalTitle("¡Alerta!");
                 setModalMessage("Debe ingresar un número de teléfono válido de 10 dígitos.");
                 setModalVisible(true);
                 return;
@@ -116,7 +116,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                 onErrorPayment?.();
             }
         } catch (error: any) {
-            setModalTitle("Error !!");
+            setModalTitle("¡Error!");
             setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {

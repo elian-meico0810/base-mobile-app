@@ -6,8 +6,9 @@ import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { NetworkStatus } from '@/components/generals/NetworkStatus';
+import { UploadPhoto } from '@/components/photo/UploadPhoto';
 import { ThemedView } from '@/components/themed-view';
-import { TypeQr } from '@/src/constants/GuideStates';
+import { StatusDelivery, TypeDelivery, TypeQr } from '@/src/constants/GuideStates';
 import { DeliveryStatus } from '@/src/features/tracking/components/checkbox/DeliveryStatus';
 import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
 import { ChangePhoneModal } from '@/src/features/tracking/components/screens/ChangePhoneModal';
@@ -15,16 +16,14 @@ import { DetailsInvoiceQR } from '@/src/features/tracking/components/screens/Det
 import { InfoPayments } from '@/src/features/tracking/components/screens/InfoPayments';
 import { ViewQrModal } from '@/src/features/tracking/components/screens/ViewQrModal';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
-import { Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
+import { CreateEntregaProps, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
-import { cleanSpaces, getDeviceDateTime } from '@/src/utils/uitls';
+import { cleanSpaces } from '@/src/utils/uitls';
 import { Image } from 'expo-image';
-import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from "react";
 import { Dimensions, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
 const { width, height } = Dimensions.get('window');
 
 interface InfoInvoiceFormProps {
@@ -33,6 +32,14 @@ interface InfoInvoiceFormProps {
     onSubmit: (params: { guide: GuideDetails; token: string }) => void | Promise<void>;
     numberGuide?: number
 }
+
+interface EvidencePhoto {
+    id: string;
+    uri: string;
+    base64?: string;
+}
+
+type DeliveryStatus = "total" | "parcial" | "rechazo" | null;
 
 export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuide }: InfoInvoiceFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
@@ -49,8 +56,9 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [showSuccess, setShowSuccess] = useState(false);
     const [showSuccessQRp, setShowSuccessQRP] = useState(false);
     const [showErrorQRP, setShowErrorQRP] = useState(false);
-    console.log("Mostrar error QR: ", showErrorQRP);
-    const [showPaymentPending, setShowPaymentPending] = useState(false);
+    const [multiplePhotos, setMultiplePhotos] = useState<EvidencePhoto[]>([]);
+    const [isDeliveryCompleted, setIsDeliveryCompleted] = useState(false);
+    const [showStatusDelivery, setShowStatusDelivery] = useState<DeliveryStatus>(null); const [showPaymentPending, setShowPaymentPending] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [RefreshingOnPress, setRefreshingOnPress] = useState(false);
     const [EntryVisible, setEntryVisible] = useState(false);
@@ -63,7 +71,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [phone, setPhone] = useState("");
     const [validateIsBotton, setvalidateIsBotton] = useState(false);
     const btnRef = useRef<any>(null);
-
     const router = useRouter();
     const handleGoBack = () => {
         router.back();
@@ -71,14 +78,13 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     useEffect(() => {
         if (modalRefused) {
-            console.log("Modal rechazo abierto");  
             setShowDetailInvoiceQR(false);
             setModalgenerateQR(false);
         }
     }, [modalRefused]);
 
-
     useEffect(() => {
+
         const fetchGuide = async () => {
             try {
                 const respones = await invoiceRepositoryImpl.successfulBillPayment(
@@ -89,7 +95,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     setPaymentSuccessful(respones.data as Invoice);
                 }
             } catch (error) {
-                setModalTitle("Error !!");
+                setModalTitle("¡Error!");
                 setModalMessage("Ocurrio un error inesperado.");
                 setModalVisible(true);
             } finally {
@@ -118,7 +124,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 }, 3000);
             }
         } catch (error: any) {
-            setModalTitle("Error !!");
+            setModalTitle("¡Error!");
             setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {
@@ -128,34 +134,37 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const handleSubmit = async () => {
         try {
-            setLoading(true);
-            const location = await Location.getCurrentPositionAsync({
-                accuracy: Location.Accuracy.Highest,
-            });
-            const response = await invoiceRepositoryImpl.openAddresses(
-                {
-                    latitud: String(location.coords.latitude),
-                    longitud: String(location.coords.longitude),
-                    fechaHoraDispositivo: getDeviceDateTime()
-                },
-                guide?.idDireccion || 0,
-                token
-            );
-            if (response?.statusCode === 200) {
-                setvalidateIsBotton(true);
-                setEntryVisible(true);
-                setRouteStarted(true);
-            } else {
-                setValidateException(true);
-                btnRef.current?.reset();
-                setModalTitle("Alerta !!");
-                setModalMessage(response?.message || "No se pudo iniciar la ruta. Intente nuevamente.");
-                setModalVisible(true);
-            }
+            setvalidateIsBotton(true);
+            setEntryVisible(true);
+            setRouteStarted(true);
+            // setLoading(true);
+            // const location = await Location.getCurrentPositionAsync({
+            //     accuracy: Location.Accuracy.Highest,
+            // });
+            // const response = await invoiceRepositoryImpl.openAddresses(
+            //     {
+            //         latitud: String(location.coords.latitude),
+            //         longitud: String(location.coords.longitude),
+            //         fechaHoraDispositivo: getDeviceDateTime()
+            //     },
+            //     guide?.idDireccion || 0,
+            //     token
+            // );
+            // if (response?.statusCode === 200) {
+            //     setvalidateIsBotton(true);
+            //     setEntryVisible(true);
+            //     setRouteStarted(true);
+            // } else {
+            //     setValidateException(true);
+            //     btnRef.current?.reset();
+            //     setModalTitle("¡Alerta!");
+            //     setModalMessage(response?.message || "No se pudo iniciar la ruta. Intente nuevamente.");
+            //     setModalVisible(true);
+            // }
         } catch (error: any) {
             setValidateException(true);
             btnRef.current?.reset();
-            setModalTitle("Error !!");
+            setModalTitle("¡Error!");
             setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {
@@ -179,12 +188,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             } else {
                 setValidateException(true);
                 btnRef.current?.reset();
-                setModalTitle("Alerta !!");
+                setModalTitle("¡Alerta!");
                 setModalMessage(response?.message || "No se pudo iniciar la ruta. Intente nuevamente.");
                 setModalVisible(true);
             }
         } catch (error: any) {
-            setModalTitle("Error !!");
+            setModalTitle("¡Error!");
             setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {
@@ -197,12 +206,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setShowDetailInvoiceQR(false);
             setShowPayment(false);
             if (!routeStarted) {
-                setModalTitle("Alerta !!");
+                setModalTitle("¡Alerta!");
                 setModalMessage("Debe indicar que ya llegó al lugar de la dirección para poder ejecutar esta acción.");
                 setModalVisible(true);
             }
         } catch (error) {
-            setModalTitle("Error !!");
+            setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {
@@ -272,7 +281,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             }, 2000);
         } catch (error) {
             setRefreshing(false);
-            setModalTitle("Error !!");
+            setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {
@@ -280,8 +289,85 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         }
     };
 
-    const uploadPhotoSubmit = () => {
+    const uploadPhotoSubmit = async () => {
+        try {
+
+            if (showStatusDelivery) {
+                setLoading(true);
+
+                const facturasArray: CreateEntregaProps[] = [];
+                let responses: any[] = [];
+
+                if (guide?.facturas && guide.facturas.length > 0) {
+                    guide.facturas.forEach((factura, index) => {
+                        facturasArray.push({
+                            ruta: String(numberGuide),
+                            documentMeico: String(factura.numeroFactura),
+                            direccion: Number(guide?.idDireccion),
+                            causal: "CS_ART_MAL_EST",
+                            estado: "EST_PEDI_PEND",
+                            files: multiplePhotos.map((item, photoIndex) => ({
+                                tipoEntrega:
+                                    showStatusDelivery === StatusDelivery.TOTAL
+                                        ? TypeDelivery.ENT_TOTAL
+                                        : showStatusDelivery === StatusDelivery.PARCIAL
+                                            ? TypeDelivery.ENT_PARCIAL
+                                            : TypeDelivery.RECHAZADO,
+
+                                rutaArchivo: item.base64 ?? "",
+                                // nombreArchivo: `factura_${factura.numeroFactura}_evidencia_${photoIndex + 1}.jpg`,
+                            }))
+                        });
+                    });
+                }
+
+                if (facturasArray.length > 0) {
+                    responses = await Promise.all(
+                        facturasArray.map(facturaData =>
+                            invoiceRepositoryImpl.createDelivery(facturaData, token)
+                        )
+                    );
+
+                    // Verificar si todas las respuestas fueron exitosas
+                    const success = responses.every((resp: any) =>
+                        resp?.statusCode === 200 || resp?.success === true
+                    );
+
+                    if (success) {
+                        setLoading(false);
+                        setModalTitle("¡Procesado!");
+                        setModalMessage(`${facturasArray.length} soporte(s) procesados exitosamente.`);
+                        setModalVisible(true);
+                    } else {
+                        setLoading(false);
+                        // Opcional: mostrar detalles del primer error
+                        const oneError = responses.find((resp: any) =>
+                            !(resp?.statusCode === 200 || resp?.success === true)
+                        );
+                        setModalTitle("Alerta");
+                        setModalMessage(oneError?.message || "Error inesperado.");
+                        setModalVisible(true);
+                    }
+                }
+            }
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
     };
+
+    useEffect(() => {
+        const processPhotos = async () => {
+            if (multiplePhotos.length > 0) {
+                await uploadPhotoSubmit();
+            }
+        };
+
+        processPhotos();
+    }, [multiplePhotos]);
 
     const paymentsData = [
         {
@@ -551,10 +637,21 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
                 <View>
                     <DeliveryStatus
-                        onStatusChange={(status) => console.log('Estado seleccionado:', status)}
+                        onStatusChange={(status) => {
+                            setShowStatusDelivery(status);
+                            // Resetear completado si cambia el estado
+                            if (status !== showStatusDelivery) {
+                                setIsDeliveryCompleted(false);
+                                setMultiplePhotos([]);
+                            }
+                        }}
                         EntryVisible={EntryVisible}
                         onOpenRefusedModal={() => setShowModalRefused(true)}
-                        onUploadPhoto={() => setUploadPhoto(true)}
+                        onUploadPhoto={() => {
+                            setUploadPhoto(true);
+                        }}
+                        isCompleted={isDeliveryCompleted}
+                        selectedStatus={showStatusDelivery}
                     />
                 </View>
             </ScrollView>
@@ -635,6 +732,34 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 />
             )}
 
+            {(uploadPhoto) && (
+                <UploadPhoto
+                    title="Cargar evidencia"
+                    subTitle="Toma fotos de la mercancía ubicada en el cliente. Podrás asociar un máximo de 3 imágenes por entrega."
+                    onClose={() => setUploadPhoto(false)}
+                    width={width}
+
+                    onEvidenceComplete={(evidences) => {
+                        setIsDeliveryCompleted(true);
+                        setUploadPhoto(false); // Cerrar después de completar
+                        setMultiplePhotos(evidences);
+
+                    }}
+                    onPermisionsPhoto={() => {
+                        setUploadPhoto(false);
+                        setModalTitle("Permiso denegado ¡Alerta!");
+                        setModalMessage("No podemos acceder a la cámara. Activa el permiso en la configuración del dispositivo para continuar.");
+                        setModalVisible(true);
+                    }}
+                    onPermisionsGallery={() => {
+                        setUploadPhoto(false);
+                        setModalTitle("Permiso denegado ¡Alerta!");
+                        setModalMessage("No podemos acceder a la galería. Activa el permiso en la configuración del dispositivo para continuar.");
+                        setModalVisible(true);
+                    }}
+                />
+            )}
+
             <ChangePhoneModal
                 visible={showChangePhone}
                 onClose={() => setShowChangePhone(false)}
@@ -678,10 +803,14 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
             {modalRefused && (
                 <OptionsRefused
-                    onClose={() => {setShowModalRefused(false)}}
+                    onClose={() => { setShowModalRefused(false) }}
                     width={width}
-                    onPress={() => {
-                        setvalidateIsBotton(false)
+                    onPress={(selectedStatus) => {
+                        setvalidateIsBotton(false);
+                        if (selectedStatus === 'Tienda') {
+                            setShowModalRefused(false);
+                            setUploadPhoto(true);
+                        }
                     }}
                 />
             )}

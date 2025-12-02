@@ -1,4 +1,4 @@
-import { GenerateQRPorps, OpneAddressesProps, PaymentGatewayProps, ReportWhatsAppQRPorps } from "./InvoicesInterFace";
+import { CreateEntregaProps, GenerateQRPorps, OpneAddressesProps, PaymentGatewayProps, ReportWhatsAppQRPorps } from "./InvoicesInterFace";
 
 export interface InvoicesRepository {
   sendPaymentGetway: (data: PaymentGatewayProps, token: string) => Promise<any>;
@@ -7,5 +7,6 @@ export interface InvoicesRepository {
   successfulBillPayment: (guide: number, token: string) => Promise<any>;
   openAddresses: (data: OpneAddressesProps, addresseId: number, token: string) => Promise<any>;
   closeAddresses: (guide: number, token: string) => Promise<any>;
+  createDelivery: (data: CreateEntregaProps, token: string) => Promise<any>;
 
 }

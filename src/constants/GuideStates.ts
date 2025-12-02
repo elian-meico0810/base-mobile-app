@@ -35,9 +35,27 @@ export enum StatusInvoice {
     CLOSE_TWO = "Cerrada"
 }
 
-
 export enum StatusInvoiceID {
     IN_COURSE = 8,
     PENDING = 7,
     CLOSE = 9
+}
+
+export enum TypeDelivery {
+    ENT_TOTAL = "ENT_TOTAL_TIPO_ENTREGA",
+    ENT_PARCIAL = "ENT_PAR_TIPO_ENTREGA",
+    RECHAZADO = "RECH_TIPO_ENTREGA"
+}
+
+export enum StatusDelivery {
+    TOTAL = "total",
+    PARCIAL = "parcial",
+    RECHAZADO = "rechazado"
+}
+
+export enum CausalDelivery {
+    PRODUCTOS_DANADOS = "CS_PRODUCTO_DAÑADOS",
+    TIENDA_CERRADA = "CS_TIENDA_CERRADA",
+    DUENO_NO_CONTESTA = "CS_DUEÑO_NO_CONESTA",
+    DINERO_INSUFICIENTE = "CS_DINERO_INSUFICIENTE"
 }

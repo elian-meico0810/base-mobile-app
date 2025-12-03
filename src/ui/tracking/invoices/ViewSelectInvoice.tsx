@@ -21,10 +21,13 @@ interface ViewSelectInvoiceProps {
     initialGuide?: GuideDetails;
     token?: string;
     onSubmit: (params: { guide: GuideDetails; token: string }) => void | Promise<void>;
-    numberGuide?: number
+    numberGuide?: number;
+    isSelectInvocies?: string;
+    documentMeico?: string;
+
 }
 
-export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGuide }: ViewSelectInvoiceProps) {
+export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico }: ViewSelectInvoiceProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(false);
@@ -43,6 +46,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [validateException, setValidateException] = useState(false);
     const [paymentSuccessful, setPaymentSuccessful] = useState<Invoice | undefined>();
     const [validateIsBotton, setvalidateIsBotton] = useState(false);
+    const [selectedInvoice, setSelectedInvoice] = useState<GuideDetails | null>(null);
     const btnRef = useRef<any>(null);
     const router = useRouter();
     const handleGoBack = () => {
@@ -55,6 +59,23 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             setModalgenerateQR(false);
         }
     }, [modalRefused]);
+
+    const handleInvoiceSelect = (selectedGuide: GuideDetails | null) => {
+        try {
+            setSelectedInvoice(selectedGuide);
+            if (selectedInvoice) {
+                router.push(
+                    `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(selectedInvoice))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}`
+                );
+            }
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
 
@@ -276,7 +297,12 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                     <Text style={styles.headerTitleTWO}>Ordenes a entregar</Text>
                 </View>
                 <View style={{ flex: 1, padding: 16 }}>
-                    <InvoicesList guide={guide} />
+                    <InvoicesList guide={guide}
+                        onInvoiceSelect={handleInvoiceSelect}
+                        documentMeico={documentMeico}
+                        numberGuide={numberGuide} 
+                        isSelectInvocies={isSelectInvocies}
+                        token={token}/>
                 </View>
             </ScrollView>
             <View style={styles.redBackground} />

@@ -32,7 +32,9 @@ interface InfoInvoiceFormProps {
     initialGuide?: GuideDetails;
     token?: string;
     onSubmit: (params: { guide: GuideDetails; token: string }) => void | Promise<void>;
-    numberGuide?: number
+    numberGuide?: number;
+    isSelectInvocies?: string;
+    documentMeico?: string;
 }
 
 interface EvidencePhoto {
@@ -44,7 +46,7 @@ interface EvidencePhoto {
 type DeliveryStatus = "total" | "parcial" | "rechazo" | null;
 type OptionsRefusedPorps = 'Dinero' | 'Dueño' | 'Tienda' | 'Productos' | null;
 
-export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuide }: InfoInvoiceFormProps) {
+export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico }: InfoInvoiceFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(false);
@@ -382,8 +384,13 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     const success = responses.every((resp: any) =>
                         resp?.statusCode === 200 || resp?.success === true
                     );
-
                     if (success) {
+                        if (isSelectInvocies) {
+                            router.push(
+                                `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${facturasArray[0].documentMeico}`
+                            );
+                        }
+
                         setLoading(false);
                         setModalTitle("¡Procesado!");
                         setModalMessage(`soporte(s) procesados exitosamente.`);

@@ -143,6 +143,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setEntryVisible(true);
             setRouteStarted(true);
             setLoading(true);
+            setShowDetailInvoiceQR(false);
+            setShowPayment(false);
             const location = await Location.getCurrentPositionAsync({
                 accuracy: Location.Accuracy.Highest,
             });

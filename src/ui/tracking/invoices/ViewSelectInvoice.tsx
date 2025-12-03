@@ -1,0 +1,536 @@
+import { PaymentPendingAlert } from '@/components/alerts/PaymentPendingAlert';
+import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails';
+import { ExceptionModal } from '@/components/generals/ExecptionModal';
+import { LoadingBlue } from '@/components/generals/LoadingBlue';
+import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
+import { NetworkStatus } from '@/components/generals/NetworkStatus';
+import { ThemedView } from '@/components/themed-view';
+import { ENV_DEV } from '@/src/constants/apiRoutes';
+import InvoicesList from '@/src/features/tracking/components/tabs/InvoiceItem';
+import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
+import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
+import { cleanSpaces, getDeviceDateTime } from '@/src/utils/uitls';
+import * as Location from "expo-location";
+import { useRouter } from 'expo-router';
+import { useEffect, useRef, useState } from "react";
+import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+const { width, height } = Dimensions.get('window');
+
+interface ViewSelectInvoiceProps {
+    initialGuide?: GuideDetails;
+    token?: string;
+    onSubmit: (params: { guide: GuideDetails; token: string }) => void | Promise<void>;
+    numberGuide?: number
+}
+
+export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGuide }: ViewSelectInvoiceProps) {
+    const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
+    const [loading, setLoading] = useState(false);
+    const [routeStarted, setRouteStarted] = useState(false);
+    const [showPayment, setShowPayment] = useState(false);
+    const [showDetailInvoiceQR, setShowDetailInvoiceQR] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalTitle, setModalTitle] = useState("");
+    const [modalMessage, setModalMessage] = useState("");
+    const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
+    const [modalgenerateQR, setModalgenerateQR] = useState(false);
+    const [showPaymentPending, setShowPaymentPending] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
+    const [RefreshingOnPress, setRefreshingOnPress] = useState(false);
+    const [EntryVisible, setEntryVisible] = useState(false);
+    const [modalRefused, setShowModalRefused] = useState(false);
+    const [validateException, setValidateException] = useState(false);
+    const [paymentSuccessful, setPaymentSuccessful] = useState<Invoice | undefined>();
+    const [validateIsBotton, setvalidateIsBotton] = useState(false);
+    const btnRef = useRef<any>(null);
+    const router = useRouter();
+    const handleGoBack = () => {
+        router.back();
+    };
+
+    useEffect(() => {
+        if (modalRefused) {
+            setShowDetailInvoiceQR(false);
+            setModalgenerateQR(false);
+        }
+    }, [modalRefused]);
+
+    useEffect(() => {
+
+        const fetchGuide = async () => {
+            try {
+                const respones = await invoiceRepositoryImpl.successfulBillPayment(
+                    Number(initialGuide?.facturas[0]?.numeroFactura),
+                    ENV_DEV.KEY_APP
+                );
+                if (respones?.statusCode === 200) {
+                    setPaymentSuccessful(respones.data as Invoice);
+                }
+            } catch (error) {
+                setModalTitle("¡Error!");
+                setModalMessage("Ocurrio un error inesperado.");
+                setModalVisible(true);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchGuide();
+    }, [Number(initialGuide?.facturas[0]?.numeroFactura), token]);
+
+    const handleSubmit = async () => {
+        try {
+            setvalidateIsBotton(true);
+            setEntryVisible(true);
+            setRouteStarted(true);
+            setLoading(true);
+            setShowDetailInvoiceQR(false);
+            setShowPayment(false);
+            const location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Highest,
+            });
+            const response = await invoiceRepositoryImpl.openAddresses(
+                {
+                    latitud: String(location.coords.latitude),
+                    longitud: String(location.coords.longitude),
+                    fechaHoraDispositivo: getDeviceDateTime()
+                },
+                guide?.idDireccion || 0,
+                token
+            );
+            if (response?.statusCode === 200) {
+                setvalidateIsBotton(true);
+                setEntryVisible(true);
+                setRouteStarted(true);
+            } else {
+                setValidateException(true);
+                btnRef.current?.reset();
+                setModalTitle("¡Alerta!");
+                setModalMessage(response?.message || "No se pudo iniciar la ruta. Intente nuevamente.");
+                setModalVisible(true);
+            }
+        } catch (error: any) {
+            setValidateException(true);
+            btnRef.current?.reset();
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const submitData = async () => {
+        try {
+            if (validateIsBotton) {
+                setValidateException(true);
+                btnRef.current?.reset();
+                setModalTitle("¡Alerta!");
+                setModalMessage("Debe especificar un estado de entrega.");
+                setModalVisible(true);
+                return;
+            }
+            setLoading(true);
+            const response = await invoiceRepositoryImpl.closeAddresses(
+                guide?.idDireccion || 0,
+                token
+            );
+            if (response?.statusCode === 200) {
+                setEntryVisible(true);
+                setRouteStarted(true);
+                router.push(
+                    `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+                );
+            } else {
+                setValidateException(true);
+                btnRef.current?.reset();
+                setModalTitle("¡Alerta!");
+                setModalMessage(response?.message || "No se pudo iniciar la ruta. Intente nuevamente.");
+                setModalVisible(true);
+            }
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    const newValue = Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.valorTotal)
+
+    return (
+        <ThemedView style={styles.container}>
+            <NetworkStatus />
+
+            {/* Fondo gris */}
+            <View style={styles.background} />
+
+            {/* Header con título */}
+            <View style={styles.headerContainer}>
+                <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
+                    <Text style={styles.backArrow}>‹</Text>
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Entrega de pedido</Text>
+                <View style={styles.placeholder} />
+            </View>
+            {(refreshing && RefreshingOnPress) && <LoadingSunburst />}
+
+            {/* Alert de pago pendiente */}
+            <View style={styles.paymentAlertContainer}>
+                <PaymentPendingAlert
+                    visible={RefreshingOnPress}
+                    title="Pago pendiente"
+                    subtitle="Después de realizar el pago, desliza hacia abajo para actualizar el estado."
+                    onHide={() => setShowPaymentPending(false)}
+                />
+            </View>
+
+
+            <ScrollView
+                style={[styles.scrollView, { marginTop: RefreshingOnPress ? 90 : 8 }]}
+                contentContainerStyle={[
+                    styles.scrollContent,
+                    // Ajustar el padding cuando no hay alerta
+                ]}
+                showsVerticalScrollIndicator={false}
+            >
+
+                {/* Card blanco centrado */}
+                <View style={styles.card}>
+                    {/* Encabezado */}
+                    <View style={styles.cardHeader}>
+                        <View
+                            style={[
+                                styles.statusContainer,
+                                guide?.estado !== 'Pendiente' && { backgroundColor: '#DFF5E1' },
+                            ]}
+                        >
+                            <Text
+                                style={[
+                                    styles.status,
+                                    guide?.estado !== 'Pendiente' && { color: '#1F9144' },
+                                ]}
+                            >
+                                {guide?.estado ?? 'Pendiente'}
+                            </Text>
+                        </View>
+                    </View>
+
+                    {/* Información del minimercado */}
+                    <View style={styles.merchantInfo}>
+                        <Text style={styles.merchantName}>{guide?.nombreCliente ?? ''}</Text>
+                        <Text style={styles.documentNumber}>{guide?.codigoCliente ?? '0'}</Text>
+                        <Text style={styles.address}>{cleanSpaces(guide?.direccion)}, {cleanSpaces(guide?.poblacion)}</Text>
+                    </View>
+
+                    {/* Línea divisoria */}
+                    <View style={styles.orderInfo}>
+                        <View style={styles.divider} />
+                        <View style={styles.row}>
+                            <Text style={styles.label}>Ordenes a entregar</Text>
+                            <Text style={styles.value}> {Number(guide?.facturas?.length)}</Text>
+                        </View>
+                        <View style={styles.row}>
+                            <Text style={styles.labelTotal}>Valor total del pedido</Text>
+                            <Text style={[styles.value, { color: '#141D32', fontWeight: '800' }]}>
+                                {
+                                    '$ ' +
+                                    guide?.facturas
+                                        ?.reduce((sum, f) => sum + (f.valorTotal ?? 0), 0)
+                                        .toLocaleString('es-CO', { minimumFractionDigits: 0 })
+                                }
+                            </Text>
+                        </View>
+                        <View style={styles.divider} />
+                        <View style={styles.row}>
+                            <Text style={styles.label}>Valor recaudado</Text>
+                            <Text style={styles.value}>
+                                {
+                                    '$ ' +
+                                    guide?.facturas
+                                        ?.reduce((sum, f) => sum + (f.valorTotal ?? 0), 0)
+                                        .toLocaleString('es-CO', { minimumFractionDigits: 0 })
+                                }
+                            </Text>
+                        </View>
+                        <View style={styles.row}>
+                            <Text style={styles.labelTotal}>Valor a recaudar</Text>
+                            <Text style={[
+                                styles.value,
+                                {
+                                    color: Number(newValue) === 0 ? '#1F9144' : '#C62828',
+                                    fontWeight: '800',
+                                    fontSize: 16
+                                }
+                            ]}>
+                                {'$ ' + (Number(newValue) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                            </Text>
+                        </View>
+                    </View>
+                </View>
+
+                <View style={styles.headerContainerTwo}>
+                    <Text style={styles.headerTitleTWO}>Ordenes a entregar</Text>
+                </View>
+                <View style={{ flex: 1, padding: 16 }}>
+                    <InvoicesList guide={guide} />
+                </View>
+            </ScrollView>
+            <View style={styles.redBackground} />
+
+            <View style={[styles.footer, { marginBottom: 10 }]}>
+                <PrimaryButtonDetails
+                    ref={btnRef}
+                    autoReset={validateException}
+                    key={routeStarted ? "cerrar" : "llegue"}
+                    title={routeStarted ? "Cerrar pedido" : "Ya llegué"}
+                    onPress={routeStarted ? submitData : handleSubmit}
+                    disabled={false}
+                    width={328}
+                    height={43}
+                    buttonColor={validateIsBotton ? "#DDDFE8" : undefined}
+                    buttonColorEnd={validateIsBotton ? "#DDDFE8" : undefined}
+                    titleColor={routeStarted ? "#FFFFFF" : undefined}
+                    circleColor={validateIsBotton ? "#788095" : undefined}
+                />
+            </View>
+
+            <ExceptionModal
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                title={modalTitle}
+                message={modalMessage}
+                buttonLabel={modalButtonLabel}
+            />
+
+            {loading && <LoadingBlue />}
+        </ThemedView>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        width: width,
+        height: height,
+        alignItems: 'center',
+        position: 'absolute',
+    },
+    background: {
+        position: 'absolute',
+        width: width,
+        height: height,
+        backgroundColor: '#F9F9FA',
+    },
+    headerContainer: {
+        width: '100%',
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingTop: 35,
+        paddingBottom: 5,
+        backgroundColor: '#F9F9FA',
+    },
+    backButton: {
+        padding: 8,
+        marginRight: 8,
+    },
+    backArrow: {
+        fontSize: 40,
+        color: '#000',
+        fontWeight: '300',
+        lineHeight: 32,
+    },
+    headerTitle: {
+        fontFamily: 'Rubik',
+        fontWeight: '700',
+        fontSize: 18,
+        color: '#000',
+        marginLeft: 0,
+    },
+    placeholder: {
+        width: 40,
+    },
+    paymentAlertContainer: {
+        width: '100%',
+        paddingHorizontal: 16,
+        marginBottom: 10,
+    },
+    card: {
+        width: 360,
+        minHeight: 240,
+        backgroundColor: '#FFFFFF',
+        borderColor: '#F0F1F5',
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingTop: 10,
+        paddingBottom: 16,
+        paddingLeft: 12,
+        paddingRight: 12,
+        gap: 5,
+        shadowColor: "#000",
+        marginTop: 1,
+    },
+    cardHeader: {
+        alignItems: 'center',
+        marginBottom: 4,
+    },
+    merchantInfo: {
+        alignItems: 'center',
+        marginBottom: 0,
+    },
+    merchantName: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#000',
+        textAlign: 'center',
+    },
+    documentNumber: {
+        fontFamily: 'Rubik',
+        fontWeight: '600',
+        fontSize: 12,
+        lineHeight: 16,
+        color: '#141D32',
+        textAlign: 'center',
+    },
+    address: {
+        fontFamily: 'Rubik',
+        fontWeight: '600',
+        fontSize: 12,
+        lineHeight: 16,
+        color: '#141D32',
+        textAlign: 'center',
+    },
+    divider: {
+        height: 1,
+        backgroundColor: '#E0E0E0',
+        width: '100%',
+        marginVertical: 2,
+    },
+    dividerTwo: {
+        borderBottomColor: '#E0E0E0',
+        borderBottomWidth: 1,
+        borderStyle: 'dotted',
+        width: '100%',
+        marginVertical: 4,
+    },
+    orderInfo: {
+        gap: 5,
+    },
+    row: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    label: {
+        fontFamily: 'Rubik',
+        fontWeight: '400',
+        fontSize: 12,
+        color: '#141D32',
+        flex: 1,
+    },
+    value: {
+        fontFamily: 'Rubik',
+        fontWeight: '600',
+        fontSize: 12,
+        color: '#141D32',
+        textAlign: 'right',
+    },
+    labelTotal: {
+        fontFamily: 'Rubik',
+        fontWeight: '800',
+        fontSize: 12,
+        color: '#141D32',
+        flex: 1,
+    },
+    status: {
+        fontFamily: 'Rubik',
+        fontWeight: '400',
+        fontSize: 12,
+        color: '#4F74C4',
+    },
+    statusContainer: {
+        backgroundColor: '#E8EEF9',
+        borderRadius: 12,
+        paddingVertical: 4,
+        paddingHorizontal: 8,
+        minWidth: 73,
+        height: 28,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    qrButton: {
+        height: 32,
+        backgroundColor: '#E8EEF9',
+        borderRadius: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 12,
+    },
+    qrButtonText: {
+        fontFamily: 'Rubik',
+        fontWeight: '700',
+        fontSize: 12,
+        color: '#164194',
+        textAlign: 'center',
+    },
+    qrButtonDetail: {
+        height: 32,
+        backgroundColor: '#fffffffc',
+        borderRadius: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 12,
+    },
+    footer: {
+        position: 'absolute',
+        bottom: 45,
+        width: '100%',
+        alignItems: 'center',
+    },
+    headerContainerTwo: {
+        width: '100%',
+        backgroundColor: '#F9F9FA',
+        marginTop: 15,
+        paddingLeft: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    headerTitleTWO: {
+        fontFamily: 'Rubik',
+        fontWeight: '800',
+        fontSize: 18,
+        color: '#000',
+        marginLeft: 0,
+    },
+    qrButtonContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    qrButtonIcon: {
+        width: 16,
+        height: 16,
+    },
+    scrollView: {
+        flex: 1,
+        width: '100%',
+        marginTop: 100,
+    },
+    scrollContent: {
+        alignItems: 'center',
+        paddingBottom: 100,
+    },
+    redBackground: {
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 90,
+        backgroundColor: "#F9F9FA",
+        zIndex: 0,
+    },
+});
+

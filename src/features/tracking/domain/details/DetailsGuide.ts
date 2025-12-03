@@ -3,6 +3,8 @@ export interface Factura {
   valorTotal: number;
   dfr: number;
   valorRecaudar: number;
+  condPago: string;
+  tipo: string;
 }
 
 export interface GuideDetails {

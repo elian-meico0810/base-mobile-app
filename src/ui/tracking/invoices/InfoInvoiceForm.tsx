@@ -8,6 +8,7 @@ import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/UploadPhoto';
 import { ThemedView } from '@/components/themed-view';
+import { ENV_DEV } from '@/src/constants/apiRoutes';
 import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeDelivery, TypeQr } from '@/src/constants/GuideStates';
 import { DeliveryStatus } from '@/src/features/tracking/components/checkbox/DeliveryStatus';
 import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
@@ -93,8 +94,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         const fetchGuide = async () => {
             try {
                 const respones = await invoiceRepositoryImpl.successfulBillPayment(
-                    Number(numberGuide),
-                    token
+                    Number(initialGuide?.facturas[0]?.numeroFactura),
+                    ENV_DEV.KEY_APP
                 );
                 if (respones?.statusCode === 200) {
                     setPaymentSuccessful(respones.data as Invoice);
@@ -109,7 +110,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         };
 
         fetchGuide();
-    }, [Number(numberGuide), token]);
+    }, [Number(initialGuide?.facturas[0]?.numeroFactura), token]);
 
     const handleGenerateQR = (type: string, qr?: string) => {
         setModalgenerateQR(true);
@@ -183,7 +184,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         try {
             if (validateIsBotton) {
                 setValidateException(true);
-                btnRef.current?.reset(); 
+                btnRef.current?.reset();
                 setModalTitle("¡Alerta!");
                 setModalMessage("Debe especificar un estado de entrega.");
                 setModalVisible(true);
@@ -269,8 +270,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
 
                 const responeData = await invoiceRepositoryImpl.successfulBillPayment(
-                    Number(numberGuide),
-                    token
+                    Number(initialGuide?.facturas[0]?.numeroFactura),
+                    ENV_DEV.KEY_APP
                 );
                 if (responeData?.statusCode === 200) {
                     const invoice = responeData.data as Invoice;
@@ -403,128 +404,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         processPhotos();
     }, [showStatusDelivery, isInicilizationApi, showOptionRefused]);
 
-    const paymentsData = [
-        {
-            "id": 49,
-            "numeroDeposito": "9325897-20250926085604155",
-            "fechaDeposito": "2025-09-26T08:56:04.290514",
-            "valorPagado": "29698.00",
-            "canal": "Pasarela virtual",
-            "numeroDocumento": "9325897",
-            "estado": "APPROVED",
-            "referencia": "9325897-14-176"
-        },
-        {
-            "id": 51,
-            "numeroDeposito": "9325897-20250926091526082",
-            "fechaDeposito": "2025-09-26T09:15:26.264034",
-            "valorPagado": "29698.00",
-            "canal": "Pasarela virtual",
-            "numeroDocumento": "9325897",
-            "estado": "APPROVED",
-            "referencia": "9325897-14-173"
-        },
-        {
-            "id": 55,
-            "numeroDeposito": "9325897-20250926121943717",
-            "fechaDeposito": "2025-09-26T12:19:43.770399",
-            "valorPagado": "29698.00",
-            "canal": "Pasarela virtual",
-            "numeroDocumento": "9325897",
-            "estado": "APPROVED",
-            "referencia": "9325897-14-174"
-        },
-        {
-            "id": 56,
-            "numeroDeposito": "9325897-20250926122340111",
-            "fechaDeposito": "2025-09-26T12:23:40.182314",
-            "valorPagado": "29698.00",
-            "canal": "Pasarela virtual",
-            "numeroDocumento": "9325897",
-            "estado": "APPROVED",
-            "referencia": "9325897-14-175"
-        },
-        {
-            "id": 62,
-            "numeroDeposito": "9325897-20250929163439544",
-            "fechaDeposito": "2025-09-29T16:34:49.569403",
-            "valorPagado": "1.00",
-            "canal": "Pasarela virtual",
-            "numeroDocumento": "9325897",
-            "estado": "APPROVED",
-            "referencia": "9325897-14-192"
-        },
-        {
-            "id": 63,
-            "numeroDeposito": "9325897-20250929165334148",
-            "fechaDeposito": "2025-09-29T16:53:41.911949",
-            "valorPagado": "1.00",
-            "canal": "Pasarela virtual",
-            "numeroDocumento": "9325897",
-            "estado": "APPROVED",
-            "referencia": "9325897-14-192"
-        },
-        {
-            "id": 64,
-            "numeroDeposito": "9325897-20250930092323930",
-            "fechaDeposito": "2025-09-30T09:23:24.008394",
-            "valorPagado": "1.00",
-            "canal": "Pasarela virtual",
-            "numeroDocumento": "9325897",
-            "estado": "APPROVED",
-            "referencia": "9325897-14-192"
-        },
-        {
-            "id": 65,
-            "numeroDeposito": "9325897-20250930092509674",
-            "fechaDeposito": "2025-09-30T09:25:09.741043",
-            "valorPagado": "1.00",
-            "canal": "Pasarela virtual",
-            "numeroDocumento": "9325897",
-            "estado": "APPROVED",
-            "referencia": "9325897-14-192"
-        },
-        {
-            "id": 66,
-            "numeroDeposito": "9325897-20250930092751826",
-            "fechaDeposito": "2025-09-30T09:27:51.902863",
-            "valorPagado": "1.00",
-            "canal": "Pasarela virtual",
-            "numeroDocumento": "9325897",
-            "estado": "APPROVED",
-            "referencia": "9325897-14-192"
-        },
-        {
-            "id": 67,
-            "numeroDeposito": "9325897-20250930093255582",
-            "fechaDeposito": "2025-09-30T09:32:55.657085",
-            "valorPagado": "1.00",
-            "canal": "Pasarela virtual",
-            "numeroDocumento": "9325897",
-            "estado": "APPROVED",
-            "referencia": "9325897-14-192"
-        },
-        {
-            "id": 68,
-            "numeroDeposito": "9325897-20250930093459756",
-            "fechaDeposito": "2025-09-30T09:34:59.822916",
-            "valorPagado": "1.00",
-            "canal": "Pasarela virtual",
-            "numeroDocumento": "9325897",
-            "estado": "APPROVED",
-            "referencia": "9325897-14-192"
-        },
-        {
-            "id": 69,
-            "numeroDeposito": "9325897-20250930093711675",
-            "fechaDeposito": "2025-09-30T09:37:11.885568",
-            "valorPagado": "1.00",
-            "canal": "Pasarela virtual",
-            "numeroDocumento": "9325897",
-            "estado": "APPROVED",
-            "referencia": "9325897-14-192"
-        },
-    ];
     const newValue = Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.valorTotal)
 
     return (
@@ -648,16 +527,16 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             </Text>
                         </View>
                         {newValue != 0 && (
-                        <TouchableOpacity style={styles.qrButton} onPress={() => { validateButton(), setShowDetailInvoiceQR(true) }}>
-                            <View style={styles.qrButtonContent}>
-                                <Image
-                                    source={require('@/assets/icons/GenerateQR.png')}
-                                    style={styles.qrButtonIcon}
-                                />
-                                <Text style={styles.qrButtonText}>Generar QR de pago</Text>
-                            </View>
-                        </TouchableOpacity>
-                        )}  
+                            <TouchableOpacity style={styles.qrButton} onPress={() => { validateButton(), setShowDetailInvoiceQR(true) }}>
+                                <View style={styles.qrButtonContent}>
+                                    <Image
+                                        source={require('@/assets/icons/GenerateQR.png')}
+                                        style={styles.qrButtonIcon}
+                                    />
+                                    <Text style={styles.qrButtonText}>Generar QR de pago</Text>
+                                </View>
+                            </TouchableOpacity>
+                        )}
 
                         <TouchableOpacity style={styles.qrButtonDetail} onPress={() => { setShowPayment(true) }}>
                             <Text style={styles.qrButtonText}>Detalle de pagos</Text>
@@ -723,7 +602,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     description="Los pagos asociados a esta factura aparecerán aquí"
                     onClose={() => setShowPayment(false)}
                     width={width}
-                    payments={paymentSuccessful?.pagos ? paymentSuccessful?.pagos : paymentsData}
+                    payments={paymentSuccessful?.pagos ? paymentSuccessful?.pagos : []}
                 />
             )}
 

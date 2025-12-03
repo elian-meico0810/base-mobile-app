@@ -8,7 +8,7 @@ import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/UploadPhoto';
 import { ThemedView } from '@/components/themed-view';
-import { StatusDelivery, TypeDelivery, TypeQr } from '@/src/constants/GuideStates';
+import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeDelivery, TypeQr } from '@/src/constants/GuideStates';
 import { DeliveryStatus } from '@/src/features/tracking/components/checkbox/DeliveryStatus';
 import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
 import { ChangePhoneModal } from '@/src/features/tracking/components/screens/ChangePhoneModal';
@@ -19,8 +19,9 @@ import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuid
 import { CreateEntregaProps, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
-import { cleanSpaces } from '@/src/utils/uitls';
+import { cleanSpaces, getDeviceDateTime } from '@/src/utils/uitls';
 import { Image } from 'expo-image';
+import * as Location from "expo-location";
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from "react";
 import { Dimensions, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -40,6 +41,7 @@ interface EvidencePhoto {
 }
 
 type DeliveryStatus = "total" | "parcial" | "rechazo" | null;
+type OptionsRefusedPorps = 'Dinero' | 'Dueño' | 'Tienda' | 'Productos' | null;
 
 export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuide }: InfoInvoiceFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
@@ -58,7 +60,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [showErrorQRP, setShowErrorQRP] = useState(false);
     const [multiplePhotos, setMultiplePhotos] = useState<EvidencePhoto[]>([]);
     const [isDeliveryCompleted, setIsDeliveryCompleted] = useState(false);
-    const [showStatusDelivery, setShowStatusDelivery] = useState<DeliveryStatus>(null); const [showPaymentPending, setShowPaymentPending] = useState(false);
+    const [showStatusDelivery, setShowStatusDelivery] = useState<"total" | "parcial" | "rechazo" | null>(null);
+    const [isInicilizationApi, setInicilizationApi] = useState(false);
+    const [showOptionRefused, setShowOptionRefused] = useState<OptionsRefusedPorps>(null);
+    const [showPaymentPending, setShowPaymentPending] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [RefreshingOnPress, setRefreshingOnPress] = useState(false);
     const [EntryVisible, setEntryVisible] = useState(false);
@@ -137,30 +142,30 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setvalidateIsBotton(true);
             setEntryVisible(true);
             setRouteStarted(true);
-            // setLoading(true);
-            // const location = await Location.getCurrentPositionAsync({
-            //     accuracy: Location.Accuracy.Highest,
-            // });
-            // const response = await invoiceRepositoryImpl.openAddresses(
-            //     {
-            //         latitud: String(location.coords.latitude),
-            //         longitud: String(location.coords.longitude),
-            //         fechaHoraDispositivo: getDeviceDateTime()
-            //     },
-            //     guide?.idDireccion || 0,
-            //     token
-            // );
-            // if (response?.statusCode === 200) {
-            //     setvalidateIsBotton(true);
-            //     setEntryVisible(true);
-            //     setRouteStarted(true);
-            // } else {
-            //     setValidateException(true);
-            //     btnRef.current?.reset();
-            //     setModalTitle("¡Alerta!");
-            //     setModalMessage(response?.message || "No se pudo iniciar la ruta. Intente nuevamente.");
-            //     setModalVisible(true);
-            // }
+            setLoading(true);
+            const location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Highest,
+            });
+            const response = await invoiceRepositoryImpl.openAddresses(
+                {
+                    latitud: String(location.coords.latitude),
+                    longitud: String(location.coords.longitude),
+                    fechaHoraDispositivo: getDeviceDateTime()
+                },
+                guide?.idDireccion || 0,
+                token
+            );
+            if (response?.statusCode === 200) {
+                setvalidateIsBotton(true);
+                setEntryVisible(true);
+                setRouteStarted(true);
+            } else {
+                setValidateException(true);
+                btnRef.current?.reset();
+                setModalTitle("¡Alerta!");
+                setModalMessage(response?.message || "No se pudo iniciar la ruta. Intente nuevamente.");
+                setModalVisible(true);
+            }
         } catch (error: any) {
             setValidateException(true);
             btnRef.current?.reset();
@@ -174,6 +179,14 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const submitData = async () => {
         try {
+            if (validateIsBotton) {
+                setValidateException(true);
+                btnRef.current?.reset(); 
+                setModalTitle("¡Alerta!");
+                setModalMessage("Debe especificar un estado de entrega.");
+                setModalVisible(true);
+                return;
+            }
             setLoading(true);
             const response = await invoiceRepositoryImpl.closeAddresses(
                 guide?.idDireccion || 0,
@@ -209,6 +222,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 setModalTitle("¡Alerta!");
                 setModalMessage("Debe indicar que ya llegó al lugar de la dirección para poder ejecutar esta acción.");
                 setModalVisible(true);
+                return;
             }
         } catch (error) {
             setModalTitle("¡Error!");
@@ -291,34 +305,51 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const uploadPhotoSubmit = async () => {
         try {
-
-            if (showStatusDelivery) {
+            if (showStatusDelivery && isInicilizationApi || showOptionRefused != OptionsRefusedEnum.TIENDA && showOptionRefused) {
                 setLoading(true);
 
                 const facturasArray: CreateEntregaProps[] = [];
                 let responses: any[] = [];
-
+                setInicilizationApi(false);
                 if (guide?.facturas && guide.facturas.length > 0) {
                     guide.facturas.forEach((factura, index) => {
                         facturasArray.push({
                             ruta: String(numberGuide),
                             documentMeico: String(factura.numeroFactura),
                             direccion: Number(guide?.idDireccion),
-                            causal: "CS_ART_MAL_EST",
+                            causal: showOptionRefused === OptionsRefusedEnum.DINERO
+                                ? CausalDelivery.DINERO_INSUFICIENTE
+                                : showOptionRefused === OptionsRefusedEnum.DUEÑO
+                                    ? CausalDelivery.DUENO_NO_CONTESTA
+                                    : showOptionRefused === OptionsRefusedEnum.TIENDA
+                                        ? CausalDelivery.TIENDA_CERRADA
+                                        : showOptionRefused === OptionsRefusedEnum.PRODUCTOS
+                                            ? CausalDelivery.PRODUCTOS_DANADOS
+                                            : null,
                             estado: "EST_PEDI_PEND",
-                            files: multiplePhotos.map((item, photoIndex) => ({
-                                tipoEntrega:
-                                    showStatusDelivery === StatusDelivery.TOTAL
-                                        ? TypeDelivery.ENT_TOTAL
-                                        : showStatusDelivery === StatusDelivery.PARCIAL
-                                            ? TypeDelivery.ENT_PARCIAL
-                                            : TypeDelivery.RECHAZADO,
+                            files:
+                                showStatusDelivery === StatusDelivery.RECHAZADO
+                                    ?
+                                    showOptionRefused === OptionsRefusedEnum.TIENDA
+                                        ? multiplePhotos.map((item) => ({
+                                            tipoEntrega: TypeDelivery.RECHAZADO,
+                                            rutaArchivo: item.base64 ?? null,
+                                        }))
+                                        : []
+                                    :
+                                    multiplePhotos.map((item) => ({
+                                        tipoEntrega:
+                                            showStatusDelivery === StatusDelivery.TOTAL
+                                                ? TypeDelivery.ENT_TOTAL
+                                                : showStatusDelivery === StatusDelivery.PARCIAL
+                                                    ? TypeDelivery.ENT_PARCIAL
+                                                    : TypeDelivery.RECHAZADO,
+                                        rutaArchivo: item.base64 ?? null,
+                                    })),
 
-                                rutaArchivo: item.base64 ?? "",
-                                // nombreArchivo: `factura_${factura.numeroFactura}_evidencia_${photoIndex + 1}.jpg`,
-                            }))
                         });
                     });
+                    setShowOptionRefused(null);
                 }
 
                 if (facturasArray.length > 0) {
@@ -336,8 +367,9 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     if (success) {
                         setLoading(false);
                         setModalTitle("¡Procesado!");
-                        setModalMessage(`${facturasArray.length} soporte(s) procesados exitosamente.`);
+                        setModalMessage(`soporte(s) procesados exitosamente.`);
                         setModalVisible(true);
+                        setvalidateIsBotton(false);
                     } else {
                         setLoading(false);
                         // Opcional: mostrar detalles del primer error
@@ -361,13 +393,13 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     useEffect(() => {
         const processPhotos = async () => {
-            if (multiplePhotos.length > 0) {
+            if (showStatusDelivery && isInicilizationApi || showOptionRefused) {
                 await uploadPhotoSubmit();
             }
         };
 
         processPhotos();
-    }, [multiplePhotos]);
+    }, [showStatusDelivery, isInicilizationApi, showOptionRefused]);
 
     const paymentsData = [
         {
@@ -664,7 +696,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     key={routeStarted ? "cerrar" : "llegue"}
                     title={routeStarted ? "Cerrar pedido" : "Ya llegué"}
                     onPress={routeStarted ? submitData : handleSubmit}
-                    disabled={validateIsBotton}
+                    disabled={false}
                     width={328}
                     height={43}
                     buttonColor={validateIsBotton ? "#DDDFE8" : undefined}
@@ -741,9 +773,9 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
                     onEvidenceComplete={(evidences) => {
                         setIsDeliveryCompleted(true);
-                        setUploadPhoto(false); // Cerrar después de completar
+                        setUploadPhoto(false);
                         setMultiplePhotos(evidences);
-
+                        setInicilizationApi(true);
                     }}
                     onPermisionsPhoto={() => {
                         setUploadPhoto(false);
@@ -806,10 +838,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     onClose={() => { setShowModalRefused(false) }}
                     width={width}
                     onPress={(selectedStatus) => {
-                        setvalidateIsBotton(false);
+                        setShowOptionRefused(selectedStatus);
                         if (selectedStatus === 'Tienda') {
                             setShowModalRefused(false);
                             setUploadPhoto(true);
+                        } if (selectedStatus != 'Tienda') {
+                            setInicilizationApi(true);
                         }
                     }}
                 />

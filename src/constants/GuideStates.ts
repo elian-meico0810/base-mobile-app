@@ -50,7 +50,7 @@ export enum TypeDelivery {
 export enum StatusDelivery {
     TOTAL = "total",
     PARCIAL = "parcial",
-    RECHAZADO = "rechazado"
+    RECHAZADO = "rechazo"
 }
 
 export enum CausalDelivery {
@@ -58,4 +58,11 @@ export enum CausalDelivery {
     TIENDA_CERRADA = "CS_TIENDA_CERRADA",
     DUENO_NO_CONTESTA = "CS_DUEÑO_NO_CONESTA",
     DINERO_INSUFICIENTE = "CS_DINERO_INSUFICIENTE"
+}
+
+export enum OptionsRefusedEnum {
+    DINERO = "Dinero",
+    DUEÑO = "Dueño",
+    TIENDA = "Tienda",
+    PRODUCTOS = "Productos"
 }

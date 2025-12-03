@@ -57,12 +57,12 @@ export interface CreateEntregaProps {
     ruta: string;
     documentMeico: string;
     direccion: number;
-    causal: string;
+    causal?: string | null;
     estado: string;
     files: EvidenceFile[];
 }
 
 export interface EvidenceFile {
-    tipoEntrega: string;
-    rutaArchivo: string;    // base64 o dataURL
+    tipoEntrega: string | null;
+    rutaArchivo: string | null;    // base64 o dataURL
 }

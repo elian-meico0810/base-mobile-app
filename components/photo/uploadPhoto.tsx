@@ -216,19 +216,6 @@ export function UploadPhoto({
                                 </View>
                             ))}
 
-                            {/* Espacios para evidencias faltantes - UNA DEBAJO DE OTRA */}
-                            {Array.from({ length: maxEvidences - evidences.length }).map((_, index) => (
-                                <View key={`empty-${index}`} style={styles.thumbnailRow}>
-                                    <View style={[styles.thumbnailContainer, styles.emptyThumbnail]}>
-                                        <Ionicons name="image-outline" size={16} color="#788095" />
-                                    </View>
-                                    <Text style={[styles.thumbnailLabel, styles.emptyLabel]}>
-                                        Evidencia {evidences.length + index + 1}
-                                    </Text>
-                                    {/* Espacio vacío para mantener la alineación */}
-                                    <View style={styles.trashButtonPlaceholder} />
-                                </View>
-                            ))}
                         </View>
                     </View>
                 )}

@@ -38,7 +38,6 @@ export function OptionsRefused({
     const handleSubmit = () => {
         onClose?.();
         onPress?.(selectedStatus); // Pasar el estado seleccionado al padre
-        console.log('Estado seleccionado para enviar:', selectedStatus);
     }
 
     return (

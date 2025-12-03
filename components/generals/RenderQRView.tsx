@@ -54,11 +54,11 @@ export default function RenderQRView({
     useEffect(() => {
         if (localQRData && qrType) {
             setIsQRGenerating(true);
-            
+
             const timer = setTimeout(() => {
                 setIsQRGenerating(false);
-            }, 800);
-            
+            }, 5000);
+
             return () => clearTimeout(timer);
         } else {
             setIsQRGenerating(false);
@@ -70,7 +70,7 @@ export default function RenderQRView({
         // Primero limpia el QR local
         setLocalQRData(undefined);
         setIsQRGenerating(true);
-        
+
         // Luego ejecuta la función original después de un breve delay
         setTimeout(() => {
             handleChangeQRType();
@@ -172,15 +172,6 @@ export default function RenderQRView({
             case "image-url":
                 return <Image source={{ uri: localQRData }} style={styles.qrImage} resizeMode="contain" />;
 
-            case "payment-link":
-                return (
-                    <View style={styles.linkContainer}>
-                        <Text style={styles.linkText}>Link de pago:</Text>
-                        <TouchableOpacity onPress={() => localQRData && Linking.openURL(localQRData)}>
-                            <Text style={styles.linkUrl}>{localQRData}</Text>
-                        </TouchableOpacity>
-                    </View>
-                );
 
             case "base64-image":
                 return <Image source={{ uri: localQRData }} style={styles.qrImage} resizeMode="contain" />;
@@ -197,10 +188,7 @@ export default function RenderQRView({
             default:
                 return (
                     <View style={styles.qrPlaceholder}>
-                        <Text style={styles.qrPlaceholderText}>Formato QR no soportado</Text>
-                        <Text style={styles.qrDescription}>
-                            Longitud: {localQRData?.length}
-                        </Text>
+                        <Text style={styles.qrPlaceholderText}>Generando código QR...</Text>
                     </View>
                 );
         }
@@ -246,7 +234,7 @@ export default function RenderQRView({
                 />
                 <SecondaryButton
                     title="Cambiar tipo de QR"
-                    onPress={handleChangeTypeWithClean} 
+                    onPress={handleChangeTypeWithClean}
                     disabled={disabled || isQRGenerating}
                     width={350}
                     height={43}

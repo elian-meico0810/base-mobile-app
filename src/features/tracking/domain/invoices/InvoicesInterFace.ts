@@ -64,5 +64,11 @@ export interface CreateEntregaProps {
 
 export interface EvidenceFile {
     tipoEntrega: string | null;
-    rutaArchivo: string | null;    // base64 o dataURL
+    rutaArchivo: string | null;   
+}
+
+export interface WhatsappProps {
+  whatsapp: string,
+  nombre_cliente: string,
+  link_pago: string
 }

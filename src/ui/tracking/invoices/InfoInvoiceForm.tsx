@@ -123,11 +123,27 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const handlSendWhatsApp = async () => {
         try {
             if (qrType == TypeQr.PASARELA) {
-                setShowSuccessQRP(true);
-                setModalgenerateQR(false);
-                setTimeout(() => {
-                    setShowPaymentPending(true);
-                }, 3000);
+                setLoading(true);
+                const response = await invoiceRepositoryImpl.whatsappProps(
+                    {
+                        whatsapp: String(phone),
+                        nombre_cliente: String(guide?.nombreCliente),
+                        link_pago: String(qrBase64)
+                    },
+                    ENV_DEV.KEY_APP
+                );
+                if (response?.statusCode == 200) {
+                    setShowSuccessQRP(true);
+                    setModalgenerateQR(false);
+                    setLoading(false);
+                    setTimeout(() => {
+                        setShowPaymentPending(true);
+                    }, 3000);
+                } else {
+                    setModalTitle("¡Alerta!");
+                    setModalMessage(response?.message ?? "Ocurrio un error inesperado.");
+                    setModalVisible(true);
+                }
             }
         } catch (error: any) {
             setModalTitle("¡Error!");
@@ -526,17 +542,17 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                 {'$ ' + (Number(newValue) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                             </Text>
                         </View>
-                        {newValue != 0 && (
-                            <TouchableOpacity style={styles.qrButton} onPress={() => { validateButton(), setShowDetailInvoiceQR(true) }}>
-                                <View style={styles.qrButtonContent}>
-                                    <Image
-                                        source={require('@/assets/icons/GenerateQR.png')}
-                                        style={styles.qrButtonIcon}
-                                    />
-                                    <Text style={styles.qrButtonText}>Generar QR de pago</Text>
-                                </View>
-                            </TouchableOpacity>
-                        )}
+                        {/* {newValue != 0 && ( */}
+                        <TouchableOpacity style={styles.qrButton} onPress={() => { validateButton(), setShowDetailInvoiceQR(true) }}>
+                            <View style={styles.qrButtonContent}>
+                                <Image
+                                    source={require('@/assets/icons/GenerateQR.png')}
+                                    style={styles.qrButtonIcon}
+                                />
+                                <Text style={styles.qrButtonText}>Generar QR de pago</Text>
+                            </View>
+                        </TouchableOpacity>
+                        {/* )} */}
 
                         <TouchableOpacity style={styles.qrButtonDetail} onPress={() => { setShowPayment(true) }}>
                             <Text style={styles.qrButtonText}>Detalle de pagos</Text>
@@ -700,7 +716,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 <TopSuccessAlert
                     visible={showSuccessQRp}
                     message="Envió exitoso"
-                    subtitle="Enviamos el QR de pago al número 2612152672"
+                    subtitle={`Enviamos el QR de pago al número ${phone}`}
                     onHide={() => setShowSuccessQRP(false)}
                 />
             )}

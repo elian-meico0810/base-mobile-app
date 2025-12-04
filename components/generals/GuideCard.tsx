@@ -41,11 +41,19 @@ export function GuideCard({ guide, onPress, routeStarted, numberGuide, token }: 
     };
     return (
         <TouchableOpacity
-            style={styles.card}
+            disabled={guide.estado !== 'Pendiente' ? true : false}
+            style={[
+                styles.card,
+                guide.estado !== 'Pendiente' && {
+                    backgroundColor: '#F9F9FA',
+                    opacity: 0.6,
+                    borderColor: '#F9F9FA',
+                    borderWidth: 1,
+                }
+            ]}
             activeOpacity={0.8}
             onPress={() => {
                 if (!routeStarted) return;
-                // Navegar a la vista de detalles de la guía
                 router.push(
                     `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
                 );
@@ -87,23 +95,30 @@ export function GuideCard({ guide, onPress, routeStarted, numberGuide, token }: 
                     {guide.facturas?.length ?? 0} Ordenes
                 </Text>
             </View>
-            <TouchableOpacity
-                style={styles.gotoButton}
-                activeOpacity={0.8}
-                onPress={() => {
-                    if (!routeStarted) {
-                        setModalVisible(true);
-                        return;
-                    }
+            {guide.estado === 'Pendiente' && (
+                <TouchableOpacity
+                    style={[
+                        styles.gotoButton,
+                        guide.estado !== 'Pendiente' && {
+                        }
+                    ]}
+                    activeOpacity={0.8}
+                    onPress={() => {
+                        if (!routeStarted) {
+                            setModalVisible(true);
+                            return;
+                        }
 
-                    handleGoToMap();
-                }}
-            >
-                <View style={styles.gotoContent}>
-                    <Text style={styles.gotoText}>Ir a la dirección</Text>
-                    <Image source={require('@/assets/icons/Direction.png')} style={styles.gotoIcon} />
-                </View>
-            </TouchableOpacity>
+                        handleGoToMap();
+                    }}
+                >
+                    <View style={styles.gotoContent}>
+                        <Text style={styles.gotoText}>Ir a la dirección</Text>
+                        <Image source={require('@/assets/icons/Direction.png')} style={styles.gotoIcon} />
+                    </View>
+
+                </TouchableOpacity>
+            )}
 
             <ExceptionModal
                 visible={modalVisible}
@@ -123,7 +138,6 @@ export function GuideCard({ guide, onPress, routeStarted, numberGuide, token }: 
 const styles = StyleSheet.create({
     card: {
         width: 328,
-        height: 180,
         backgroundColor: '#FFFFFF',
         borderRadius: 8,
         borderWidth: 1,

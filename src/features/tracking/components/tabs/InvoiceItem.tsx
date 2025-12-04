@@ -17,7 +17,7 @@ interface InvoiceItemProps {
 }
 
 const InvoiceItem = ({ invoice, index, isSelected, onSelect, parentGuide, documentMeico, conceptDelivery }: InvoiceItemProps) => {
-    const hasEvidence = (numeroFactura: string): boolean => {
+  const hasEvidence = (numeroFactura: string): boolean => {
     if (Array.isArray(conceptDelivery)) {
       return conceptDelivery.some(
         (doc) => String(doc.documentMeico) === String(numeroFactura)
@@ -32,8 +32,16 @@ const InvoiceItem = ({ invoice, index, isSelected, onSelect, parentGuide, docume
       activeOpacity={0.7}
     >
       {/* Estado */}
-      <View style={styles.statusContainer}>
-        <Text style={styles.status}>Pendiente</Text>
+      <View style={[
+        styles.statusContainer,
+        hasEvidence(invoice.numeroFactura)
+          ? { backgroundColor: '#DFF5E1' }
+          : {}]}>
+        <Text style={[
+          styles.status,
+          hasEvidence(invoice.numeroFactura)
+            ? { color: '#1F9144' }  
+            : {}]}>{hasEvidence(invoice.numeroFactura) ? "Entregado" : "Pendiente"}</Text>
       </View>
 
       {/* Order + Valor + Flecha */}
@@ -100,7 +108,7 @@ const InvoicesList = ({ invoices, guide, onInvoiceSelect, isSelectInvocies, docu
 
   if (response?.data) {
     dataToProcess = [response?.data[0]];
-  }else if (guide) {
+  } else if (guide) {
     dataToProcess = [guide];
   } else if (invoices) {
     dataToProcess = Array.isArray(invoices) ? invoices : [invoices];
@@ -175,7 +183,7 @@ const InvoicesList = ({ invoices, guide, onInvoiceSelect, isSelectInvocies, docu
   }
 
   const renderInvoices = () => (
-    
+
     <View>
       {allInvoicesWithParent.map((item, index) => (
         <InvoiceItem
@@ -239,7 +247,7 @@ const styles = StyleSheet.create({
   },
   invoiceContainer: {
     width: 340,
-    padding: 12,
+    padding: 10,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ddd',

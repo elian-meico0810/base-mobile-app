@@ -10,8 +10,9 @@ export default function IndexInvoiceScreen() {
     const numberGuide = params.numberGuide as string;
     const guideObj: GuideDetails = guideParam ? JSON.parse(guideParam) : {} as GuideDetails;
     const isSelectInvocies = params.isSelectInvocies as string;
+    const routeStartedBotton = params.routeStarted as string;
     const documentMeico = params.documentMeico as string;
-    
+
     return (
         <>
             <Stack.Screen
@@ -28,6 +29,7 @@ export default function IndexInvoiceScreen() {
                     numberGuide={Number(numberGuide)}
                     isSelectInvocies={isSelectInvocies}
                     documentMeico={documentMeico}
+                    routeStartedBotton={routeStartedBotton}
                 />
             ) : (
 

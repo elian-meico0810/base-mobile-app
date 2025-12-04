@@ -24,13 +24,14 @@ interface ViewSelectInvoiceProps {
     numberGuide?: number;
     isSelectInvocies?: string;
     documentMeico?: string;
+    routeStartedBotton?: string;
 
 }
 
-export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico }: ViewSelectInvoiceProps) {
+export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, routeStartedBotton }: ViewSelectInvoiceProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [loading, setLoading] = useState(false);
-    const [routeStarted, setRouteStarted] = useState(false);
+    const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
     const [showPayment, setShowPayment] = useState(false);
     const [showDetailInvoiceQR, setShowDetailInvoiceQR] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
@@ -353,20 +354,23 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             <View style={styles.redBackground} />
 
             <View style={[styles.footer, { marginBottom: 10 }]}>
-                <PrimaryButtonDetails
-                    ref={btnRef}
-                    autoReset={validateException}
-                    key={routeStarted ? "cerrar" : "llegue"}
-                    title={routeStarted ? "Cerrar pedido" : "Ya llegué"}
-                    onPress={routeStarted ? submitData : handleSubmit}
-                    disabled={false}
-                    width={328}
-                    height={43}
-                    buttonColor={validateIsBotton ? "#DDDFE8" : undefined}
-                    buttonColorEnd={validateIsBotton ? "#DDDFE8" : undefined}
-                    titleColor={routeStarted ? "#FFFFFF" : undefined}
-                    circleColor={validateIsBotton ? "#788095" : undefined}
-                />
+                {guide?.estado === 'Pendiente' && (
+                    <PrimaryButtonDetails
+                        ref={btnRef}
+                        autoReset={validateException}
+                        key={routeStarted ? "cerrar" : "llegue"}
+                        title={routeStarted ? "Cerrar pedido" : "Ya llegué"}
+                        onPress={routeStarted ? submitData : handleSubmit}
+                        disabled={false}
+                        width={328}
+                        height={43}
+                        buttonColor={routeStarted ? "#DDDFE8" : undefined}
+                        buttonColorEnd={routeStarted ? "#DDDFE8" : undefined}
+                        titleColor={routeStarted ? "#FFFFFF" : undefined}
+                        circleColor={routeStarted ? "#788095" : undefined}
+                    />
+                )}
+
             </View>
 
             <ExceptionModal

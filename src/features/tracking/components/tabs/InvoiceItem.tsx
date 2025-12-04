@@ -1,9 +1,9 @@
 "use client";
 import { AddEvidenceButton } from '@/components/inputs/AddEvidenceButton';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { GuideDetails } from '../../domain/details/DetailsGuide';
-import { detailsRepositoryImpl } from '../../infrastructure/details/detailsRepositoryImpl';
+import { DerliveryDocument } from '../../domain/invoices/InvoicesInterFace';
 
 interface InvoiceItemProps {
   invoice: any;
@@ -12,9 +12,19 @@ interface InvoiceItemProps {
   onSelect: (invoice: any, parentGuide: GuideDetails) => void;
   parentGuide: GuideDetails;
   documentMeico?: string;
+  conceptDelivery?: DerliveryDocument | DerliveryDocument[] | null;
+
 }
 
-const InvoiceItem = ({ invoice, index, isSelected, onSelect, parentGuide, documentMeico }: InvoiceItemProps) => {
+const InvoiceItem = ({ invoice, index, isSelected, onSelect, parentGuide, documentMeico, conceptDelivery }: InvoiceItemProps) => {
+    const hasEvidence = (numeroFactura: string): boolean => {
+    if (Array.isArray(conceptDelivery)) {
+      return conceptDelivery.some(
+        (doc) => String(doc.documentMeico) === String(numeroFactura)
+      );
+    }
+    return false;
+  };
   return (
     <TouchableOpacity
       style={[styles.invoiceContainer, isSelected && styles.selectedContainer]}
@@ -52,7 +62,8 @@ const InvoiceItem = ({ invoice, index, isSelected, onSelect, parentGuide, docume
       <Text style={styles.codText} numberOfLines={1} ellipsizeMode="tail">
         {invoice?.tipo === "CONTADO EFECTIVO" ? "Contra-entrega" : "Crédito"}
       </Text>
-      {documentMeico && invoice.numeroFactura == documentMeico && (
+
+      {hasEvidence(invoice.numeroFactura) && (
         <AddEvidenceButton
           title="Evidencias cargadas"
           backgroundColor="#EAF7ED"
@@ -60,6 +71,7 @@ const InvoiceItem = ({ invoice, index, isSelected, onSelect, parentGuide, docume
           iconColor="#1F9144"
           showEndIcon={true}
           spaced={true}
+          disabled={true}
         />
       )}
 
@@ -75,32 +87,16 @@ interface InvoicesListProps {
   isSelectInvocies?: string;
   documentMeico?: string;
   numberGuide?: number;
-  token: string
+  token: string;
+  conceptDelivery?: DerliveryDocument | DerliveryDocument[] | null;
 }
 
-const InvoicesList = ({ invoices, guide, onInvoiceSelect, isSelectInvocies, documentMeico, numberGuide, token }: InvoicesListProps) => {
+const InvoicesList = ({ invoices, guide, onInvoiceSelect, isSelectInvocies, documentMeico, numberGuide, token, conceptDelivery }: InvoicesListProps) => {
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
   const [selectedGuideData, setSelectedGuideData] = useState<GuideDetails | null>(null);
   const [response, setResponse] = useState<any>(null);
   let dataToProcess: GuideDetails[] = [];
 
-  useEffect(() => {
-    const fetchGuide = async () => {
-      if (!isSelectInvocies) return;
-
-      try {
-        const resp = await detailsRepositoryImpl.listGuide(
-          Number(numberGuide),
-          token
-        );
-        setResponse(resp);
-      } catch (error) {
-        throw error;
-      }
-    };
-
-    fetchGuide();
-  }, [isSelectInvocies, numberGuide, token]);
 
   if (response?.data) {
     dataToProcess = [response?.data[0]];
@@ -179,6 +175,7 @@ const InvoicesList = ({ invoices, guide, onInvoiceSelect, isSelectInvocies, docu
   }
 
   const renderInvoices = () => (
+    
     <View>
       {allInvoicesWithParent.map((item, index) => (
         <InvoiceItem
@@ -189,6 +186,7 @@ const InvoicesList = ({ invoices, guide, onInvoiceSelect, isSelectInvocies, docu
           onSelect={handleInvoiceSelect}
           parentGuide={item.parentGuide}
           documentMeico={documentMeico}
+          conceptDelivery={conceptDelivery}
         />
       ))}
     </View>

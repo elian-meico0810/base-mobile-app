@@ -2,6 +2,7 @@ import { AddEvidenceButton } from '@/components/inputs/AddEvidenceButton';
 import { TypeDelivery } from '@/src/constants/GuideStates';
 import { useState } from 'react';
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { DerliveryDocument } from '../../domain/invoices/InvoicesInterFace';
 
 interface DeliveryStatusProps {
     onStatusChange?: (status: 'total' | 'parcial' | 'rechazo' | null) => void;
@@ -12,6 +13,7 @@ interface DeliveryStatusProps {
     isCompleted?: boolean; // ← NUEVO: para saber si está completado
     selectedStatus?: 'total' | 'parcial' | 'rechazo' | null;
     typeDerlivery: string | undefined;
+    conceptDelivery?: DerliveryDocument | null
 }
 const { width, height } = Dimensions.get('window');
 
@@ -23,11 +25,12 @@ export function DeliveryStatus({
     onUploadPhoto,
     isCompleted = false,
     selectedStatus: externalStatus,
-    typeDerlivery
+    typeDerlivery,
+    conceptDelivery
 }: DeliveryStatusProps) {
     const [internalStatus, setInternalStatus] = useState<'total' | 'parcial' | 'rechazo' | null>(null);
-
     const selectedStatus = externalStatus !== undefined ? externalStatus : internalStatus;
+    
     const handleStatusSelect = (status: 'total' | 'parcial' | 'rechazo') => {
         if (!EntryVisible) return;
         if (status === 'rechazo') {

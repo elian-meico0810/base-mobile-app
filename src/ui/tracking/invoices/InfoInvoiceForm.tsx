@@ -1,6 +1,7 @@
 import { PaymentPendingAlert } from '@/components/alerts/PaymentPendingAlert';
 import { TopErrorAlert } from '@/components/alerts/TopErrorAlert';
 import { TopSuccessAlert } from '@/components/alerts/TopSuccessAlert';
+import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
@@ -70,6 +71,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [refreshing, setRefreshing] = useState(false);
     const [RefreshingOnPress, setRefreshingOnPress] = useState(false);
     const [EntryVisible, setEntryVisible] = useState(false);
+    const [deliveryStatus, setDeliveryStatus] = useState(false);
     const [modalRefused, setShowModalRefused] = useState(false);
     const [uploadPhoto, setUploadPhoto] = useState(false);
     const [conceptDelivery, setConceptDelivery] = useState<DerliveryDocument | null>(null);
@@ -91,6 +93,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setModalgenerateQR(false);
         }
     }, [modalRefused]);
+
+    useEffect(() => {
+        if (isSelectInvocies) {
+            setRouteStarted(true);
+        }
+    }, [isSelectInvocies]);
 
     useEffect(() => {
 
@@ -157,11 +165,62 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         }
     }
 
+    const handleSubmitData = async () => {
+        try {
+
+            if (!deliveryStatus) {
+                setModalTitle("¡Alerta!");
+                setModalMessage("Debe especificar un estado de entrega.");
+                setModalVisible(true);
+                return;
+            }
+
+            setLoading(true);
+            const location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Highest,
+            });
+            const response = await invoiceRepositoryImpl.OpneAddressesDelivery(
+                {
+                    latitud: String(location.coords.latitude),
+                    longitud: String(location.coords.longitude),
+                    fechaHoraDispositivo: getDeviceDateTime(),
+                    es_entregado: true
+                },
+                guide?.idDireccion || 0,
+                token
+            );
+            if (response?.statusCode === 200) {
+                setRouteStarted(true);
+                if (isSelectInvocies) {
+                    router.push(
+                        `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}`
+                    );
+                }
+                setvalidateIsBotton(true);
+                setEntryVisible(true);
+
+            } else {
+                setValidateException(true);
+                btnRef.current?.reset();
+                setModalTitle("¡Alerta!");
+                setModalMessage(response?.message || "No se pudo iniciar la ruta. Intente nuevamente.");
+                setModalVisible(true);
+            }
+        } catch (error: any) {
+            setValidateException(true);
+            btnRef.current?.reset();
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleSubmit = async () => {
         try {
             setvalidateIsBotton(true);
             setEntryVisible(true);
-            setRouteStarted(true);
             setLoading(true);
             setShowDetailInvoiceQR(false);
             setShowPayment(false);
@@ -181,6 +240,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 setvalidateIsBotton(true);
                 setEntryVisible(true);
                 setRouteStarted(true);
+                listDocumentQuery();
             } else {
                 setValidateException(true);
                 btnRef.current?.reset();
@@ -240,7 +300,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         try {
             setShowDetailInvoiceQR(false);
             setShowPayment(false);
-            if (!routeStarted) {
+            if (!routeStarted && !isSelectInvocies) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Debe indicar que ya llegó al lugar de la dirección para poder ejecutar esta acción.");
                 setModalVisible(true);
@@ -260,7 +320,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
         try {
             setTimeout(async () => {
-                //  Ejecutar la petición cuando termine el timeout
                 const response = await detailsRepositoryImpl.listGuide(
                     Number(numberGuide),
                     token
@@ -330,7 +389,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         try {
             if (showStatusDelivery && isInicilizationApi || showOptionRefused != OptionsRefusedEnum.TIENDA && showOptionRefused) {
                 setLoading(true);
-
+                setDeliveryStatus(true);
                 const facturasArray: CreateEntregaProps[] = [];
                 let responses: any[] = [];
                 setInicilizationApi(false);
@@ -388,12 +447,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     );
                     if (success) {
                         listDocumentQuery();
-                        if (isSelectInvocies) {
-                            router.push(
-                                `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${facturasArray[0].documentMeico}`
-                            );
-                        }
-
                         setLoading(false);
                         setModalTitle("¡Procesado!");
                         setModalMessage(`soporte(s) procesados exitosamente.`);
@@ -433,12 +486,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const listDocumentQuery = async () => {
         try {
             setLoading(true);
+
             const responseQuery = await invoiceRepositoryImpl.listDocument(
                 String(guide?.facturas[0]?.numeroFactura),
                 Number(guide?.idDireccion),
-                token  
+                token
             );
-
             let concept: DerliveryDocument | null = null;
             if (responseQuery?.statusCode == 200) {
                 if (Array.isArray(responseQuery.data)) {
@@ -446,11 +499,11 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 } else if (responseQuery.data && typeof responseQuery.data === "object") {
                     concept = responseQuery.data;
                 }
+                setConceptDelivery(concept);
+                setLoading(false);
             }
 
-            setConceptDelivery(concept);
-            setLoading(false);
-          } catch (error) {
+        } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
             setModalVisible(true);
@@ -461,10 +514,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
 
     useEffect(() => {
-        if (token && routeStarted) {
+        if (isSelectInvocies) {
             listDocumentQuery();
         }
-    }, [token, routeStarted]);
+    }, [isSelectInvocies]);
 
     const newValue = Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.valorTotal)
 
@@ -620,7 +673,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                 setMultiplePhotos([]);
                             }
                         }}
-                        EntryVisible={EntryVisible}
+                        EntryVisible={isSelectInvocies ? true : EntryVisible}
                         onOpenRefusedModal={() => setShowModalRefused(true)}
                         onUploadPhoto={() => {
                             setUploadPhoto(true);
@@ -628,26 +681,41 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         isCompleted={isDeliveryCompleted}
                         selectedStatus={showStatusDelivery}
                         typeDerlivery={conceptDelivery?.tipoEntrega?.codigo ?? undefined}
+                        conceptDelivery={conceptDelivery}
                     />
                 </View>
             </ScrollView>
             <View style={styles.redBackground} />
 
             <View style={[styles.footer, { marginBottom: 10 }]}>
-                <PrimaryButtonDetails
-                    ref={btnRef}
-                    autoReset={validateException}
-                    key={routeStarted ? "cerrar" : "llegue"}
-                    title={routeStarted ? "Cerrar pedido" : "Ya llegué"}
-                    onPress={routeStarted ? submitData : handleSubmit}
-                    disabled={false}
-                    width={328}
-                    height={43}
-                    buttonColor={validateIsBotton ? "#DDDFE8" : undefined}
-                    buttonColorEnd={validateIsBotton ? "#DDDFE8" : undefined}
-                    titleColor={routeStarted ? "#FFFFFF" : undefined}
-                    circleColor={validateIsBotton ? "#788095" : undefined}
-                />
+
+                {isSelectInvocies ? (
+                    <PrimaryButton
+                        title="Entregar"
+                        onPress={handleSubmitData}
+                        disabled={!showStatusDelivery ? true : false}
+                        width={328}
+                        height={43}
+                    />
+                ) : (
+                    <PrimaryButtonDetails
+                        ref={btnRef}
+                        autoReset={validateException}
+                        key={routeStarted ? "cerrar" : "llegue"}
+                        title={routeStarted ? "Cerrar pedido" : "Ya llegué"}
+                        onPress={routeStarted ? submitData : handleSubmit}
+                        disabled={false}
+                        width={328}
+                        height={43}
+                        buttonColor={validateIsBotton ? "#DDDFE8" : undefined}
+                        buttonColorEnd={validateIsBotton ? "#DDDFE8" : undefined}
+                        titleColor={routeStarted ? "#FFFFFF" : undefined}
+                        circleColor={validateIsBotton ? "#788095" : undefined}
+                    />
+                )
+                }
+
+
             </View>
 
             <ExceptionModal

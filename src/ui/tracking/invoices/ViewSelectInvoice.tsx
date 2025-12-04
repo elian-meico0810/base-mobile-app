@@ -5,10 +5,10 @@ import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { ThemedView } from '@/components/themed-view';
-import { ENV_DEV } from '@/src/constants/apiRoutes';
 import InvoicesList from '@/src/features/tracking/components/tabs/InvoiceItem';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
-import { Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
+import { DerliveryDocument } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
+import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
 import { cleanSpaces, getDeviceDateTime } from '@/src/utils/uitls';
 import * as Location from "expo-location";
@@ -37,14 +37,12 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
-    const [modalgenerateQR, setModalgenerateQR] = useState(false);
+    const [conceptDelivery, setConceptDelivery] = useState<DerliveryDocument[]>([]);
     const [showPaymentPending, setShowPaymentPending] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [RefreshingOnPress, setRefreshingOnPress] = useState(false);
     const [EntryVisible, setEntryVisible] = useState(false);
-    const [modalRefused, setShowModalRefused] = useState(false);
     const [validateException, setValidateException] = useState(false);
-    const [paymentSuccessful, setPaymentSuccessful] = useState<Invoice | undefined>();
     const [validateIsBotton, setvalidateIsBotton] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState<GuideDetails | null>(null);
     const btnRef = useRef<any>(null);
@@ -54,11 +52,10 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     };
 
     useEffect(() => {
-        if (modalRefused) {
-            setShowDetailInvoiceQR(false);
-            setModalgenerateQR(false);
+        if (token) {
+            listGuideData();
         }
-    }, [modalRefused]);
+    }, [token]);
 
     const handleInvoiceSelect = (selectedGuide: GuideDetails | null) => {
         try {
@@ -76,29 +73,6 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             setLoading(false);
         }
     };
-
-    useEffect(() => {
-
-        const fetchGuide = async () => {
-            try {
-                const respones = await invoiceRepositoryImpl.successfulBillPayment(
-                    Number(initialGuide?.facturas[0]?.numeroFactura),
-                    ENV_DEV.KEY_APP
-                );
-                if (respones?.statusCode === 200) {
-                    setPaymentSuccessful(respones.data as Invoice);
-                }
-            } catch (error) {
-                setModalTitle("¡Error!");
-                setModalMessage("Ocurrio un error inesperado.");
-                setModalVisible(true);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchGuide();
-    }, [Number(initialGuide?.facturas[0]?.numeroFactura), token]);
 
     const handleSubmit = async () => {
         try {
@@ -179,6 +153,75 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         }
     };
 
+    const listGuideData = async () => {
+        try {
+            setLoading(true);
+            const response = await detailsRepositoryImpl.listGuide(
+                Number(numberGuide),
+                token
+            );
+            if (response?.statusCode === 200 && response?.data && Array.isArray(response.data)) {
+                const clienteFiltrado = response.data.filter(item =>
+                    item.codigoCliente === guide?.codigoCliente
+                );
+                if (clienteFiltrado.length > 0) {
+                    const clienteEncontrado = clienteFiltrado[0];
+
+                    setGuide({
+                        idDireccion: clienteEncontrado.idDireccion,
+                        direccion: clienteEncontrado.direccion,
+                        poblacion: clienteEncontrado.poblacion,
+                        codigoCliente: clienteEncontrado.codigoCliente,
+                        nombreCliente: clienteEncontrado.nombreCliente,
+                        latitud: clienteEncontrado.latitud,
+                        longitud: clienteEncontrado.longitud,
+                        estado: clienteEncontrado.estado,
+                        facturas: clienteEncontrado.facturas
+                    });
+                    listDocumentQuery();
+
+                }
+            }
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const listDocumentQuery = async () => {
+        try {
+            setLoading(true);
+            const responseQuery = await invoiceRepositoryImpl.listDocument(
+                null,
+                Number(guide?.idDireccion),
+                token
+            );
+            let conceptList: DerliveryDocument[] = [];
+
+            if (responseQuery?.statusCode === 200) {
+                if (Array.isArray(responseQuery.data)) {
+                    conceptList = responseQuery.data;
+                } else if (responseQuery.data && typeof responseQuery.data === "object") {
+                    conceptList = [responseQuery.data];
+                } else {
+                    conceptList = [];
+                }
+                setConceptDelivery(conceptList)
+                setLoading(false);
+            }
+
+
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const newValue = Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.valorTotal)
 
@@ -300,9 +343,11 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                     <InvoicesList guide={guide}
                         onInvoiceSelect={handleInvoiceSelect}
                         documentMeico={documentMeico}
-                        numberGuide={numberGuide} 
+                        numberGuide={numberGuide}
                         isSelectInvocies={isSelectInvocies}
-                        token={token}/>
+                        token={token}
+                        conceptDelivery={conceptDelivery}
+                    />
                 </View>
             </ScrollView>
             <View style={styles.redBackground} />

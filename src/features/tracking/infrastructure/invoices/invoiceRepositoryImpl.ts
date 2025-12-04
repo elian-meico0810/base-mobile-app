@@ -1,6 +1,6 @@
 import { API_ROUTES } from "@/src/constants/apiRoutes";
 import { authApi, authDevApi } from "@/src/features/auth/infrastructure/authApi";
-import { CreateEntregaProps, GenerateQRPorps, OpneAddressesProps, PaymentGatewayProps, ReportWhatsAppQRPorps, WhatsappProps } from "../../domain/invoices/InvoicesInterFace";
+import { CreateEntregaProps, GenerateQRPorps, OpneAddressesDeliveryProps, OpneAddressesProps, PaymentGatewayProps, ReportWhatsAppQRPorps, WhatsappProps } from "../../domain/invoices/InvoicesInterFace";
 import { InvoicesRepository, } from "../../domain/invoices/InvoicesRepository";
 
 export const invoiceRepositoryImpl: InvoicesRepository = {
@@ -150,7 +150,7 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
     }
   },
 
-  async listDocument(numeroFactura: string, idDireccion: number, token: string) {
+  async listDocument(numeroFactura: string | null, idDireccion: number, token: string) {
     try {
       const response = await authApi.get(
         `${API_ROUTES.GET_DOCUMENT}`,
@@ -168,6 +168,24 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
       return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {
       throw error;
+    }
+  },
+
+  async OpneAddressesDelivery(data: OpneAddressesDeliveryProps, addresseId: number, token: string) {
+    try {
+      const response = await authApi.post(
+        `${API_ROUTES.OPEN_ADDRESSES}${addresseId}/`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      // Aquí devuelves solo el JSON que envió el servidor
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
     }
   },
 };

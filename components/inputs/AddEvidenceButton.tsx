@@ -8,11 +8,12 @@ interface AddEvidenceButtonProps {
     backgroundColor?: string;
     textColor?: string;
     iconColor?: string;
-    iconName?: keyof typeof Ionicons.glyphMap;    
-    showStartIcon?: boolean;                         
-    endIconName?: keyof typeof Ionicons.glyphMap;   
-    showEndIcon?: boolean;                      
-    spaced?: boolean;                              
+    iconName?: keyof typeof Ionicons.glyphMap;
+    showStartIcon?: boolean;
+    endIconName?: keyof typeof Ionicons.glyphMap;
+    showEndIcon?: boolean;
+    spaced?: boolean;
+    disabled?: boolean;
 }
 
 export const AddEvidenceButton = ({
@@ -22,17 +23,19 @@ export const AddEvidenceButton = ({
     textColor = "#003087",
     iconColor = "#003087",
     iconName = "camera-outline",
-    showStartIcon = true,       
+    showStartIcon = true,
     endIconName = "refresh-outline",
-    showEndIcon = false,       
-    spaced = false,             
+    showEndIcon = false,
+    spaced = false,
+    disabled = false,
 }: AddEvidenceButtonProps) => {
     return (
         <TouchableOpacity
+            disabled={disabled}
             style={[
                 styles.container,
                 { backgroundColor },
-                spaced && { justifyContent: "space-between" }  
+                spaced && { justifyContent: "space-between" }
             ]}
             onPress={onPress}
         >
@@ -60,7 +63,7 @@ const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',    
+        justifyContent: 'center',
         borderRadius: 64,
         marginTop: 8,
         paddingVertical: 6,

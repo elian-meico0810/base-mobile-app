@@ -89,3 +89,10 @@ export interface DerliveryDocument {
   causal: number | null;
   estado: number;
 }
+
+export interface OpneAddressesDeliveryProps {
+    latitud: string;
+    longitud: string;
+    fechaHoraDispositivo: string;
+    es_entregado: boolean;
+}

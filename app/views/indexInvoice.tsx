@@ -11,7 +11,7 @@ export default function IndexInvoiceScreen() {
     const guideObj: GuideDetails = guideParam ? JSON.parse(guideParam) : {} as GuideDetails;
     const isSelectInvocies = params.isSelectInvocies as string;
     const documentMeico = params.documentMeico as string;
-
+    
     return (
         <>
             <Stack.Screen

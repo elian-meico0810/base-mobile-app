@@ -14,7 +14,7 @@ interface TodayDeliveriesProps {
     waitingForPermission?: boolean;
 }
 
-export const TodayDeliveries = ({ style, data, routeStarted , waitingForPermission}: TodayDeliveriesProps) => {
+export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermission }: TodayDeliveriesProps) => {
     if (!data || data.length === 0 || waitingForPermission) {
         return (
             <View style={[styles.card, style]}>
@@ -33,6 +33,10 @@ export const TodayDeliveries = ({ style, data, routeStarted , waitingForPermissi
     const completedVisits = data.filter(item => item.estado === GuideState.Cerrada).length;
 
     const progress = totalVisits > 0 ? completedVisits / totalVisits : 0;
+    const isComplete = progress === 1; // 100% completado
+
+    // Calcular la posición del círculo
+    const circlePosition = Math.min(progress * 100, 100);
 
     return (
         <View style={cardStyle}>
@@ -42,12 +46,28 @@ export const TodayDeliveries = ({ style, data, routeStarted , waitingForPermissi
             </View>
 
             <Text style={styles.subtitle}>
-                {completedVisits} de {totalVisitsPending} visitas
+                {completedVisits} de {totalVisits} visitas
             </Text>
 
-            <View style={styles.progressBackground}>
-                <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
+            <View style={styles.progressBarContainer}>
+                <View style={styles.progressBackground}>
+                    <View style={[styles.progressFill, {
+                        width: `${progress * 100}%`,
+                        backgroundColor: isComplete ? "#1F9144" : "#164194",
+                    }]} />
+                </View>
+                <View style={[
+                    styles.progressCircle,
+                    {
+                        borderColor: isComplete ? "#1F9144" : "#164194",
+                        left: `${circlePosition}%`,
+                        transform: [{ translateX: -8 }], // Compensar mitad del ancho (16/2 = 8)
+                    }
+                ]}>
+                    <View style={styles.progressCircleInner} />
+                </View>
             </View>
+            
             {routeStarted && (
                 <TouchableOpacity style={styles.summaryButton}>
                     <View style={styles.summaryButtonContent}>
@@ -92,10 +112,11 @@ const styles = StyleSheet.create({
         fontWeight: "700",
         color: "#1F2937",
     },
-    subtitle: {
-        fontSize: 13,
-        color: "#6B7280",
-        marginBottom: 8,
+    progressBarContainer: {
+        position: "relative",
+        width: "100%",
+        marginTop: 5,
+        height: 16, // Altura para contener el círculo
     },
     progressBackground: {
         width: "100%",
@@ -103,12 +124,33 @@ const styles = StyleSheet.create({
         backgroundColor: "#F9F9FA",
         borderRadius: 100,
         overflow: "hidden",
-        marginTop: 5,
+        position: "absolute",
+        top: 5, 
     },
     progressFill: {
         height: "100%",
-        backgroundColor: "#164194",
         borderRadius: 100,
+    },
+    progressCircle: {
+        position: "absolute",
+        width: 16,
+        height: 16,
+        borderRadius: 8,
+        borderWidth: 4,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "transparent",
+    },
+    progressCircleInner: {
+        width: 8,
+        height: 8,
+        borderRadius: 8,
+        backgroundColor: "#FFFFFF",
+    },
+    subtitle: {
+        fontSize: 13,
+        color: "#6B7280",
+        marginBottom: 8,
     },
     skeletonText: {
         backgroundColor: "#E0E0E0",
@@ -131,6 +173,4 @@ const styles = StyleSheet.create({
         fontWeight: "600",
         color: "#164194",
     },
-
-
 });

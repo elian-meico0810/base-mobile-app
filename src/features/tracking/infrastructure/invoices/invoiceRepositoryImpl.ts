@@ -63,7 +63,7 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
 
   async successfulBillPayment(invoiceNumber: number, key: string) {
     try {
-     
+
       const response = await authDevApi.get(`${API_ROUTES.PAYMENT_SUCCESS_FUL}${invoiceNumber}/`, {
         headers: {
           "api-key": key
@@ -148,5 +148,26 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
     } catch (error) {
       throw error;
     }
-  }
+  },
+
+  async listDocument(numeroFactura: string, idDireccion: number, token: string) {
+    try {
+      const response = await authApi.get(
+        `${API_ROUTES.GET_DOCUMENT}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          params: {
+            direccion_id: idDireccion,
+            document_meico: numeroFactura,
+          }
+        }
+      );
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
 };

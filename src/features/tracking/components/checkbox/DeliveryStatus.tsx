@@ -1,4 +1,5 @@
 import { AddEvidenceButton } from '@/components/inputs/AddEvidenceButton';
+import { TypeDelivery } from '@/src/constants/GuideStates';
 import { useState } from 'react';
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -9,7 +10,8 @@ interface DeliveryStatusProps {
     onHandelSubmit?: () => void;
     onUploadPhoto?: () => void;
     isCompleted?: boolean; // ← NUEVO: para saber si está completado
-    selectedStatus?: 'total' | 'parcial' | 'rechazo' | null; // ← NUEVO: estado actual
+    selectedStatus?: 'total' | 'parcial' | 'rechazo' | null;
+    typeDerlivery: string | undefined;
 }
 const { width, height } = Dimensions.get('window');
 
@@ -20,7 +22,8 @@ export function DeliveryStatus({
     onHandelSubmit,
     onUploadPhoto,
     isCompleted = false,
-    selectedStatus: externalStatus
+    selectedStatus: externalStatus,
+    typeDerlivery
 }: DeliveryStatusProps) {
     const [internalStatus, setInternalStatus] = useState<'total' | 'parcial' | 'rechazo' | null>(null);
 
@@ -98,23 +101,23 @@ export function DeliveryStatus({
                 </View>
 
                 {/* BOTÓN DE AGREGAR EVIDENCIA - SOLO SI NO ESTÁ COMPLETADO */}
-                {selectedStatus === 'total' && (
-                    isCompleted ? (
-                        <AddEvidenceButton
-                            title="Evidencias cargadas"
-                            backgroundColor="#EAF7ED"
-                            textColor="#1F9144"
-                            iconColor="#1F9144"
-                            onPress={onUploadPhoto}
-                            showEndIcon={true}
-                            spaced={true}
-                        />
-                    ) : (
-                        <AddEvidenceButton
-                            onPress={onUploadPhoto}
-                        />
-                    )
-                )}
+                {TypeDelivery.ENT_TOTAL === typeDerlivery ? (
+                    <AddEvidenceButton
+                        title="Evidencias cargadas"
+                        backgroundColor="#EAF7ED"
+                        textColor="#1F9144"
+                        iconColor="#1F9144"
+                        onPress={onUploadPhoto}
+                        showEndIcon={true}
+                        spaced={true}
+                    />
+                ) : selectedStatus === 'total' ? (
+                    <AddEvidenceButton
+                        onPress={onUploadPhoto}
+                    />
+                ) : null
+                }
+
 
 
             </TouchableOpacity>
@@ -168,23 +171,23 @@ export function DeliveryStatus({
                 </View>
 
                 {/* BOTÓN DE AGREGAR EVIDENCIA - SOLO SI NO ESTÁ COMPLETADO */}
-                {selectedStatus === 'parcial' && (
-                    isCompleted ? (
-                        <AddEvidenceButton
-                            title="Evidencias cargadas"
-                            backgroundColor="#EAF7ED"
-                            textColor="#1F9144"
-                            iconColor="#1F9144"
-                            onPress={onUploadPhoto}
-                            showEndIcon={true}
-                            spaced={true}
-                        />
-                    ) : (
-                        <AddEvidenceButton
-                            onPress={onUploadPhoto}
-                        />
-                    )
-                )}
+                {TypeDelivery.ENT_PARCIAL === typeDerlivery ? (
+                    <AddEvidenceButton
+                        title="Evidencias cargadas"
+                        backgroundColor="#EAF7ED"
+                        textColor="#1F9144"
+                        iconColor="#1F9144"
+                        onPress={onUploadPhoto}
+                        showEndIcon={true}
+                        spaced={true}
+                    />
+                ) : selectedStatus === 'parcial' ? (
+                    <AddEvidenceButton
+                        onPress={onUploadPhoto}
+                    />
+                ) : null
+                }
+
 
 
                 {/* MENSAJE CUANDO ESTÁ COMPLETADO */}
@@ -238,19 +241,19 @@ export function DeliveryStatus({
                         </View>
                     </View>
                 </View>
-                {selectedStatus === 'rechazo' && (
-                    isCompleted ? (
-                        <AddEvidenceButton
-                            title="Evidencias cargadas"
-                            backgroundColor="#EAF7ED"
-                            textColor="#1F9144"
-                            iconColor="#1F9144"
-                            onPress={onUploadPhoto}
-                            showEndIcon={true}
-                            spaced={true}
-                        />
-                    ) : null
-                )}
+                {TypeDelivery.RECHAZADO === typeDerlivery ? (
+                    <AddEvidenceButton
+                        title="Evidencias cargadas"
+                        backgroundColor="#EAF7ED"
+                        textColor="#1F9144"
+                        iconColor="#1F9144"
+                        onPress={onUploadPhoto}
+                        showEndIcon={true}
+                        spaced={true}
+                    />
+                ) :null
+                }
+
             </TouchableOpacity>
         </ScrollView>
     );

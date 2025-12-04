@@ -17,7 +17,7 @@ import { DetailsInvoiceQR } from '@/src/features/tracking/components/screens/Det
 import { InfoPayments } from '@/src/features/tracking/components/screens/InfoPayments';
 import { ViewQrModal } from '@/src/features/tracking/components/screens/ViewQrModal';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
-import { CreateEntregaProps, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
+import { CreateEntregaProps, DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
 import { cleanSpaces, getDeviceDateTime } from '@/src/utils/uitls';
@@ -72,6 +72,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [EntryVisible, setEntryVisible] = useState(false);
     const [modalRefused, setShowModalRefused] = useState(false);
     const [uploadPhoto, setUploadPhoto] = useState(false);
+    const [conceptDelivery, setConceptDelivery] = useState<DerliveryDocument | null>(null);
     const [validateException, setValidateException] = useState(false);
     const [paymentSuccessful, setPaymentSuccessful] = useState<Invoice | undefined>();
     const [qrBase64, setQrBase64] = useState<string>('');
@@ -312,6 +313,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     });
 
                 }
+
                 setRefreshing(false);
             }, 2000);
         } catch (error) {
@@ -347,7 +349,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                         : showOptionRefused === OptionsRefusedEnum.PRODUCTOS
                                             ? CausalDelivery.PRODUCTOS_DANADOS
                                             : null,
-                            estado: "EST_PEDI_PEND",
+                            estado: "ACT_EST_ENTREGA",
                             files:
                                 showStatusDelivery === StatusDelivery.RECHAZADO
                                     ?
@@ -385,6 +387,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         resp?.statusCode === 200 || resp?.success === true
                     );
                     if (success) {
+                        listDocumentQuery();
                         if (isSelectInvocies) {
                             router.push(
                                 `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${facturasArray[0].documentMeico}`
@@ -426,6 +429,42 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
         processPhotos();
     }, [showStatusDelivery, isInicilizationApi, showOptionRefused]);
+
+    const listDocumentQuery = async () => {
+        try {
+            setLoading(true);
+            const responseQuery = await invoiceRepositoryImpl.listDocument(
+                String(guide?.facturas[0]?.numeroFactura),
+                Number(guide?.idDireccion),
+                token  
+            );
+
+            let concept: DerliveryDocument | null = null;
+            if (responseQuery?.statusCode == 200) {
+                if (Array.isArray(responseQuery.data)) {
+                    concept = responseQuery.data[0] ?? null;
+                } else if (responseQuery.data && typeof responseQuery.data === "object") {
+                    concept = responseQuery.data;
+                }
+            }
+
+            setConceptDelivery(concept);
+            setLoading(false);
+          } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    useEffect(() => {
+        if (token && routeStarted) {
+            listDocumentQuery();
+        }
+    }, [token, routeStarted]);
 
     const newValue = Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.valorTotal)
 
@@ -588,6 +627,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         }}
                         isCompleted={isDeliveryCompleted}
                         selectedStatus={showStatusDelivery}
+                        typeDerlivery={conceptDelivery?.tipoEntrega?.codigo ?? undefined}
                     />
                 </View>
             </ScrollView>

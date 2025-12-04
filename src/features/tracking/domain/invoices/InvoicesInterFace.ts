@@ -72,3 +72,20 @@ export interface WhatsappProps {
   nombre_cliente: string,
   link_pago: string
 }
+
+export interface TypeDetails {
+  tipo: number;
+  nombre: string;
+  codigo: string;
+}
+
+export interface DerliveryDocument {
+  id: number;
+  ruta: number;
+  documentMeico: string;
+  direccion: number;
+  momentoCreacion: string;  
+  tipoEntrega: TypeDetails;
+  causal: number | null;
+  estado: number;
+}

@@ -40,6 +40,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [conceptDelivery, setConceptDelivery] = useState<DerliveryDocument[]>([]);
     const [showPaymentPending, setShowPaymentPending] = useState(false);
+    const [isEquals, setIsEquals] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [RefreshingOnPress, setRefreshingOnPress] = useState(false);
     const [EntryVisible, setEntryVisible] = useState(false);
@@ -63,7 +64,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         try {
             setSelectedInvoice(selectedGuide);
 
-            if (!routeStarted) {
+            if (!routeStarted && !conditionButton) {
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");
@@ -131,6 +132,14 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");
                 setModalMessage("Debe especificar un estado de entrega.");
+                setModalVisible(true);
+                return;
+            }
+            if (!isEquals) {
+                setValidateException(true);
+                btnRef.current?.reset();
+                setModalTitle("¡Alerta!");
+                setModalMessage("Debe especificar los estados de entrega por factura.");
                 setModalVisible(true);
                 return;
             }
@@ -231,8 +240,22 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         }
     };
 
+    useEffect(() => {
+        if (conceptDelivery.length > 0 && guide) {
+            const numerosFacturas = guide.facturas.map(factura => factura.numeroFactura);
+            const documentosMeico = conceptDelivery.map(item => item.documentMeico);
+            // Ordenar y comparar como strings
+            numerosFacturas.sort();
+            documentosMeico.sort();
+
+            const equals = JSON.stringify(numerosFacturas) === JSON.stringify(documentosMeico);
+            setIsEquals(equals)
+        }
+    }, [conceptDelivery, guide]);
+
     const newValue = Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.valorTotal)
 
+    const conditionButton = conceptDelivery.length > 0 || routeStarted;
     return (
         <ThemedView style={styles.container}>
             <NetworkStatus />
@@ -367,16 +390,16 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                     <PrimaryButtonDetails
                         ref={btnRef}
                         autoReset={validateException}
-                        key={routeStarted ? "cerrar" : "llegue"}
-                        title={routeStarted ? "Cerrar pedido" : "Ya llegué"}
-                        onPress={routeStarted ? submitData : handleSubmit}
+                        key={conditionButton ? "cerrar" : "llegue"}
+                        title={conditionButton ? "Cerrar pedido" : "Ya llegué"}
+                        onPress={conditionButton ? submitData : handleSubmit}
                         disabled={false}
                         width={328}
                         height={43}
-                        buttonColor={routeStarted ? "#DDDFE8" : undefined}
-                        buttonColorEnd={routeStarted ? "#DDDFE8" : undefined}
-                        titleColor={routeStarted ? "#FFFFFF" : undefined}
-                        circleColor={routeStarted ? "#788095" : undefined}
+                        buttonColor={conditionButton ? "#DDDFE8" : undefined}
+                        buttonColorEnd={conditionButton ? "#DDDFE8" : undefined}
+                        titleColor={conditionButton ? "#FFFFFF" : undefined}
+                        circleColor={conditionButton ? "#788095" : undefined}
                     />
                 )}
             </View>

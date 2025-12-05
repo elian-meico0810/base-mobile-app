@@ -61,7 +61,7 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
                     {
                         borderColor: isComplete ? "#1F9144" : "#164194",
                         left: `${circlePosition}%`,
-                        transform: [{ translateX: -8 }], // Compensar mitad del ancho (16/2 = 8)
+                        transform: [{ translateX: -8 }], 
                     }
                 ]}>
                     <View style={styles.progressCircleInner} />

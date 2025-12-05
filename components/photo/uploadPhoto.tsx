@@ -4,6 +4,7 @@ import React, { useState } from "react";
 
 import { createDataUri } from "@/src/utils/uitls";
 import {
+    ActivityIndicator,
     Image,
     StyleSheet,
     Text,
@@ -44,6 +45,68 @@ export function UploadPhoto({
 }: UploadPhotosProps) {
     const [evidences, setEvidences] = useState<EvidencePhoto[]>([]);
     const [currentEvidenceIndex, setCurrentEvidenceIndex] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
+    const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
+    const [loadingType, setLoadingType] = useState<'camera' | 'gallery' | null>(null);
+
+    // Función para manejar la selección de imagen
+    const handleImageSelection = async (
+        pickerFunction: () => Promise<ImagePicker.ImagePickerResult>,
+        evidenceIndex: number,
+        type: 'camera' | 'gallery'
+    ) => {
+        setIsLoading(true);
+        setLoadingIndex(evidenceIndex);
+        setLoadingType(type);
+
+        try {
+            const result = await pickerFunction();
+
+            if (!result.canceled) {
+                const asset = result.assets[0];
+
+                // Crear data URI con el formato correcto
+                const dataUri = createDataUri(asset.base64!, asset.uri);
+
+                const newEvidence: EvidencePhoto = {
+                    id: Date.now().toString(),
+                    uri: asset.uri,
+                    base64: dataUri,
+                };
+
+                if (onPick) {
+                    // Modo simple: devuelve el data URI, no el base64 crudo
+                    onPick({
+                        base64: dataUri,
+                        uri: asset.uri
+                    });
+                } else {
+                    // Modo múltiples evidencias
+                    const updatedEvidences = [...evidences];
+
+                    // Reemplazar o agregar en la posición actual
+                    if (evidenceIndex < updatedEvidences.length) {
+                        updatedEvidences[evidenceIndex] = newEvidence;
+                    } else {
+                        updatedEvidences.push(newEvidence);
+                    }
+
+                    setEvidences(updatedEvidences);
+
+                    // Pasar a la siguiente evidencia si no hemos alcanzado el máximo
+                    if (evidenceIndex < maxEvidences - 1 && updatedEvidences.length < maxEvidences) {
+                        setCurrentEvidenceIndex(evidenceIndex + 1);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("Error al seleccionar imagen:", error);
+        } finally {
+            setIsLoading(false);
+            setLoadingIndex(null);
+            setLoadingType(null);
+        }
+    };
 
     // === TOMAR FOTO (CÁMARA) ===
     const handleTakePhoto = async () => {
@@ -53,48 +116,14 @@ export function UploadPhoto({
             return;
         }
 
-        const result = await ImagePicker.launchCameraAsync({
-            base64: true,
-            quality: 0.8,
-        });
-
-        if (!result.canceled) {
-            const asset = result.assets[0];
-
-            // Crear data URI con el formato correcto
-            const dataUri = createDataUri(asset.base64!, asset.uri);
-
-            const newEvidence: EvidencePhoto = {
-                id: Date.now().toString(),
-                uri: asset.uri,
-                base64: dataUri, 
-            };
-
-            if (onPick) {
-                // Modo simple: devuelve el data URI, no el base64 crudo
-                onPick({
-                    base64: dataUri, 
-                    uri: asset.uri
-                });
-            } else {
-                // Modo múltiples evidencias
-                const updatedEvidences = [...evidences];
-
-                // Reemplazar o agregar en la posición actual
-                if (currentEvidenceIndex < updatedEvidences.length) {
-                    updatedEvidences[currentEvidenceIndex] = newEvidence;
-                } else {
-                    updatedEvidences.push(newEvidence);
-                }
-
-                setEvidences(updatedEvidences);
-
-                // Pasar a la siguiente evidencia si no hemos alcanzado el máximo
-                if (currentEvidenceIndex < maxEvidences - 1 && updatedEvidences.length < maxEvidences) {
-                    setCurrentEvidenceIndex(currentEvidenceIndex + 1);
-                }
-            }
-        }
+        await handleImageSelection(
+            () => ImagePicker.launchCameraAsync({
+                base64: true,
+                quality: 0.8,
+            }),
+            currentEvidenceIndex,
+            'camera'
+        );
     };
 
     // === CARGAR FOTO (GALERIA) ===
@@ -105,47 +134,14 @@ export function UploadPhoto({
             return;
         }
 
-        const result = await ImagePicker.launchImageLibraryAsync({
-            base64: true,
-            quality: 0.8,
-        });
-
-        if (!result.canceled) {
-            const asset = result.assets[0];
-
-            // Crear data URI con el formato correcto
-            const dataUri = createDataUri(asset.base64!, asset.uri);
-
-            const newEvidence: EvidencePhoto = {
-                id: Date.now().toString(),
-                uri: asset.uri,
-                base64: dataUri, 
-            };
-
-            if (onPick) {
-                // Modo simple: devuelve el data URI, no el base64 crudo
-                onPick({
-                    base64: dataUri,
-                    uri: asset.uri
-                });
-            } else {
-                // Modo múltiples evidencias
-                const updatedEvidences = [...evidences];
-
-                // Reemplazar o agregar en la posición actual
-                if (currentEvidenceIndex < updatedEvidences.length) {
-                    updatedEvidences[currentEvidenceIndex] = newEvidence;
-                } else {
-                    updatedEvidences.push(newEvidence);
-                }
-
-                setEvidences(updatedEvidences);
-
-                if (currentEvidenceIndex < maxEvidences - 1 && updatedEvidences.length < maxEvidences) {
-                    setCurrentEvidenceIndex(currentEvidenceIndex + 1);
-                }
-            }
-        }
+        await handleImageSelection(
+            () => ImagePicker.launchImageLibraryAsync({
+                base64: true,
+                quality: 0.8,
+            }),
+            currentEvidenceIndex,
+            'gallery'
+        );
     };
 
     // === ELIMINAR EVIDENCIA ===
@@ -169,6 +165,10 @@ export function UploadPhoto({
     const handleSelectEvidence = (index: number) => {
         setCurrentEvidenceIndex(index);
     };
+
+    // Determinar si un botón específico está cargando
+    const isCameraLoading = isLoading && loadingType === 'camera';
+    const isGalleryLoading = isLoading && loadingType === 'gallery';
 
     return (
         <View style={styles.overlay}>
@@ -196,26 +196,56 @@ export function UploadPhoto({
                                             currentEvidenceIndex === index && styles.selectedThumbnail
                                         ]}
                                         onPress={() => handleSelectEvidence(index)}
+                                        disabled={isLoading}
                                     >
-                                        <Image
-                                            source={{ uri: evidence.uri }}
-                                            style={styles.thumbnailImage}
-                                        />
+                                        {isLoading && loadingIndex === index ? (
+                                            <ActivityIndicator 
+                                                size="small" 
+                                                color="#141D32" 
+                                                style={styles.loadingIndicator}
+                                            />
+                                        ) : (
+                                            <Image
+                                                source={{ uri: evidence.uri }}
+                                                style={styles.thumbnailImage}
+                                            />
+                                        )}
                                     </TouchableOpacity>
 
                                     {/* Texto "Evidencia X" en el centro */}
-                                    <Text style={styles.thumbnailLabel}>Evidencia {index + 1}</Text>
+                                    <Text style={styles.thumbnailLabel}>
+                                        Evidencia {index + 1}
+                                    </Text>
 
                                     {/* Icono de basura al otro extremo */}
                                     <TouchableOpacity
                                         style={styles.trashButton}
                                         onPress={() => handleRemoveEvidence(index)}
+                                        disabled={isLoading}
                                     >
                                         <Ionicons name="trash-outline" size={20} color="#141D32" />
                                     </TouchableOpacity>
                                 </View>
                             ))}
 
+                            {/* Mostrar loading para la próxima evidencia si se está cargando */}
+                            {isLoading && loadingIndex !== null && loadingIndex >= evidences.length && (
+                                <View style={styles.thumbnailRow}>
+                                    <View style={[styles.thumbnailContainer, styles.emptyThumbnail]}>
+                                        <ActivityIndicator 
+                                            size="small" 
+                                            color="#141D32" 
+                                            style={styles.loadingIndicator}
+                                        />
+                                    </View>
+                                    
+                                    <Text style={[styles.thumbnailLabel, styles.emptyLabel]}>
+                                        Evidencia {evidences.length + 1}
+                                    </Text>
+                                    
+                                    <View style={styles.trashButtonPlaceholder} />
+                                </View>
+                            )}
                         </View>
                     </View>
                 )}
@@ -225,34 +255,52 @@ export function UploadPhoto({
                 {/*Tomar foto - SOLO SE MUESTRA SI HAY MENOS DE 3 IMÁGENES */}
                 {evidences.length < maxEvidences && (
                     <TouchableOpacity
-                        style={styles.card}
+                        style={[styles.card, isCameraLoading && styles.disabledCard]}
                         onPress={handleTakePhoto}
+                        disabled={isLoading}
                     >
                         <View style={styles.row}>
                             <View style={styles.iconCircle}>
-                                <Ionicons name="camera-outline" size={16} color="#141D32" />
+                                {isCameraLoading ? (
+                                    <ActivityIndicator size="small" color="#141D32" />
+                                ) : (
+                                    <Ionicons name="camera-outline" size={16} color="#141D32" />
+                                )}
                             </View>
                             <View>
-                                <Text style={styles.cardTitle}>Tomar foto</Text>
-                                <Text style={styles.cardSub}>Captura una imagen en tiempo real</Text>
+                                <Text style={[styles.cardTitle, isCameraLoading && styles.disabledText]}>
+                                    {isCameraLoading ? 'Cargando...' : 'Tomar foto'}
+                                </Text>
+                                <Text style={[styles.cardSub, isCameraLoading && styles.disabledText]}>
+                                    Captura una imagen en tiempo real
+                                </Text>
                             </View>
                         </View>
                     </TouchableOpacity>
                 )}
 
-                {/* 🖼️ Adjuntar foto - SOLO SE MUESTRA SI HAY MENOS DE 3 IMÁGENES */}
+                {/* Adjuntar foto - SOLO SE MUESTRA SI HAY MENOS DE 3 IMÁGENES */}
                 {evidences.length < maxEvidences && (
                     <TouchableOpacity
-                        style={styles.card}
+                        style={[styles.card, isGalleryLoading && styles.disabledCard]}
                         onPress={handlePickGallery}
+                        disabled={isLoading}
                     >
                         <View style={styles.row}>
                             <View style={styles.iconCircle}>
-                                <Ionicons name="image-outline" size={16} color="#141D32" />
+                                {isGalleryLoading ? (
+                                    <ActivityIndicator size="small" color="#141D32" />
+                                ) : (
+                                    <Ionicons name="image-outline" size={16} color="#141D32" />
+                                )}
                             </View>
                             <View>
-                                <Text style={styles.cardTitle}>Adjuntar foto</Text>
-                                <Text style={styles.cardSub}>Selecciona una imagen existente</Text>
+                                <Text style={[styles.cardTitle, isGalleryLoading && styles.disabledText]}>
+                                    {isGalleryLoading ? 'Cargando...' : 'Adjuntar foto'}
+                                </Text>
+                                <Text style={[styles.cardSub, isGalleryLoading && styles.disabledText]}>
+                                    Selecciona una imagen existente
+                                </Text>
                             </View>
                         </View>
                     </TouchableOpacity>
@@ -261,9 +309,9 @@ export function UploadPhoto({
                 {/* Botón Continuar (solo visible con evidencias) */}
                 {evidences.length > 0 && (
                     <PrimaryButton
-                        title="Continuar"
+                        title={isLoading ? "Cargando..." : "Continuar"}
                         onPress={handleContinue}
-                        disabled={false}
+                        disabled={isLoading}
                         width={328}
                         height={43}
                     />
@@ -283,6 +331,7 @@ const styles = StyleSheet.create({
         bottom: 0,
         justifyContent: "flex-end",
         alignItems: "center",
+        zIndex: 100,
     },
     backgroundOverlay: {
         position: "absolute",
@@ -332,7 +381,6 @@ const styles = StyleSheet.create({
         color: "#788095",
         marginBottom: 25,
     },
-    // Estilos para miniaturas de evidencias - COLUMNA
     evidenceThumbnailsContainer: {
         marginBottom: 20,
     },
@@ -390,22 +438,15 @@ const styles = StyleSheet.create({
         width: 40,
         height: 40,
     },
-    // Indicador de evidencia actual
-    currentEvidenceIndicator: {
-        backgroundColor: "#E6E8EC",
-        borderRadius: 16,
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        alignSelf: "flex-start",
-        marginBottom: 10,
+    loadingIndicator: {
+        padding: 8,
     },
-    currentEvidenceText: {
-        fontFamily: "Rubik",
-        fontSize: 12,
-        fontWeight: "600",
-        color: "#141D32",
+    disabledCard: {
+        opacity: 0.6,
     },
-    // Botones de acción
+    disabledText: {
+        opacity: 0.6,
+    },
     card: {
         width: '100%',
         height: 67,
@@ -444,7 +485,6 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
-    // Botón continuar
     continueButton: {
         marginTop: 20,
         alignSelf: "center",

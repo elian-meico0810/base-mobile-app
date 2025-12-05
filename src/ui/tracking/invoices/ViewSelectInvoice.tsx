@@ -45,6 +45,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [EntryVisible, setEntryVisible] = useState(false);
     const [validateException, setValidateException] = useState(false);
     const [validateIsBotton, setvalidateIsBotton] = useState(false);
+    const [validateFuntionalBotton, setValidateFuntionalBotton] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState<GuideDetails | null>(null);
     const btnRef = useRef<any>(null);
     const router = useRouter();
@@ -61,6 +62,15 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const handleInvoiceSelect = (selectedGuide: GuideDetails | null) => {
         try {
             setSelectedInvoice(selectedGuide);
+
+            if (!routeStarted) {
+                setValidateException(true);
+                btnRef.current?.reset();
+                setModalTitle("¡Alerta!");
+                setModalMessage("Debe confirmar que ya ha llegado a la dirección.");
+                setModalVisible(true);
+                return;
+            }
             if (selectedInvoice) {
                 router.push(
                     `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(selectedInvoice))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}`
@@ -77,12 +87,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
     const handleSubmit = async () => {
         try {
-            setvalidateIsBotton(true);
-            setEntryVisible(true);
-            setRouteStarted(true);
             setLoading(true);
-            setShowDetailInvoiceQR(false);
-            setShowPayment(false);
             const location = await Location.getCurrentPositionAsync({
                 accuracy: Location.Accuracy.Highest,
             });
@@ -99,6 +104,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 setvalidateIsBotton(true);
                 setEntryVisible(true);
                 setRouteStarted(true);
+                setShowDetailInvoiceQR(false);
+                setShowPayment(false);
             } else {
                 setValidateException(true);
                 btnRef.current?.reset();
@@ -351,7 +358,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                     />
                 </View>
             </ScrollView>
-            <View style={styles.redBackground} />
+            {guide?.estado === 'Pendiente' && (
+                <View style={styles.redBackground} />
+            )}
 
             <View style={[styles.footer, { marginBottom: 10 }]}>
                 {guide?.estado === 'Pendiente' && (
@@ -370,7 +379,6 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         circleColor={routeStarted ? "#788095" : undefined}
                     />
                 )}
-
             </View>
 
             <ExceptionModal

@@ -66,3 +66,9 @@ export enum OptionsRefusedEnum {
     TIENDA = "Tienda",
     PRODUCTOS = "Productos"
 }
+
+
+export enum TypeInvoiceEnum {
+    CREDITO = "CREDITO",
+    CONTADO_EFECTIVO = "CONTADO EFECTIVO"
+}

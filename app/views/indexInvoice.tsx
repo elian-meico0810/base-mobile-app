@@ -1,6 +1,9 @@
+import { TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
-import { InfoInvoiceForm } from '@/src/ui/tracking/invoices/InfoInvoiceForm';
-import { ViewSelectInvoice } from '@/src/ui/tracking/invoices/ViewSelectInvoice';
+import { InfoInvoiceForm } from '@/src/ui/tracking/invoices/counter-delivery/InfoInvoiceForm';
+import { ViewSelectInvoice } from '@/src/ui/tracking/invoices/counter-delivery/ViewSelectInvoice';
+import { InfoInvoiceCreditForm } from '@/src/ui/tracking/invoices/credit/InfoInvoiceCreditForm';
+import { ViewSelectInvoice as CreditViewSelectInvoice } from '@/src/ui/tracking/invoices/credit/ViewSelectInvoice';
 import { Stack, useLocalSearchParams } from 'expo-router';
 
 export default function IndexInvoiceScreen() {
@@ -12,7 +15,13 @@ export default function IndexInvoiceScreen() {
     const isSelectInvocies = params.isSelectInvocies as string;
     const routeStartedBotton = params.routeStarted as string;
     const documentMeico = params.documentMeico as string;
-
+    const shouldShowViewSelectInvoice = guideObj.facturas.length >= 2 || documentMeico;
+    const areAllInvoicesCredito = guideObj.facturas.every(
+        factura => factura.tipo === TypeInvoiceEnum.CREDITO
+    );
+    const areAllInvoicesConutreDlivery = guideObj.facturas.every(
+        factura => factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO
+    );
     return (
         <>
             <Stack.Screen
@@ -21,29 +30,67 @@ export default function IndexInvoiceScreen() {
                     headerShown: false
                 }}
             />
-            {guideObj.facturas.length >= 2 || documentMeico ? (
-                <ViewSelectInvoice
-                    initialGuide={guideObj}
-                    token={token || ""}
-                    onSubmit={async ({ guide, token }) => { }}
-                    numberGuide={Number(numberGuide)}
-                    isSelectInvocies={isSelectInvocies}
-                    documentMeico={documentMeico}
-                    routeStartedBotton={routeStartedBotton}
-                />
-            ) : (
 
-                <InfoInvoiceForm
-                    initialGuide={guideObj}
-                    token={token || ""}
-                    onSubmit={async ({ guide, token }) => { }}
-                    numberGuide={Number(numberGuide)}
-                    isSelectInvocies={isSelectInvocies}
-                    documentMeico={documentMeico}
+            {/* Mas de una facuta y tiene que ser CONTADO_EFECTIVO */}
+            {(() => {
+                // Condición 1
+                if (shouldShowViewSelectInvoice && areAllInvoicesConutreDlivery) {
+                    return (
+                        <ViewSelectInvoice
+                            initialGuide={guideObj}
+                            token={token || ""}
+                            onSubmit={async ({ guide, token }) => { }}
+                            numberGuide={Number(numberGuide)}
+                            isSelectInvocies={isSelectInvocies}
+                            documentMeico={documentMeico}
+                            routeStartedBotton={routeStartedBotton}
+                        />
+                    );
+                }
+                // Condición 2
+                if (areAllInvoicesConutreDlivery && guideObj.facturas.length < 2) {
+                    return (
+                        <InfoInvoiceForm
+                            initialGuide={guideObj}
+                            token={token || ""}
+                            onSubmit={async ({ guide, token }) => { }}
+                            numberGuide={Number(numberGuide)}
+                            isSelectInvocies={isSelectInvocies}
+                            documentMeico={documentMeico}
+                        />
+                    );
+                }
 
-                />
-            )}
+                // Condición 3
+                if (areAllInvoicesCredito && guideObj.facturas.length < 2) {
+                    return (
+                        <InfoInvoiceCreditForm
+                            initialGuide={guideObj}
+                            token={token || ""}
+                            onSubmit={async ({ guide, token }) => { }}
+                            numberGuide={Number(numberGuide)}
+                            isSelectInvocies={isSelectInvocies}
+                            documentMeico={documentMeico}
+                        />
+                    );
+                }
 
+                // Condición 3
+                if (areAllInvoicesCredito && guideObj.facturas.length >= 2) {
+                    return (
+                          <CreditViewSelectInvoice
+                            initialGuide={guideObj}
+                            token={token || ""}
+                            onSubmit={async ({ guide, token }) => { }}
+                            numberGuide={Number(numberGuide)}
+                            isSelectInvocies={isSelectInvocies}
+                            documentMeico={documentMeico}
+                            routeStartedBotton={routeStartedBotton}
+                        />
+                    );
+                }
+                return null;
+            })()}
 
         </>
     );

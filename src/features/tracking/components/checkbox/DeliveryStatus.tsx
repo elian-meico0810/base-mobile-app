@@ -10,12 +10,16 @@ interface DeliveryStatusProps {
     onOpenRefusedModal?: () => void;
     onHandelSubmit?: () => void;
     onUploadPhoto?: () => void;
-    isCompleted?: boolean; // ← NUEVO: para saber si está completado
+    isCompleted?: boolean;
     selectedStatus?: 'total' | 'parcial' | 'rechazo' | null;
     typeDerlivery: string | undefined;
-    conceptDelivery?: DerliveryDocument | null
+    conceptDelivery?: DerliveryDocument | DerliveryDocument[] | null | undefined;
+    containerWidth?: number;
+    containerHeight?: number;
+    isDocumentoMeico?: boolean;
 }
-const { width, height } = Dimensions.get('window');
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export function DeliveryStatus({
     onStatusChange,
@@ -26,18 +30,23 @@ export function DeliveryStatus({
     isCompleted = false,
     selectedStatus: externalStatus,
     typeDerlivery,
-    conceptDelivery
+    conceptDelivery,
+    // Valores por defecto para las dimensiones
+    containerWidth = 350,
+    containerHeight = 81,
+    isDocumentoMeico
 }: DeliveryStatusProps) {
     const [internalStatus, setInternalStatus] = useState<'total' | 'parcial' | 'rechazo' | null>(null);
     const selectedStatus = externalStatus !== undefined ? externalStatus : internalStatus;
-    
+
     const handleStatusSelect = (status: 'total' | 'parcial' | 'rechazo') => {
         if (!EntryVisible) return;
+
         if (status === 'rechazo') {
             onOpenRefusedModal?.();
             console.log('Rechazo seleccionado');
         }
-        const newStatus = selectedStatus === status ? null : status;
+        const newStatus = status;
 
         // Actualizar estado interno solo si no hay estado externo
         if (externalStatus === undefined) {
@@ -47,6 +56,25 @@ export function DeliveryStatus({
         onStatusChange?.(newStatus);
     };
 
+    // Crear estilos dinámicos basados en las props
+    const dynamicStyles = StyleSheet.create({
+        checkboxContainer: {
+            width: containerWidth,
+            minHeight: containerHeight,
+            backgroundColor: '#FFFFFF',
+            borderColor: '#F0F1F5',
+            borderWidth: 1,
+            borderRadius: 8,
+            paddingTop: 16,
+            paddingRight: 16,
+            paddingBottom: 16,
+            paddingLeft: 16,
+        },
+        checkboxSelected: {
+            borderColor: '#164194',
+        },
+    });
+
     return (
         <ScrollView
             style={styles.scrollContainer}
@@ -55,8 +83,8 @@ export function DeliveryStatus({
             {/* Entrega total */}
             <TouchableOpacity
                 style={[
-                    styles.checkboxContainer,
-                    selectedStatus === 'total' && styles.checkboxSelected,
+                    dynamicStyles.checkboxContainer,
+                    selectedStatus === 'total' && dynamicStyles.checkboxSelected,
                     !EntryVisible && styles.disabled
                 ]}
                 onPress={() => handleStatusSelect('total')}
@@ -104,7 +132,7 @@ export function DeliveryStatus({
                 </View>
 
                 {/* BOTÓN DE AGREGAR EVIDENCIA - SOLO SI NO ESTÁ COMPLETADO */}
-                {TypeDelivery.ENT_TOTAL === typeDerlivery ? (
+                {TypeDelivery.ENT_TOTAL === typeDerlivery? (
                     <AddEvidenceButton
                         title="Evidencias cargadas"
                         backgroundColor="#EAF7ED"
@@ -120,16 +148,13 @@ export function DeliveryStatus({
                     />
                 ) : null
                 }
-
-
-
             </TouchableOpacity>
 
             {/* Entrega parcial */}
             <TouchableOpacity
                 style={[
-                    styles.checkboxContainer,
-                    selectedStatus === 'parcial' && styles.checkboxSelected,
+                    dynamicStyles.checkboxContainer,
+                    selectedStatus === 'parcial' && dynamicStyles.checkboxSelected,
                     !EntryVisible && styles.disabled
                 ]}
                 onPress={() => handleStatusSelect('parcial')}
@@ -173,7 +198,7 @@ export function DeliveryStatus({
                     </View>
                 </View>
 
-                {/* BOTÓN DE AGREGAR EVIDENCIA - SOLO SI NO ESTÁ COMPLETADO */}
+                {/* BOTÓN DE AGREGAR EVIDENCIA */}
                 {TypeDelivery.ENT_PARCIAL === typeDerlivery ? (
                     <AddEvidenceButton
                         title="Evidencias cargadas"
@@ -190,22 +215,17 @@ export function DeliveryStatus({
                     />
                 ) : null
                 }
-
-
-
-                {/* MENSAJE CUANDO ESTÁ COMPLETADO */}
-
             </TouchableOpacity>
 
             {/* Rechazo */}
             <TouchableOpacity
                 style={[
-                    styles.checkboxContainer,
-                    selectedStatus === 'rechazo' && styles.checkboxSelected,
+                    dynamicStyles.checkboxContainer,
+                    selectedStatus === 'rechazo' && dynamicStyles.checkboxSelected,
                     !EntryVisible && styles.disabled
                 ]}
                 onPress={() => handleStatusSelect('rechazo')}
-                disabled={!EntryVisible} // ← Deshabilitar si está completado
+                disabled={!EntryVisible}
             >
                 <View style={styles.checkboxContent}>
                     <View style={styles.iconLeft}>
@@ -254,9 +274,8 @@ export function DeliveryStatus({
                         showEndIcon={true}
                         spaced={true}
                     />
-                ) :null
+                ) : null
                 }
-
             </TouchableOpacity>
         </ScrollView>
     );
@@ -270,21 +289,6 @@ const styles = StyleSheet.create({
     scrollContent: {
         gap: 12,
         paddingVertical: 8,
-    },
-    checkboxContainer: {
-        width: 350,
-        minHeight: 81,
-        backgroundColor: '#FFFFFF',
-        borderColor: '#F0F1F5',
-        borderWidth: 1,
-        borderRadius: 8,
-        paddingTop: 16,
-        paddingRight: 16,
-        paddingBottom: 16,
-        paddingLeft: 16,
-    },
-    checkboxSelected: {
-        borderColor: '#164194',
     },
     completedMessage: {
         marginTop: 8,
@@ -300,7 +304,6 @@ const styles = StyleSheet.create({
         fontWeight: '500',
         marginLeft: 4,
     },
-    // ESTILOS EXISTENTES
     checkboxContent: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -349,7 +352,7 @@ const styles = StyleSheet.create({
     checkboxInner: {
         width: 12,
         height: 12,
-        backgroundColor: '#164194', // ← AZUL (antes de completar)
+        backgroundColor: '#164194',
         borderRadius: 6,
     },
     checkboxLabel: {

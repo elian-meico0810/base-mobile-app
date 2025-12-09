@@ -46,8 +46,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [EntryVisible, setEntryVisible] = useState(false);
     const [validateException, setValidateException] = useState(false);
     const [validateIsBotton, setvalidateIsBotton] = useState(false);
-    const [validateFuntionalBotton, setValidateFuntionalBotton] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState<GuideDetails | null>(null);
+    const [activeView, setActiveView] = useState(true);
     const btnRef = useRef<any>(null);
     const router = useRouter();
     const handleGoBack = () => {
@@ -370,6 +370,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 <View style={styles.headerContainerTwo}>
                     <Text style={styles.headerTitleTWO}>Ordenes a entregar</Text>
                 </View>
+                
                 <View style={{ flex: 1, padding: 16 }}>
                     <InvoicesList guide={guide}
                         onInvoiceSelect={handleInvoiceSelect}
@@ -378,6 +379,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         isSelectInvocies={isSelectInvocies}
                         token={token}
                         conceptDelivery={conceptDelivery}
+                        activeView={activeView}
                     />
                 </View>
             </ScrollView>

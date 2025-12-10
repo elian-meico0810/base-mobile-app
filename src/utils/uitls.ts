@@ -35,7 +35,6 @@ export function formatTime(dateStr: string): string {
   return `Inicio ruta ${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
 }
 
-// Función para obtener el mime type desde la extensión del archivo
 export const getMimeType = (uri: string): string => {
     const extension = uri.split('.').pop()?.toLowerCase();
     switch (extension) {
@@ -58,11 +57,29 @@ export const getMimeType = (uri: string): string => {
     }
 };
 
-// Función para crear un data URI completo
 export const createDataUri = (base64: string, uri: string): string => {
     const mimeType = getMimeType(uri);
     return `data:${mimeType};base64,${base64}`;
 };
+
 export function formatNumber(num: number) {
   return num.toLocaleString("es-CO");
+}
+
+export function getDistanceInMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371000; // Radio de la Tierra en metros
+    const toRad = (value: number) => (value * Math.PI) / 180;
+
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) *
+            Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c; 
 }

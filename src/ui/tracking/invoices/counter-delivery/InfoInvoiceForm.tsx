@@ -21,7 +21,7 @@ import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuid
 import { CreateEntregaProps, DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
-import { cleanSpaces, getDeviceDateTime } from '@/src/utils/uitls';
+import { cleanSpaces, getDeviceDateTime, getDistanceInMeters } from '@/src/utils/uitls';
 import { Image } from 'expo-image';
 import * as Location from "expo-location";
 import { useRouter } from 'expo-router';
@@ -227,6 +227,19 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             const location = await Location.getCurrentPositionAsync({
                 accuracy: Location.Accuracy.Highest,
             });
+
+            if (guide?.latitud && guide?.longitud) {
+                const distance = getDistanceInMeters(Number(guide?.latitud), Number(guide?.longitud), Number(location.coords.latitude), Number(location.coords.longitude));
+                const isInsideRange = distance <= 100;
+                if (!isInsideRange) {
+                    btnRef.current?.reset();
+                    setModalTitle("¡Alerta!");
+                    setModalMessage("Estás fuera del rango permitido de 100 metros.");
+                    setModalVisible(true);
+                }
+
+            }
+            
             const response = await invoiceRepositoryImpl.openAddresses(
                 {
                     latitud: String(location.coords.latitude),
@@ -642,15 +655,15 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             </Text>
                         </View>
                         {newValue != 0 && (
-                        <TouchableOpacity style={styles.qrButton} onPress={() => { validateButton(), setShowDetailInvoiceQR(true) }}>
-                            <View style={styles.qrButtonContent}>
-                                <Image
-                                    source={require('@/assets/icons/GenerateQR.png')}
-                                    style={styles.qrButtonIcon}
-                                />
-                                <Text style={styles.qrButtonText}>Generar QR de pago</Text>
-                            </View>
-                        </TouchableOpacity>
+                            <TouchableOpacity style={styles.qrButton} onPress={() => { validateButton(), setShowDetailInvoiceQR(true) }}>
+                                <View style={styles.qrButtonContent}>
+                                    <Image
+                                        source={require('@/assets/icons/GenerateQR.png')}
+                                        style={styles.qrButtonIcon}
+                                    />
+                                    <Text style={styles.qrButtonText}>Generar QR de pago</Text>
+                                </View>
+                            </TouchableOpacity>
                         )}
 
                         <TouchableOpacity style={styles.qrButtonDetail} onPress={() => { setShowPayment(true) }}>

@@ -15,7 +15,7 @@ import InvoicesList from '@/src/features/tracking/components/tabs/InvoiceItem';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { CreateEntregaProps, DerliveryDocument } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
-import { cleanSpaces, getDeviceDateTime } from '@/src/utils/uitls';
+import { cleanSpaces, getDeviceDateTime, getDistanceInMeters } from '@/src/utils/uitls';
 import * as Location from "expo-location";
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from "react";
@@ -79,7 +79,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const handleGoBack = () => {
         router.back();
     };
-    
+
     useEffect(() => {
         const currentCount = selectedMultipleInvoices.length;
         const previousCount = prevSelectedCountRef.current;
@@ -118,12 +118,26 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         }
     };
 
+
     const handleSubmit = async () => {
         try {
             setLoading(true);
             const location = await Location.getCurrentPositionAsync({
                 accuracy: Location.Accuracy.Highest,
             });
+
+            if (guide?.latitud && guide?.longitud) {
+                const distance = getDistanceInMeters(Number(guide?.latitud), Number(guide?.longitud), Number(location.coords.latitude), Number(location.coords.longitude));
+                const isInsideRange = distance <= 100;
+                if (!isInsideRange) {
+                    btnRef.current?.reset();
+                    setModalTitle("¡Alerta!");
+                    setModalMessage("Estás fuera del rango permitido de 100 metros.");
+                    setModalVisible(true);
+                }
+
+            }
+
             const response = await invoiceRepositoryImpl.openAddresses(
                 {
                     latitud: String(location.coords.latitude),

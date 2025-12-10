@@ -3,7 +3,7 @@ import { ExceptionModal } from "@/components/generals/ExecptionModal";
 import { LoadingBlue } from "@/components/generals/LoadingBlue";
 import { Row } from "@/components/generals/Row";
 import { ENV_DEV } from "@/src/constants/apiRoutes";
-import { TypeQr } from "@/src/constants/GuideStates";
+import { TypeConPagoEnum, TypeQr } from "@/src/constants/GuideStates";
 import { formatNumber } from "@/src/utils/uitls";
 import React, { useState } from "react";
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
@@ -27,6 +27,7 @@ interface DetailsInvoiceQRProps {
 interface Invoice {
     dfr: number;
     numeroFactura: string;
+    condPago: string;
     valorRecaudar: number;
     valorTotal: number;
 }
@@ -42,7 +43,8 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
         dfr: 0,
         numeroFactura: "",
         valorRecaudar: 0,
-        valorTotal: 0
+        valorTotal: 0,
+        condPago: "",
     };
 
     const paymentGateway = async () => {
@@ -123,8 +125,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
             setLoading(false);
         }
     };
-
-
+    const condPago = dataInvoice?.condPago == TypeConPagoEnum.TAT;
     return (
         <View style={styles.overlay} pointerEvents="box-none">
 
@@ -136,7 +137,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
             />
 
             {/* MODAL — NO ES BLOQUEADO POR EL FONDO */}
-            <View style={[styles.container, { width }]} pointerEvents="box-none">
+            <View style={[styles.container, { width: width ,  height: condPago ? 450 : 500}]} pointerEvents="box-none">
 
                 {/* BOTÓN X */}
                 <TouchableOpacity style={styles.closeButton} onPress={onClose}>
@@ -171,22 +172,25 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
 
                 <Text style={styles.QrTitle}>Generar QR de pago</Text>
                 <View style={styles.buttonsContainer}>
-                    <SecondaryButton
-                        title="Pasarela de Pago"
-                        onPress={paymentGateway}
-                        disabled={disabled}
-                        width={350}
-                        height={43}
-                    />
+                    {!condPago && (
+                        <SecondaryButton
+                            title="Pasarela de Pago"
+                            onPress={paymentGateway}
+                            disabled={disabled}
+                            width={350}
+                            height={43}
+                        />
+                    )}
 
-                    <SecondaryButton
-                        title="Aplicación Bancaria"
-                        onPress={generateQR}
-                        disabled={disabled}
-                        width={350}
-                        height={43}
-                    />
+                        <SecondaryButton
+                            title="Aplicación Bancaria"
+                            onPress={generateQR}
+                            disabled={disabled}
+                            width={350}
+                            height={43}
+                        />
                 </View>
+
 
                 <ExceptionModal
                     visible={modalVisible}
@@ -292,7 +296,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: "#164194",
     },
-
     buttonsContainer: {
         marginTop: 24,
         gap: 12,

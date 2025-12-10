@@ -21,7 +21,7 @@ import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuid
 import { CreateEntregaProps, DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
-import { cleanSpaces, getDeviceDateTime, getDistanceInMeters } from '@/src/utils/uitls';
+import { capitalizeFirst, cleanSpaces, getDeviceDateTime, getDistanceInMeters } from '@/src/utils/uitls';
 import { Image } from 'expo-image';
 import * as Location from "expo-location";
 import { useRouter } from 'expo-router';
@@ -239,7 +239,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 }
 
             }
-            
+
             const response = await invoiceRepositoryImpl.openAddresses(
                 {
                     latitud: String(location.coords.latitude),
@@ -609,7 +609,9 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         <View style={styles.divider} />
                         <View style={styles.row}>
                             <Text style={styles.label}>Ordenes a entregar</Text>
-                            <Text style={styles.value}>Contra-Entrega</Text>
+                            <Text style={styles.value}>
+                                {capitalizeFirst(guide?.facturas[0]?.tipo)}
+                            </Text>                        
                         </View>
                         <View style={styles.row}>
                             <Text style={styles.label}>N° de factura</Text>

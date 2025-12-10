@@ -83,3 +83,9 @@ export function getDistanceInMeters(lat1: number, lon1: number, lat2: number, lo
 
     return R * c; 
 }
+
+export function capitalizeFirst(text?: string) {
+  return text
+    ? text.charAt(0).toUpperCase() + text.slice(1).toLowerCase()
+    : "";
+}

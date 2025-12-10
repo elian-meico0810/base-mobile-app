@@ -21,7 +21,7 @@ import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuid
 import { CreateEntregaProps, DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
-import { cleanSpaces, getDeviceDateTime, getDistanceInMeters } from '@/src/utils/uitls';
+import { capitalizeFirst, cleanSpaces, getDeviceDateTime, getDistanceInMeters } from '@/src/utils/uitls';
 import * as Location from "expo-location";
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from "react";
@@ -607,7 +607,9 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
                         <View style={styles.divider} />
                         <View style={styles.row}>
                             <Text style={styles.label}>Método de pago</Text>
-                            <Text style={styles.value}>Crédito</Text>
+                            <Text style={styles.value}>
+                                {capitalizeFirst(guide?.facturas[0]?.tipo)}
+                            </Text>
                         </View>
                         <View style={styles.row}>
                             <Text style={styles.label}>N° de factura</Text>

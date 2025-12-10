@@ -150,17 +150,20 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                             setStatusValue(StatusInvoice.IN_COURSE);
                             setDate(await SecureStore.getItemAsync('expiration_date'));
                             setRunApiFinish(false);
+                            setRouteStarted(true);
                             break;
 
                         case StatusInvoiceID.PENDING:
                             setStatusValue(StatusInvoice.PENDING);
                             setRunApiFinish(false);
+                            setRouteStarted(true);
                             break;
 
                         case StatusInvoiceID.CLOSE:
                             setDate(await SecureStore.getItemAsync('expiration_date'));
                             setStatusValue(StatusInvoice.CLOSE);
                             setRunApiFinish(true);
+                            setRouteStarted(true);
                             break;
 
                         default:

@@ -656,7 +656,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                 {'$ ' + (Number(newValue) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                             </Text>
                         </View>
-                        {newValue != 0 && (
+                        {/* {newValue != 0 && ( */}
                             <TouchableOpacity style={styles.qrButton} onPress={() => { validateButton(), setShowDetailInvoiceQR(true) }}>
                                 <View style={styles.qrButtonContent}>
                                     <Image
@@ -666,7 +666,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                     <Text style={styles.qrButtonText}>Generar QR de pago</Text>
                                 </View>
                             </TouchableOpacity>
-                        )}
+                        {/* )} */}
 
                         <TouchableOpacity style={styles.qrButtonDetail} onPress={() => { setShowPayment(true) }}>
                             <Text style={styles.qrButtonText}>Detalle de pagos</Text>

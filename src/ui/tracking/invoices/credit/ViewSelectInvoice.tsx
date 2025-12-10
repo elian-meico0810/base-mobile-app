@@ -309,20 +309,21 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
     const uploadPhotoSubmit = async () => {
         try {
+
+            setLoading(true);
+
             const hasValidData = selectedMultipleInvoices.length > 0 &&
                 selectedMultipleInvoices[0].facturas?.length > 0;
 
             const hasValidStatusDelivery = showStatusDelivery && isInicilizationApi;
             const hasValidOptionRefused = showOptionRefused &&
                 showOptionRefused !== OptionsRefusedEnum.TIENDA;
-
             if (hasValidData && (hasValidStatusDelivery || hasValidOptionRefused)) {
-                setLoading(true);
-                setDeliveryStatus(true);
                 const facturasArray: CreateEntregaProps[] = [];
                 let responses: any[] = [];
-                setInicilizationApi(false);
                 if (!activateSelect && selectedMultipleInvoices[0]?.facturas && selectedMultipleInvoices[0].facturas.length > 0) {
+                    setDeliveryStatus(true);
+                    setInicilizationApi(false);
                     selectedMultipleInvoices[0].facturas.forEach((factura, index) => {
                         facturasArray.push({
                             ruta: String(numberGuide),
@@ -360,10 +361,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
                         });
                     });
-                    setShowOptionRefused(null);
                 } else {
                     if (activateSelect && selectedMultipleInvoices.length > 1) {
-                        setLoading(true);
                         setDeliveryStatus(true);
                         setInicilizationApi(false);
                         // Tipar explícitamente el array como string[]
@@ -411,7 +410,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         facturasArray.push(facturaData);
                     }
                 }
+
                 if (facturasArray.length > 0) {
+                    setShowOptionRefused(null);
                     responses = await Promise.all(
                         facturasArray.map(facturaData =>
                             invoiceRepositoryImpl.createDelivery(facturaData, token)
@@ -425,17 +426,17 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                     if (success) {
                         setNextPages(true);
                         listDocumentQuery();
-                        setLoading(false);
                         setModalTitle("¡Procesado!");
                         setModalMessage(`soporte(s) procesados exitosamente.`);
                         setModalVisible(true);
                         setvalidateIsBotton(false);
-                    } else {
                         setLoading(false);
+                    } else {
                         // Opcional: mostrar detalles del primer error
                         const oneError = responses.find((resp: any) =>
                             !(resp?.statusCode === 200 || resp?.success === true)
                         );
+                        setLoading(false);
                         setModalTitle("Alerta");
                         setModalMessage(oneError?.message || "Error inesperado.");
                         setModalVisible(true);
@@ -491,7 +492,6 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             {(refreshing && RefreshingOnPress) && <LoadingSunburst />}
 
             {/* Alert de pago pendiente */}
-
 
             <ScrollView
                 style={[styles.scrollView, { marginTop: RefreshingOnPress ? 90 : 8 }]}

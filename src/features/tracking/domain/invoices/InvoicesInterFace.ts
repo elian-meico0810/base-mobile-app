@@ -55,7 +55,8 @@ export interface OpneAddressesProps {
 
 export interface CreateEntregaProps {
     ruta: string;
-    documentMeico: string;
+    documentMeico?: string;
+    documentosArray?: string[]; 
     direccion: number;
     causal?: string | null;
     estado: string;

@@ -90,7 +90,7 @@ const InvoiceItem = ({
           {/* Order + Valor + Flecha */}
           <View style={styles.rowBetween}>
             <Text style={styles.orderText}>
-              Orden #{invoice.numeroFactura || '00000'}
+              Factura n° {invoice.numeroFactura || '00000'}
             </Text>
 
             <View style={styles.priceRow}>

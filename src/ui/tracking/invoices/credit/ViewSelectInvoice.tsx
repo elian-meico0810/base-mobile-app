@@ -8,6 +8,7 @@ import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/UploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeDelivery } from '@/src/constants/GuideStates';
+import AllSelectedOrder from '@/src/features/tracking/components/checkbox/AllSelectedOrder';
 import OneSelectedOrder from '@/src/features/tracking/components/checkbox/OneSelectedOrder';
 import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
 import InvoicesList from '@/src/features/tracking/components/tabs/InvoiceItem';
@@ -58,6 +59,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [validateException, setValidateException] = useState(false);
     const [validateIsBotton, setvalidateIsBotton] = useState(false);
     const [showCheckbox, setShowCheckbox] = useState(false);
+    const [showCheckboxAll, setShowCheckboxAll] = useState(false);
     const [selectedMultipleInvoices, setSelectedMultipleInvoices] = useState<GuideDetails[]>([]);
     const [showOptionRefused, setShowOptionRefused] = useState<OptionsRefusedPorps>(null);
     const [modalRefused, setShowModalRefused] = useState(false);
@@ -69,13 +71,15 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [showStatusDelivery, setShowStatusDelivery] = useState<"total" | "parcial" | "rechazo" | null>(null);
     const [deliveryStatus, setDeliveryStatus] = useState(false);
     const [nextPages, setNextPages] = useState(false);
+    const [activateSelect, setActivateSelect] = useState(false);
     const prevSelectedCountRef = useRef<number>(0);
     const btnRef = useRef<any>(null);
+
     const router = useRouter();
     const handleGoBack = () => {
         router.back();
     };
-
+    
     useEffect(() => {
         const currentCount = selectedMultipleInvoices.length;
         const previousCount = prevSelectedCountRef.current;
@@ -85,6 +89,14 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         }
         prevSelectedCountRef.current = currentCount;
     }, [selectedMultipleInvoices]);
+
+
+    useEffect(() => {
+        if (conceptDelivery.length === guide?.facturas.length) {
+            setActiveView(false);
+            setShowCheckboxes(false);
+        }
+    }, [conceptDelivery]);
 
     const handleMultiSelect = (selectedGuides: GuideDetails[]) => {
         try {
@@ -99,7 +111,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             }
         } catch (error) {
             setModalTitle("¡Error!");
-            setModalMessage("Ocurrio un error inesperado.");
+            setModalMessage("Ocurrió un error inesperado.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -205,7 +217,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             if (selectedMultipleInvoices.length === 1) {
                 setShowCheckbox(true);
             } else if (selectedMultipleInvoices.length >= 2) {
+                setShowCheckboxAll(true);
                 setShowCheckbox(true);
+
             }
 
         } catch (error: any) {
@@ -281,13 +295,20 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
     const uploadPhotoSubmit = async () => {
         try {
-            if (showStatusDelivery && isInicilizationApi && selectedMultipleInvoices[0].facturas.length > 0 || showOptionRefused != OptionsRefusedEnum.TIENDA && showOptionRefused && selectedMultipleInvoices[0].facturas.length > 0) {
+            const hasValidData = selectedMultipleInvoices.length > 0 &&
+                selectedMultipleInvoices[0].facturas?.length > 0;
+
+            const hasValidStatusDelivery = showStatusDelivery && isInicilizationApi;
+            const hasValidOptionRefused = showOptionRefused &&
+                showOptionRefused !== OptionsRefusedEnum.TIENDA;
+
+            if (hasValidData && (hasValidStatusDelivery || hasValidOptionRefused)) {
                 setLoading(true);
                 setDeliveryStatus(true);
                 const facturasArray: CreateEntregaProps[] = [];
                 let responses: any[] = [];
                 setInicilizationApi(false);
-                if (selectedMultipleInvoices[0]?.facturas && selectedMultipleInvoices[0].facturas.length > 0) {
+                if (!activateSelect && selectedMultipleInvoices[0]?.facturas && selectedMultipleInvoices[0].facturas.length > 0) {
                     selectedMultipleInvoices[0].facturas.forEach((factura, index) => {
                         facturasArray.push({
                             ruta: String(numberGuide),
@@ -326,8 +347,56 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         });
                     });
                     setShowOptionRefused(null);
-                }
+                } else {
+                    if (activateSelect && selectedMultipleInvoices.length > 1) {
+                        setLoading(true);
+                        setDeliveryStatus(true);
+                        setInicilizationApi(false);
+                        // Tipar explícitamente el array como string[]
+                        const documentosArray: string[] = [];
 
+                        selectedMultipleInvoices.forEach((selectedInvoice) => {
+                            if (selectedInvoice?.facturas && selectedInvoice.facturas.length > 0) {
+                                selectedInvoice.facturas.forEach((factura) => {
+                                    documentosArray.push(String(factura.numeroFactura));
+                                });
+                            }
+                        });
+                        setSelectedMultipleInvoices([]);
+                        const facturaData = {
+                            ruta: String(numberGuide),
+                            documentosArray: documentosArray,
+                            direccion: Number(guide?.idDireccion),
+                            causal: showOptionRefused === OptionsRefusedEnum.DINERO
+                                ? CausalDelivery.DINERO_INSUFICIENTE
+                                : showOptionRefused === OptionsRefusedEnum.DUEÑO
+                                    ? CausalDelivery.DUENO_NO_CONTESTA
+                                    : showOptionRefused === OptionsRefusedEnum.TIENDA
+                                        ? CausalDelivery.TIENDA_CERRADA
+                                        : showOptionRefused === OptionsRefusedEnum.PRODUCTOS
+                                            ? CausalDelivery.PRODUCTOS_DANADOS
+                                            : null,
+                            estado: "ACT_EST_ENTREGA",
+                            files: showStatusDelivery === StatusDelivery.RECHAZADO
+                                ? showOptionRefused === OptionsRefusedEnum.TIENDA
+                                    ? multiplePhotos.map((item) => ({
+                                        tipoEntrega: TypeDelivery.RECHAZADO,
+                                        rutaArchivo: item.base64 ?? null,
+                                    }))
+                                    : []
+                                : multiplePhotos.map((item) => ({
+                                    tipoEntrega:
+                                        showStatusDelivery === StatusDelivery.TOTAL
+                                            ? TypeDelivery.ENT_TOTAL
+                                            : showStatusDelivery === StatusDelivery.PARCIAL
+                                                ? TypeDelivery.ENT_PARCIAL
+                                                : TypeDelivery.RECHAZADO,
+                                    rutaArchivo: item.base64 ?? null,
+                                })),
+                        };
+                        facturasArray.push(facturaData);
+                    }
+                }
                 if (facturasArray.length > 0) {
                     responses = await Promise.all(
                         facturasArray.map(facturaData =>
@@ -380,6 +449,15 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
     const conditionButton = routeStarted || conceptDelivery.length === guide?.facturas?.length && conceptDelivery.length === guide.facturas.length;
     const validateCheckbox = conceptDelivery.length != (guide?.facturas?.length ?? 0) && conceptDelivery.length != 0;
+
+    useEffect(() => {
+        if (selectedMultipleInvoices.length > 1) {
+            setActivateSelect(true);
+        } else {
+            setActivateSelect(false);
+
+        }
+    }, [selectedMultipleInvoices]);
 
     return (
         <ThemedView style={styles.container}>
@@ -450,9 +528,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 <View style={styles.headerContainerTwo}>
                     <View style={{ width: '100%' }}>
                         <Text style={styles.headerTitleTWO}>Ordenes a entregar</Text>
-
                         {/* Solo mostrar espacio y alerta cuando se cumpla la condición */}
-                        {validateCheckbox && (
+                        {(validateCheckbox && selectedMultipleInvoices.length <= 1) && (
                             <View style={styles.alertSpacer}>
                                 <PaymentPendingAlert
                                     visible={true}
@@ -465,7 +542,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                     </View>
                 </View>
 
-                {!showCheckbox && (
+                {(!showCheckbox || activateSelect) && (
                     <View style={{ flex: 1, padding: 16 }}>
                         <InvoicesList guide={guide}
                             onInvoicesMultiSelect={handleMultiSelect}
@@ -480,9 +557,25 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                     </View>
                 )}
 
-                {showCheckbox && (
+                {(showCheckbox && selectedMultipleInvoices.length <= 1) && (
                     <OneSelectedOrder
                         data={selectedMultipleInvoices[0] ? [selectedMultipleInvoices[0]] : undefined}
+                        conceptDelivery={conceptDelivery}
+                        onSelectionChange={(isSelected, selectedData) => {
+                            if (!isSelected) setShowCheckbox(false);
+                        }}
+                        uploadPhoto={() => setUploadPhoto(true)}
+                        onOpenRefusedModal={() => setShowModalRefused(true)}
+                        onStatusChange={(status) => { }}
+                        selectedStatus={showStatusDelivery}
+                        setShowStatusDelivery={setShowStatusDelivery}
+                    />
+                )}
+
+
+                {(showCheckbox && selectedMultipleInvoices.length > 1) && (
+                    <AllSelectedOrder
+                        data={selectedMultipleInvoices ? selectedMultipleInvoices : undefined}
                         conceptDelivery={conceptDelivery}
                         onSelectionChange={(isSelected, selectedData) => {
                             if (!isSelected) setShowCheckbox(false);

@@ -130,7 +130,7 @@ const OneSelectedOrder: React.FC<OneSelectedOrderProps> = ({
                             {/* Order + Valor + Flecha */}
                             <View style={styles.rowBetween}>
                                 <Text style={styles.orderText}>
-                                    Orden # {invoiceOne.numeroFactura || '00000'}
+                                    Factura n° {invoiceOne.numeroFactura || '00000'}
                                 </Text>
 
                                 <View style={styles.priceRow}>

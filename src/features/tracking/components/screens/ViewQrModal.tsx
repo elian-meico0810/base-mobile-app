@@ -2,6 +2,7 @@ import { ExceptionModal } from "@/components/generals/ExecptionModal";
 import { LoadingBlue } from "@/components/generals/LoadingBlue";
 import RenderQRView from "@/components/generals/RenderQRView";
 import { Row } from "@/components/generals/Row";
+import { TypeConPagoEnum } from "@/src/constants/GuideStates";
 import { formatNumber } from "@/src/utils/uitls";
 import React, { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -27,6 +28,7 @@ interface Invoice {
     numeroFactura: string;
     valorRecaudar: number;
     valorTotal: number;
+    condPago: string
 }
 
 type ViewType = 'main' | 'qr';
@@ -55,9 +57,11 @@ export function ViewQrModal({
         dfr: 0,
         numeroFactura: "",
         valorRecaudar: 0,
-        valorTotal: 0
+        valorTotal: 0,
+        condPago: "",
     };
-
+    const condPago = dataInvoice?.condPago == TypeConPagoEnum.TAT;
+    
     const handleSendWhatsApp = () => {
         try {
             if (!phone || !/^\d{10}$/.test(phone)) {
@@ -81,7 +85,6 @@ export function ViewQrModal({
         }
     };
 
-
     return (
         <View style={styles.overlay}>
             {/* FONDO — captura toques fuera del modal */}
@@ -94,7 +97,7 @@ export function ViewQrModal({
             />
 
             {/* MODAL — ahora SIN pointerEvents="box-none" */}
-            <View style={[styles.container, { width }]}>
+            <View style={[styles.container, { width: width, height: condPago ? 700 : 750, }]}>
                 {/* BOTÓN X */}
                 <TouchableOpacity
                     style={styles.closeButton}
@@ -105,9 +108,8 @@ export function ViewQrModal({
                     <Text style={styles.closeText}>X</Text>
                 </TouchableOpacity>
 
-
                 {/* Renderizar contenido */}
-                <RenderQRView
+                < RenderQRView
                     dataInvoice={dataInvoice}
                     phone={phone}
                     onChangePhone={onChangePhone}
@@ -327,4 +329,11 @@ const styles = StyleSheet.create({
         fontWeight: "700",
         fontSize: 14,
     },
+    bottomCenterText: {
+        textAlign: "center",
+        width: "100%",
+        position: "static",
+        color: "#788095",
+    }
+
 });

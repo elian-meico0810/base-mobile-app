@@ -10,7 +10,7 @@ import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/UploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
-import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeDelivery, TypeQr } from '@/src/constants/GuideStates';
+import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeConPagoEnum, TypeDelivery, TypeQr } from '@/src/constants/GuideStates';
 import { DeliveryStatus } from '@/src/features/tracking/components/checkbox/DeliveryStatus';
 import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
 import { ChangePhoneModal } from '@/src/features/tracking/components/screens/ChangePhoneModal';
@@ -59,6 +59,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [showChangePhone, setShowChangePhone] = useState(false);
     const [modalgenerateQR, setModalgenerateQR] = useState(false);
+    const [typeQRSendWhatsApp, setTypeQRSendWhatsApp] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [showSuccessQRp, setShowSuccessQRP] = useState(false);
     const [showErrorQRP, setShowErrorQRP] = useState(false);
@@ -86,6 +87,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const handleGoBack = () => {
         router.back();
     };
+
+    useEffect(() => {
+        setPhone(phone);
+    }, [phone]);
 
     useEffect(() => {
         if (modalRefused) {
@@ -130,6 +135,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         if (qr) setQrBase64(qr);
         if (type) setQrType(type);
     };
+    
+    const condPago = guide?.facturas[0]?.condPago == TypeConPagoEnum.TAT;
 
     const handlSendWhatsApp = async () => {
         try {
@@ -318,6 +325,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 setModalMessage("Debe indicar que ya llegó al lugar de la dirección para poder ejecutar esta acción.");
                 setModalVisible(true);
                 return;
+            }
+
+            if (condPago) {
+                setTypeQRSendWhatsApp(true);
+                setModalgenerateQR(true);
+                setShowDetailInvoiceQR(true);
             }
         } catch (error) {
             setModalTitle("¡Error!");
@@ -611,7 +624,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             <Text style={styles.label}>Ordenes a entregar</Text>
                             <Text style={styles.value}>
                                 {capitalizeFirst(guide?.facturas[0]?.tipo)}
-                            </Text>                        
+                            </Text>
                         </View>
                         <View style={styles.row}>
                             <Text style={styles.label}>N° de factura</Text>
@@ -657,15 +670,21 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             </Text>
                         </View>
                         {/* {newValue != 0 && ( */}
-                            <TouchableOpacity style={styles.qrButton} onPress={() => { validateButton(), setShowDetailInvoiceQR(true) }}>
-                                <View style={styles.qrButtonContent}>
-                                    <Image
-                                        source={require('@/assets/icons/GenerateQR.png')}
-                                        style={styles.qrButtonIcon}
-                                    />
-                                    <Text style={styles.qrButtonText}>Generar QR de pago</Text>
-                                </View>
-                            </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.qrButton}
+                            onPress={() => {
+                                validateButton();
+                                setShowDetailInvoiceQR(true);
+                            }}
+                        >
+                            <View style={styles.qrButtonContent}>
+                                <Image
+                                    source={require('@/assets/icons/GenerateQR.png')}
+                                    style={styles.qrButtonIcon}
+                                />
+                                <Text style={styles.qrButtonText}>Generar QR de pago</Text>
+                            </View>
+                        </TouchableOpacity>
                         {/* )} */}
 
                         <TouchableOpacity style={styles.qrButtonDetail} onPress={() => { setShowPayment(true) }}>
@@ -767,6 +786,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     onGenerateQR={handleGenerateQR}
                     onPressPayment={() => setRefreshingOnPress(true)}
                     onErrorPayment={() => setShowErrorQRP(true)}
+                    statusTypeQR={typeQRSendWhatsApp}
                 />
             )}
 

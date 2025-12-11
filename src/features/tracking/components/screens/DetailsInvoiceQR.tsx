@@ -5,7 +5,7 @@ import { Row } from "@/components/generals/Row";
 import { ENV_DEV } from "@/src/constants/apiRoutes";
 import { TypeConPagoEnum, TypeQr } from "@/src/constants/GuideStates";
 import { formatNumber } from "@/src/utils/uitls";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { GuideDetails } from "../../domain/details/DetailsGuide";
 import { invoiceRepositoryImpl } from "../../infrastructure/invoices/invoiceRepositoryImpl";
@@ -21,6 +21,7 @@ interface DetailsInvoiceQRProps {
     onGenerateQR?: (qrType: string, qrBase64?: string) => void;
     onPressPayment: () => void;
     onErrorPayment?: () => void;
+    statusTypeQR?: boolean;
 
 }
 
@@ -32,12 +33,14 @@ interface Invoice {
     valorTotal: number;
 }
 
-export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone, onGenerateQR, onPressPayment, onErrorPayment }: DetailsInvoiceQRProps) {
+export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone, onGenerateQR, onPressPayment, onErrorPayment, statusTypeQR }: DetailsInvoiceQRProps) {
     const [loading, setLoading] = useState(false);
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [modalVisible, setModalVisible] = useState(false);
+    const [actionBottonQR, setActionBottonQR] = useState(false);
+    const [actionBottonPayment, setActionBottonPayment] = useState(false);
 
     const dataInvoice: Invoice = data?.facturas?.[0] ?? {
         dfr: 0,
@@ -45,7 +48,8 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
         valorRecaudar: 0,
         valorTotal: 0,
         condPago: "",
-    };
+    };  
+
 
     const paymentGateway = async () => {
         try {
@@ -73,7 +77,6 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                 ENV_DEV.KEY_APP
             );
             if (response?.statusCode === 200) {
-                setLoading(false);
                 onPressPayment();
                 onGenerateQR?.(TypeQr.PASARELA, response?.data?.linkPagoVirtual);
             } else {
@@ -90,6 +93,8 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
 
     const generateQR = async () => {
         try {
+            
+            console.log("paso por aca: ", statusTypeQR);
             if (!phone || !/^\d{10}$/.test(phone)) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Debe ingresar un número de teléfono válido de 10 dígitos.");
@@ -111,7 +116,6 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                 ENV_DEV.KEY_APP
             );
             if (response?.statusCode === 200) {
-                setLoading(false);
                 onPressPayment();
                 onGenerateQR?.(TypeQr.BANCARIA, response?.data?.qr);
             } else {
@@ -125,8 +129,28 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (statusTypeQR) {
+            generateQR();
+
+        }
+    }, [statusTypeQR]);
+
     const condPago = dataInvoice?.condPago == TypeConPagoEnum.TAT;
+
+    if (condPago) return (
+        <ExceptionModal
+            visible={modalVisible}
+            onClose={() => setModalVisible(false)}
+            title={modalTitle}
+            message={modalMessage}
+            buttonLabel={modalButtonLabel}
+        />
+    );
+
     return (
+
         <View style={styles.overlay} pointerEvents="box-none">
 
             {/* FONDO — SOLO CAPTURA TOQUES FUERA */}
@@ -137,7 +161,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
             />
 
             {/* MODAL — NO ES BLOQUEADO POR EL FONDO */}
-            <View style={[styles.container, { width: width ,  height: condPago ? 450 : 500}]} pointerEvents="box-none">
+            <View style={[styles.container, { width: width }]} pointerEvents="box-none">
 
                 {/* BOTÓN X */}
                 <TouchableOpacity style={styles.closeButton} onPress={onClose}>
@@ -172,23 +196,21 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
 
                 <Text style={styles.QrTitle}>Generar QR de pago</Text>
                 <View style={styles.buttonsContainer}>
-                    {!condPago && (
-                        <SecondaryButton
-                            title="Pasarela de Pago"
-                            onPress={paymentGateway}
-                            disabled={disabled}
-                            width={350}
-                            height={43}
-                        />
-                    )}
+                    <SecondaryButton
+                        title="Pasarela de Pago"
+                        onPress={paymentGateway}
+                        disabled={disabled}
+                        width={350}
+                        height={43}
+                    />
 
-                        <SecondaryButton
-                            title="Aplicación Bancaria"
-                            onPress={generateQR}
-                            disabled={disabled}
-                            width={350}
-                            height={43}
-                        />
+                    <SecondaryButton
+                        title="Aplicación Bancaria"
+                        onPress={generateQR}
+                        disabled={disabled}
+                        width={350}
+                        height={43}
+                    />
                 </View>
 
 

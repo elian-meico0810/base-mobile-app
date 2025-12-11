@@ -97,45 +97,53 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
 
     useEffect(() => {
         const fetchData = async () => {
-            const response = await detailsRepositoryImpl.listGuide(Number(guide), tokenUser || token);
-            if (response?.statusCode == 200) {
-                if (response?.data) {
-                    const arrayData = Array.isArray(response.data) ? response.data : [response.data];
+            try {
+                const response = await detailsRepositoryImpl.listGuide(Number(guide), tokenUser || token);
+                if (response?.statusCode == 200) {
+                    if (response?.data) {
+                        const arrayData = Array.isArray(response.data) ? response.data : [response.data];
 
-                    const sortedData = arrayData
-                        .filter(item => typeof item !== 'string')
-                        .sort((a, b) => {
-                            const aIsPending = (a as GuideDetails).estado?.toLowerCase() === "pendiente";
-                            const bIsPending = (b as GuideDetails).estado?.toLowerCase() === "pendiente";
+                        const sortedData = arrayData
+                            .filter(item => typeof item !== 'string')
+                            .sort((a, b) => {
+                                const aIsPending = (a as GuideDetails).estado?.toLowerCase() === "pendiente";
+                                const bIsPending = (b as GuideDetails).estado?.toLowerCase() === "pendiente";
 
-                            if (aIsPending && !bIsPending) {
-                                return -1;
-                            } else if (!aIsPending && bIsPending) {
-                                return 1;
-                            } else {
-                                return 0;
-                            }
-                        });
+                                if (aIsPending && !bIsPending) {
+                                    return -1;
+                                } else if (!aIsPending && bIsPending) {
+                                    return 1;
+                                } else {
+                                    return 0;
+                                }
+                            });
 
-                    const hasInCourse = sortedData.every(
-                        item => (item as GuideDetails).estado?.toLowerCase() === StatusInvoice.CLOSE_TWO.toLowerCase()
-                    );
+                        const hasInCourse = sortedData.every(
+                            item => (item as GuideDetails).estado?.toLowerCase() === StatusInvoice.CLOSE_TWO.toLowerCase()
+                        );
 
-                    if (hasInCourse) {
-                        await finshRoute();
+                        if (hasInCourse) {
+                            await finshRoute();
+                        }
+
+                        // Asignar la variable según el resultado
+                        setData(sortedData as GuideDetails[]);
+                        setFilteredGuides(sortedData as GuideDetails[]);
+                        await getStatusStyle();
                     }
 
-                    // Asignar la variable según el resultado
-                    setData(sortedData as GuideDetails[]);
-                    setFilteredGuides(sortedData as GuideDetails[]);
-                    await getStatusStyle();
+                } else {
+                    setData([]);
+                    setFilteredGuides([]);
                 }
 
-            } else {
-                setData([]);
-                setFilteredGuides([]);
+            } catch (error: any) {
+                setModalTitle("¡Error!");
+                setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+                setModalVisible(true);
+            } finally {
+                setLoading(false);
             }
-
         };
         fetchData();
     }, [guide, tokenUser || token]);

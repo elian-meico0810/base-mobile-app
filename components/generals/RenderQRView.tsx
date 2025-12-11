@@ -1,4 +1,4 @@
-import { TypeQr } from "@/src/constants/GuideStates";
+import { TypeConPagoEnum, TypeQr } from "@/src/constants/GuideStates";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Image, Linking, Text, TextInput, TouchableOpacity, View } from "react-native";
 import QRCode from 'react-native-qrcode-svg';
@@ -46,6 +46,7 @@ export default function RenderQRView({
 }: Props) {
     const [isQRGenerating, setIsQRGenerating] = useState(false);
     const [localQRData, setLocalQRData] = useState<string | undefined>(qrData);
+    const [changingTypeLoading, setChangingTypeLoading] = useState(false);
 
     useEffect(() => {
         setLocalQRData(qrData);
@@ -65,13 +66,10 @@ export default function RenderQRView({
         }
     }, [localQRData, qrType]);
 
-    // Función para limpiar el QR cuando se presiona "Cambiar"
     const handleChangeTypeWithClean = () => {
-        // Primero limpia el QR local
         setLocalQRData(undefined);
         setIsQRGenerating(true);
 
-        // Luego ejecuta la función original después de un breve delay
         setTimeout(() => {
             handleChangeQRType();
         }, 100);
@@ -118,9 +116,11 @@ export default function RenderQRView({
         return svg;
     };
 
+    const condPago = dataInvoice?.condPago == TypeConPagoEnum.TAT;
+
     const renderQRContent = () => {
         const type = getQRType();
-
+        
         if (isQRGenerating) {
             return (
                 <View style={styles.qrPlaceholder}>
@@ -212,34 +212,53 @@ export default function RenderQRView({
 
                 <View style={styles.phoneRow}>
                     <TextInput style={styles.phoneInput} value={phone ?? ""} editable={false} />
-                    <TouchableOpacity onPress={onChangePhone}>
+                    <TouchableOpacity
+                        onPress={onChangePhone}
+                    >
                         <Text style={styles.phoneChange}>Cambiar</Text>
                     </TouchableOpacity>
                 </View>
-            </View>
+            </View >
 
             <Text style={styles.title}>QR {qrType}</Text>
 
-            {/* Contenedor QR */}
-            <View style={styles.qrContainer}>{renderQRContent()}</View>
+            {
+                phone ? (
+                    <>
+                        <View style={styles.qrContainer}>
+                            {renderQRContent()}
+                        </View>
 
-            {/* Botones */}
-            <View style={styles.qrButtonsContainer}>
-                <PrimaryButton
-                    title="Enviar por Whatsapp"
-                    onPress={handleSendWhatsApp}
-                    disabled={disabled || !localQRData || isQRGenerating}
-                    width={350}
-                    height={43}
-                />
-                <SecondaryButton
-                    title="Cambiar tipo de QR"
-                    onPress={handleChangeTypeWithClean}
-                    disabled={disabled || isQRGenerating}
-                    width={350}
-                    height={43}
-                />
-            </View>
+                        {/* Botones */}
+                        <View style={styles.qrButtonsContainer}>
+                            <PrimaryButton
+                                title="Enviar por Whatsapp"
+                                onPress={handleSendWhatsApp}
+                                disabled={disabled || !localQRData || isQRGenerating}
+                                width={350}
+                                height={43}
+                            />
+
+                            {!condPago && (
+                                <SecondaryButton
+                                    title="Cambiar tipo de QR"
+                                    onPress={handleChangeTypeWithClean}
+                                    disabled={disabled || isQRGenerating}
+                                    width={350}
+                                    height={43}
+                                />
+                            )}
+                        </View>
+                    </>
+                ) : (
+                    <Text style={styles.bottomCenterText}>
+                        Por favor, ingrese un número de teléfono.
+                    </Text>
+                )
+            }
+
+
+
         </>
     );
 }

@@ -17,7 +17,7 @@ export default function IndexInvoiceScreen() {
     const documentMeico = params.documentMeico as string;
     const shouldShowViewSelectInvoice = guideObj.facturas.length >= 2 || documentMeico;
     const areAllInvoicesCredito = guideObj.facturas.every(
-        factura => factura.tipo === TypeInvoiceEnum.CREDITO
+        factura => factura.tipo === TypeInvoiceEnum.CREDITO || TypeInvoiceEnum.ANTICIPO 
     );
     const areAllInvoicesConutreDlivery = guideObj.facturas.every(
         factura => factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO

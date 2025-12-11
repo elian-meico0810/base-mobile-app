@@ -1,7 +1,8 @@
 import { GuideState } from "@/src/constants/GuideStates";
 import { GuideDetails } from "@/src/features/tracking/domain/details/DetailsGuide";
+import { formatNumber } from "@/src/utils/uitls";
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import React, { useState } from "react";
 import { Dimensions, StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from "react-native";
 import { TodayDeliveriesSkeleton } from "../skeleton/TodayDeliveriesSkeleton";
 
@@ -15,6 +16,8 @@ interface TodayDeliveriesProps {
 }
 
 export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermission }: TodayDeliveriesProps) => {
+    const [showSummary, setShowSummary] = useState(false);
+
     if (!data || data.length === 0 || waitingForPermission) {
         return (
             <View style={[styles.card, style]}>
@@ -22,15 +25,36 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
             </View>
         );
     }
+
+    // AUMENTAR LA ALTURA cuando se muestra el resumen
+    const dynamicHeight = height * (routeStarted ? (showSummary ? 0.30 : 0.15) : 0.11);
+
     const cardStyle = [
         styles.card,
         style,
-        { height: height * (routeStarted ? 0.15 : 0.11) } // altura dinámica
+        {
+            height: dynamicHeight,
+        }
     ];
 
     const totalVisits = data.length;
     const totalVisitsPending = data.filter(item => item.estado === GuideState.Pendiente).length;
     const completedVisits = data.filter(item => item.estado === GuideState.Cerrada).length;
+
+    // Calcular montos (esto es un ejemplo, ajusta según tus datos reales)
+    const totalValueTotal = data.reduce((sum, item) => {
+        const facturas = item.facturas || [];
+        const subtotal = facturas.reduce((fSum, f) => fSum + (f.valorTotal || 0), 0);
+        return sum + subtotal;
+    }, 0);
+
+    const TotalAmountToCollect = data.reduce((sum, item) => {
+        const facturas = item.facturas || [];
+        const subtotal = facturas.reduce((fSum, f) => fSum + (f.valorRecaudar || 0), 0);
+        return sum + subtotal;
+    }, 0);
+
+    const totalPerRecaudar = 0.0; // Total por recaudar
 
     const progress = totalVisits > 0 ? completedVisits / totalVisits : 0;
     const isComplete = progress === 1; // 100% completado
@@ -61,25 +85,90 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
                     {
                         borderColor: isComplete ? "#1F9144" : "#164194",
                         left: `${circlePosition}%`,
-                        transform: [{ translateX: -8 }], 
+                        transform: [{ translateX: -8 }],
                     }
                 ]}>
                     <View style={styles.progressCircleInner} />
                 </View>
             </View>
-            
+
             {routeStarted && (
-                <TouchableOpacity style={styles.summaryButton}>
-                    <View style={styles.summaryButtonContent}>
-                        <Text style={styles.summaryButtonText}>Ver resumen de recaudos</Text>
-                        <Ionicons
-                            name="chevron-down"
-                            size={16}
-                            color="#164194"
-                            style={{ marginLeft: 4, alignSelf: "center" }}
-                        />
-                    </View>
-                </TouchableOpacity>
+                <>
+                    {!showSummary ? (
+                        // Botón "Ver resumen de recaudos" - posición normal
+                        <TouchableOpacity
+                            style={styles.summaryButton}
+                            onPress={() => setShowSummary(true)}
+                        >
+                            <View style={styles.summaryButtonContent}>
+                                <Text style={styles.summaryButtonText}>
+                                    Ver resumen de recaudos
+                                </Text>
+                                <Ionicons
+                                    name="chevron-down"
+                                    size={16}
+                                    color="#164194"
+                                    style={{ marginLeft: 4, alignSelf: "center" }}
+                                />
+                            </View>
+                        </TouchableOpacity>
+                    ) : (
+                        // Cuando el resumen está visible
+                        <>
+                            <View style={styles.summaryContainer}>
+                                {/* Círculo de progreso grande */}
+                                <View style={styles.largeCircleContainer}>
+                                    <View style={[
+                                        styles.largeCircle,
+                                        {
+                                            borderColor: isComplete ? "#1F9144" : "#164194",
+                                        }
+                                    ]}>
+                                        <View style={styles.circleContent}>
+                                            <Text style={styles.largeCircleText}>
+                                                ${totalPerRecaudar.toLocaleString()}
+                                            </Text>
+                                            <Text style={styles.indicatorLabelCircle}>
+                                                Por recaudar
+                                            </Text>
+                                        </View>
+                                    </View>
+                                </View>
+
+                                {/* Indicadores de recaudos */}
+                                <View style={styles.indicatorsContainer}>
+                                    <View style={styles.indicatorItem}>
+                                        <Text style={styles.indicatorLabel}>Total a recaudar</Text>
+                                        <Text style={styles.indicatorValue}>${formatNumber(TotalAmountToCollect)}</Text>
+                                    </View>
+
+                                    <View style={styles.indicatorItem}>
+                                        <Text style={styles.indicatorLabel}>Total recaudado</Text>
+                                        <Text style={styles.indicatorValue}>${formatNumber(totalValueTotal)}</Text>
+                                    </View>
+                                </View>
+                            </View>
+
+                            {/* Botón "Ocultar resumen de recaudos" - DEBAJO del resumen */}
+                            <TouchableOpacity
+                                style={styles.hideSummaryButton}
+                                onPress={() => setShowSummary(false)}
+                            >
+                                <View style={styles.summaryButtonContent}>
+                                    <Text style={styles.summaryButtonText}>
+                                        Ocultar resumen de recaudos
+                                    </Text>
+                                    <Ionicons
+                                        name="chevron-up"
+                                        size={16}
+                                        color="#164194"
+                                        style={{ marginLeft: 4, alignSelf: "center" }}
+                                    />
+                                </View>
+                            </TouchableOpacity>
+                        </>
+                    )}
+                </>
             )}
         </View>
     );
@@ -88,7 +177,6 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
 const styles = StyleSheet.create({
     card: {
         width: width * 0.9,
-        height: height * 0.11,
         backgroundColor: "#FFFFFF",
         borderRadius: 12,
         padding: 12,
@@ -116,7 +204,7 @@ const styles = StyleSheet.create({
         position: "relative",
         width: "100%",
         marginTop: 5,
-        height: 16, // Altura para contener el círculo
+        height: 16,
     },
     progressBackground: {
         width: "100%",
@@ -125,7 +213,7 @@ const styles = StyleSheet.create({
         borderRadius: 100,
         overflow: "hidden",
         position: "absolute",
-        top: 5, 
+        top: 5,
     },
     progressFill: {
         height: "100%",
@@ -172,5 +260,62 @@ const styles = StyleSheet.create({
         fontSize: 13,
         fontWeight: "600",
         color: "#164194",
+    },
+    summaryContainer: {
+        marginTop: 16,
+        paddingTop: 16,
+        borderTopColor: "#E5E7EB",
+        flexDirection: "row",
+        alignItems: "center",
+        width: '100%',
+    },
+    largeCircleContainer: {
+        position: "absolute",
+        left: width * 0.9 - 130,
+        top: 16,
+    },
+    largeCircle: {
+        width: 90,
+        height: 90,
+        borderRadius: 45,
+        borderWidth: 6,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#F9F9FA",
+    },
+    largeCircleText: {
+        fontSize: 20,
+        fontWeight: "600",
+        color: "#1F2937",
+    },
+    indicatorsContainer: {
+        marginLeft: 0,
+    },
+    indicatorItem: {
+        marginBottom: 12,
+    },
+    indicatorLabel: {
+        fontSize: 12,
+        color: "#6B7280",
+        marginBottom: 2,
+    },
+    indicatorValue: {
+        fontSize: 16,
+        fontWeight: "600",
+        color: "#1F2937",
+    },
+    indicatorLabelCircle: {
+        fontSize: 10,
+        color: "#6B7280",
+        marginBottom: 2,
+        fontWeight: "400",
+    },
+    circleContent: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    hideSummaryButton: {
+        alignSelf: 'center',
+        width: '100%',
     },
 });

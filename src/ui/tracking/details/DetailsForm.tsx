@@ -164,7 +164,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                         case StatusInvoiceID.PENDING:
                             setStatusValue(StatusInvoice.PENDING);
                             setRunApiFinish(false);
-                            setRouteStarted(true);
+                            setRouteStarted(false);
                             break;
 
                         case StatusInvoiceID.CLOSE:
@@ -233,7 +233,6 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     };
 
     const handleSubmit = async () => {
-
         try {
 
             setLoading(true);
@@ -302,13 +301,13 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
 
                     <View style={styles.topContent}>
 
-                        <TodayDeliveries
-                            style={{ marginTop: -40 }}
-                            data={data}
-                            routeStarted={routeStarted}
-                            waitingForPermission={waitingForPermission}
-
-                        />
+                        <View style={{ marginTop: -40 }}>
+                            <TodayDeliveries
+                                data={data}
+                                routeStarted={routeStarted}
+                                waitingForPermission={waitingForPermission}
+                            />
+                        </View>
                         <Text style={styles.title}>Tu ruta</Text>
                         <SearchInput
                             data={data}
@@ -347,7 +346,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                         </ScrollView>
                     </View>
 
-                    {(!routeStarted && (statusValue && statusValue == StatusInvoice.PENDING)) && (
+                    {(!routeStarted && (statusValue == StatusInvoice.PENDING)) && (
                         <View style={{ alignItems: 'center', marginBottom: 25 }}>
                             <PrimaryButtonDetails
                                 ref={btnRef}

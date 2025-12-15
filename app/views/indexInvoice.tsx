@@ -26,9 +26,12 @@ export default function IndexInvoiceScreen() {
     const areAllInvoicesAnticipe = guideObj.facturas.every(
         factura => factura.tipo === TypeInvoiceEnum.ANTICIPO || TypeInvoiceEnum.CONTADO_EFECTIVO
     );
+    const areAllInvoicesAnticipeOne = guideObj.facturas.every(
+        factura => factura.tipo === TypeInvoiceEnum.ANTICIPO
+    );
     const isCountryDelivery = params.isCountryDelivery as string;
     const IsGoBack = params.IsGoBack as string;
-    console.log("IsGoBack: ",IsGoBack);
+
     return (
         <>
             <Stack.Screen
@@ -71,7 +74,7 @@ export default function IndexInvoiceScreen() {
                 }
 
                 // Condición 3
-                if (areAllInvoicesCredito && guideObj.facturas.length < 2) {
+                if (areAllInvoicesAnticipeOne || areAllInvoicesCredito && guideObj.facturas.length < 2) {
                     return (
                         <InfoInvoiceCreditForm
                             initialGuide={guideObj}

@@ -10,7 +10,7 @@ import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/UploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
-import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeConPagoEnum, TypeDelivery, TypeQr } from '@/src/constants/GuideStates';
+import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeConPagoEnum, TypeDelivery, TypeInvoiceEnum, TypeQr } from '@/src/constants/GuideStates';
 import { DeliveryStatus } from '@/src/features/tracking/components/checkbox/DeliveryStatus';
 import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
 import { ChangePhoneModal } from '@/src/features/tracking/components/screens/ChangePhoneModal';
@@ -49,7 +49,7 @@ interface EvidencePhoto {
 type DeliveryStatus = "total" | "parcial" | "rechazo" | null;
 type OptionsRefusedPorps = 'Dinero' | 'Dueño' | 'Tienda' | 'Productos' | null;
 
-export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico,  isEmbedded = false }: InfoInvoiceAnticipateAndCountFormProps) {
+export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isEmbedded = false }: InfoInvoiceAnticipateAndCountFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(false);
@@ -549,6 +549,21 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
 
     const newValue = Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.valorTotal)
 
+    var value = '';
+    switch (guide?.facturas[0]?.tipo) {
+        case TypeInvoiceEnum.CONTADO_EFECTIVO:
+            value = 'Contra-entrega';
+            break;
+
+        case TypeInvoiceEnum.CREDITO:
+            value = 'Credito';
+            break;
+
+        case TypeInvoiceEnum.ANTICIPO:
+            value = 'Anticipado';
+            break;
+    }
+
     return (
         <ThemedView style={styles.container}>
             <NetworkStatus />
@@ -618,7 +633,7 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
                         <View style={styles.row}>
                             <Text style={styles.label}>Ordenes a entregar</Text>
                             <Text style={styles.value}>
-                                {capitalizeFirst(guide?.facturas[0]?.tipo)}
+                                {capitalizeFirst(value)}
                             </Text>
                         </View>
                         <View style={styles.row}>

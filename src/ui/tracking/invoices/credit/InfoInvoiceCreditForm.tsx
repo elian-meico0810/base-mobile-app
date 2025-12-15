@@ -10,7 +10,7 @@ import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/UploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
-import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeDelivery, TypeQr } from '@/src/constants/GuideStates';
+import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeDelivery, TypeInvoiceEnum, TypeQr } from '@/src/constants/GuideStates';
 import { DeliveryStatus } from '@/src/features/tracking/components/checkbox/DeliveryStatus';
 import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
 import { ChangePhoneModal } from '@/src/features/tracking/components/screens/ChangePhoneModal';
@@ -531,6 +531,20 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
         }
     }, [isSelectInvocies]);
 
+    var value = '';
+    switch (guide?.facturas[0]?.tipo) {
+        case TypeInvoiceEnum.CONTADO_EFECTIVO:
+            value = 'Contra-entrega';
+            break;
+
+        case TypeInvoiceEnum.CREDITO:
+            value = 'Credito';
+            break;
+
+        case TypeInvoiceEnum.ANTICIPO:
+            value = 'Anticipado';
+            break;
+    }
 
     return (
         <ThemedView style={styles.container}>
@@ -608,7 +622,7 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
                         <View style={styles.row}>
                             <Text style={styles.label}>Método de pago</Text>
                             <Text style={styles.value}>
-                                {capitalizeFirst(guide?.facturas[0]?.tipo)}
+                                {capitalizeFirst(value)}
                             </Text>
                         </View>
                         <View style={styles.row}>

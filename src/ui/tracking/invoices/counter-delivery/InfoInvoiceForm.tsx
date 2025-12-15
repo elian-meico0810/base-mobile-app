@@ -481,7 +481,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         listDocumentQuery();
                         setLoading(false);
                         setModalTitle("¡Procesado!");
-                        setModalMessage(`soporte(s) procesados exitosamente.`);
+                        setModalMessage(`Soporte(s) procesados exitosamente.`);
                         setModalVisible(true);
                         setvalidateIsBotton(false);
                     } else {

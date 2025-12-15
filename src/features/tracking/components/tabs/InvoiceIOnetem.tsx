@@ -3,7 +3,7 @@ import { AddEvidenceButton } from '@/components/inputs/AddEvidenceButton';
 import { TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import { formatNumber } from '@/src/utils/uitls';
 import React, { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { GuideDetails } from '../../domain/details/DetailsGuide';
 import { DerliveryDocument } from '../../domain/invoices/InvoicesInterFace';
 
@@ -57,13 +57,18 @@ const InvoiceOneItem = ({
             break;
 
     }
+    const canShowCheckbox =
+        showCheckbox &&
+        (isSelected || !hasAnySelected) &&
+        (!hasEvidence(invoice.numeroFactura));
 
     return (
         <TouchableOpacity
+            disabled={hasEvidence(invoice.numeroFactura) ? true : false}
             style={[
                 styles.invoiceContainer,
                 isSelected && styles.selectedContainer,
-                !activeView && {
+                (!activeView || hasEvidence(invoice.numeroFactura)) && {
                     backgroundColor: '#FFFFFF',
                     opacity: 0.6,
                     borderColor: '#F0F1F5',
@@ -77,7 +82,8 @@ const InvoiceOneItem = ({
                 {/* Checkbox individual - SOLO se muestra si:
             1. Está seleccionada O
             2. No hay ninguna seleccionada */}
-                {(showCheckbox && (isSelected || !hasAnySelected)) && (
+
+                {canShowCheckbox && (
                     <TouchableOpacity
                         style={[
                             styles.checkbox,
@@ -93,7 +99,7 @@ const InvoiceOneItem = ({
                 )}
 
                 {/* Espaciador cuando el checkbox está oculto */}
-                {showCheckbox && hasAnySelected && !isSelected && (
+                {canShowCheckbox && showCheckbox && hasAnySelected && !isSelected && (
                     <View style={styles.hiddenCheckboxSpace} />
                 )}
 
@@ -125,18 +131,11 @@ const InvoiceOneItem = ({
 
                         <View style={styles.priceRow}>
                             <Text style={styles.amountText}>
-                                {invoice?.tipo != TypeInvoiceEnum.CONTADO_EFECTIVO ? value: `$${formatNumber(invoice.valorRecaudar)}`}
+                                {invoice?.tipo != TypeInvoiceEnum.CONTADO_EFECTIVO ? value : `$${formatNumber(invoice.valorRecaudar)}`}
                             </Text>
 
                             {/* Icono de enviar */}
-                            {(showCheckbox && (isSelected || !hasAnySelected)) && (
-                                <View style={styles.iconBox}>
-                                    <Image
-                                        source={require('@/assets/icons/Send.png')}
-                                        style={styles.icon}
-                                    />
-                                </View>
-                            )}
+
                         </View>
                     </View>
 

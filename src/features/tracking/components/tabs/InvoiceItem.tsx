@@ -1,7 +1,8 @@
 "use client";
 import { AddEvidenceButton } from '@/components/inputs/AddEvidenceButton';
+import { TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import React, { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { GuideDetails } from '../../domain/details/DetailsGuide';
 import { DerliveryDocument } from '../../domain/invoices/InvoicesInterFace';
 
@@ -39,12 +40,34 @@ const InvoiceItem = ({
     return false;
   };
 
+  const canShowCheckbox =
+    showCheckbox &&
+    (!hasEvidence(invoice.numeroFactura));
+
+  var value = '';
+  switch (invoice?.tipo) {
+    case TypeInvoiceEnum.CONTADO_EFECTIVO:
+      value = 'Contra-entrega';
+      break;
+
+    case TypeInvoiceEnum.CREDITO:
+      value = 'Credito';
+      break;
+
+    case TypeInvoiceEnum.ANTICIPO:
+      value = 'Anticipado';
+      break;
+
+  }
+
   return (
     <TouchableOpacity
+      disabled={hasEvidence(invoice.numeroFactura) ? true : false}
+
       style={[
         styles.invoiceContainer,
         isSelected && styles.selectedContainer,
-        !activeView && {
+        (!activeView || hasEvidence(invoice.numeroFactura)) && {
           backgroundColor: '#FFFFFF',
           opacity: 0.6,
           borderColor: '#F0F1F5',
@@ -56,7 +79,7 @@ const InvoiceItem = ({
     >
       <View style={styles.rowBetween}>
         {/* Checkbox individual */}
-        {showCheckbox && (
+        {canShowCheckbox && (
           <TouchableOpacity
             style={[
               styles.checkbox,
@@ -95,25 +118,15 @@ const InvoiceItem = ({
 
             <View style={styles.priceRow}>
               <Text style={styles.amountText}>
-                {invoice?.tipo === "CONTADO EFECTIVO" ? "Contra-entrega" : "Crédito"}
+              {value}
               </Text>
 
-              {/* Icono de enviar */}
-              {invoice?.tipo === "CONTADO EFECTIVO" ? (
-                <View style={styles.iconBox}>
-                  <Image
-                    source={require('@/assets/icons/Send.png')}
-                    style={styles.icon}
-                  />
-                </View>
-              ) : null}
             </View>
           </View>
 
-          {/* Tipo de factura */}
-          {invoice?.tipo === "CONTADO EFECTIVO" ? (
+          {invoice?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO  ? (
             <Text style={styles.codText} numberOfLines={1} ellipsizeMode="tail">
-              {invoice?.tipo === "CONTADO EFECTIVO" ? "Contra-entrega" : "Crédito"}
+              {value}
             </Text>
           ) : null}
 

@@ -428,7 +428,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         setNextPages(true);
                         listDocumentQuery();
                         setModalTitle("¡Procesado!");
-                        setModalMessage(`soporte(s) procesados exitosamente.`);
+                        setModalMessage(`Soporte(s) procesados exitosamente.`);
                         setModalVisible(true);
                         setvalidateIsBotton(false);
                         setLoading(false);
@@ -460,6 +460,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const validateCheckbox = conceptDelivery.length != (guide?.facturas?.length ?? 0) && conceptDelivery.length != 0;
     const validateCheckboxConturyDelivery = showCheckbox && selectedMultipleInvoices.length <= 1 && selectedMultipleInvoices[0]?.facturas[0]?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO
     const conditionData = showCheckbox && selectedMultipleInvoices.length > 1;
+    const validateCheckboxlength = conceptDelivery.length == guide?.facturas?.length;
 
     useEffect(() => {
         const processPhotos = async () => {
@@ -703,10 +704,10 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                                     disabled={false}
                                     width={328}
                                     height={43}
-                                    buttonColor={conditionButton ? "#DDDFE8" : undefined}
-                                    buttonColorEnd={conditionButton ? "#DDDFE8" : undefined}
+                                    buttonColor={validateCheckboxlength ? undefined : conditionButton ? "#DDDFE8" : undefined}
+                                    buttonColorEnd={validateCheckboxlength ? undefined : conditionButton ? "#DDDFE8" : undefined}
                                     titleColor={conditionButton ? "#FFFFFF" : undefined}
-                                    circleColor={conditionButton ? "#788095" : undefined}
+                                    circleColor={validateCheckboxlength ? undefined : conditionButton ? "#788095" : undefined}
                                 />
                             );
                         }

@@ -269,6 +269,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const newValue = Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.valorTotal)
 
     const conditionButton = conceptDelivery.length > 0 || routeStarted;
+    const validateCheckboxlength = conceptDelivery.length == guide?.facturas?.length;
+
     return (
         <ThemedView style={styles.container}>
             <NetworkStatus />
@@ -411,10 +413,10 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         disabled={false}
                         width={328}
                         height={43}
-                        buttonColor={conditionButton ? "#DDDFE8" : undefined}
-                        buttonColorEnd={conditionButton ? "#DDDFE8" : undefined}
+                        buttonColor={validateCheckboxlength ? undefined : conditionButton ? "#DDDFE8" : undefined}
+                        buttonColorEnd={validateCheckboxlength ? undefined : conditionButton ? "#DDDFE8" : undefined}
                         titleColor={conditionButton ? "#FFFFFF" : undefined}
-                        circleColor={conditionButton ? "#788095" : undefined}
+                        circleColor={validateCheckboxlength ? undefined : conditionButton ? "#788095" : undefined}
                     />
                 )}
             </View>

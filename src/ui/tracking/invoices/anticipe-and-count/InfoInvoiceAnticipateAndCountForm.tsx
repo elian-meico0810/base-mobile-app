@@ -477,7 +477,7 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
                         listDocumentQuery();
                         setLoading(false);
                         setModalTitle("¡Procesado!");
-                        setModalMessage(`soporte(s) procesados exitosamente.`);
+                        setModalMessage(`Soporte(s) procesados exitosamente.`);
                         setModalVisible(true);
                         setvalidateIsBotton(false);
                     } else {

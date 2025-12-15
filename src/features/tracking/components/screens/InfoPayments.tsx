@@ -162,7 +162,7 @@ export function InfoPayments({
                         ))}
                     </ScrollView>
                 )}
-                <View style={styles.bottomSpacer} />
+                {/* <View style={styles.bottomSpacer} /> */}
             </View>
         </View>
     );

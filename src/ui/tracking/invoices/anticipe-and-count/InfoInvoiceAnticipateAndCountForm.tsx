@@ -10,7 +10,7 @@ import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/UploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
-import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeConPagoEnum, TypeDelivery, TypeInvoiceEnum, TypeQr } from '@/src/constants/GuideStates';
+import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeConPagoEnum, TypeDelivery, TypeQr } from '@/src/constants/GuideStates';
 import { DeliveryStatus } from '@/src/features/tracking/components/checkbox/DeliveryStatus';
 import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
 import { ChangePhoneModal } from '@/src/features/tracking/components/screens/ChangePhoneModal';
@@ -29,15 +29,15 @@ import { useEffect, useRef, useState } from "react";
 import { Dimensions, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 const { width, height } = Dimensions.get('window');
 
-interface InfoInvoiceFormProps {
+interface InfoInvoiceAnticipateAndCountFormProps {
     initialGuide?: GuideDetails;
     token?: string;
     onSubmit: (params: { guide: GuideDetails; token: string }) => void | Promise<void>;
     numberGuide?: number;
     isSelectInvocies?: string;
     documentMeico?: string;
-    isCountryDelivery?: boolean;
-    IsGoBack?: boolean;
+    isEmbedded?: boolean;
+
 }
 
 interface EvidencePhoto {
@@ -49,9 +49,8 @@ interface EvidencePhoto {
 type DeliveryStatus = "total" | "parcial" | "rechazo" | null;
 type OptionsRefusedPorps = 'Dinero' | 'Dueño' | 'Tienda' | 'Productos' | null;
 
-export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false }: InfoInvoiceFormProps) {
+export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico,  isEmbedded = false }: InfoInvoiceAnticipateAndCountFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
-    const [guideAny, setGuideAny] = useState<GuideDetails[]>([]);
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(false);
     const [showPayment, setShowPayment] = useState(false);
@@ -88,10 +87,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const btnRef = useRef<any>(null);
     const router = useRouter();
     const handleGoBack = () => {
-        // router.back();
-        router.push(
-            `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
-        );
+        router.back();
     };
 
     useEffect(() => {
@@ -544,31 +540,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         }
     };
 
-    const redirectContinue = async () => {
-        try {
-            if (Number(numberGuide)) {
-                const response = await detailsRepositoryImpl.listGuide(Number(numberGuide), token);
-                if (response?.statusCode === 200 && response?.data && Array.isArray(response.data)) {
-                    setGuideAny(response.data);
-
-                    const data = response.data;
-                    const numeroFactura = guide?.facturas?.[0]?.numeroFactura;
-                    const result = data.find(item =>
-                        item.facturas.some(f => f.numeroFactura === numeroFactura)
-                    );
-                    router.push(
-                        `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(result))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
-                    );
-                }
-            }
-        } catch (error) {
-            setModalTitle("¡Error!");
-            setModalMessage("Ocurrio un error inesperado.");
-            setModalVisible(true);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     useEffect(() => {
         if (isSelectInvocies) {
@@ -578,21 +549,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const newValue = Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.valorTotal)
 
-    var value = '';
-    switch (guide?.facturas[0]?.tipo) {
-        case TypeInvoiceEnum.CONTADO_EFECTIVO:
-            value = 'Contra-entrega';
-            break;
-
-        case TypeInvoiceEnum.CREDITO:
-            value = 'Credito';
-            break;
-
-        case TypeInvoiceEnum.ANTICIPO:
-            value = 'Anticipado';
-            break;
-    }
-
     return (
         <ThemedView style={styles.container}>
             <NetworkStatus />
@@ -601,13 +557,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             <View style={styles.background} />
 
             {/* Header con título */}
-            <View style={styles.headerContainer}>
-                <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-                    <Text style={styles.backArrow}>‹</Text>
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Entrega de pedido</Text>
-                <View style={styles.placeholder} />
-            </View>
             {(refreshing && RefreshingOnPress) && <LoadingSunburst />}
 
             {/* Alert de pago pendiente */}
@@ -667,9 +616,9 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     <View style={styles.orderInfo}>
                         <View style={styles.divider} />
                         <View style={styles.row}>
-                            <Text style={styles.label}>Método de pago</Text>
+                            <Text style={styles.label}>Ordenes a entregar</Text>
                             <Text style={styles.value}>
-                                {capitalizeFirst(value)}
+                                {capitalizeFirst(guide?.facturas[0]?.tipo)}
                             </Text>
                         </View>
                         <View style={styles.row}>
@@ -715,24 +664,23 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                 {'$ ' + (Number(newValue) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                             </Text>
                         </View>
-
-                        {newValue != 0 && (
-                            <TouchableOpacity
-                                style={styles.qrButton}
-                                onPress={() => {
-                                    validateButton();
-                                    setShowDetailInvoiceQR(true);
-                                }}
-                            >
-                                <View style={styles.qrButtonContent}>
-                                    <Image
-                                        source={require('@/assets/icons/GenerateQR.png')}
-                                        style={styles.qrButtonIcon}
-                                    />
-                                    <Text style={styles.qrButtonText}>Generar QR de pago</Text>
-                                </View>
-                            </TouchableOpacity>
-                        )}
+                        {/* {newValue != 0 && ( */}
+                        <TouchableOpacity
+                            style={styles.qrButton}
+                            onPress={() => {
+                                validateButton();
+                                setShowDetailInvoiceQR(true);
+                            }}
+                        >
+                            <View style={styles.qrButtonContent}>
+                                <Image
+                                    source={require('@/assets/icons/GenerateQR.png')}
+                                    style={styles.qrButtonIcon}
+                                />
+                                <Text style={styles.qrButtonText}>Generar QR de pago</Text>
+                            </View>
+                        </TouchableOpacity>
+                        {/* )} */}
 
                         <TouchableOpacity style={styles.qrButtonDetail} onPress={() => { setShowPayment(true) }}>
                             <Text style={styles.qrButtonText}>Detalle de pagos</Text>
@@ -776,41 +724,27 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     <PrimaryButton
                         title="Entregar"
                         onPress={handleSubmitData}
-                        disabled={!showStatusDelivery}
+                        disabled={!showStatusDelivery ? true : false}
                         width={328}
                         height={43}
                     />
                 ) : (
-                    <>
-                        {(routeStarted && isCountryDelivery) ? (
-                            <PrimaryButton
-                                title="Continuar"
-                                onPress={redirectContinue}
-                                disabled={false}
-                                width={328}
-                                height={43}
-                            />
-                        ) : (
-                            <PrimaryButtonDetails
-                                ref={btnRef}
-                                autoReset={validateException}
-                                key={routeStarted ? "cerrar" : "llegue"}
-                                title={routeStarted ? "Cerrar pedido" : "Ya llegué"}
-                                onPress={routeStarted ? submitData : handleSubmit}
-                                disabled={false}
-                                width={328}
-                                height={43}
-                                buttonColor={validateIsBotton ? "#DDDFE8" : undefined}
-                                buttonColorEnd={validateIsBotton ? "#DDDFE8" : undefined}
-                                titleColor={routeStarted ? "#FFFFFF" : undefined}
-                                circleColor={validateIsBotton ? "#788095" : undefined}
-                            />
-                        )}
-
-
-                    </>
-                )}
-
+                    <PrimaryButtonDetails
+                        ref={btnRef}
+                        autoReset={validateException}
+                        key={routeStarted ? "cerrar" : "llegue"}
+                        title={routeStarted ? "Cerrar pedido" : "Ya llegué"}
+                        onPress={routeStarted ? submitData : handleSubmit}
+                        disabled={false}
+                        width={328}
+                        height={43}
+                        buttonColor={validateIsBotton ? "#DDDFE8" : undefined}
+                        buttonColorEnd={validateIsBotton ? "#DDDFE8" : undefined}
+                        titleColor={routeStarted ? "#FFFFFF" : undefined}
+                        circleColor={validateIsBotton ? "#788095" : undefined}
+                    />
+                )
+                }
 
 
             </View>

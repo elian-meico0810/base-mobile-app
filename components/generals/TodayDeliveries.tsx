@@ -41,7 +41,7 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
     const totalVisitsPending = data.filter(item => item.estado === GuideState.Pendiente).length;
     const completedVisits = data.filter(item => item.estado === GuideState.Cerrada).length;
 
-    // Calcular montos (esto es un ejemplo, ajusta según tus datos reales)
+    // Calcular montos
     const totalValueTotal = data.reduce((sum, item) => {
         const facturas = item.facturas || [];
         const subtotal = facturas.reduce((fSum, f) => fSum + (f.valorTotal || 0), 0);
@@ -54,19 +54,27 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
         return sum + subtotal;
     }, 0);
 
-    const totalPerRecaudar = 0.0; // Total por recaudar
+    const totalPerRecaudar = Number(TotalAmountToCollect) - Number(totalValueTotal);
 
-    const progress = totalVisits > 0 ? completedVisits / totalVisits : 0;
-    const isComplete = progress === 1; // 100% completado
+    // Calcular porcentaje de recaudo
+    const progressVisits = totalVisits > 0 ? completedVisits / totalVisits : 0;
+    const isCompleteVisits = progressVisits === 1;
 
-    // Calcular la posición del círculo
-    const circlePosition = Math.min(progress * 100, 100);
+    // Calcular porcentaje de recaudo
+    const progressRecaudo = TotalAmountToCollect > 0 ? totalValueTotal / TotalAmountToCollect : 0;
+    const isCompleteRecaudo = progressRecaudo === 1 || totalPerRecaudar === 0; // 100% recaudado o 0 por recaudar
+
+    // Calcular ángulo para el círculo de progreso (en grados)
+    const circleAngle = progressRecaudo * 360;
+
+    // Calcular la posición del círculo para visitas
+    const circlePosition = Math.min(progressVisits * 100, 100);
 
     return (
         <View style={cardStyle}>
             <View style={styles.headerRow}>
                 <Text style={styles.title}>Entregas de hoy</Text>
-                <Text style={styles.progressPercent}>{Math.round(progress * 100)}%</Text>
+                <Text style={styles.progressPercent}>{Math.round(progressVisits * 100)}%</Text>
             </View>
 
             <Text style={styles.subtitle}>
@@ -76,14 +84,14 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
             <View style={styles.progressBarContainer}>
                 <View style={styles.progressBackground}>
                     <View style={[styles.progressFill, {
-                        width: `${progress * 100}%`,
-                        backgroundColor: isComplete ? "#1F9144" : "#164194",
+                        width: `${progressVisits * 100}%`,
+                        backgroundColor: isCompleteVisits ? "#1F9144" : "#164194",
                     }]} />
                 </View>
                 <View style={[
                     styles.progressCircle,
                     {
-                        borderColor: isComplete ? "#1F9144" : "#164194",
+                        borderColor: isCompleteVisits ? "#1F9144" : "#164194",
                         left: `${circlePosition}%`,
                         transform: [{ translateX: -8 }],
                     }
@@ -95,7 +103,6 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
             {routeStarted && (
                 <>
                     {!showSummary ? (
-                        // Botón "Ver resumen de recaudos" - posición normal
                         <TouchableOpacity
                             style={styles.summaryButton}
                             onPress={() => setShowSummary(true)}
@@ -113,17 +120,40 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
                             </View>
                         </TouchableOpacity>
                     ) : (
-                        // Cuando el resumen está visible
                         <>
                             <View style={styles.summaryContainer}>
-                                {/* Círculo de progreso grande */}
+                                {/* Círculo de progreso grande CON PROGRESO CIRCULAR */}
                                 <View style={styles.largeCircleContainer}>
-                                    <View style={[
-                                        styles.largeCircle,
-                                        {
-                                            borderColor: isComplete ? "#1F9144" : "#164194",
-                                        }
-                                    ]}>
+                                    <View style={styles.circleBackground}>
+                                        {/* Círculo de fondo (gris) - siempre visible */}
+                                        <View style={styles.circleBase} />
+
+                                        {/* Círculo de progreso (azul) - usando transform rotate */}
+                                        {!isCompleteRecaudo && (
+                                            <View
+                                                style={[
+                                                    styles.circleProgress,
+                                                    {
+                                                        borderTopColor: "#164194",
+                                                        transform: [{ rotate: `${circleAngle}deg` }],
+                                                    }
+                                                ]}
+                                            />
+                                        )}
+
+                                        {/* Círculo completo verde si es 100% */}
+                                        {isCompleteRecaudo && (
+                                            <View
+                                                style={[
+                                                    styles.circleComplete,
+                                                    {
+                                                        borderColor: "#1F9144",
+                                                    }
+                                                ]}
+                                            />
+                                        )}
+
+                                        {/* Contenido del círculo */}
                                         <View style={styles.circleContent}>
                                             <Text style={styles.largeCircleText}>
                                                 ${totalPerRecaudar.toLocaleString()}
@@ -149,7 +179,6 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
                                 </View>
                             </View>
 
-                            {/* Botón "Ocultar resumen de recaudos" - DEBAJO del resumen */}
                             <TouchableOpacity
                                 style={styles.hideSummaryButton}
                                 onPress={() => setShowSummary(false)}
@@ -173,7 +202,6 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
         </View>
     );
 };
-
 const styles = StyleSheet.create({
     card: {
         width: width * 0.9,
@@ -284,10 +312,13 @@ const styles = StyleSheet.create({
         backgroundColor: "#F9F9FA",
     },
     largeCircleText: {
-        fontSize: 20,
-        fontWeight: "600",
+        fontFamily: "Rubik",
+        fontWeight: "800",
+        fontSize: 12,
         color: "#1F2937",
+        textAlign: "center",
     },
+
     indicatorsContainer: {
         marginLeft: 0,
     },
@@ -301,7 +332,8 @@ const styles = StyleSheet.create({
     },
     indicatorValue: {
         fontSize: 16,
-        fontWeight: "600",
+        fontFamily: "Rubik",
+        fontWeight: "800",
         color: "#1F2937",
     },
     indicatorLabelCircle: {
@@ -318,4 +350,41 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         width: '100%',
     },
+    circleBackground: {
+        width: 90,
+        height: 90,
+        position: "relative",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    circleBase: {
+        position: "absolute",
+        width: 90,
+        height: 90,
+        borderRadius: 45,
+        borderWidth: 6,
+        borderColor: "#E5E7EB", 
+        backgroundColor: "#F9F9FA",
+    },
+    circleProgress: {
+        position: "absolute",
+        width: 90,
+        height: 90,
+        borderRadius: 45,
+        borderWidth: 6,
+        borderLeftColor: "transparent",
+        borderBottomColor: "transparent",
+        borderRightColor: "transparent",
+        transformOrigin: "center",
+    },
+    circleComplete: {
+        position: "absolute",
+        width: 90,
+        height: 90,
+        borderRadius: 45,
+        borderWidth: 6,
+        borderColor: "#1F9144",
+        zIndex: 2,
+    },
+
 });

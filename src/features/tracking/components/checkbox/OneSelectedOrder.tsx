@@ -1,3 +1,5 @@
+import { TypeInvoiceEnum } from '@/src/constants/GuideStates';
+import { capitalizeFirst } from '@/src/utils/uitls';
 import React, { useEffect, useState } from 'react';
 import {
     Dimensions,
@@ -104,6 +106,22 @@ const OneSelectedOrder: React.FC<OneSelectedOrderProps> = ({
 
     const typeDerlivery = matchedDelivery?.tipoEntrega?.codigo;
 
+    var value = '';
+    switch (invoiceOne?.tipo) {
+        case TypeInvoiceEnum.CONTADO_EFECTIVO:
+            value = 'Contra-entrega';
+            break;
+
+        case TypeInvoiceEnum.CREDITO:
+            value = 'Credito';
+            break;
+
+        case TypeInvoiceEnum.ANTICIPO:
+            value = 'Anticipado';
+            break;
+    }
+
+
     return (
         <View style={styles.safeArea}>
             <View style={styles.container}>
@@ -124,7 +142,8 @@ const OneSelectedOrder: React.FC<OneSelectedOrderProps> = ({
                             ]}>
                                 <Text style={[
                                     styles.status,
-                                ]}>{hasEvidence(invoiceOne.numeroFactura) ? "Entregado" : "Pendiente"}</Text>
+                                    // ]}>{hasEvidence(invoice.estado) ? "Entregado" : "Pendiente"}</Text>
+                                ]}>{capitalizeFirst(invoice?.estado)}</Text>
                             </View>
 
                             {/* Order + Valor + Flecha */}
@@ -135,7 +154,7 @@ const OneSelectedOrder: React.FC<OneSelectedOrderProps> = ({
 
                                 <View style={styles.priceRow}>
                                     <Text style={styles.amountText}>
-                                        {invoiceOne?.tipo === "CONTADO EFECTIVO" ? "Contra-entrega" : "Crédito"}
+                                        {capitalizeFirst(value)}
                                     </Text>
 
                                 </View>
@@ -143,7 +162,7 @@ const OneSelectedOrder: React.FC<OneSelectedOrderProps> = ({
 
                             {/* Tipo de factura */}
                             <Text style={styles.codText} numberOfLines={1} ellipsizeMode="tail">
-                                {invoiceOne?.tipo === "CONTADO EFECTIVO" ? "Contra-entrega" : "Crédito"}
+                                {capitalizeFirst(value)}
                             </Text>
 
                         </View>

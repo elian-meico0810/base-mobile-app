@@ -71,7 +71,7 @@ export enum OptionsRefusedEnum {
 export enum TypeInvoiceEnum {
     CREDITO = "CREDITO",
     CONTADO_EFECTIVO = "CONTADO EFECTIVO",
-    ANTICIPO = "ANTICIPO",
+    ANTICIPO = "CONTADO ANTICIPADO",
 }
 
 

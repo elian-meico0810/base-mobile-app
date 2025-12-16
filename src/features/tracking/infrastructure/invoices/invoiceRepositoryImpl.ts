@@ -1,6 +1,11 @@
 import { API_ROUTES } from "@/src/constants/apiRoutes";
 import { authApi, authDevApi } from "@/src/features/auth/infrastructure/authApi";
-import { CreateEntregaProps, GenerateQRPorps, OpneAddressesDeliveryProps, OpneAddressesProps, PaymentGatewayProps, ReportWhatsAppQRPorps, WhatsappProps } from "../../domain/invoices/InvoicesInterFace";
+import {
+  CreateEntregaProps, GenerateQRPorps,
+  OpneAddressesDeliveryProps, OpneAddressesProps,
+  PaymentGatewayProps, ReportWhatsAppQRPorps,
+  WhatsappProps, WhatsappTATImageProps
+} from "../../domain/invoices/InvoicesInterFace";
 import { InvoicesRepository, } from "../../domain/invoices/InvoicesRepository";
 
 export const invoiceRepositoryImpl: InvoicesRepository = {
@@ -186,6 +191,25 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
       // Aquí devuelves solo el JSON que envió el servidor
       return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {
+    }
+  },
+
+  async WhatsappTATImage(data: WhatsappTATImageProps, token: string) {
+    try {
+      const response = await authApi.post(
+        `${API_ROUTES.REPORT_NOTIFICTION_WHATSAPP_TAT }`,
+        data,
+         {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      // Aquí devuelves solo el JSON que envió el servidor
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
     }
   },
 };

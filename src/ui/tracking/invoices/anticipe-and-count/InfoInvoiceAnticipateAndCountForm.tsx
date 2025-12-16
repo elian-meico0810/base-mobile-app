@@ -142,29 +142,46 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
 
     const handlSendWhatsApp = async () => {
         try {
-            if (qrType == TypeQr.PASARELA) {
-                setLoading(true);
-                const response = await invoiceRepositoryImpl.whatsappProps(
+            setLoading(true);
+            let response;
+
+            if (qrType === TypeQr.PASARELA) {
+                response = await invoiceRepositoryImpl.whatsappProps(
                     {
                         whatsapp: String(phone),
                         nombre_cliente: String(guide?.nombreCliente),
-                        link_pago: String(qrBase64)
+                        link_pago: String(qrBase64),
                     },
                     ENV_DEV.KEY_APP
                 );
-                if (response?.statusCode == 200) {
-                    setShowSuccessQRP(true);
-                    setModalgenerateQR(false);
-                    setLoading(false);
-                    setTimeout(() => {
-                        setShowPaymentPending(true);
-                    }, 3000);
-                } else {
-                    setModalTitle("¡Alerta!");
-                    setModalMessage(response?.message ?? "Ocurrio un error inesperado.");
-                    setModalVisible(true);
-                }
+            } else {
+                response = await invoiceRepositoryImpl.WhatsappTATImage(
+                    {
+                        cus_no: String(guide?.codigoCliente),
+                        numdoc: String(guide?.facturas?.[0]?.numeroFactura),
+                        tipodoc: "TD_FACTURA",
+                        tipoCliente: String(guide?.facturas?.[0]?.tipoCliente),
+                        cliente: String(guide?.nombreCliente),
+                        numeroWhatsapp: String(phone),
+                    },
+                    token
+                );
             }
+
+            if (response?.statusCode === 200) {
+                setShowSuccessQRP(true);
+                setModalgenerateQR(false);
+
+                setTimeout(() => {
+                    setShowPaymentPending(true);
+                }, 3000);
+            } else {
+                setModalTitle("¡Alerta!");
+                setModalMessage(response?.message ?? "Ocurrió un error inesperado.");
+                setModalVisible(true);
+            }
+
+            setLoading(false);
         } catch (error: any) {
             setModalTitle("¡Error!");
             setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");

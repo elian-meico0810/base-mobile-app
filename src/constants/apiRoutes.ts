@@ -9,6 +9,7 @@ export const API_ROUTES = {
   GET_ROUTE_BY_CODE_GUIDE:"rutas/guia-by-codigo-guia/",
   CREATE_DELIVERY:"entregas/create-entrega/",
   GET_DOCUMENT:"documentos/get-all/",
+  REPORT_NOTIFICTION_WHATSAPP_TAT: "entregas/QR-bancolombia-whatsapp/",
   // Back contado anticipado
   SEND_PAYMENT_GATEWAY: "pagos/generar-link-pasarela/",
   GENERATE_QR: "pagos/generar_qr_bancolombia/",

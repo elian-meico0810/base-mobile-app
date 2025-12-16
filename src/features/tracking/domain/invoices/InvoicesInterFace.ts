@@ -97,3 +97,12 @@ export interface OpneAddressesDeliveryProps {
     fechaHoraDispositivo: string;
     es_entregado: boolean;
 }
+
+export interface WhatsappTATImageProps {
+  cus_no: string,
+  numdoc: string,
+  tipodoc: string,
+  tipoCliente: string,
+  cliente: string,
+  numeroWhatsapp: string,
+}

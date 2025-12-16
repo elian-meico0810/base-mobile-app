@@ -5,6 +5,7 @@ export interface Factura {
   valorRecaudar: number;
   condPago: string;
   tipo: string;
+  tipoCliente: string;
 }
 
 export interface GuideDetails {

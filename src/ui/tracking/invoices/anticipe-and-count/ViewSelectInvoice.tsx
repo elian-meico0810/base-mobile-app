@@ -500,7 +500,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         if (validateCheckboxConturyDelivery) {
             // Navegar a la nueva pantalla con los parámetros necesarios
             router.push(
-                `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(selectedMultipleInvoices[0]))}&token=${encodeURIComponent(token ?? "")}&numberGuide=${numberGuide}&isCountryDelivery=${true}`
+                `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(selectedMultipleInvoices[0]))}&token=${encodeURIComponent(token ?? "")}&numberGuide=${numberGuide}&isCountryDelivery=${true}&routeStarted=${'true'}`
             );
         }
     }, [showCheckbox, selectedMultipleInvoices]);

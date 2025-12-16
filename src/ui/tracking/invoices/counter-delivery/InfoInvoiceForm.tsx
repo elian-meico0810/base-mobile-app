@@ -38,6 +38,7 @@ interface InfoInvoiceFormProps {
     documentMeico?: string;
     isCountryDelivery?: boolean;
     IsGoBack?: boolean;
+    routeStartedBotton?: string;
 }
 
 interface EvidencePhoto {
@@ -49,11 +50,11 @@ interface EvidencePhoto {
 type DeliveryStatus = "total" | "parcial" | "rechazo" | null;
 type OptionsRefusedPorps = 'Dinero' | 'Dueño' | 'Tienda' | 'Productos' | null;
 
-export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false }: InfoInvoiceFormProps) {
+export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton}: InfoInvoiceFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [guideAny, setGuideAny] = useState<GuideDetails[]>([]);
     const [loading, setLoading] = useState(false);
-    const [routeStarted, setRouteStarted] = useState(false);
+    const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
     const [showPayment, setShowPayment] = useState(false);
     const [showDetailInvoiceQR, setShowDetailInvoiceQR] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
@@ -564,6 +565,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const redirectContinue = async () => {
         try {
+            setLoading(true);
             if (Number(numberGuide)) {
                 const response = await detailsRepositoryImpl.listGuide(Number(numberGuide), token);
                 if (response?.statusCode === 200 && response?.data && Array.isArray(response.data)) {
@@ -772,7 +774,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                 setMultiplePhotos([]);
                             }
                         }}
-                        EntryVisible={isSelectInvocies ? true : EntryVisible}
+                        EntryVisible={isCountryDelivery ? true : isSelectInvocies ? true : EntryVisible}
                         onOpenRefusedModal={() => setShowModalRefused(true)}
                         onUploadPhoto={() => {
                             setUploadPhoto(true);

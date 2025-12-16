@@ -69,6 +69,7 @@ export default function IndexInvoiceScreen() {
                             documentMeico={documentMeico}
                             isCountryDelivery={isCountryDelivery ? true : false}
                             IsGoBack={IsGoBack ? true : false}
+                            routeStartedBotton={routeStartedBotton}
                         />
                     );
                 }

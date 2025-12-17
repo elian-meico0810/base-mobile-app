@@ -671,7 +671,7 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
                         <View style={styles.row}>
                             <Text style={styles.labelTotal}>Total</Text>
                             <Text style={[styles.value, { color: '#141D32', fontWeight: '800' }]}>
-                                {'$ ' + Number(guide?.facturas[0]?.valorTotal).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                                {'$ ' + Number(guide?.facturas[0]?.valorRecaudar).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                             </Text>
                         </View>
 

@@ -8,8 +8,9 @@ import { TodayDeliveries } from '@/components/generals/TodayDeliveries';
 import { SearchInput } from '@/components/inputs/SearchInput';
 import { GuideCardSkeleton } from '@/components/skeleton/GuideCardSkeleton';
 import { ThemedView } from '@/components/themed-view';
+import { ENV_DEV } from '@/src/constants/apiRoutes';
 import { StatusInvoice, StatusInvoiceID } from '@/src/constants/GuideStates';
-import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { GuideDetails, PaymentsByInvoice } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { getDeviceDateTime } from '@/src/utils/uitls';
 import * as Location from 'expo-location';
@@ -35,6 +36,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const [guide, setGuide] = useState(initialGuide);
     const [tokenUser, setToken] = useState<string | null>(null);
     const [data, setData] = useState<GuideDetails[]>([]);
+    const [dataResult, setDataResult] = useState<PaymentsByInvoice | null>(null);
     const [filteredGuides, setFilteredGuides] = useState(data);
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(false);
@@ -125,7 +127,15 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                         if (hasInCourse) {
                             await finshRoute();
                         }
+                        const responseData = await detailsRepositoryImpl.paymentsByGuide(
+                            {
+                                id_guia: String(guide),
+                            },
+                            ENV_DEV.KEY_APP
+                        );
 
+                        setDataResult(responseData?.data?.resumen);
+                        
                         // Asignar la variable según el resultado
                         setData(sortedData as GuideDetails[]);
                         setFilteredGuides(sortedData as GuideDetails[]);
@@ -306,6 +316,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                                 data={data}
                                 routeStarted={routeStarted}
                                 waitingForPermission={waitingForPermission}
+                                dataResult={dataResult}
                             />
                         </View>
                         <Text style={styles.title}>Tu ruta</Text>

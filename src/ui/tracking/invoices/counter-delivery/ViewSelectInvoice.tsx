@@ -5,9 +5,10 @@ import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { ThemedView } from '@/components/themed-view';
+import { ENV_DEV } from '@/src/constants/apiRoutes';
 import InvoicesList from '@/src/features/tracking/components/tabs/InvoiceItem';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
-import { DerliveryDocument } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
+import { DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
 import { cleanSpaces, getDeviceDateTime, getDistanceInMeters } from '@/src/utils/uitls';
@@ -42,6 +43,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [showPaymentPending, setShowPaymentPending] = useState(false);
     const [isEquals, setIsEquals] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+    const [paymentSuccessful, setPaymentSuccessful] = useState<Invoice | undefined>();
     const [RefreshingOnPress, setRefreshingOnPress] = useState(false);
     const [EntryVisible, setEntryVisible] = useState(false);
     const [validateException, setValidateException] = useState(false);
@@ -266,8 +268,41 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         }
     }, [conceptDelivery, guide]);
 
-    const newValue = Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.valorTotal)
+    useEffect(() => {
+        const fetchGuide = async () => {
+            try {
+                const respones = await invoiceRepositoryImpl.successfulBillPayment(
+                    Number(initialGuide?.facturas[0]?.numeroFactura),
+                    ENV_DEV.KEY_APP
+                );
+                if (respones?.statusCode === 200) {
+                    setPaymentSuccessful(respones.data as Invoice);
+                }
+            } catch (error) {
+                setModalTitle("¡Error!");
+                setModalMessage("Ocurrio un error inesperado.");
+                setModalVisible(true);
+            } finally {
+                setLoading(false);
+            }
+        };
 
+        fetchGuide();
+    }, [Number(initialGuide?.facturas[0]?.numeroFactura), token]);
+
+
+    const totalAproved = paymentSuccessful?.pagos
+        ?.filter(pago => pago.estado === "APPROVED")
+        .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0) || 0;
+
+    // Calcular la suma de todos los valorTotal y dfr de todas las facturas
+    const totalFacturas = guide?.facturas?.reduce((sum, factura) => {
+        const valorTotal = Number(factura?.valorTotal || 0);
+        const dfr = Number(factura?.dfr || 0);
+        return sum + (valorTotal - dfr);
+    }, 0) || 0;
+
+    const totalRecauder = Math.max(0, totalFacturas - totalAproved);
     const conditionButton = conceptDelivery.length > 0 || routeStarted;
     const validateCheckboxlength = conceptDelivery.length == guide?.facturas?.length;
 
@@ -349,7 +384,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                                 {
                                     '$ ' +
                                     guide?.facturas
-                                        ?.reduce((sum, f) => sum + (f.valorTotal ?? 0), 0)
+                                        ?.reduce((sum, f) => sum + (f.valorRecaudar ?? 0), 0)
                                         .toLocaleString('es-CO', { minimumFractionDigits: 0 })
                                 }
                             </Text>
@@ -357,26 +392,20 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         <View style={styles.divider} />
                         <View style={styles.row}>
                             <Text style={styles.label}>Valor recaudado</Text>
-                            <Text style={styles.value}>
-                                {
-                                    '$ ' +
-                                    guide?.facturas
-                                        ?.reduce((sum, f) => sum + (f.valorTotal ?? 0), 0)
-                                        .toLocaleString('es-CO', { minimumFractionDigits: 0 })
-                                }
-                            </Text>
+                            <Text style={styles.value}>{'$ ' + Number(totalAproved || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
+
                         </View>
                         <View style={styles.row}>
                             <Text style={styles.labelTotal}>Valor a recaudar</Text>
                             <Text style={[
                                 styles.value,
                                 {
-                                    color: Number(newValue) === 0 ? '#1F9144' : '#C62828',
+                                    color: Number(totalRecauder) === 0 ? '#1F9144' : '#C62828',
                                     fontWeight: '800',
                                     fontSize: 16
                                 }
                             ]}>
-                                {'$ ' + (Number(newValue) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                                {'$ ' + (Number(totalRecauder) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                             </Text>
                         </View>
                     </View>

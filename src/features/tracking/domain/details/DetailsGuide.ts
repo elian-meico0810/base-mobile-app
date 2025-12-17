@@ -14,9 +14,9 @@ export interface GuideDetails {
   poblacion: string;
   codigoCliente: string;
   nombreCliente: string;
-  latitud: string;       
-  longitud: string;     
-  estado: string;     
+  latitud: string;
+  longitud: string;
+  estado: string;
   facturas: Factura[];
 }
 
@@ -33,4 +33,18 @@ export interface RuteByCodeGuide {
   estado_id: number,
   fecha_inicio: string,
   fecha_finalizacion: string
+}
+
+export interface PaymentsByInvoicePorps {
+  id_guia: string;
+}
+
+
+export interface PaymentsByInvoice {
+  total_pagado: number,
+  total_pendiente: number,
+  total_rechazado: number,
+  total_facturas: number,
+  facturas_entregables: number,
+  puede_entregar_todo: boolean,
 }

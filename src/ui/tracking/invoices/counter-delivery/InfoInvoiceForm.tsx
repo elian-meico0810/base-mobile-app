@@ -629,7 +629,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
         fetchGuideList();
     }, [routeStarted, isCountryDelivery]);
-    const newValue = Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.valorTotal)
+
+    const totalAproved = paymentSuccessful?.pagos
+        ?.filter(pago => pago.estado === "APPROVED")
+        .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0);
+    const totalValue = Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.dfr);
+    const totalRecauder = Number(totalValue) - Number(totalAproved) || null;
 
     var value = '';
     switch (guide?.facturas[0]?.tipo) {
@@ -695,16 +700,16 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         <View
                             style={[
                                 styles.statusContainer,
-                                guide?.estado !== 'Pendiente' && { backgroundColor: '#DFF5E1' },
+                                totalRecauder == 0 && { backgroundColor: '#DFF5E1' },
                             ]}
                         >
                             <Text
                                 style={[
                                     styles.status,
-                                    guide?.estado !== 'Pendiente' && { color: '#1F9144' },
+                                    totalRecauder  == 0  && { color: '#1F9144' },
                                 ]}
                             >
-                                {guide?.estado ?? 'Pendiente'}
+                                {totalRecauder == 0  ? 'Pago realizado' : 'Pendiente'}
                             </Text>
                         </View>
                     </View>
@@ -743,7 +748,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         <View style={styles.row}>
                             <Text style={styles.labelTotal}>Total</Text>
                             <Text style={[styles.value, { color: '#141D32', fontWeight: '800' }]}>
-                                {'$ ' + Number(guide?.facturas[0]?.valorTotal).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                                {'$ ' + Number(totalValue || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                             </Text>
                         </View>
 
@@ -752,7 +757,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         {/* Información del pedido */}
                         <View style={styles.row}>
                             <Text style={styles.label}>Valor recaudado</Text>
-                            <Text style={styles.value}>{'$ ' + Number(guide?.facturas[0]?.valorTotal).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
+                            <Text style={styles.value}>{'$ ' + Number(totalAproved || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
                         </View>
 
                         <View style={styles.row}>
@@ -760,16 +765,16 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             <Text style={[
                                 styles.value,
                                 {
-                                    color: Number(newValue) === 0 ? '#1F9144' : '#C62828',
+                                    color: Number(totalRecauder) === 0 ? '#1F9144' : '#C62828',
                                     fontWeight: '800',
                                     fontSize: 16
                                 }
                             ]}>
-                                {'$ ' + (Number(newValue) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                                {'$ ' + (Number(totalRecauder) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                             </Text>
                         </View>
 
-                        {newValue != 0 && (
+                        {totalRecauder != 0 && (
                             <TouchableOpacity
                                 style={styles.qrButton}
                                 onPress={() => {

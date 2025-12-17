@@ -13,7 +13,7 @@ import OneSelectedOrder from '@/src/features/tracking/components/checkbox/OneSel
 import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
 import InvoicesOneList from '@/src/features/tracking/components/tabs/InvoiceIOnetem';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
-import { CreateEntregaProps, DerliveryDocument } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
+import { CreateEntregaProps, DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
 import { cleanSpaces, getDeviceDateTime, getDistanceInMeters } from '@/src/utils/uitls';
 import * as Location from "expo-location";
@@ -61,6 +61,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [validateIsBotton, setvalidateIsBotton] = useState(false);
     const [showCheckbox, setShowCheckbox] = useState(false);
     const [showCheckboxAll, setShowCheckboxAll] = useState(false);
+    const [paymentSuccessful, setPaymentSuccessful] = useState<Invoice | undefined>();
     const [selectedMultipleInvoices, setSelectedMultipleInvoices] = useState<GuideDetails[]>([]);
     const [showOptionRefused, setShowOptionRefused] = useState<OptionsRefusedPorps>(null);
     const [modalRefused, setShowModalRefused] = useState(false);
@@ -452,7 +453,21 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             setLoading(false);
         }
     };
-    const newValue = Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.valorTotal)
+    const totalAproved = paymentSuccessful?.pagos
+        ?.filter(pago => pago.estado === "APPROVED")
+        .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0) || 0;
+
+    // Calcular la suma de todos los valorTotal y dfr de todas las facturas
+    const totalFacturas = guide?.facturas
+        ?.filter(factura => factura?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO)
+        .reduce((sum, factura) => {
+            const valorTotal = Number(factura?.valorTotal || 0);
+            const dfr = Number(factura?.dfr || 0);
+            return sum + (valorTotal - dfr);
+        }, 0) || 0;
+
+    const totalRecauder = Math.max(0, totalFacturas - totalAproved);
+
     const validateCondition = showCheckbox &&
         selectedMultipleInvoices.length <= 1 &&
         selectedMultipleInvoices[0]?.facturas[0]?.tipo !== TypeInvoiceEnum.CONTADO_EFECTIVO;
@@ -540,16 +555,16 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         <View
                             style={[
                                 styles.statusContainer,
-                                guide?.estado !== 'Pendiente' && { backgroundColor: '#DFF5E1' },
+                                validateCheckboxlength && { backgroundColor: '#DFF5E1' },
                             ]}
                         >
                             <Text
                                 style={[
                                     styles.status,
-                                    guide?.estado !== 'Pendiente' && { color: '#1F9144' },
+                                    validateCheckboxlength && { color: '#1F9144' },
                                 ]}
                             >
-                                {guide?.estado ?? 'Pendiente'}
+                                {validateCheckboxlength ? 'Pago realizado' : 'Pendiente'}
                             </Text>
                         </View>
                     </View>
@@ -576,34 +591,29 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                             {
                                 '$ ' +
                                 guide?.facturas
-                                    ?.reduce((sum, f) => sum + (f.valorTotal ?? 0), 0)
-                                    .toLocaleString('es-CO', { minimumFractionDigits: 0 })
+                                    ?.filter(factura => factura?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO)
+                                    ?.reduce((sum, f) => sum + (Number(f.valorTotal) || 0), 0)
+                                    ?.toLocaleString('es-CO', { minimumFractionDigits: 0 }) || '0'
                             }
                         </Text>
                     </View>
                     <View style={styles.divider} />
                     <View style={styles.row}>
                         <Text style={styles.label}>Valor recaudado</Text>
-                        <Text style={styles.value}>
-                            {
-                                '$ ' +
-                                guide?.facturas
-                                    ?.reduce((sum, f) => sum + (f.valorTotal ?? 0), 0)
-                                    .toLocaleString('es-CO', { minimumFractionDigits: 0 })
-                            }
-                        </Text>
+                        <Text style={styles.value}>{'$ ' + Number(totalAproved || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
+
                     </View>
                     <View style={styles.row}>
                         <Text style={styles.labelTotal}>Valor a recaudar</Text>
                         <Text style={[
                             styles.value,
                             {
-                                color: Number(newValue) === 0 ? '#1F9144' : '#C62828',
+                                color: Number(totalRecauder) === 0 ? '#1F9144' : '#C62828',
                                 fontWeight: '800',
                                 fontSize: 16
                             }
                         ]}>
-                            {'$ ' + (Number(newValue) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                            {'$ ' + (Number(totalRecauder) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                         </Text>
                     </View>
                 </View>

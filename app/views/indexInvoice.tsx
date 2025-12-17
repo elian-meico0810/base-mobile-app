@@ -1,5 +1,5 @@
 import { TypeInvoiceEnum } from '@/src/constants/GuideStates';
-import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { GuideDetails, PaymentsByInvoice } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { ViewSelectInvoice as AnticipateAndCountViewSelectInvoice } from '@/src/ui/tracking/invoices/anticipe-and-count/ViewSelectInvoice';
 import { InfoInvoiceForm } from '@/src/ui/tracking/invoices/counter-delivery/InfoInvoiceForm';
 import { ViewSelectInvoice } from '@/src/ui/tracking/invoices/counter-delivery/ViewSelectInvoice';
@@ -11,8 +11,10 @@ export default function IndexInvoiceScreen() {
     const params = useLocalSearchParams();
     const token = params.token as string;
     const guideParam = params.guide as string;
+    const paymentByGuideParam = params.paymentByGuide as string;
     const numberGuide = params.numberGuide as string;
     const guideObj: GuideDetails = guideParam ? JSON.parse(guideParam) : {} as GuideDetails;
+    const paymentByGuide: PaymentsByInvoice = paymentByGuideParam ? JSON.parse(paymentByGuideParam) : {} as PaymentsByInvoice;
     const isSelectInvocies = params.isSelectInvocies as string;
     const routeStartedBotton = params.routeStarted as string;
     const documentMeico = params.documentMeico as string;

@@ -1,8 +1,8 @@
-import { GuideState } from "@/src/constants/GuideStates";
-import { GuideDetails } from "@/src/features/tracking/domain/details/DetailsGuide";
+import { GuideState, TypeInvoiceEnum } from "@/src/constants/GuideStates";
+import { GuideDetails, PaymentsByInvoice } from "@/src/features/tracking/domain/details/DetailsGuide";
 import { formatNumber } from "@/src/utils/uitls";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dimensions, StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from "react-native";
 import { TodayDeliveriesSkeleton } from "../skeleton/TodayDeliveriesSkeleton";
 
@@ -10,14 +10,151 @@ const { width, height } = Dimensions.get("window");
 
 interface TodayDeliveriesProps {
     style?: StyleProp<ViewStyle>;
-    data?: GuideDetails[]; // opcional para poder mostrar skeleton
+    data?: GuideDetails[];
     routeStarted?: boolean;
     waitingForPermission?: boolean;
+    dataResult?: PaymentsByInvoice | null;
 }
 
-export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermission }: TodayDeliveriesProps) => {
+export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermission, dataResult }: TodayDeliveriesProps) => {
     const [showSummary, setShowSummary] = useState(false);
+    const [circleAngle, setCircleAngle] = useState(0);
+    const [isAnimating, setIsAnimating] = useState(false);
 
+    // Calcular montos y valores de progreso
+    const totalVisits = data?.length || 0;
+    const completedVisits = data?.filter(item => item.estado === GuideState.Cerrada).length || 0;
+    
+    const totalValueTotal = data ? data.reduce((sum, item) => {
+        const facturas = item.facturas || [];
+        const subtotal = facturas
+            .filter(f => f.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO)
+            .reduce((fSum, f) => fSum + (f.valorTotal || 0), 0);
+        return sum + subtotal;
+    }, 0) : 0;
+
+    const TotalAmountToCollect = dataResult?.total_pagado ?? 0;
+    const totalPerRecaudar = Math.max(Number(totalValueTotal) - Number(TotalAmountToCollect), 0);
+    
+    // Calcular porcentaje de recaudo
+    const progressRecaudo = totalValueTotal > 0 
+        ? (TotalAmountToCollect / totalValueTotal) 
+        : 0;
+    
+    // Determinar si está completo (100% recaudado)
+    const isCompleteRecaudo = progressRecaudo >= 1 || totalPerRecaudar === 0;
+    
+    const progressVisits = totalVisits > 0 ? completedVisits / totalVisits : 0;
+    const isCompleteVisits = progressVisits === 1;
+    
+    const circlePosition = Math.min(progressVisits * 100, 100);
+
+    // Animación del círculo de progreso
+    useEffect(() => {
+        if (showSummary && !isAnimating) {
+            setIsAnimating(true);
+            // Usar progressRecaudo para la animación (0 a 360 grados)
+            const finalAngle = Math.min(progressRecaudo * 360, 360);
+            const duration = 1000;
+            const steps = 60;
+            const increment = finalAngle / steps;
+            let currentAngle = 0;
+            let step = 0;
+
+            const animate = () => {
+                if (step < steps) {
+                    currentAngle += increment;
+                    setCircleAngle(currentAngle);
+                    step++;
+                    setTimeout(animate, duration / steps);
+                } else {
+                    setCircleAngle(finalAngle);
+                    setIsAnimating(false);
+                }
+            };
+
+            animate();
+        } else if (!showSummary) {
+            setCircleAngle(0);
+            setIsAnimating(false);
+        }
+    }, [showSummary, progressRecaudo]);
+
+    // Obtener colores del círculo según el progreso - MODIFICADO PARA RELOJ
+    const getCircleProgressStyle = () => {
+        // Si no hay nada por recaudar o está completo - mostrar verde
+        if (totalPerRecaudar === 0 || isCompleteRecaudo) {
+            return {
+                borderTopColor: "#1F9144",
+                borderRightColor: "#1F9144",
+                borderBottomColor: "#1F9144",
+                borderLeftColor: "#1F9144",
+                transform: [{ rotate: `${circleAngle}deg` }],
+            };
+        }
+
+        // Si la diferencia es 0% del total (no se ha recaudado nada)
+        if (TotalAmountToCollect === 0) {
+            return {
+                borderTopColor: "transparent",
+                borderRightColor: "transparent",
+                borderBottomColor: "transparent",
+                borderLeftColor: "transparent",
+                transform: [{ rotate: `${circleAngle}deg` }],
+            };
+        }
+
+        // Para diferentes niveles de progreso - RELOJ
+        // Comienza desde arriba (12 en punto) y va en sentido horario
+        const borderStyles: any = {
+            borderTopColor: "transparent",
+            borderRightColor: "transparent",
+            borderBottomColor: "transparent",
+            borderLeftColor: "transparent",
+            transform: [{ rotate: `${circleAngle}deg` }],
+        };
+
+        // Determinar qué bordes mostrar según el ángulo
+        if (circleAngle > 0) {
+            // Siempre mostrar el borde superior cuando hay progreso
+            borderStyles.borderTopColor = "#164194";
+        }
+        
+        // Mostrar borde derecho cuando pasa de 90 grados
+        if (circleAngle > 90) {
+            borderStyles.borderRightColor = "#164194";
+        }
+        
+        // Mostrar borde inferior cuando pasa de 180 grados
+        if (circleAngle > 180) {
+            borderStyles.borderBottomColor = "#164194";
+        }
+        
+        // Mostrar borde izquierdo cuando pasa de 270 grados
+        if (circleAngle > 270) {
+            borderStyles.borderLeftColor = "#164194";
+        }
+
+        return borderStyles;
+    };
+
+    // Ajustar la animación para que comience desde -90 grados (12 en punto)
+    const getAdjustedAngle = () => {
+        // Ajustar el ángulo para que comience desde arriba
+        return circleAngle;
+    };
+
+    const circleProgressStyle = getCircleProgressStyle();
+
+    // Ajustar altura dinámica según el estado
+    const dynamicHeight = height * (routeStarted ? (showSummary ? 0.30 : 0.15) : 0.11);
+    const cardStyle = [
+        styles.card,
+        style,
+        { height: dynamicHeight }
+    ];
+
+    // Mostrar skeleton mientras se carga
     if (!data || data.length === 0 || waitingForPermission) {
         return (
             <View style={[styles.card, style]}>
@@ -25,50 +162,6 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
             </View>
         );
     }
-
-    // AUMENTAR LA ALTURA cuando se muestra el resumen
-    const dynamicHeight = height * (routeStarted ? (showSummary ? 0.30 : 0.15) : 0.11);
-
-    const cardStyle = [
-        styles.card,
-        style,
-        {
-            height: dynamicHeight,
-        }
-    ];
-
-    const totalVisits = data.length;
-    const totalVisitsPending = data.filter(item => item.estado === GuideState.Pendiente).length;
-    const completedVisits = data.filter(item => item.estado === GuideState.Cerrada).length;
-
-    // Calcular montos
-    const totalValueTotal = data.reduce((sum, item) => {
-        const facturas = item.facturas || [];
-        const subtotal = facturas.reduce((fSum, f) => fSum + (f.valorTotal || 0), 0);
-        return sum + subtotal;
-    }, 0);
-
-    const TotalAmountToCollect = data.reduce((sum, item) => {
-        const facturas = item.facturas || [];
-        const subtotal = facturas.reduce((fSum, f) => fSum + (f.valorRecaudar || 0), 0);
-        return sum + subtotal;
-    }, 0);
-
-    const totalPerRecaudar = Number(TotalAmountToCollect) - Number(totalValueTotal);
-
-    // Calcular porcentaje de recaudo
-    const progressVisits = totalVisits > 0 ? completedVisits / totalVisits : 0;
-    const isCompleteVisits = progressVisits === 1;
-
-    // Calcular porcentaje de recaudo
-    const progressRecaudo = TotalAmountToCollect > 0 ? totalValueTotal / TotalAmountToCollect : 0;
-    const isCompleteRecaudo = progressRecaudo === 1 || totalPerRecaudar === 0; // 100% recaudado o 0 por recaudar
-
-    // Calcular ángulo para el círculo de progreso (en grados)
-    const circleAngle = progressRecaudo * 360;
-
-    // Calcular la posición del círculo para visitas
-    const circlePosition = Math.min(progressVisits * 100, 100);
 
     return (
         <View style={cardStyle}>
@@ -122,59 +215,65 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
                     ) : (
                         <>
                             <View style={styles.summaryContainer}>
-                                {/* Círculo de progreso grande CON PROGRESO CIRCULAR */}
                                 <View style={styles.largeCircleContainer}>
                                     <View style={styles.circleBackground}>
-                                        {/* Círculo de fondo (gris) - siempre visible */}
+                                        {/* Círculo base */}
                                         <View style={styles.circleBase} />
 
-                                        {/* Círculo de progreso (azul) - usando transform rotate */}
-                                        {!isCompleteRecaudo && (
+                                        {/* Círculo de progreso (azul) - SOLO cuando hay progreso */}
+                                        {!isCompleteRecaudo && circleAngle > 0 && (
                                             <View
                                                 style={[
                                                     styles.circleProgress,
-                                                    {
-                                                        borderTopColor: "#164194",
-                                                        transform: [{ rotate: `${circleAngle}deg` }],
-                                                    }
+                                                    circleProgressStyle
                                                 ]}
                                             />
                                         )}
 
-                                        {/* Círculo completo verde si es 100% */}
+                                        {/* Círculo completo (verde) */}
                                         {isCompleteRecaudo && (
                                             <View
                                                 style={[
                                                     styles.circleComplete,
-                                                    {
+                                                    { 
                                                         borderColor: "#1F9144",
+                                                        transform: [{ rotate: `${circleAngle}deg` }]
                                                     }
                                                 ]}
                                             />
                                         )}
 
-                                        {/* Contenido del círculo */}
+                                        {/* Indicador del punto inicial (12 en punto) - OPCIONAL */}
+                                        <View style={styles.startIndicator} />
+
                                         <View style={styles.circleContent}>
                                             <Text style={styles.largeCircleText}>
-                                                ${totalPerRecaudar.toLocaleString()}
+                                                ${formatNumber(totalPerRecaudar)}
                                             </Text>
                                             <Text style={styles.indicatorLabelCircle}>
                                                 Por recaudar
+                                            </Text>
+                                            {/* Mostrar porcentaje de recaudo */}
+                                            <Text style={styles.percentageText}>
+                                                {Math.round(progressRecaudo * 100)}%
                                             </Text>
                                         </View>
                                     </View>
                                 </View>
 
-                                {/* Indicadores de recaudos */}
                                 <View style={styles.indicatorsContainer}>
                                     <View style={styles.indicatorItem}>
                                         <Text style={styles.indicatorLabel}>Total a recaudar</Text>
-                                        <Text style={styles.indicatorValue}>${formatNumber(TotalAmountToCollect)}</Text>
+                                        <Text style={styles.indicatorValue}>
+                                            ${formatNumber(totalValueTotal)}
+                                        </Text>
                                     </View>
 
                                     <View style={styles.indicatorItem}>
                                         <Text style={styles.indicatorLabel}>Total recaudado</Text>
-                                        <Text style={styles.indicatorValue}>${formatNumber(totalValueTotal)}</Text>
+                                        <Text style={[styles.indicatorValue]}>
+                                            ${formatNumber(TotalAmountToCollect)}
+                                        </Text>
                                     </View>
                                 </View>
                             </View>
@@ -202,6 +301,7 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
         </View>
     );
 };
+
 const styles = StyleSheet.create({
     card: {
         width: width * 0.9,
@@ -268,14 +368,6 @@ const styles = StyleSheet.create({
         color: "#6B7280",
         marginBottom: 8,
     },
-    skeletonText: {
-        backgroundColor: "#E0E0E0",
-        borderRadius: 4,
-    },
-    skeletonBar: {
-        backgroundColor: "#E0E0E0",
-        borderRadius: 100,
-    },
     summaryButton: {
         marginTop: 12,
     },
@@ -293,6 +385,7 @@ const styles = StyleSheet.create({
         marginTop: 16,
         paddingTop: 16,
         borderTopColor: "#E5E7EB",
+        borderTopWidth: 1,
         flexDirection: "row",
         alignItems: "center",
         width: '100%',
@@ -302,15 +395,6 @@ const styles = StyleSheet.create({
         left: width * 0.9 - 130,
         top: 16,
     },
-    largeCircle: {
-        width: 90,
-        height: 90,
-        borderRadius: 45,
-        borderWidth: 6,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#F9F9FA",
-    },
     largeCircleText: {
         fontFamily: "Rubik",
         fontWeight: "800",
@@ -318,7 +402,6 @@ const styles = StyleSheet.create({
         color: "#1F2937",
         textAlign: "center",
     },
-
     indicatorsContainer: {
         marginLeft: 0,
     },
@@ -341,6 +424,7 @@ const styles = StyleSheet.create({
         color: "#6B7280",
         marginBottom: 2,
         fontWeight: "400",
+        textAlign: "center",
     },
     circleContent: {
         alignItems: 'center',
@@ -363,7 +447,7 @@ const styles = StyleSheet.create({
         height: 90,
         borderRadius: 45,
         borderWidth: 6,
-        borderColor: "#E5E7EB", 
+        borderColor: "#E5E7EB",
         backgroundColor: "#F9F9FA",
     },
     circleProgress: {
@@ -372,9 +456,6 @@ const styles = StyleSheet.create({
         height: 90,
         borderRadius: 45,
         borderWidth: 6,
-        borderLeftColor: "transparent",
-        borderBottomColor: "transparent",
-        borderRightColor: "transparent",
         transformOrigin: "center",
     },
     circleComplete: {
@@ -386,5 +467,21 @@ const styles = StyleSheet.create({
         borderColor: "#1F9144",
         zIndex: 2,
     },
-
+    percentageText: {
+        fontSize: 9,
+        color: "#6B7280",
+        fontWeight: "600",
+        marginTop: 2,
+    },
+    // Indicador del punto inicial (12 en punto)
+    startIndicator: {
+        position: "absolute",
+        top: -3,
+        left: 42,
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: "#164194",
+        zIndex: 3,
+    },
 });

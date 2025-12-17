@@ -1,6 +1,6 @@
 import { API_ROUTES } from "@/src/constants/apiRoutes";
-import { authApi } from "@/src/features/auth/infrastructure/authApi";
-import { RuteInitPorps } from "../../domain/details/DetailsGuide";
+import { authApi, authDevApi } from "@/src/features/auth/infrastructure/authApi";
+import { PaymentsByInvoicePorps, RuteInitPorps } from "../../domain/details/DetailsGuide";
 import { DetailsRepository } from "../../domain/details/DetailsRepository";
 
 export const detailsRepositoryImpl: DetailsRepository = {
@@ -115,6 +115,19 @@ export const detailsRepositoryImpl: DetailsRepository = {
       });
       return data
 
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async paymentsByGuide(data: PaymentsByInvoicePorps, key: string) {
+    try {
+      const response = await authDevApi.post(`${API_ROUTES.PAYMENT_SUCCESS_FUL_BY_GUIDE}`, data, {
+        headers: {
+          "api-key": key
+        },
+      });
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {
       throw error;
     }

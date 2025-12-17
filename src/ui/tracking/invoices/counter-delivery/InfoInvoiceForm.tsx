@@ -50,7 +50,7 @@ interface EvidencePhoto {
 type DeliveryStatus = "total" | "parcial" | "rechazo" | null;
 type OptionsRefusedPorps = 'Dinero' | 'Dueño' | 'Tienda' | 'Productos' | null;
 
-export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton}: InfoInvoiceFormProps) {
+export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton }: InfoInvoiceFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [guideAny, setGuideAny] = useState<GuideDetails[]>([]);
     const [loading, setLoading] = useState(false);
@@ -67,6 +67,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [showSuccess, setShowSuccess] = useState(false);
     const [showSuccessQRp, setShowSuccessQRP] = useState(false);
     const [showErrorQRP, setShowErrorQRP] = useState(false);
+    const [showResultData, setResultData] = useState<GuideDetails | null>(null);
     const [multiplePhotos, setMultiplePhotos] = useState<EvidencePhoto[]>([]);
     const [isDeliveryCompleted, setIsDeliveryCompleted] = useState(false);
     const [showStatusDelivery, setShowStatusDelivery] = useState<"total" | "parcial" | "rechazo" | null>(null);
@@ -89,10 +90,13 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const btnRef = useRef<any>(null);
     const router = useRouter();
     const handleGoBack = () => {
-        // router.back();
-        router.push(
-            `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
-        );
+        if (routeStarted && isCountryDelivery) {
+            router.push(
+                `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+            );
+        } else {
+            router.back();
+        }
     };
 
     useEffect(() => {
@@ -565,21 +569,18 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const redirectContinue = async () => {
         try {
-            setLoading(true);
+            if (conceptDelivery == null) {
+                setValidateException(true);
+                btnRef.current?.reset();
+                setModalTitle("¡Alerta!");
+                setModalMessage("Debe especificar un estado de entrega.");
+                setModalVisible(true);
+                return;
+            }
             if (Number(numberGuide)) {
-                const response = await detailsRepositoryImpl.listGuide(Number(numberGuide), token);
-                if (response?.statusCode === 200 && response?.data && Array.isArray(response.data)) {
-                    setGuideAny(response.data);
-
-                    const data = response.data;
-                    const numeroFactura = guide?.facturas?.[0]?.numeroFactura;
-                    const result = data.find(item =>
-                        item.facturas.some(f => f.numeroFactura === numeroFactura)
-                    );
-                    router.push(
-                        `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(result))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
-                    );
-                }
+                router.push(
+                    `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(showResultData))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+                );
             }
         } catch (error) {
             setModalTitle("¡Error!");
@@ -596,6 +597,38 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         }
     }, [isSelectInvocies]);
 
+    useEffect(() => {
+        const fetchGuideList = async () => {
+            try {
+                if (routeStarted && isCountryDelivery) {
+
+                    const response = await detailsRepositoryImpl.listGuide(
+                        Number(numberGuide),
+                        token
+                    );
+                    if (response?.statusCode === 200 && response?.data && Array.isArray(response.data)) {
+                        setGuideAny(response.data);
+
+                        const data = response.data;
+                        const numeroFactura = guide?.facturas?.[0]?.numeroFactura;
+                        const result = data.find(item =>
+                            item.facturas.some(f => f.numeroFactura === numeroFactura)
+                        );
+                        setResultData(result ?? null)
+                    }
+                }
+
+            } catch (error) {
+                setModalTitle("¡Error!");
+                setModalMessage("Ocurrio un error inesperado.");
+                setModalVisible(true);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchGuideList();
+    }, [routeStarted, isCountryDelivery]);
     const newValue = Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.valorTotal)
 
     var value = '';
@@ -737,21 +770,21 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         </View>
 
                         {/* {newValue != 0 && ( */}
-                            <TouchableOpacity
-                                style={styles.qrButton}
-                                onPress={() => {
-                                    validateButton();
-                                    setShowDetailInvoiceQR(true);
-                                }}
-                            >
-                                <View style={styles.qrButtonContent}>
-                                    <Image
-                                        source={require('@/assets/icons/GenerateQR.png')}
-                                        style={styles.qrButtonIcon}
-                                    />
-                                    <Text style={styles.qrButtonText}>Generar QR de pago</Text>
-                                </View>
-                            </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.qrButton}
+                            onPress={() => {
+                                validateButton();
+                                setShowDetailInvoiceQR(true);
+                            }}
+                        >
+                            <View style={styles.qrButtonContent}>
+                                <Image
+                                    source={require('@/assets/icons/GenerateQR.png')}
+                                    style={styles.qrButtonIcon}
+                                />
+                                <Text style={styles.qrButtonText}>Generar QR de pago</Text>
+                            </View>
+                        </TouchableOpacity>
                         {/* )} */}
 
                         <TouchableOpacity style={styles.qrButtonDetail} onPress={() => { setShowPayment(true) }}>

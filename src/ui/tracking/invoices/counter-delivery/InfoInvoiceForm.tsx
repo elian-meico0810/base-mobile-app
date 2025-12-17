@@ -769,23 +769,23 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             </Text>
                         </View>
 
-                        {/* {newValue != 0 && ( */}
-                        <TouchableOpacity
-                            style={styles.qrButton}
-                            onPress={() => {
-                                validateButton();
-                                setShowDetailInvoiceQR(true);
-                            }}
-                        >
-                            <View style={styles.qrButtonContent}>
-                                <Image
-                                    source={require('@/assets/icons/GenerateQR.png')}
-                                    style={styles.qrButtonIcon}
-                                />
-                                <Text style={styles.qrButtonText}>Generar QR de pago</Text>
-                            </View>
-                        </TouchableOpacity>
-                        {/* )} */}
+                        {newValue != 0 && (
+                            <TouchableOpacity
+                                style={styles.qrButton}
+                                onPress={() => {
+                                    validateButton();
+                                    setShowDetailInvoiceQR(true);
+                                }}
+                            >
+                                <View style={styles.qrButtonContent}>
+                                    <Image
+                                        source={require('@/assets/icons/GenerateQR.png')}
+                                        style={styles.qrButtonIcon}
+                                    />
+                                    <Text style={styles.qrButtonText}>Generar QR de pago</Text>
+                                </View>
+                            </TouchableOpacity>
+                        )}
 
                         <TouchableOpacity style={styles.qrButtonDetail} onPress={() => { setShowPayment(true) }}>
                             <Text style={styles.qrButtonText}>Detalle de pagos</Text>

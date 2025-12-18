@@ -162,7 +162,7 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
                         tipodoc: "TD_FACTURA",
                         tipoCliente: String(guide?.facturas?.[0]?.tipoCliente),
                         cliente: String(guide?.nombreCliente),
-                        numeroWhatsapp: String(phone),
+                        numeroWhatsapp: "57"+String(phone),
                     },
                     token
                 );
@@ -219,7 +219,7 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
                 setRouteStarted(true);
                 if (isSelectInvocies) {
                     router.push(
-                        `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}`
+                        `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas?.[0]?.numeroFactura}&routeStarted=${'true'}`
                     );
                 }
                 setvalidateIsBotton(true);

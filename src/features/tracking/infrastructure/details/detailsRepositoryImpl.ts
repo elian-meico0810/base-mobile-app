@@ -122,7 +122,7 @@ export const detailsRepositoryImpl: DetailsRepository = {
 
   async paymentsByGuide(data: PaymentsByInvoicePorps, key: string) {
     try {
-      const response = await authDevApi.post(`${API_ROUTES.PAYMENT_SUCCESS_FUL_BY_GUIDE}`, data, {
+      const response = await authDevApi.post(`${API_ROUTES.PAYMENT_SUCCESS_FUL_BY_GUIDE}`,data, {
         headers: {
           "api-key": key
         },

@@ -1,8 +1,8 @@
-import { Ionicons } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
-import React, { useState } from "react";
-
 import { createDataUri } from "@/src/utils/uitls";
+import { Ionicons } from "@expo/vector-icons";
+import * as ImageManipulator from "expo-image-manipulator";
+import * as ImagePicker from "expo-image-picker";
+import { useState } from "react";
 import {
     ActivityIndicator,
     Image,
@@ -49,6 +49,49 @@ export function UploadPhoto({
     const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
     const [loadingType, setLoadingType] = useState<'camera' | 'gallery' | null>(null);
 
+    // Configuración de redimensionamiento
+    const IMAGE_CONFIG = {
+        maxWidth: 1024,  // Ancho máximo
+        maxHeight: 1024, // Alto máximo
+        quality: 0.7,    // Calidad de compresión (0.1 - 1.0)
+        format: ImageManipulator.SaveFormat.JPEG, // Formato de salida
+        compress: 0.7,   // Nivel de compresión
+    };
+
+    // Función para procesar y redimensionar la imagen
+    const processAndResizeImage = async (uri: string): Promise<{ uri: string; base64: string }> => {
+        try {
+            const manipResult = await ImageManipulator.manipulateAsync(
+                uri,
+                [
+                    {
+                        resize: {
+                            width: IMAGE_CONFIG.maxWidth,
+                            height: IMAGE_CONFIG.maxHeight,
+                        }
+                    }
+                ],
+                {
+                    compress: IMAGE_CONFIG.compress,
+                    format: IMAGE_CONFIG.format,
+                    base64: true // Incluir base64 en el resultado
+                }
+            );
+
+            if (!manipResult.base64) {
+                throw new Error("No se pudo generar base64 de la imagen procesada");
+            }
+
+            return {
+                uri: manipResult.uri,
+                base64: manipResult.base64
+            };
+        } catch (error) {
+            console.error("Error procesando imagen:", error);
+            throw error;
+        }
+    };
+
     // Función para manejar la selección de imagen
     const handleImageSelection = async (
         pickerFunction: () => Promise<ImagePicker.ImagePickerResult>,
@@ -65,20 +108,23 @@ export function UploadPhoto({
             if (!result.canceled) {
                 const asset = result.assets[0];
 
+                // Procesar la imagen (redimensionar y comprimir)
+                const processedImage = await processAndResizeImage(asset.uri);
+
                 // Crear data URI con el formato correcto
-                const dataUri = createDataUri(asset.base64!, asset.uri);
+                const dataUri = createDataUri(processedImage.base64, processedImage.uri);
 
                 const newEvidence: EvidencePhoto = {
                     id: Date.now().toString(),
-                    uri: asset.uri,
+                    uri: processedImage.uri, // Usar la URI procesada
                     base64: dataUri,
                 };
 
                 if (onPick) {
-                    // Modo simple: devuelve el data URI, no el base64 crudo
+                    // Modo simple: devuelve el data URI procesado
                     onPick({
                         base64: dataUri,
-                        uri: asset.uri
+                        uri: processedImage.uri
                     });
                 } else {
                     // Modo múltiples evidencias
@@ -118,7 +164,9 @@ export function UploadPhoto({
 
         await handleImageSelection(
             () => ImagePicker.launchCameraAsync({
-                base64: true,
+                // No pedimos base64 aquí porque lo procesaremos después
+                base64: false,
+                // Calidad inicial (se mejorará con el procesamiento)
                 quality: 0.8,
             }),
             currentEvidenceIndex,
@@ -136,8 +184,12 @@ export function UploadPhoto({
 
         await handleImageSelection(
             () => ImagePicker.launchImageLibraryAsync({
-                base64: true,
+                // No pedimos base64 aquí porque lo procesaremos después
+                base64: false,
+                // Calidad inicial (se mejorará con el procesamiento)
                 quality: 0.8,
+                // Opcional: permitir seleccionar solo imágenes
+                mediaTypes: ['images'],
             }),
             currentEvidenceIndex,
             'gallery'
@@ -199,9 +251,9 @@ export function UploadPhoto({
                                         disabled={isLoading}
                                     >
                                         {isLoading && loadingIndex === index ? (
-                                            <ActivityIndicator 
-                                                size="small" 
-                                                color="#141D32" 
+                                            <ActivityIndicator
+                                                size="small"
+                                                color="#141D32"
                                                 style={styles.loadingIndicator}
                                             />
                                         ) : (
@@ -232,17 +284,17 @@ export function UploadPhoto({
                             {isLoading && loadingIndex !== null && loadingIndex >= evidences.length && (
                                 <View style={styles.thumbnailRow}>
                                     <View style={[styles.thumbnailContainer, styles.emptyThumbnail]}>
-                                        <ActivityIndicator 
-                                            size="small" 
-                                            color="#141D32" 
+                                        <ActivityIndicator
+                                            size="small"
+                                            color="#141D32"
                                             style={styles.loadingIndicator}
                                         />
                                     </View>
-                                    
+
                                     <Text style={[styles.thumbnailLabel, styles.emptyLabel]}>
                                         Evidencia {evidences.length + 1}
                                     </Text>
-                                    
+
                                     <View style={styles.trashButtonPlaceholder} />
                                 </View>
                             )}
@@ -269,7 +321,7 @@ export function UploadPhoto({
                             </View>
                             <View>
                                 <Text style={[styles.cardTitle, isCameraLoading && styles.disabledText]}>
-                                    {isCameraLoading ? 'Cargando...' : 'Tomar foto'}
+                                    {isCameraLoading ? 'Procesando...' : 'Tomar foto'}
                                 </Text>
                                 <Text style={[styles.cardSub, isCameraLoading && styles.disabledText]}>
                                     Captura una imagen en tiempo real
@@ -296,7 +348,7 @@ export function UploadPhoto({
                             </View>
                             <View>
                                 <Text style={[styles.cardTitle, isGalleryLoading && styles.disabledText]}>
-                                    {isGalleryLoading ? 'Cargando...' : 'Adjuntar foto'}
+                                    {isGalleryLoading ? 'Procesando...' : 'Adjuntar foto'}
                                 </Text>
                                 <Text style={[styles.cardSub, isGalleryLoading && styles.disabledText]}>
                                     Selecciona una imagen existente
@@ -309,7 +361,7 @@ export function UploadPhoto({
                 {/* Botón Continuar (solo visible con evidencias) */}
                 {evidences.length > 0 && (
                     <PrimaryButton
-                        title={isLoading ? "Cargando..." : "Continuar"}
+                        title={isLoading ? "Procesando..." : "Continuar"}
                         onPress={handleContinue}
                         disabled={isLoading}
                         width={328}

@@ -172,7 +172,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         tipodoc: "TD_FACTURA",
                         tipoCliente: String(guide?.facturas?.[0]?.tipoCliente),
                         cliente: String(guide?.nombreCliente),
-                        numeroWhatsapp: String(phone),
+                        numeroWhatsapp: "57"+String(phone),
                     },
                     token
                 );
@@ -520,6 +520,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 }
             }
         } catch (error) {
+            console.log("error: ",error);
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
             setModalVisible(true);

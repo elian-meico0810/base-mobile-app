@@ -153,7 +153,7 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
                         tipodoc: "TD_FACTURA",
                         tipoCliente: String(guide?.facturas?.[0]?.tipoCliente),
                         cliente: String(guide?.nombreCliente),
-                        numeroWhatsapp: String(phone),
+                        numeroWhatsapp: "57"+String(phone),
                     },
                     token
                 );

@@ -130,9 +130,11 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
           },
         }
       );
+
       // Aquí devuelves solo el JSON que envió el servidor
       return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {
+      console.log("error: ",error);
       throw error;
     }
   },
@@ -197,9 +199,9 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
   async WhatsappTATImage(data: WhatsappTATImageProps, token: string) {
     try {
       const response = await authApi.post(
-        `${API_ROUTES.REPORT_NOTIFICTION_WHATSAPP_TAT }`,
+        `${API_ROUTES.REPORT_NOTIFICTION_WHATSAPP_TAT}`,
         data,
-         {
+        {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",

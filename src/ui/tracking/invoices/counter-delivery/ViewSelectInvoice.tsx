@@ -350,16 +350,16 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         <View
                             style={[
                                 styles.statusContainer,
-                                guide?.estado !== 'Pendiente' && { backgroundColor: '#DFF5E1' },
+                                validateCheckboxlength && { backgroundColor: '#DFF5E1' },
                             ]}
                         >
                             <Text
                                 style={[
                                     styles.status,
-                                    guide?.estado !== 'Pendiente' && { color: '#1F9144' },
+                                    validateCheckboxlength  && { color: '#1F9144' },
                                 ]}
                             >
-                                {guide?.estado ?? 'Pendiente'}
+                                {validateCheckboxlength ? 'Pedido entregado' : 'Pendiente'}                            
                             </Text>
                         </View>
                     </View>
@@ -376,7 +376,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         <View style={styles.divider} />
                         <View style={styles.row}>
                             <Text style={styles.label}>Ordenes a entregar</Text>
-                            <Text style={styles.value}> {Number(guide?.facturas?.length)}</Text>
+                            <Text style={styles.value}> {Number(guide?.facturas?.length) -  Number(conceptDelivery.length)}</Text>
                         </View>
                         <View style={styles.row}>
                             <Text style={styles.labelTotal}>Valor total del pedido</Text>

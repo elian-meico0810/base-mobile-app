@@ -581,7 +581,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         <View style={styles.divider} />
                         <View style={styles.row}>
                             <Text style={styles.label}>Ordenes a entregar</Text>
-                            <Text style={styles.value}> {Number(guide?.facturas?.length)}</Text>
+                            <Text style={styles.value}> {Number(guide?.facturas?.length) - Number(conceptDelivery.length)}</Text>
                         </View>
                     </View>
 

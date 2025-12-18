@@ -546,6 +546,11 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
             break;
     }
 
+    // const 
+    var validateCheckboxlength = null
+    if (conceptDelivery?.id && guide?.facturas?.length) {
+        validateCheckboxlength = true;
+    }
     return (
         <ThemedView style={styles.container}>
             <NetworkStatus />
@@ -595,16 +600,16 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
                         <View
                             style={[
                                 styles.statusContainer,
-                                guide?.estado !== 'Pendiente' && { backgroundColor: '#DFF5E1' },
+                                validateCheckboxlength && { backgroundColor: '#DFF5E1' },
                             ]}
                         >
                             <Text
                                 style={[
                                     styles.status,
-                                    guide?.estado !== 'Pendiente' && { color: '#1F9144' },
+                                    validateCheckboxlength && { color: '#1F9144' },
                                 ]}
                             >
-                                {guide?.estado ?? 'Pendiente'}
+                                {validateCheckboxlength ? 'Pedido entregado' : 'Pendiente'}
                             </Text>
                         </View>
                     </View>

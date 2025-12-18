@@ -24,7 +24,7 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
     // Calcular montos y valores de progreso
     const totalVisits = data?.length || 0;
     const completedVisits = data?.filter(item => item.estado === GuideState.Cerrada).length || 0;
-    
+
     const totalValueTotal = data ? data.reduce((sum, item) => {
         const facturas = item.facturas || [];
         const subtotal = facturas
@@ -34,27 +34,32 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
     }, 0) : 0;
 
     const TotalAmountToCollect = dataResult?.total_pagado ?? 0;
-    const totalPerRecaudar = Math.max(Number(totalValueTotal) - Number(TotalAmountToCollect), 0);
-    
-    // Calcular porcentaje de recaudo
-    const progressRecaudo = totalValueTotal > 0 
-        ? (TotalAmountToCollect / totalValueTotal) 
+    const totalPerRecaudar = Math.max(
+        Math.round(Number(totalValueTotal) - Number(TotalAmountToCollect)),
+        0
+    );
+
+    // Calcular porcentaje de lo que YA se ha recaudado (esto va en AZUL)
+    const progressRecaudo = totalValueTotal > 0
+        ? Math.min(TotalAmountToCollect / totalValueTotal, 1)
         : 0;
-    
-    // Determinar si está completo (100% recaudado)
+
+    // Determinar si está completo (100% recaudado) - entonces es VERDE
     const isCompleteRecaudo = progressRecaudo >= 1 || totalPerRecaudar === 0;
-    
+
     const progressVisits = totalVisits > 0 ? completedVisits / totalVisits : 0;
     const isCompleteVisits = progressVisits === 1;
-    
-    const circlePosition = Math.min(progressVisits * 100, 100);
 
+    const circlePosition = Math.min(progressVisits * 100, 100);
+    
     // Animación del círculo de progreso
     useEffect(() => {
         if (showSummary && !isAnimating) {
             setIsAnimating(true);
-            // Usar progressRecaudo para la animación (0 a 360 grados)
-            const finalAngle = Math.min(progressRecaudo * 360, 360);
+            
+            // Usar el progreso de lo RECAUDADO para la animación
+            let finalAngle = Math.min(progressRecaudo * 360, 360);
+            
             const duration = 1000;
             const steps = 60;
             const increment = finalAngle / steps;
@@ -80,10 +85,10 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
         }
     }, [showSummary, progressRecaudo]);
 
-    // Obtener colores del círculo según el progreso - MODIFICADO PARA RELOJ
+    // Obtener colores del círculo según el progreso - CORREGIDO
     const getCircleProgressStyle = () => {
-        // Si no hay nada por recaudar o está completo - mostrar verde
-        if (totalPerRecaudar === 0 || isCompleteRecaudo) {
+        // Si está completo - mostrar VERDE completo
+        if (isCompleteRecaudo) {
             return {
                 borderTopColor: "#1F9144",
                 borderRightColor: "#1F9144",
@@ -93,19 +98,7 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
             };
         }
 
-        // Si la diferencia es 0% del total (no se ha recaudado nada)
-        if (TotalAmountToCollect === 0) {
-            return {
-                borderTopColor: "transparent",
-                borderRightColor: "transparent",
-                borderBottomColor: "transparent",
-                borderLeftColor: "transparent",
-                transform: [{ rotate: `${circleAngle}deg` }],
-            };
-        }
-
-        // Para diferentes niveles de progreso - RELOJ
-        // Comienza desde arriba (12 en punto) y va en sentido horario
+        // El resto (lo faltante) se ve en GRIS (del círculo base)
         const borderStyles: any = {
             borderTopColor: "transparent",
             borderRightColor: "transparent",
@@ -114,37 +107,30 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
             transform: [{ rotate: `${circleAngle}deg` }],
         };
 
-        // Determinar qué bordes mostrar según el ángulo
+        // Determinar qué bordes mostrar según el ángulo RECAUDADO
+        // El círculo base ya muestra GRIS de fondo
+        // Aquí solo mostramos AZUL en la parte recaudada
         if (circleAngle > 0) {
-            // Siempre mostrar el borde superior cuando hay progreso
-            borderStyles.borderTopColor = "#164194";
+            borderStyles.borderTopColor = "#164194"; // Azul
         }
-        
+
         // Mostrar borde derecho cuando pasa de 90 grados
         if (circleAngle > 90) {
-            borderStyles.borderRightColor = "#164194";
+            borderStyles.borderRightColor = "#164194"; // Azul
         }
-        
+
         // Mostrar borde inferior cuando pasa de 180 grados
         if (circleAngle > 180) {
-            borderStyles.borderBottomColor = "#164194";
+            borderStyles.borderBottomColor = "#164194"; // Azul
         }
-        
+
         // Mostrar borde izquierdo cuando pasa de 270 grados
         if (circleAngle > 270) {
-            borderStyles.borderLeftColor = "#164194";
+            borderStyles.borderLeftColor = "#164194"; // Azul
         }
 
         return borderStyles;
     };
-
-    // Ajustar la animación para que comience desde -90 grados (12 en punto)
-    const getAdjustedAngle = () => {
-        // Ajustar el ángulo para que comience desde arriba
-        return circleAngle;
-    };
-
-    const circleProgressStyle = getCircleProgressStyle();
 
     // Ajustar altura dinámica según el estado
     const dynamicHeight = height * (routeStarted ? (showSummary ? 0.30 : 0.15) : 0.11);
@@ -217,34 +203,31 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
                             <View style={styles.summaryContainer}>
                                 <View style={styles.largeCircleContainer}>
                                     <View style={styles.circleBackground}>
-                                        {/* Círculo base */}
+                                        {/* Círculo base GRIS (esto muestra lo faltante) */}
                                         <View style={styles.circleBase} />
 
-                                        {/* Círculo de progreso (azul) - SOLO cuando hay progreso */}
+                                        {/* Círculo de progreso (AZUL - lo YA recaudado) */}
                                         {!isCompleteRecaudo && circleAngle > 0 && (
                                             <View
                                                 style={[
                                                     styles.circleProgress,
-                                                    circleProgressStyle
+                                                    getCircleProgressStyle()
                                                 ]}
                                             />
                                         )}
 
-                                        {/* Círculo completo (verde) */}
+                                        {/* Círculo completo (VERDE - cuando ya está recaudado todo) */}
                                         {isCompleteRecaudo && (
                                             <View
                                                 style={[
                                                     styles.circleComplete,
-                                                    { 
+                                                    {
                                                         borderColor: "#1F9144",
                                                         transform: [{ rotate: `${circleAngle}deg` }]
                                                     }
                                                 ]}
                                             />
                                         )}
-
-                                        {/* Indicador del punto inicial (12 en punto) - OPCIONAL */}
-                                        <View style={styles.startIndicator} />
 
                                         <View style={styles.circleContent}>
                                             <Text style={styles.largeCircleText}>
@@ -253,9 +236,9 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
                                             <Text style={styles.indicatorLabelCircle}>
                                                 Por recaudar
                                             </Text>
-                                            {/* Mostrar porcentaje de recaudo */}
+                                            {/* Mostrar porcentaje de LO RECAUDADO */}
                                             <Text style={styles.percentageText}>
-                                                {Math.round(progressRecaudo * 100)}%
+                                                {Math.round(progressRecaudo * 100)}% 
                                             </Text>
                                         </View>
                                     </View>
@@ -447,7 +430,7 @@ const styles = StyleSheet.create({
         height: 90,
         borderRadius: 45,
         borderWidth: 6,
-        borderColor: "#E5E7EB",
+        borderColor: "#E5E7EB", // GRIS - representa lo faltante
         backgroundColor: "#F9F9FA",
     },
     circleProgress: {
@@ -464,7 +447,7 @@ const styles = StyleSheet.create({
         height: 90,
         borderRadius: 45,
         borderWidth: 6,
-        borderColor: "#1F9144",
+        borderColor: "#1F9144", // VERDE - cuando está completo
         zIndex: 2,
     },
     percentageText: {
@@ -472,16 +455,5 @@ const styles = StyleSheet.create({
         color: "#6B7280",
         fontWeight: "600",
         marginTop: 2,
-    },
-    // Indicador del punto inicial (12 en punto)
-    startIndicator: {
-        position: "absolute",
-        top: -3,
-        left: 42,
-        width: 6,
-        height: 6,
-        borderRadius: 3,
-        backgroundColor: "#164194",
-        zIndex: 3,
     },
 });

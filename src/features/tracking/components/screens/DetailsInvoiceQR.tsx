@@ -5,7 +5,7 @@ import { Row } from "@/components/generals/Row";
 import { ENV_DEV } from "@/src/constants/apiRoutes";
 import { TypeConPagoEnum, TypeQr } from "@/src/constants/GuideStates";
 import { formatNumber } from "@/src/utils/uitls";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { GuideDetails } from "../../domain/details/DetailsGuide";
 import { invoiceRepositoryImpl } from "../../infrastructure/invoices/invoiceRepositoryImpl";

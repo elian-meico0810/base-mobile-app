@@ -9,5 +9,5 @@ export const authApi = axios.create({
 });
 
 export const authDevApi = axios.create({
-  baseURL: "http://192.168.1.231/api-pagos/api/"
+  baseURL: "https://qa-portal.meico.co/pagos/back/api/"
 });

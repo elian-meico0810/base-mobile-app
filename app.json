@@ -2,9 +2,9 @@
   "expo": {
     "name": "MeiTruck",
     "slug": "Meico-Track",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/icons/LogoMeitruckNew.png",
     "scheme": "basemobileapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -13,10 +13,9 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/icons/LogoMeitruckNew.png",
+        "backgroundColor": "#00000000",
+        "monochromeImage": "./assets/icons/LogoMeitruckNew.png"
       },
       "permissions": [
         "CAMERA",
@@ -24,7 +23,7 @@
       ],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.efince.MeicoTrack"
+      "package": "com.meico.MeicoTrack"
     },
     "web": {
       "output": "static",
@@ -35,7 +34,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/icons/Home.png",
+          "image": "./assets/icons/CompleteHome.png",
           "resizeMode": "cover",
           "backgroundColor": "#164194",
           "dark": {

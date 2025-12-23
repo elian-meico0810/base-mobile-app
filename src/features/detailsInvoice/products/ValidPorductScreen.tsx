@@ -17,17 +17,19 @@ interface Product {
     unit: string;
     imageUrl?: string;
     validated?: boolean;
+    validationType?: string;
 }
 
 interface ProductItemProps {
     item: Product;
     isLastItem: boolean;
     onValidate: (id: number) => void;
+    validationType?: string;
 }
 
 const { width, height } = Dimensions.get('window');
 
-export const ValidPorductScreen = ({ item, isLastItem, onValidate }: ProductItemProps) => {
+export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationType }: ProductItemProps) => {
     return (
         <View style={styles.productContainer}>
             <View style={styles.productRow}>
@@ -39,10 +41,16 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate }: ProductItem
                                 style={styles.productImage}
                                 resizeMode="cover"
                             />
+                            {validationType == "warning" ? (
+                                <View style={styles.errorDot}>
+                                    <MaterialIcons name="close" size={9} color="#FFFFFF" />
+                                </View>
 
-                            <View style={styles.statusDot}>
-                                <MaterialIcons name="check" size={9} color="#FFFFFF" />
-                            </View>
+                            ) : (
+                                <View style={styles.statusDot}>
+                                    <MaterialIcons name="check" size={9} color="#FFFFFF" />
+                                </View>
+                            )}
                         </View>
                     ) : (
                         <View style={styles.imagePlaceholder}>
@@ -191,11 +199,24 @@ const styles = StyleSheet.create({
     },
     statusDot: {
         position: 'absolute',
-        top: 1.5,     
-        left: 1.5,    
+        top: 1.5,
+        left: 1.5,
         borderRadius: 6.5,
         backgroundColor: '#1F9144',
         borderWidth: 2,
         borderColor: '#1F9144',
+    },
+    errorDot: {
+        position: 'absolute',
+        top: 1.5,
+        left: 1.5,
+        width: 13,
+        height: 13,
+        borderRadius: 6.5,
+        backgroundColor: '#FF3B30',
+        borderWidth: 2,
+        borderColor: '#FF3B30',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });

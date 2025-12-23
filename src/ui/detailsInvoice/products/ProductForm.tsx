@@ -1,14 +1,15 @@
+import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { NetworkStatus } from '@/components/generals/NetworkStatus';
+import { UploadPhoto } from '@/components/photo/UploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { ProductValidationSection } from '@/src/features/detailsInvoice/products/ProductValidationScreen';
-import { DeliveryStatus } from '@/src/features/tracking/components/checkbox/DeliveryStatus';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { capitalizeFirst, cleanSpaces } from '@/src/utils/uitls';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 const { width, height } = Dimensions.get('window');
 
@@ -30,18 +31,34 @@ interface EvidencePhoto {
     base64?: string;
 }
 
-type DeliveryStatus = "total" | "parcial" | "rechazo" | null;
-type OptionsRefusedPorps = 'Dinero' | 'Dueño' | 'Tienda' | 'Productos' | null;
-
+interface FinalizedData {
+    validatedCount: number;
+    pendingCount: number;
+    totalValue: number;
+    totalValueSuccess: number;
+    totalValueWarning: number;
+    validatedProducts: any;
+    statistics: {
+        successCount: number;
+        warningCount: number;
+    };
+}
 export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton }: ProductFormFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
+    const [multiplePhotos, setMultiplePhotos] = useState<EvidencePhoto[]>([]);
+    const [uploadPhoto, setUploadPhoto] = useState(false);
+    const [successButton, setSuccessButton] = useState(false);
+    const [alertButton, setAlertButton] = useState(false);
+    const [uploadPhotoFile, setUploadPhotoFile] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [RefreshingOnPress, setRefreshingOnPress] = useState(false);
+    const [finalizedData, setFinalizedData] = useState<FinalizedData | null>(null);
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [modalVisible, setModalVisible] = useState(false);
+    const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [statusValue, setStatusValue] = useState("");
     const [isExpanded, setIsExpanded] = useState(false);
 
@@ -60,22 +77,89 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const handleExpand = () => setIsExpanded(true);
     const handleCollapse = () => setIsExpanded(false);
 
-
-    const handleSubmitData = async () => {
+    const handleSubmit = async (data: FinalizedData) => {
         try {
-            // setLoading(true);
-            console.log("llego aca handleSubmitData");
-
-
-            setLoading(false);
-        } catch (error: any) {
+            console.log("entor aca: ", data);
+        } catch (error) {
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalMessage("Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {
             setLoading(false);
         }
-    }
+    };
+
+    useEffect(() => {
+        const processPhotos = async () => {
+            await handleSubmitData();
+        }
+
+        processPhotos();
+
+    }, [uploadPhotoFile]);
+
+    const handleSubmitData = async () => {
+        try {
+            setLoading(true);
+            if (uploadPhotoFile) {
+                // const facturasArray: CreateEntregaProps[] = [];
+                // let responses: any[] = [];
+                // if (guide?.facturas && guide.facturas.length > 0) {
+                //     guide.facturas.forEach((factura, index) => {
+                //         facturasArray.push({
+                //             ruta: String(numberGuide),
+                //             documentMeico: String(factura.numeroFactura),
+                //             direccion: Number(guide?.idDireccion),
+                //             causal: null,
+                //             estado: "ACT_EST_ENTREGA",
+                //             files: multiplePhotos.map((item) => ({
+                //                 tipoEntrega: TypeDelivery.RECHAZADO,
+                //                 rutaArchivo: item.base64 ?? null,
+                //             }))
+
+
+                //         });
+                //     });
+                // }
+
+                // if (facturasArray.length > 0) {
+                //     responses = await Promise.all(
+                //         facturasArray.map(facturaData =>
+                //             invoiceRepositoryImpl.createDelivery(facturaData, token)
+                //         )
+                //     );
+
+                //     // Verificar si todas las respuestas fueron exitosas
+                //     const success = responses.every((resp: any) =>
+                //         resp?.statusCode === 200 || resp?.success === true
+                //     );
+                //     if (success) {
+                //         setLoading(false);
+                //         setUploadPhotoFile(false);
+                //         setModalTitle("¡Procesado!");
+                //         setModalMessage(`Soporte(s) procesados exitosamente.`);
+                //         setModalVisible(true);
+                //     } else {
+                //         setLoading(false);
+                //         // Opcional: mostrar detalles del primer error
+                //         const oneError = responses.find((resp: any) =>
+                //             !(resp?.statusCode === 200 || resp?.success === true)
+                //         );
+                //         setModalTitle("Alerta");
+                //         setModalMessage(oneError?.message || "Error inesperado.");
+                //         setModalVisible(true);
+                //     }
+                // }
+            }
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <ThemedView style={styles.container}>
             <NetworkStatus />
@@ -109,7 +193,6 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                             {/* Icono superior */}
                             <Image
                                 source={require('@/assets/icons/ReboackPage.png')}
-
                                 style={[
                                     styles.reboackIcon,
                                 ]}
@@ -128,7 +211,11 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                         <View style={styles.actionButtonsRow}>
                             <TouchableOpacity
                                 style={styles.rejectButton}
-                                onPress={handleSubmitData}
+                                onPress={() => {
+                                    setSuccessButton(false);
+                                    setUploadPhoto(true);
+                                    setAlertButton(true);
+                                }}
                             >
                                 <MaterialIcons name="close" size={16} color="#C62828" />
                                 <Text style={styles.rejectButtonText}> Rechazar todo</Text>
@@ -136,7 +223,11 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
                             <TouchableOpacity
                                 style={styles.acceptButton}
-                                onPress={handleSubmitData}
+                                onPress={() => {
+                                    setAlertButton(false);
+                                    setUploadPhoto(true);
+                                    setSuccessButton(true);
+                                }}
                             >
                                 <MaterialIcons name="check" size={16} color="#1F9144" />
                                 <Text style={styles.acceptButtonText}> Aceptar todo</Text>
@@ -146,9 +237,52 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     </View>
                 )}
             </View>
-            {/** Listado de productos */}
-            <ProductValidationSection />
 
+            <ExceptionModal
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                title={modalTitle}
+                message={modalMessage}
+                buttonLabel={modalButtonLabel}
+            />
+
+            {/** Listado de productos */}
+            <ProductValidationSection
+                onFinalize={handleSubmit}
+                onSuccessAlet={successButton}
+                onErrorAlert={alertButton}
+            />
+
+            {(uploadPhoto) && (
+                <UploadPhoto
+                    title="Cargar evidencia"
+                    subTitle="Toma fotos de la mercancía ubicada en el cliente. Podrás asociar un máximo de 3 imágenes por entrega."
+                    onClose={() => {
+                        setUploadPhoto(false);
+                        // setAlertButton(false);
+                        // setSuccessButton(false);
+                    }}
+                    width={width}
+
+                    onEvidenceComplete={(evidences) => {
+                        setUploadPhoto(false);
+                        setMultiplePhotos(evidences);
+                        setUploadPhotoFile(true);
+                    }}
+                    onPermisionsPhoto={() => {
+                        setUploadPhoto(false);
+                        setModalTitle("Permiso denegado ¡Alerta!");
+                        setModalMessage("No podemos acceder a la cámara. Activa el permiso en la configuración del dispositivo para continuar.");
+                        setModalVisible(true);
+                    }}
+                    onPermisionsGallery={() => {
+                        setUploadPhoto(false);
+                        setModalTitle("Permiso denegado ¡Alerta!");
+                        setModalMessage("No podemos acceder a la galería. Activa el permiso en la configuración del dispositivo para continuar.");
+                        setModalVisible(true);
+                    }}
+                />
+            )}
             {loading && <LoadingBlue />}
         </ThemedView>
     );

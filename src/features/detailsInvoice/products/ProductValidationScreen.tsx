@@ -1,7 +1,7 @@
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { formatNumber, formatStringToNumber } from '@/src/utils/uitls';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
     Animated,
     Dimensions,
@@ -290,10 +290,59 @@ const ProductItem = ({ item, isLastItem, onValidate }: ProductItemProps) => {
     );
 };
 
-export const ProductValidationSection = () => {
+interface FinalizedData {
+    validatedCount: number;
+    pendingCount: number;
+    totalValue: number;
+    totalValueSuccess: number;
+    totalValueWarning: number;
+    validatedProducts: Product[];
+    statistics: {
+        successCount: number;
+        warningCount: number;
+    };
+}
+interface ProductValidationSectionProps {
+    onFinalize?: (data: FinalizedData) => void;
+    onErrorAlert?: boolean;
+    onSuccessAlet?: boolean;
+}
+
+
+export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAlet }: ProductValidationSectionProps) => {
     const [allProducts, setAllProducts] = useState<Product[]>(initialProductsData);
     const [validatedProducts, setValidatedProducts] = useState<Product[]>([]);
     const [showValidatedModal, setShowValidatedModal] = useState(false);
+    const [currentValidationType, setCurrentValidationType] = useState('null');
+
+    // Luego, en un useEffect o donde necesites:
+    useEffect(() => {
+        if (onErrorAlert || onSuccessAlet) {
+            // Decide qué tipo de validación usar
+            const validationType = onErrorAlert ? 'warning' : 'success';
+            validateAllProducts(validationType);
+            setCurrentValidationType(validationType); // Guarda el tipo en el estado
+
+        }
+    }, [onErrorAlert, onSuccessAlet]);
+
+    // Agrega esta función en tu componente
+    const validateAllProducts = (validationType: 'success' | 'warning' = 'success') => {
+        if (allProducts.length === 0) return;
+
+        // Mover todos los productos a validados
+        setValidatedProducts(prev => [
+            ...prev,
+            ...allProducts.map(product => ({
+                ...product,
+                validated: true,
+                validationType: validationType
+            }))
+        ]);
+
+        // Vaciar la lista principal
+        setAllProducts([]);
+    };
 
     const handleValidate = (id: number, direction: 'left' | 'right') => {
         const productToValidate = allProducts.find(p => p.id === id);
@@ -340,6 +389,19 @@ export const ProductValidationSection = () => {
     const isValid = validatedCount > 0;
 
     const handleFinalize = () => {
+        const finalData: FinalizedData = {
+            validatedCount,
+            pendingCount,
+            totalValue,
+            totalValueSuccess,
+            totalValueWarning,
+            validatedProducts,
+            statistics: {
+                successCount: validatedProducts.filter(p => p.validationType === 'success').length,
+                warningCount: validatedProducts.filter(p => p.validationType === 'warning').length,
+            }
+        };
+        onFinalize?.(finalData);
         console.log('=== RESUMEN FINAL ===');
         console.log(`Productos procesados: ${validatedCount}`);
         console.log(`  - Success (verde): ${validatedProducts.filter(p => p.validationType === 'success').length}`);
@@ -403,6 +465,7 @@ export const ProductValidationSection = () => {
                                             validated: false
                                         }]);
                                     }}
+                                    validationType={currentValidationType}
                                 />
                             ))}
                         </>

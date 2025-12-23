@@ -172,7 +172,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         tipodoc: "TD_FACTURA",
                         tipoCliente: String(guide?.facturas?.[0]?.tipoCliente),
                         cliente: String(guide?.nombreCliente),
-                        numeroWhatsapp: "57"+String(phone),
+                        numeroWhatsapp: "57" + String(phone),
                     },
                     token
                 );
@@ -286,6 +286,9 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 token
             );
             if (response?.statusCode === 200) {
+                router.push(
+                    `/views/IndexDetailsInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+                );
                 setvalidateIsBotton(true);
                 setEntryVisible(true);
                 setRouteStarted(true);
@@ -520,7 +523,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 }
             }
         } catch (error) {
-            console.log("error: ",error);
+            console.log("error: ", error);
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
             setModalVisible(true);
@@ -707,10 +710,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             <Text
                                 style={[
                                     styles.status,
-                                    totalRecauder  == 0  && { color: '#1F9144' },
+                                    totalRecauder == 0 && { color: '#1F9144' },
                                 ]}
                             >
-                                {totalRecauder == 0  ? 'Pago realizado' : 'Pendiente'}
+                                {totalRecauder == 0 ? 'Pago realizado' : 'Pendiente'}
                             </Text>
                         </View>
                     </View>

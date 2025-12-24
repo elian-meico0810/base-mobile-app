@@ -28,7 +28,7 @@ interface Product {
     unit: string;
     imageUrl?: string;
     validated?: boolean;
-    validationType?: 'success' | 'warning';
+    validationType?: 'success' | 'warning' | 'error';
 
 }
 
@@ -101,13 +101,86 @@ interface ProductItemProps {
     item: Product;
     isLastItem: boolean;
     onValidate: (id: number, direction: 'left' | 'right') => void;
+    onPresssNovlety?: (direction: 'left' | 'right' | null) => void;
+    shouldAutoValidate?: boolean
+    activeSwipeId: string | null; // Cambia esto según el tipo de item.id
+    setActiveSwipeId: (id: string | null) => void;
 }
 
-const ProductItem = ({ item, isLastItem, onValidate }: ProductItemProps) => {
+
+const ProductItem = ({
+    item,
+    isLastItem,
+    onValidate,
+    onPresssNovlety,
+    shouldAutoValidate = false,
+    activeSwipeId,
+    setActiveSwipeId
+}: ProductItemProps & { shouldAutoValidate?: boolean }) => {
     const [swipePosition] = useState(new Animated.Value(0));
     const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
     const [isSwiped, setIsSwiped] = useState(false);
+    const [isClosing, setIsClosing] = useState(false);
+    const [hasAutoValidated, setHasAutoValidated] = useState(false); // <-- NUEVO estado
     const swipeThreshold = 50;
+    const itemIdString = item.id.toString();
+
+    // Efecto para cerrar este elemento si otro se activa
+    useEffect(() => {
+        if (activeSwipeId !== null &&
+            activeSwipeId !== itemIdString &&
+            swipeDirection === 'right' &&
+            !isClosing) {
+            setIsClosing(true); 
+            handleCloseSwipe();
+        }
+    }, [activeSwipeId, itemIdString]);
+
+    // Efecto para manejar la validación automática
+    useEffect(() => {
+        if (shouldAutoValidate && !hasAutoValidated) {
+            // Ejecutar la lógica de auto-validación
+            handleCloseSwipe();
+            setHasAutoValidated(true);
+        }
+    }, [shouldAutoValidate, hasAutoValidated]);
+
+    const handleCloseSwipe = () => {
+        Animated.timing(swipePosition, {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: false
+        }).start(() => {
+            swipePosition.setValue(0);
+            setIsSwiped(false);
+            setSwipeDirection(null);
+            setIsClosing(false); // Restablecer estado de cierre
+            onValidate(Number(itemIdString), 'left');
+            
+            if (activeSwipeId) {
+                setActiveSwipeId(null);
+            }
+        });
+    };
+
+    const handleRightSwipeValidation = () => {
+        Animated.timing(swipePosition, {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: false
+        }).start(() => {
+            swipePosition.setValue(0);
+            setIsSwiped(false);
+            setSwipeDirection(null);
+            setIsClosing(false);
+            setActiveSwipeId(null); // Limpiar el activo
+            onValidate(item.id, 'right');
+        });
+    };
+
+    useEffect(() => {
+        onPresssNovlety?.(swipeDirection);
+    }, [swipeDirection, onPresssNovlety]);
 
     const panResponder = useRef(
         PanResponder.create({
@@ -127,8 +200,20 @@ const ProductItem = ({ item, isLastItem, onValidate }: ProductItemProps) => {
             },
             onPanResponderRelease: (_, gestureState) => {
                 if (gestureState.dx > swipeThreshold) {
+                    console.log("Deslizando hacia la derecha - ID:", itemIdString);
+
+                    // Si ya hay otro elemento activo, establecer primero el nuevo activo
+                    // para que el efecto cierre el anterior
+                    if (activeSwipeId !== null && activeSwipeId !== itemIdString) {
+                        console.log("Cerrando elemento anterior:", activeSwipeId);
+                    }
+
+                    // Establecer este como el elemento activo inmediatamente
+                    setActiveSwipeId(itemIdString);
+
                     setSwipeDirection('right');
                     setIsSwiped(true);
+                    setIsClosing(false); // Asegurar que no está cerrando
 
                     // Swipe derecha = amarillo = WARNING
                     Animated.timing(swipePosition, {
@@ -136,24 +221,19 @@ const ProductItem = ({ item, isLastItem, onValidate }: ProductItemProps) => {
                         duration: 200,
                         useNativeDriver: false
                     }).start(() => {
-                        const timer = setTimeout(() => {
-                            Animated.timing(swipePosition, {
-                                toValue: 0,
-                                duration: 200,
-                                useNativeDriver: false
-                            }).start(() => {
-                                swipePosition.setValue(0);
-                                setIsSwiped(false);
-                                setSwipeDirection(null);
-                                // Llamar a onValidate DESPUÉS de la animación (3 segundos)
-                                onValidate(item.id, 'right');
-                            });
-                        }, 300);
+                        const handleValidation = () => {
+                            handleRightSwipeValidation();
+                        };
 
-                        return () => clearTimeout(timer);
+                        if (shouldAutoValidate) {
+                            handleValidation();
+                        } else {
+                            // Mantener abierto
+                        }
                     });
 
                 } else if (gestureState.dx < -swipeThreshold) {
+                    // Para swipe izquierda, no aplicamos la lógica de "solo uno activo"
                     setSwipeDirection('left');
                     setIsSwiped(true);
 
@@ -178,16 +258,20 @@ const ProductItem = ({ item, isLastItem, onValidate }: ProductItemProps) => {
                         return () => clearTimeout(timer);
                     });
                 } else {
-                    // Volver a la posición original
+                    // Volver a la posición original si no superó el threshold
                     Animated.spring(swipePosition, {
                         toValue: 0,
                         useNativeDriver: false
                     }).start();
+
+                    // Si este elemento estaba activo y el usuario cancela el swipe
+                    if (activeSwipeId === itemIdString) {
+                        setActiveSwipeId(null);
+                    }
                 }
             }
         })
     ).current;
-
     // Determinar qué mostrar basado en el estado
     const showSideBar = isSwiped;
 
@@ -238,7 +322,7 @@ const ProductItem = ({ item, isLastItem, onValidate }: ProductItemProps) => {
                     styles.productItem,
                     {
                         transform: [{ translateX: swipePosition }],
-                        backgroundColor: item.validated ? '#E8F5E9' : '#F9F9FA'
+                        backgroundColor: '#F9F9FA'
                     }
                 ]}
                 {...panResponder.panHandlers}
@@ -306,28 +390,35 @@ interface ProductValidationSectionProps {
     onFinalize?: (data: FinalizedData) => void;
     onErrorAlert?: boolean;
     onSuccessAlet?: boolean;
+    onStatusNovelty?: (direction: 'left' | 'right' | null) => void;
+    shouldAutoValidate?: boolean;
 }
 
 
-export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAlet }: ProductValidationSectionProps) => {
+export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAlet, onStatusNovelty, shouldAutoValidate }: ProductValidationSectionProps) => {
     const [allProducts, setAllProducts] = useState<Product[]>(initialProductsData);
     const [validatedProducts, setValidatedProducts] = useState<Product[]>([]);
     const [showValidatedModal, setShowValidatedModal] = useState(false);
     const [currentValidationType, setCurrentValidationType] = useState('null');
+    const [showDirection, setDirection] = useState<'left' | 'right' | null>(null);
 
-    // Luego, en un useEffect o donde necesites:
+    useEffect(() => {
+        if (showDirection) {
+            onStatusNovelty?.(showDirection);
+        }
+    }, [showDirection]);
+
     useEffect(() => {
         if (onErrorAlert || onSuccessAlet) {
-            // Decide qué tipo de validación usar
-            const validationType = onErrorAlert ? 'warning' : 'success';
+            const validationType = onErrorAlert ? 'error' : 'success';
             validateAllProducts(validationType);
-            setCurrentValidationType(validationType); // Guarda el tipo en el estado
+            setCurrentValidationType(validationType);
 
         }
     }, [onErrorAlert, onSuccessAlet]);
 
     // Agrega esta función en tu componente
-    const validateAllProducts = (validationType: 'success' | 'warning' = 'success') => {
+    const validateAllProducts = (validationType: 'success' | 'warning' | 'error' = 'success') => {
         if (allProducts.length === 0) return;
 
         // Mover todos los productos a validados
@@ -414,10 +505,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
         // Mostrar modal con productos validados
         setShowValidatedModal(true);
     };
-
-    // Separar productos por tipo para mostrar
-    const successProducts = validatedProducts.filter(p => p.validationType === 'success');
-    const warningProducts = validatedProducts.filter(p => p.validationType === 'warning');
+    const [activeSwipeId, setActiveSwipeId] = useState<string | null>(null);
 
     return (
         <View style={styles.mainContainer}>
@@ -442,6 +530,12 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                 item={item}
                                 isLastItem={index === allProducts.length - 1}
                                 onValidate={handleValidate}
+                                onPresssNovlety={(direction) => {
+                                    setDirection(direction);
+                                }}
+                                activeSwipeId={activeSwipeId}
+                                setActiveSwipeId={setActiveSwipeId}
+                                shouldAutoValidate={shouldAutoValidate}
                             />
                         ))
                     )}

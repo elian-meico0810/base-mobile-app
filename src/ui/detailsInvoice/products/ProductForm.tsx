@@ -1,10 +1,10 @@
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
-import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/UploadPhoto';
 import { ThemedView } from '@/components/themed-view';
-import { ProductValidationSection } from '@/src/features/detailsInvoice/products/ProductValidationScreen';
+import { ProductValidationSection } from '@/src/features/detailsInvoice/components/ProductValidationScreen';
+import { ReportNoveltyScreen } from '@/src/features/detailsInvoice/components/ReportNoveltyScreen';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { capitalizeFirst, cleanSpaces } from '@/src/utils/uitls';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -52,16 +52,17 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const [successButton, setSuccessButton] = useState(false);
     const [alertButton, setAlertButton] = useState(false);
     const [uploadPhotoFile, setUploadPhotoFile] = useState(false);
-    const [refreshing, setRefreshing] = useState(false);
+    const [modalStatusNovelty, setStatusNovelty] = useState<'left' | 'right' | null>(null);
     const [RefreshingOnPress, setRefreshingOnPress] = useState(false);
     const [finalizedData, setFinalizedData] = useState<FinalizedData | null>(null);
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [modalVisible, setModalVisible] = useState(false);
+    const [showNovelty, setNovelty] = useState(false);
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
-    const [statusValue, setStatusValue] = useState("");
     const [isExpanded, setIsExpanded] = useState(false);
 
+    console.log("showNovelty: ", showNovelty);
     const router = useRouter();
     const handleGoBack = () => {
         if (routeStarted && isCountryDelivery) {
@@ -175,8 +176,6 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 <Text style={styles.headerTitle}>Entrega de pedido</Text>
                 <View style={styles.placeholder} />
             </View>
-            {(refreshing && RefreshingOnPress) && <LoadingSunburst />}
-
             {/* Card blanco centrado */}
             <View style={[
                 styles.card,
@@ -251,6 +250,10 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 onFinalize={handleSubmit}
                 onSuccessAlet={successButton}
                 onErrorAlert={alertButton}
+                onStatusNovelty={(data) => {
+                    setStatusNovelty(data);
+                }}
+                shouldAutoValidate={showNovelty}
             />
 
             {(uploadPhoto) && (
@@ -280,6 +283,22 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                         setModalTitle("Permiso denegado ¡Alerta!");
                         setModalMessage("No podemos acceder a la galería. Activa el permiso en la configuración del dispositivo para continuar.");
                         setModalVisible(true);
+                    }}
+                />
+            )}
+
+            {modalStatusNovelty == 'right' && (
+                <ReportNoveltyScreen
+                    title="Reportar novedad"
+                    onClose={() => setStatusNovelty(null)}
+                    width={width}
+                    onPress={(data) => {
+                        if (data.length === 0) {
+                            setModalTitle("¡Alerta!");
+                            setModalMessage("Debe especificar la cantidad de unidades en la novedad.");
+                            setModalVisible(true);
+                        }
+                        setNovelty(true);
                     }}
                 />
             )}

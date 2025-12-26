@@ -100,7 +100,7 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
                             <View style={styles.productHeader}>
                                 {valuesById[item.id] ? (
                                     <Text style={styles.quantityText}>
-                                        {valuesById[item.id].tatolValue}
+                                        {Number(item.quantity) - Number(valuesById[item.id].tatolValue) }
                                     </Text>
                                 ) : (
                                     <Text style={styles.quantityText}>{item.quantity}</Text>

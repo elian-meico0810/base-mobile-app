@@ -105,6 +105,7 @@ interface ProductItemProps {
     shouldAutoValidate?: boolean
     activeSwipeId: string | null; // Cambia esto según el tipo de item.id
     setActiveSwipeId: (id: string | null) => void;
+    onCloseReport?: (value: boolean) => void;
 }
 
 
@@ -115,13 +116,14 @@ const ProductItem = ({
     onPresssNovlety,
     shouldAutoValidate = false,
     activeSwipeId,
-    setActiveSwipeId
+    setActiveSwipeId,
+    onCloseReport
 }: ProductItemProps & { shouldAutoValidate?: boolean }) => {
     const [swipePosition] = useState(new Animated.Value(0));
     const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
     const [isSwiped, setIsSwiped] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
-    const [hasAutoValidated, setHasAutoValidated] = useState(false); // <-- NUEVO estado
+    const [hasAutoValidated, setHasAutoValidated] = useState(false);
     const swipeThreshold = 50;
     const itemIdString = item.id.toString();
 
@@ -131,21 +133,35 @@ const ProductItem = ({
             activeSwipeId !== itemIdString &&
             swipeDirection === 'right' &&
             !isClosing) {
-            setIsClosing(true); 
             handleCloseSwipe();
+            setIsClosing(true);
         }
     }, [activeSwipeId, itemIdString]);
 
-    // Efecto para manejar la validación automática
     useEffect(() => {
-        if (shouldAutoValidate && !hasAutoValidated) {
-            // Ejecutar la lógica de auto-validación
-            handleCloseSwipe();
+        if (shouldAutoValidate &&
+            activeSwipeId === itemIdString &&
+            swipeDirection === 'right' &&
+            !hasAutoValidated) {
+
             setHasAutoValidated(true);
+
+            setTimeout(() => {
+                handleRightSwipeValidation();
+            }, 300);
         }
-    }, [shouldAutoValidate, hasAutoValidated]);
+    }, [shouldAutoValidate, activeSwipeId, itemIdString, swipeDirection, hasAutoValidated]);
+
+    useEffect(() => {
+        // Resetear hasAutoValidated cuando el elemento deja de ser el activo
+        if (activeSwipeId !== itemIdString) {
+            setHasAutoValidated(false);
+        }
+    }, [activeSwipeId, itemIdString]);
+
 
     const handleCloseSwipe = () => {
+        setHasAutoValidated(false); // Resetear aquí también
         Animated.timing(swipePosition, {
             toValue: 0,
             duration: 200,
@@ -154,15 +170,13 @@ const ProductItem = ({
             swipePosition.setValue(0);
             setIsSwiped(false);
             setSwipeDirection(null);
-            setIsClosing(false); // Restablecer estado de cierre
-            onValidate(Number(itemIdString), 'left');
-            
-            if (activeSwipeId) {
+            setIsClosing(false);
+
+            if (activeSwipeId === itemIdString) {
                 setActiveSwipeId(null);
             }
         });
-    };
-
+    }
     const handleRightSwipeValidation = () => {
         Animated.timing(swipePosition, {
             toValue: 0,
@@ -175,6 +189,9 @@ const ProductItem = ({
             setIsClosing(false);
             setActiveSwipeId(null); // Limpiar el activo
             onValidate(item.id, 'right');
+            if (shouldAutoValidate) {
+                onCloseReport?.(true);
+            }
         });
     };
 
@@ -200,13 +217,6 @@ const ProductItem = ({
             },
             onPanResponderRelease: (_, gestureState) => {
                 if (gestureState.dx > swipeThreshold) {
-                    console.log("Deslizando hacia la derecha - ID:", itemIdString);
-
-                    // Si ya hay otro elemento activo, establecer primero el nuevo activo
-                    // para que el efecto cierre el anterior
-                    if (activeSwipeId !== null && activeSwipeId !== itemIdString) {
-                        console.log("Cerrando elemento anterior:", activeSwipeId);
-                    }
 
                     // Establecer este como el elemento activo inmediatamente
                     setActiveSwipeId(itemIdString);
@@ -374,6 +384,12 @@ const ProductItem = ({
     );
 };
 
+interface ReasonData {
+    type: string;
+    units: number;
+    description?: string;
+}
+
 interface FinalizedData {
     validatedCount: number;
     pendingCount: number;
@@ -392,15 +408,20 @@ interface ProductValidationSectionProps {
     onSuccessAlet?: boolean;
     onStatusNovelty?: (direction: 'left' | 'right' | null) => void;
     shouldAutoValidate?: boolean;
+    modalStatusNovelty?: string | null;
+    onCloseReportPorduct?: (value: boolean) => void;
+    data?: ReasonData[];
+    messages?: (messages: string) => void;
 }
 
-
-export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAlet, onStatusNovelty, shouldAutoValidate }: ProductValidationSectionProps) => {
+export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAlet, onStatusNovelty, shouldAutoValidate, modalStatusNovelty, onCloseReportPorduct, data, messages }: ProductValidationSectionProps) => {
     const [allProducts, setAllProducts] = useState<Product[]>(initialProductsData);
     const [validatedProducts, setValidatedProducts] = useState<Product[]>([]);
     const [showValidatedModal, setShowValidatedModal] = useState(false);
     const [currentValidationType, setCurrentValidationType] = useState('null');
     const [showDirection, setDirection] = useState<'left' | 'right' | null>(null);
+
+
 
     useEffect(() => {
         if (showDirection) {
@@ -420,7 +441,6 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     // Agrega esta función en tu componente
     const validateAllProducts = (validationType: 'success' | 'warning' | 'error' = 'success') => {
         if (allProducts.length === 0) return;
-
         // Mover todos los productos a validados
         setValidatedProducts(prev => [
             ...prev,
@@ -436,6 +456,21 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     };
 
     const handleValidate = (id: number, direction: 'left' | 'right') => {
+
+        if (data && data?.length > 0) {
+            const product = initialProductsData.find(p => p.id === id);
+            const totalUnits = data?.reduce((sum, item) => sum + item.units, 0);
+
+            if (totalUnits > Number(product?.quantity)) {
+                messages?.("La cantidad reportada no puede ser mayor a la despachada.");
+                return;
+            }
+            if (totalUnits <= 0) {
+                messages?.("La cantidad reportada no puede ser 0.");
+                return;
+            }
+        }
+
         const productToValidate = allProducts.find(p => p.id === id);
         if (!productToValidate) return;
 
@@ -477,7 +512,8 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
             return sum + numericValue;
         }, 0);
 
-    const isValid = validatedCount > 0;
+
+    const isValid = pendingCount === 0;
 
     const handleFinalize = () => {
         const finalData: FinalizedData = {
@@ -493,14 +529,14 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
             }
         };
         onFinalize?.(finalData);
-        console.log('=== RESUMEN FINAL ===');
-        console.log(`Productos procesados: ${validatedCount}`);
-        console.log(`  - Success (verde): ${validatedProducts.filter(p => p.validationType === 'success').length}`);
-        console.log(`  - Warning (amarillo): ${validatedProducts.filter(p => p.validationType === 'warning').length}`);
-        console.log(`Productos pendientes: ${pendingCount}`);
-        console.log(`Valor total (ambos): $${totalValue}`);
-        console.log(`Valor success: $${totalValueSuccess}`);
-        console.log(`Valor warning: $${totalValueWarning}`);
+        // console.log('=== RESUMEN FINAL ===');
+        // console.log(`Productos procesados: ${validatedCount}`);
+        // console.log(`  - Success (verde): ${validatedProducts.filter(p => p.validationType === 'success').length}`);
+        // console.log(`  - Warning (amarillo): ${validatedProducts.filter(p => p.validationType === 'warning').length}`);
+        // console.log(`Productos pendientes: ${pendingCount}`);
+        // console.log(`Valor total (ambos): $${totalValue}`);
+        // console.log(`Valor success: $${totalValueSuccess}`);
+        // console.log(`Valor warning: $${totalValueWarning}`);
 
         // Mostrar modal con productos validados
         setShowValidatedModal(true);
@@ -536,6 +572,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                 activeSwipeId={activeSwipeId}
                                 setActiveSwipeId={setActiveSwipeId}
                                 shouldAutoValidate={shouldAutoValidate}
+                                onCloseReport={(value) => onCloseReportPorduct?.(value)}
                             />
                         ))
                     )}
@@ -559,7 +596,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                             validated: false
                                         }]);
                                     }}
-                                    validationType={currentValidationType}
+                                    validationType={modalStatusNovelty}
                                 />
                             ))}
                         </>

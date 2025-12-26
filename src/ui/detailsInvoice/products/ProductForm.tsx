@@ -31,6 +31,13 @@ interface EvidencePhoto {
     base64?: string;
 }
 
+// Interface para los datos de razón
+interface ReasonData {
+    type: string;
+    units: number;
+    description?: string;
+}
+
 interface FinalizedData {
     validatedCount: number;
     pendingCount: number;
@@ -49,9 +56,11 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
     const [multiplePhotos, setMultiplePhotos] = useState<EvidencePhoto[]>([]);
     const [uploadPhoto, setUploadPhoto] = useState(false);
+    const [dataNovlety, setDataNovlety] = useState<ReasonData[]>([]);
     const [successButton, setSuccessButton] = useState(false);
     const [alertButton, setAlertButton] = useState(false);
     const [uploadPhotoFile, setUploadPhotoFile] = useState(false);
+    const [showViewModal, setViewModal] = useState(false);
     const [modalStatusNovelty, setStatusNovelty] = useState<'left' | 'right' | null>(null);
     const [RefreshingOnPress, setRefreshingOnPress] = useState(false);
     const [finalizedData, setFinalizedData] = useState<FinalizedData | null>(null);
@@ -61,9 +70,8 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const [showNovelty, setNovelty] = useState(false);
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [isExpanded, setIsExpanded] = useState(false);
-
-    console.log("showNovelty: ", showNovelty);
     const router = useRouter();
+
     const handleGoBack = () => {
         if (routeStarted && isCountryDelivery) {
             router.push(
@@ -89,6 +97,13 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (showViewModal || modalStatusNovelty == 'right') {
+            setNovelty(false)
+        }
+
+    }, [showViewModal, modalStatusNovelty]);
 
     useEffect(() => {
         const processPhotos = async () => {
@@ -254,6 +269,16 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     setStatusNovelty(data);
                 }}
                 shouldAutoValidate={showNovelty}
+                modalStatusNovelty={modalStatusNovelty}
+                onCloseReportPorduct={(value) => {
+                    setViewModal(value);
+                }}
+                data={dataNovlety}
+                messages={(messages) => {
+                    setModalTitle("¡Alerta!");
+                    setModalMessage(messages);
+                    setModalVisible(true);
+                }}
             />
 
             {(uploadPhoto) && (
@@ -298,8 +323,11 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                             setModalMessage("Debe especificar la cantidad de unidades en la novedad.");
                             setModalVisible(true);
                         }
+                        setDataNovlety(data);
                         setNovelty(true);
                     }}
+                    showViewModal={showViewModal}
+
                 />
             )}
             {loading && <LoadingBlue />}

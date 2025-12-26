@@ -31,6 +31,7 @@ interface ReportNoveltysProps {
     disabled?: boolean;
     width?: number;
     height?: number;
+    showViewModal?: boolean;
 }
 
 // Interface para los datos de razón
@@ -47,12 +48,13 @@ export function ReportNoveltyScreen({
     disabled = false,
     width = 360,
     height = 500,
+    showViewModal =false
 }: ReportNoveltysProps) {
     const [units, setUnits] = useState<string[]>(["", "", "", ""]);
     const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
     const [keyboardHeight] = useState(new Animated.Value(0));
     const [hasValues, setHasValues] = useState(false); // Nuevo estado
-
+    
     const handleUnitChange = (text: string, index: number) => {
         try {
             const numericText = text.replace(/[^0-9]/g, '');

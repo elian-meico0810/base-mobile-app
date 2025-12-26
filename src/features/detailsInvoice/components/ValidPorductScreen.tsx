@@ -24,13 +24,12 @@ interface ProductItemProps {
     item: Product;
     isLastItem: boolean;
     onValidate: (id: number) => void;
-    validationType?: string;
+    validationType?: string | null;
 }
 
 const { width, height } = Dimensions.get('window');
 
 export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationType }: ProductItemProps) => {
-    console.log("validationType: ",validationType)
     return (
         <View style={styles.productContainer}>
             <View style={styles.productRow}>
@@ -42,17 +41,17 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
                                 style={styles.productImage}
                                 resizeMode="cover"
                             />
-                            {validationType === "error" ? (
-                                <View style={styles.errorDot}>
-                                    <MaterialIcons name="close" size={9} color="#FFFFFF" />
+                            {validationType === "left" ? (
+                                <View style={styles.statusDot}>
+                                    <MaterialIcons name="check" size={9} color="#FFFFFF" />
                                 </View>
-                            ) : validationType === "warning" ? (
+                            ) : validationType === "right" ? (
                                 <View style={styles.warningDot}>
                                     <MaterialIcons name="warning" size={9} color="#FFA400" />
                                 </View>
                             ) : (
-                                <View style={styles.statusDot}>
-                                    <MaterialIcons name="check" size={9} color="#FFFFFF" />
+                                <View style={styles.errorDot}>
+                                    <MaterialIcons name="close" size={9} color="#FFFFFF" />
                                 </View>
                             )}
                         </View>

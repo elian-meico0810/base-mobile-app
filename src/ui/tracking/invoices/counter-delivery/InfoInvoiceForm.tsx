@@ -523,7 +523,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 }
             }
         } catch (error) {
-            console.log("error: ", error);
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
             setModalVisible(true);

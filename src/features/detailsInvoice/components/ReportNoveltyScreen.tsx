@@ -73,9 +73,9 @@ export function ReportNoveltyScreen({
     // Función separada para verificar valores
     const checkForValues = (unitsArray: string[]) => {
         const hasAny = unitsArray.some(unit => {
-            if (unit === "" || unit === "0") return false;
+            if (unit === "" ) return false;
             const unitValue = parseInt(unit, 10);
-            return !isNaN(unitValue) && unitValue > 0;
+            return !isNaN(unitValue);
         });
 
         setHasValues(hasAny);
@@ -104,7 +104,7 @@ export function ReportNoveltyScreen({
 
         reasons.forEach((reason, index) => {
             const unitValue = units[index] ? parseInt(units[index], 10) : 0;
-            if (unitValue > 0) {
+            if (unitValue >= 0) {
                 data.push({
                     type: reason,
                     units: unitValue
@@ -126,10 +126,10 @@ export function ReportNoveltyScreen({
         try {
             Keyboard.dismiss();
 
-            if (units.length != 0) {
+            if (units.length >= 0) {
                 // Obtener los datos estructurados
                 const reasonData = getReasonValues();
-                if (reasonData.length != 0) {
+                if (reasonData.length >= 0) {
 
                     // Enviar los datos al padre si existe la función onPress
                     if (onPress) {

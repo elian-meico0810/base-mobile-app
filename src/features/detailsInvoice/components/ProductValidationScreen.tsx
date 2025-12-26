@@ -29,7 +29,7 @@ interface Product {
     imageUrl?: string;
     validated?: boolean;
     validationType?: 'success' | 'warning' | 'error';
-
+    quantityEntry?: string;
 }
 
 // Datos de ejemplo con URLs de imagen
@@ -42,7 +42,8 @@ const initialProductsData: Product[] = [
         total: '$44.000',
         unit: '$2.200 c/u',
         imageUrl: 'https://th.bing.com/th?id=OIF.%2fuc23H9lZ7AVVE7Zp%2bsJYw&rs=1&pid=ImgDetMain&o=7&rm=3',
-        validated: false
+        validated: false,
+        quantityEntry: '6'
     },
     {
         id: 2,
@@ -52,7 +53,9 @@ const initialProductsData: Product[] = [
         total: '$100.000',
         unit: '$2.500 c/u',
         imageUrl: 'https://th.bing.com/th?id=OIF.%2fuc23H9lZ7AVVE7Zp%2bsJYw&rs=1&pid=ImgDetMain&o=7&rm=3',
-        validated: false
+        validated: false,
+        quantityEntry: '6'
+
     },
     {
         id: 3,
@@ -62,7 +65,9 @@ const initialProductsData: Product[] = [
         total: '$126.000',
         unit: '$1.050 c/u',
         imageUrl: 'https://th.bing.com/th?id=OIF.%2fuc23H9lZ7AVVE7Zp%2bsJYw&rs=1&pid=ImgDetMain&o=7&rm=3',
-        validated: false
+        validated: false,
+        quantityEntry: '6'
+
     },
     {
         id: 4,
@@ -72,7 +77,9 @@ const initialProductsData: Product[] = [
         total: '$75.000',
         unit: '$5.000 c/u',
         imageUrl: 'https://th.bing.com/th?id=OIF.%2fuc23H9lZ7AVVE7Zp%2bsJYw&rs=1&pid=ImgDetMain&o=7&rm=3',
-        validated: false
+        validated: false,
+        quantityEntry: '6'
+
     },
     {
         id: 5,
@@ -82,7 +89,9 @@ const initialProductsData: Product[] = [
         total: '$90.000',
         unit: '$3.000 c/u',
         imageUrl: 'https://th.bing.com/th?id=OIF.%2fuc23H9lZ7AVVE7Zp%2bsJYw&rs=1&pid=ImgDetMain&o=7&rm=3',
-        validated: false
+        validated: false,
+        quantityEntry: '6'
+
     },
     {
         id: 6,
@@ -92,7 +101,9 @@ const initialProductsData: Product[] = [
         total: '$62.500',
         unit: '$2.500 c/u',
         imageUrl: 'https://th.bing.com/th?id=OIF.%2fuc23H9lZ7AVVE7Zp%2bsJYw&rs=1&pid=ImgDetMain&o=7&rm=3',
-        validated: false
+        validated: false,
+        quantityEntry: '6'
+
     },
 ];
 
@@ -106,6 +117,7 @@ interface ProductItemProps {
     activeSwipeId: string | null; // Cambia esto según el tipo de item.id
     setActiveSwipeId: (id: string | null) => void;
     onCloseReport?: (value: boolean) => void;
+    id?: number;
 }
 
 
@@ -117,7 +129,8 @@ const ProductItem = ({
     shouldAutoValidate = false,
     activeSwipeId,
     setActiveSwipeId,
-    onCloseReport
+    onCloseReport,
+    id
 }: ProductItemProps & { shouldAutoValidate?: boolean }) => {
     const [swipePosition] = useState(new Animated.Value(0));
     const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
@@ -420,6 +433,8 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     const [showValidatedModal, setShowValidatedModal] = useState(false);
     const [currentValidationType, setCurrentValidationType] = useState('null');
     const [showDirection, setDirection] = useState<'left' | 'right' | null>(null);
+    const [tatolValue, setTotal] = useState(0);
+    const [idValue, setIdValue] = useState(0);
 
 
 
@@ -458,6 +473,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     const handleValidate = (id: number, direction: 'left' | 'right') => {
 
         if (data && data?.length > 0) {
+            setIdValue(id);
             const product = initialProductsData.find(p => p.id === id);
             const totalUnits = data?.reduce((sum, item) => sum + item.units, 0);
 
@@ -465,10 +481,12 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                 messages?.("La cantidad reportada no puede ser mayor a la despachada.");
                 return;
             }
-            if (totalUnits <= 0) {
-                messages?.("La cantidad reportada no puede ser 0.");
-                return;
-            }
+            // if (totalUnits <= 0) {
+            //     messages?.("La cantidad reportada no puede ser 0.");
+            //     return;
+            // }
+            setTotal(Number(totalUnits));
+
         }
 
         const productToValidate = allProducts.find(p => p.id === id);
@@ -596,7 +614,9 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                             validated: false
                                         }]);
                                     }}
-                                    validationType={modalStatusNovelty}
+                                    validationType={currentValidationType}
+                                    idValue={idValue}
+                                    tatolValue={tatolValue}
                                 />
                             ))}
                         </>
@@ -608,11 +628,19 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
 
             <View style={styles.bottomBar}>
                 <View style={styles.progressRow}>
-                    <Text style={styles.pendingText}>
-                        Te faltan{' '}
-                        <Text style={styles.pendingBold}>{pendingCount} productos</Text>
-                        {' '}por validar
-                    </Text>
+                    {pendingCount > 0 ? (
+                        <Text style={styles.pendingText}>
+                            Te faltan{' '}
+                            <Text style={styles.pendingBold}>{pendingCount} productos</Text>
+                            {' '}por validar
+                        </Text>
+
+                    ) : (
+                        <Text style={styles.pendingText}>
+                            Productos validados
+                        </Text>
+
+                    )}
 
                     <View style={styles.progressContainer}>
                         <View style={styles.progressBarBackground}>

@@ -1,5 +1,6 @@
 import { formatNumber, formatStringToNumber } from '@/src/utils/uitls';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useEffect, useState } from 'react';
 import {
     Dimensions,
     Image,
@@ -18,6 +19,7 @@ interface Product {
     imageUrl?: string;
     validated?: boolean;
     validationType?: string;
+    quantityEntry?: string;
 }
 
 interface ProductItemProps {
@@ -25,11 +27,38 @@ interface ProductItemProps {
     isLastItem: boolean;
     onValidate: (id: number) => void;
     validationType?: string | null;
+    idValue?: number | null;
+    tatolValue?: number | null;
 }
-
+type ValueById = {
+    idValue: number;
+    tatolValue: number;
+};
 const { width, height } = Dimensions.get('window');
 
-export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationType }: ProductItemProps) => {
+export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationType, idValue, tatolValue }: ProductItemProps) => {
+    const [valuesById, setValuesById] = useState<Record<number, ValueById>>({});
+
+    useEffect(() => {
+        if (
+            idValue !== null &&
+            idValue !== undefined &&
+            tatolValue !== null &&
+            tatolValue !== undefined
+        ) {
+            setValuesById(prev => ({
+                ...prev,
+                [idValue]: {
+                    idValue,
+                    tatolValue,
+                },
+            }));
+        }
+    }, [idValue, tatolValue]);
+
+    const quantityEntry = Number(item?.quantityEntry);
+    const quantity = Number(item?.quantity);
+
     return (
         <View style={styles.productContainer}>
             <View style={styles.productRow}>
@@ -41,19 +70,20 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
                                 style={styles.productImage}
                                 resizeMode="cover"
                             />
-                            {validationType === "left" ? (
+                            {(validationType === "success" || quantityEntry === quantity) ? (
                                 <View style={styles.statusDot}>
                                     <MaterialIcons name="check" size={9} color="#FFFFFF" />
                                 </View>
-                            ) : validationType === "right" ? (
-                                <View style={styles.warningDot}>
-                                    <MaterialIcons name="warning" size={9} color="#FFA400" />
-                                </View>
-                            ) : (
+                            ) : (validationType === "error" || quantityEntry === 0) ? (
                                 <View style={styles.errorDot}>
                                     <MaterialIcons name="close" size={9} color="#FFFFFF" />
                                 </View>
-                            )}
+                            ) : (validationType === "warning" || (quantityEntry > 0 && quantityEntry < quantity)) ? (
+                                <View style={styles.warningDot}>
+                                    <MaterialIcons name="warning" size={9} color="#FFA400" />
+                                </View>
+                            ) : null}
+
                         </View>
                     ) : (
                         <View style={styles.imagePlaceholder}>
@@ -68,7 +98,21 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
                     <View style={styles.row}>
                         <View style={styles.leftInfo}>
                             <View style={styles.productHeader}>
-                                <Text style={styles.quantityText}>{item.quantity}</Text>
+                                {valuesById[item.id] ? (
+                                    <Text style={styles.quantityText}>
+                                        {valuesById[item.id].tatolValue}
+                                    </Text>
+                                ) : (
+                                    <Text style={styles.quantityText}>{item.quantity}</Text>
+
+                                )}
+
+                                {valuesById[item.id] && (
+                                    <Text style={styles.quantityTextValue}>
+                                        {item.quantity}
+                                    </Text>
+                                )}
+
                             </View>
 
                             <Text style={styles.productName} numberOfLines={2}>
@@ -98,8 +142,8 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
 
 const styles = StyleSheet.create({
     productContainer: {
-        backgroundColor: 'transparent', // Fondo verde claro para productos validados
-        paddingVertical: 10, // Más padding vertical
+        backgroundColor: 'transparent',
+        paddingVertical: 10,
         paddingHorizontal: 16,
         marginHorizontal: 8,
         borderColor: '#F9F9FA',
@@ -109,7 +153,7 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
     },
     imageContainer: {
-        marginRight: 12, // Más espacio entre imagen y texto
+        marginRight: 12,
     },
     productImage: {
         width: 85,
@@ -149,9 +193,10 @@ const styles = StyleSheet.create({
     },
     productHeader: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-start',
         alignItems: 'center',
         marginBottom: 8,
+        gap: 4,
     },
     quantityText: {
         fontFamily: 'Rubik',
@@ -234,5 +279,13 @@ const styles = StyleSheet.create({
         borderColor: 'transparent',
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    quantityTextValue: {
+        fontFamily: 'Rubik',
+        fontWeight: '600',
+        fontSize: 12,
+        lineHeight: 12,
+        textDecorationLine: 'line-through',
+        color: '#788095',
     },
 });

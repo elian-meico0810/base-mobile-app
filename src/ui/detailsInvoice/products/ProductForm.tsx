@@ -318,11 +318,11 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     onClose={() => setStatusNovelty(null)}
                     width={width}
                     onPress={(data) => {
-                        if (data.length === 0) {
-                            setModalTitle("¡Alerta!");
-                            setModalMessage("Debe especificar la cantidad de unidades en la novedad.");
-                            setModalVisible(true);
-                        }
+                        // if (data.length === 0) {
+                        //     setModalTitle("¡Alerta!");
+                        //     setModalMessage("Debe especificar la cantidad de unidades en la novedad.");
+                        //     setModalVisible(true);
+                        // }
                         setDataNovlety(data);
                         setNovelty(true);
                     }}

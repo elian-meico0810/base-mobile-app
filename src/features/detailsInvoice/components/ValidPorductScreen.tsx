@@ -1,4 +1,5 @@
-import { formatNumber, formatStringToNumber } from '@/src/utils/uitls';
+import { TypeCaculateValueEnum } from '@/src/constants/GuideStates';
+import { calculateVlueByPorducts, capitalizeFirst, formatNumber } from '@/src/utils/uitls';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import {
@@ -8,22 +9,11 @@ import {
     Text,
     View
 } from 'react-native';
+import { Detail } from '../../tracking/domain/details/DetailsGuide';
 
-interface Product {
-    id: number;
-    quantity: string;
-    name: string;
-    sku: string;
-    total: string;
-    unit: string;
-    imageUrl?: string;
-    validated?: boolean;
-    validationType?: string;
-    quantityEntry?: string;
-}
 
 interface ProductItemProps {
-    item: Product;
+    item: Detail;
     isLastItem: boolean;
     onValidate: (id: number) => void;
     validationType?: string | null;
@@ -38,7 +28,6 @@ const { width, height } = Dimensions.get('window');
 
 export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationType, idValue, tatolValue }: ProductItemProps) => {
     const [valuesById, setValuesById] = useState<Record<number, ValueById>>({});
-
     useEffect(() => {
         if (
             idValue !== null &&
@@ -56,17 +45,17 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
         }
     }, [idValue, tatolValue]);
 
-    const quantityEntry = Number(item?.quantityEntry);
-    const quantity = Number(item?.quantity);
+    const quantityEntry = Number(item?.unidadesSolicitadas);
+    const quantity = Number(item?.unidadesEntregadas);
 
     return (
         <View style={styles.productContainer}>
             <View style={styles.productRow}>
                 <View style={styles.imageContainer}>
-                    {item.imageUrl ? (
+                    {item.imagenUrl ? (
                         <View style={styles.imageWrapper}>
                             <Image
-                                source={{ uri: item.imageUrl }}
+                                source={{ uri: item.imagenUrl }}
                                 style={styles.productImage}
                                 resizeMode="cover"
                             />
@@ -100,35 +89,35 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
                             <View style={styles.productHeader}>
                                 {valuesById[item.id] ? (
                                     <Text style={styles.quantityText}>
-                                        {Number(item.quantity) - Number(valuesById[item.id].tatolValue) }
+                                        {Number(item.unidadesSolicitadas) - Number(valuesById[item.id].tatolValue)}
                                     </Text>
                                 ) : (
-                                    <Text style={styles.quantityText}>{item.quantity}</Text>
+                                    <Text style={styles.quantityText}>{item.unidadesSolicitadas}</Text>
 
                                 )}
 
                                 {valuesById[item.id] && (
                                     <Text style={styles.quantityTextValue}>
-                                        {item.quantity}
+                                        {item.unidadesSolicitadas}
                                     </Text>
                                 )}
 
                             </View>
 
                             <Text style={styles.productName} numberOfLines={2}>
-                                {item.name}
+                                {capitalizeFirst(item.producto.nombre)}
                             </Text>
 
                             <Text style={styles.productSku}>
-                                {item.sku}
+                                {item.producto.codigo.trim()}
                             </Text>
                         </View>
 
                         <View style={styles.priceRow}>
                             <Text style={styles.totalPrice}>
-                                $ {formatNumber(formatStringToNumber(item.total))}
+                                ${formatNumber(calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_1) ?? 0)}
                             </Text>
-                            <Text style={styles.unitPrice}>{item.unit}</Text>
+                            <Text style={styles.unitPrice}>$ {formatNumber(calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_2) ?? 0)} c/u</Text>
                         </View>
                     </View>
                 </View>

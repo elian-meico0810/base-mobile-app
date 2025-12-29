@@ -74,8 +74,16 @@ export enum TypeInvoiceEnum {
     ANTICIPO = "CONTADO ANTICIPADO",
 }
 
-
 export enum TypeConPagoEnum {
     TAT = "TAT",
     MIXTO = "MIXTO"
+}
+
+export enum TypeCaculateValueEnum {
+    ACTION_1 = "ACTION_1",
+    ACTION_2 = "ACTION_2",
+    ACTION_3 = "ACTION_3",
+    ACTION_4 = "ACTION_4",
+    ACTION_5 = "ACTION_5",
+    ACTION_6 = "ACTION_6"
 }

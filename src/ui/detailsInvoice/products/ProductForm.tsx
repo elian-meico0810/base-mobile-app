@@ -5,7 +5,8 @@ import { UploadPhoto } from '@/components/photo/UploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { ProductValidationSection } from '@/src/features/detailsInvoice/components/ProductValidationScreen';
 import { ReportNoveltyScreen } from '@/src/features/detailsInvoice/components/ReportNoveltyScreen';
-import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { Document, GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { capitalizeFirst, cleanSpaces } from '@/src/utils/uitls';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -70,8 +71,9 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const [showNovelty, setNovelty] = useState(false);
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [isExpanded, setIsExpanded] = useState(false);
+    const [showPorductData, setPorductData] = useState<Document[]>([]);
     const router = useRouter();
-
+    
     const handleGoBack = () => {
         if (routeStarted && isCountryDelivery) {
             router.push(
@@ -176,6 +178,38 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         }
     };
 
+    const getDataProduct = async () => {
+        try {
+            setLoading(true);
+            const responseQuery = await detailsRepositoryImpl.listPorductData(token);
+            if (responseQuery?.statusCode == 200) {
+                if (typeof responseQuery.data === "object" && !Array.isArray(responseQuery.data)) {
+                    setPorductData(responseQuery.data ? [responseQuery.data] : []);
+                }
+            }
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    useEffect(() => {
+        getDataProduct();
+    }, []);
+
+
+    useEffect(() => {
+        const dataProduct = async () => {
+            await getDataProduct();
+        }
+
+        dataProduct();
+
+    }, [token]);
     return (
         <ThemedView style={styles.container}>
             <NetworkStatus />
@@ -279,6 +313,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     setModalMessage(messages);
                     setModalVisible(true);
                 }}
+                dataPorduct={showPorductData}
             />
 
             {(uploadPhoto) && (

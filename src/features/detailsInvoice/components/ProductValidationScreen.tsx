@@ -1,5 +1,6 @@
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { formatNumber, formatStringToNumber } from '@/src/utils/uitls';
+import { TypeCaculateValueEnum } from '@/src/constants/GuideStates';
+import { calculateVlueByPorducts, capitalizeFirst, formatNumber, formatStringToNumber } from '@/src/utils/uitls';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -12,104 +13,15 @@ import {
     Text,
     View
 } from 'react-native';
+import { Detail, Document } from '../../tracking/domain/details/DetailsGuide';
 import { ValidPorductScreen } from './ValidPorductScreen';
 
 const { width, height } = Dimensions.get('window');
 
-// Importar el componente ValidPorductScreen
-
-// Definir tipo para el producto
-interface Product {
-    id: number;
-    quantity: string;
-    name: string;
-    sku: string;
-    total: string;
-    unit: string;
-    imageUrl?: string;
-    validated?: boolean;
-    validationType?: 'success' | 'warning' | 'error';
-    quantityEntry?: string;
-}
-
-// Datos de ejemplo con URLs de imagen
-const initialProductsData: Product[] = [
-    {
-        id: 1,
-        quantity: '20',
-        name: 'Jabon desengrasante para vajilla Axion 250 ml',
-        sku: '5648982123456',
-        total: '$44.000',
-        unit: '$2.200 c/u',
-        imageUrl: 'https://th.bing.com/th?id=OIF.%2fuc23H9lZ7AVVE7Zp%2bsJYw&rs=1&pid=ImgDetMain&o=7&rm=3',
-        validated: false,
-        quantityEntry: '6'
-    },
-    {
-        id: 2,
-        quantity: '40',
-        name: 'Cerveza Miller Lite Botella 330 ml',
-        sku: '5648982123456',
-        total: '$100.000',
-        unit: '$2.500 c/u',
-        imageUrl: 'https://th.bing.com/th?id=OIF.%2fuc23H9lZ7AVVE7Zp%2bsJYw&rs=1&pid=ImgDetMain&o=7&rm=3',
-        validated: false,
-        quantityEntry: '6'
-
-    },
-    {
-        id: 3,
-        quantity: '120',
-        name: 'Agua Mineral Penafiel 21',
-        sku: '5648982123456',
-        total: '$126.000',
-        unit: '$1.050 c/u',
-        imageUrl: 'https://th.bing.com/th?id=OIF.%2fuc23H9lZ7AVVE7Zp%2bsJYw&rs=1&pid=ImgDetMain&o=7&rm=3',
-        validated: false,
-        quantityEntry: '6'
-
-    },
-    {
-        id: 4,
-        quantity: '15',
-        name: 'Detergente líquido Ariel 500 ml',
-        sku: '5648982123457',
-        total: '$75.000',
-        unit: '$5.000 c/u',
-        imageUrl: 'https://th.bing.com/th?id=OIF.%2fuc23H9lZ7AVVE7Zp%2bsJYw&rs=1&pid=ImgDetMain&o=7&rm=3',
-        validated: false,
-        quantityEntry: '6'
-
-    },
-    {
-        id: 5,
-        quantity: '30',
-        name: 'Galletas Oreo 120g',
-        sku: '5648982123458',
-        total: '$90.000',
-        unit: '$3.000 c/u',
-        imageUrl: 'https://th.bing.com/th?id=OIF.%2fuc23H9lZ7AVVE7Zp%2bsJYw&rs=1&pid=ImgDetMain&o=7&rm=3',
-        validated: false,
-        quantityEntry: '6'
-
-    },
-    {
-        id: 6,
-        quantity: '25',
-        name: 'Leche entera 1L',
-        sku: '5648982123459',
-        total: '$62.500',
-        unit: '$2.500 c/u',
-        imageUrl: 'https://th.bing.com/th?id=OIF.%2fuc23H9lZ7AVVE7Zp%2bsJYw&rs=1&pid=ImgDetMain&o=7&rm=3',
-        validated: false,
-        quantityEntry: '6'
-
-    },
-];
 
 // Props del componente ProductItem
 interface ProductItemProps {
-    item: Product;
+    item: Detail;
     isLastItem: boolean;
     onValidate: (id: number, direction: 'left' | 'right') => void;
     onPresssNovlety?: (direction: 'left' | 'right' | null) => void;
@@ -352,9 +264,9 @@ const ProductItem = ({
             >
                 <View style={styles.productRow}>
                     <View style={styles.imageContainer}>
-                        {item.imageUrl ? (
+                        {item?.imagenUrl ? (
                             <Image
-                                source={{ uri: item.imageUrl }}
+                                source={{ uri: item?.imagenUrl }}
                                 style={styles.productImage}
                                 resizeMode="cover"
                             />
@@ -370,23 +282,23 @@ const ProductItem = ({
                         <View style={styles.row}>
                             <View style={styles.leftInfo}>
                                 <View style={styles.productHeader}>
-                                    <Text style={styles.quantityText}>{item.quantity}</Text>
+                                    <Text style={styles.quantityText}>{item.unidadesSolicitadas}</Text>
                                 </View>
 
                                 <Text style={styles.productName} numberOfLines={2}>
-                                    {item.name}
+                                    {capitalizeFirst(item.producto.nombre)}
                                 </Text>
 
                                 <Text style={styles.productSku}>
-                                    {item.sku}
+                                    {item.producto.codigo.trim()}
                                 </Text>
                             </View>
 
                             <View style={styles.priceRow}>
                                 <Text style={styles.totalPrice}>
-                                    $ {formatNumber(formatStringToNumber(item.total))}
+                                    ${formatNumber(calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_1) ?? 0)}
                                 </Text>
-                                <Text style={styles.unitPrice}>{item.unit}</Text>
+                                <Text style={styles.unitPrice}>$ {formatNumber(calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_2) ?? 0)} c/u</Text>
                             </View>
                         </View>
                     </View>
@@ -409,7 +321,7 @@ interface FinalizedData {
     totalValue: number;
     totalValueSuccess: number;
     totalValueWarning: number;
-    validatedProducts: Product[];
+    validatedProducts: Document[];
     statistics: {
         successCount: number;
         warningCount: number;
@@ -425,19 +337,18 @@ interface ProductValidationSectionProps {
     onCloseReportPorduct?: (value: boolean) => void;
     data?: ReasonData[];
     messages?: (messages: string) => void;
+    dataPorduct?: Document[];
 }
 
-export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAlet, onStatusNovelty, shouldAutoValidate, modalStatusNovelty, onCloseReportPorduct, data, messages }: ProductValidationSectionProps) => {
-    const [allProducts, setAllProducts] = useState<Product[]>(initialProductsData);
-    const [validatedProducts, setValidatedProducts] = useState<Product[]>([]);
+export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAlet, onStatusNovelty, shouldAutoValidate, modalStatusNovelty, onCloseReportPorduct, data, messages, dataPorduct }: ProductValidationSectionProps) => {
+    const [allProducts, setAllProducts] = useState<Document[]>(dataPorduct || []);
+    const [validatedProducts, setValidatedProducts] = useState<Document[]>([]);
     const [showValidatedModal, setShowValidatedModal] = useState(false);
-    const [currentValidationType, setCurrentValidationType] = useState('null');
+    const [currentValidationType, setCurrentValidationType] = useState<'success' | 'warning' | 'error' | 'null'>('null');
     const [showDirection, setDirection] = useState<'left' | 'right' | null>(null);
     const [tatolValue, setTotal] = useState(0);
     const [idValue, setIdValue] = useState(0);
-
-
-
+    const [totalUnits, setTotalUnits] = useState(0);
     useEffect(() => {
         if (showDirection) {
             onStatusNovelty?.(showDirection);
@@ -445,91 +356,168 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     }, [showDirection]);
 
     useEffect(() => {
+        if (dataPorduct && dataPorduct.length > 0) {
+            setAllProducts(dataPorduct);
+        }
+    }, [dataPorduct]);
+
+    useEffect(() => {
         if (onErrorAlert || onSuccessAlet) {
             const validationType = onErrorAlert ? 'error' : 'success';
             validateAllProducts(validationType);
             setCurrentValidationType(validationType);
-
         }
     }, [onErrorAlert, onSuccessAlet]);
 
-    // Agrega esta función en tu componente
     const validateAllProducts = (validationType: 'success' | 'warning' | 'error' = 'success') => {
         if (allProducts.length === 0) return;
+
         // Mover todos los productos a validados
-        setValidatedProducts(prev => [
-            ...prev,
-            ...allProducts.map(product => ({
-                ...product,
-                validated: true,
-                validationType: validationType
-            }))
-        ]);
+        setValidatedProducts(prev => [...prev, ...allProducts]);
 
         // Vaciar la lista principal
         setAllProducts([]);
     };
 
     const handleValidate = (id: number, direction: 'left' | 'right') => {
-
-        if (data && data?.length > 0) {
+        if (data && data.length > 0) {
             setIdValue(id);
-            const product = initialProductsData.find(p => p.id === id);
-            const totalUnits = data?.reduce((sum, item) => sum + item.units, 0);
 
-            if (totalUnits > Number(product?.quantity)) {
+            // Buscar el producto en todos los documentos
+            let product: Detail | undefined;
+            for (const doc of allProducts) {
+                const found = doc.detalles.find(p => p.id === id);
+                if (found) {
+                    product = found;
+                    break;
+                }
+            }
+
+            const totalUnits = data.reduce((sum, item) => sum + item.units, 0);
+            setTotalUnits(totalUnits);
+            if (product && totalUnits > Number(product.unidadesSolicitadas)) {
                 messages?.("La cantidad reportada no puede ser mayor a la despachada.");
                 return;
             }
-            // if (totalUnits <= 0) {
-            //     messages?.("La cantidad reportada no puede ser 0.");
-            //     return;
-            // }
             setTotal(Number(totalUnits));
-
         }
 
-        const productToValidate = allProducts.find(p => p.id === id);
-        if (!productToValidate) return;
+        // Buscar el detalle y el documento que lo contiene
+        let productToValidate: Detail | undefined;
+        let sourceDocument: Document | undefined;
+        let docIndex = -1;
+        let detailIndex = -1;
+
+        // Buscar en todos los documentos
+        for (let i = 0; i < allProducts.length; i++) {
+            const doc = allProducts[i];
+            const index = doc.detalles.findIndex(detalle => detalle?.producto?.id === id);
+            if (index !== -1) {
+                productToValidate = doc.detalles[index];
+                sourceDocument = doc;
+                docIndex = i;
+                detailIndex = index;
+                break;
+            }
+        }
+
+        if (!productToValidate || !sourceDocument) return;
 
         // Quitar de la lista principal
-        setAllProducts(prev => prev.filter(p => p.id !== id));
+        setAllProducts(prev => {
+            const newDocs = [...prev];
+            if (docIndex >= 0 && newDocs[docIndex]) {
+                // Remover el detalle específico del documento
+                newDocs[docIndex] = {
+                    ...newDocs[docIndex],
+                    detalles: newDocs[docIndex].detalles.filter((_, idx) => idx !== detailIndex)
+                };
 
-        // Agregar a la lista de validados - IMPORTANTE: NO usar el mismo objeto
-        setValidatedProducts(prev => [...prev, {
-            ...productToValidate,
-            validated: true, // Esto solo afecta a los productos en validatedProducts
-            validationType: direction === 'left' ? 'success' : 'warning'
-        }]);
+                // Si el documento queda sin detalles, eliminarlo
+                if (newDocs[docIndex].detalles.length === 0) {
+                    newDocs.splice(docIndex, 1);
+                }
+            }
+            return newDocs;
+        });
+
+        // Agregar a la lista de validados
+        setValidatedProducts(prev => {
+            // Actualizar el estado del detalle
+            const updatedDetail: Detail = {
+                ...productToValidate!,
+                estado: direction === 'left'
+                    ? {
+                        tipo: 10,
+                        nombre: "Validado",
+                        codigo: "EST_DET_VALIDADO"
+                    }
+                    : {
+                        tipo: 20,
+                        nombre: "Validado con Novedad",
+                        codigo: "EST_DET_VALIDADO_WARNING"
+                    }
+            };
+
+            // Buscar si ya existe el documento en validados
+            const existingDocIndex = prev.findIndex(doc => doc.id === sourceDocument!.id);
+
+            if (existingDocIndex !== -1) {
+                // Agregar el detalle al documento existente
+                return prev.map((doc, idx) => {
+                    if (idx === existingDocIndex) {
+                        return {
+                            ...doc,
+                            detalles: [...doc.detalles, updatedDetail]
+                        };
+                    }
+                    return doc;
+                });
+            } else {
+                const newDoc: Document = {
+                    ...sourceDocument!,
+                    detalles: [updatedDetail]
+                };
+                return [...prev, newDoc];
+            }
+        });
     };
 
-    // Calcular estadísticas
-    const pendingCount = allProducts.length;
-    const validatedCount = validatedProducts.length;
-    const totalProducts = allProducts.length + validatedProducts.length;
+    // Calcular estadísticas CORREGIDAS
+    const pendingCount = allProducts.reduce((total, doc) => total + doc.detalles.length, 0);
+    const validatedCount = validatedProducts.reduce((total, doc) => total + doc.detalles.length, 0);
+    const totalProducts = pendingCount + validatedCount;
     const progressPercentage = totalProducts > 0 ? (validatedCount / totalProducts) * 100 : 0;
+    var totalValue = 0;
+    // Calcular valor total a recaudar
+    totalValue = allProducts.reduce((totalSum, doc) => {
+        return totalSum + doc.detalles.reduce((docSum, product) => {
+            // Calcular el valor real del producto
+            const productValue = calculateVlueByPorducts(product, TypeCaculateValueEnum.ACTION_3) ?? 0;
 
-    // Calcular valor total a recaudar (AMBOS tipos)
-    const totalValue = validatedProducts.reduce((sum, product) => {
-        const numericValue = formatStringToNumber(product.total);
-        return sum + numericValue;
+            return docSum + Number(productValue);
+        }, 0);
     }, 0);
 
-    // Calcular valor por tipo (opcional para mostrar separado)
-    const totalValueSuccess = validatedProducts
-        .filter(product => product.validationType === 'success')
-        .reduce((sum, product) => {
-            const numericValue = formatStringToNumber(product.total);
-            return sum + numericValue;
-        }, 0);
 
-    const totalValueWarning = validatedProducts
-        .filter(product => product.validationType === 'warning')
-        .reduce((sum, product) => {
-            const numericValue = formatStringToNumber(product.total);
-            return sum + numericValue;
-        }, 0);
+    // Calcular valor por tipo
+    const totalValueSuccess = validatedProducts.reduce((totalSum, doc) => {
+        return totalSum + doc.detalles
+            .filter(product => product?.estado?.codigo === 'EST_DET_VALIDADO')
+            .reduce((sum, product) => {
+                const numericValue = formatStringToNumber(product.unidadesEntregadas.toString());
+                return sum + numericValue;
+            }, 0);
+    }, 0);
 
+    const totalValueWarning = validatedProducts.reduce((totalSum, doc) => {
+        return totalSum + doc.detalles
+            .filter(product => product?.estado?.codigo === 'EST_DET_VALIDADO_WARNING')
+            .reduce((sum, product) => {
+                const numericValue = formatStringToNumber(product.unidadesEntregadas.toString());
+                return sum + numericValue;
+            }, 0);
+    }, 0);
 
     const isValid = pendingCount === 0;
 
@@ -542,28 +530,43 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
             totalValueWarning,
             validatedProducts,
             statistics: {
-                successCount: validatedProducts.filter(p => p.validationType === 'success').length,
-                warningCount: validatedProducts.filter(p => p.validationType === 'warning').length,
+                successCount: validatedProducts.reduce((sum, doc) =>
+                    sum + doc.detalles.filter(p => p?.estado?.codigo === 'EST_DET_VALIDADO').length, 0),
+                warningCount: validatedProducts.reduce((sum, doc) =>
+                    sum + doc.detalles.filter(p => p?.estado?.codigo === 'EST_DET_VALIDADO_WARNING').length, 0),
             }
         };
         onFinalize?.(finalData);
-        // console.log('=== RESUMEN FINAL ===');
-        // console.log(`Productos procesados: ${validatedCount}`);
-        // console.log(`  - Success (verde): ${validatedProducts.filter(p => p.validationType === 'success').length}`);
-        // console.log(`  - Warning (amarillo): ${validatedProducts.filter(p => p.validationType === 'warning').length}`);
-        // console.log(`Productos pendientes: ${pendingCount}`);
-        // console.log(`Valor total (ambos): $${totalValue}`);
-        // console.log(`Valor success: $${totalValueSuccess}`);
-        // console.log(`Valor warning: $${totalValueWarning}`);
-
-        // Mostrar modal con productos validados
         setShowValidatedModal(true);
     };
+
     const [activeSwipeId, setActiveSwipeId] = useState<string | null>(null);
+
+    // Función para obtener todos los detalles pendientes
+    const getAllPendingDetails = () => {
+        const pendingDetails: Detail[] = [];
+        allProducts.forEach(doc => {
+            pendingDetails.push(...doc.detalles);
+        });
+        return pendingDetails;
+    };
+
+    const pendingDetailsFlat = getAllPendingDetails();
+
+    // Función para obtener todos los detalles validados
+    const getAllValidatedDetails = () => {
+        const validatedDetails: Detail[] = [];
+        validatedProducts.forEach(doc => {
+            validatedDetails.push(...doc.detalles);
+        });
+        return validatedDetails;
+    };
+
+    const validatedDetailsFlat = getAllValidatedDetails();
 
     return (
         <View style={styles.mainContainer}>
-            {allProducts.length > 0 && (
+            {pendingDetailsFlat.length > 0 && (
                 <View style={styles.subtitleContainer}>
                     <Text style={styles.headerTSubitle}>Por validar</Text>
                 </View>
@@ -574,15 +577,16 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                 showsVerticalScrollIndicator={true}
                 contentContainerStyle={{
                     paddingBottom: 160,
-                }}            >
+                }}
+            >
                 <View style={styles.container}>
-                    {/* Mostrar productos en lista principal */}
-                    {allProducts.length > 0 && (
-                        allProducts.map((item, index) => (
+                    {/* Mostrar productos pendientes */}
+                    {pendingDetailsFlat.length > 0 && (
+                        pendingDetailsFlat.map((item, index) => (
                             <ProductItem
                                 key={item.id}
                                 item={item}
-                                isLastItem={index === allProducts.length - 1}
+                                isLastItem={index === pendingDetailsFlat.length - 1}
                                 onValidate={handleValidate}
                                 onPresssNovlety={(direction) => {
                                     setDirection(direction);
@@ -595,26 +599,29 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                         ))
                     )}
 
-                    {/* Mostrar TODOS los productos validados juntos */}
-                    {validatedProducts.length > 0 && (
+                    {/* Mostrar productos validados */}
+                    {validatedDetailsFlat.length > 0 && (
                         <>
                             <View style={styles.subtitleContainer}>
                                 <Text style={styles.headerTSubitle}>Validados</Text>
                             </View>
-                            {validatedProducts.map((item, index) => (
+                            {validatedDetailsFlat.map((item, index) => (
                                 <ValidPorductScreen
                                     key={item.id}
                                     item={item}
-                                    isLastItem={index === validatedProducts.length - 1}
+                                    isLastItem={index === validatedDetailsFlat.length - 1}
                                     onValidate={() => {
                                         // Regresar a la lista principal
-                                        setValidatedProducts(prev => prev.filter(p => p.id !== item.id));
-                                        setAllProducts(prev => [...prev, {
-                                            ...item,
-                                            validated: false
-                                        }]);
+                                        setValidatedProducts(prev => {
+                                            return prev.map(document => ({
+                                                ...document,
+                                                detalles: document.detalles.filter(
+                                                    detalle => detalle?.id !== item.id
+                                                )
+                                            })).filter(document => document.detalles.length > 0);
+                                        });
                                     }}
-                                    validationType={currentValidationType}
+                                    validationType={item.estado?.codigo === 'EST_DET_VALIDADO_WARNING' ? 'warning' : 'success'}
                                     idValue={idValue}
                                     tatolValue={tatolValue}
                                 />
@@ -634,12 +641,10 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                             <Text style={styles.pendingBold}>{pendingCount} productos</Text>
                             {' '}por validar
                         </Text>
-
                     ) : (
                         <Text style={styles.pendingText}>
                             Productos validados
                         </Text>
-
                     )}
 
                     <View style={styles.progressContainer}>
@@ -658,20 +663,10 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                     </View>
                 </View>
 
-                {/* Mostrar valor total (AMBOS tipos) */}
                 <View style={styles.valueRow}>
                     <Text style={styles.valueLabel}>Valor a recaudar:</Text>
-                    <Text style={styles.valueAmount}>$ {formatNumber(totalValue)}</Text>
+                    <Text style={styles.valueAmount}>$ {formatNumber(Number(totalValue))}</Text>
                 </View>
-
-                {/* Mostrar desglose opcional */}
-                {/* {validatedCount > 0 && (
-                    <View style={styles.breakdownRow}>
-                        <Text style={styles.breakdownText}>
-                            {successProducts.length} éxito | {warningProducts.length} advertencia
-                        </Text>
-                    </View>
-                )} */}
 
                 <View style={styles.buttonRow}>
                     <PrimaryButton

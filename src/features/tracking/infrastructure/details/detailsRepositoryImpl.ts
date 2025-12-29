@@ -122,7 +122,7 @@ export const detailsRepositoryImpl: DetailsRepository = {
 
   async paymentsByGuide(data: PaymentsByInvoicePorps, key: string) {
     try {
-      const response = await authDevApi.post(`${API_ROUTES.PAYMENT_SUCCESS_FUL_BY_GUIDE}`,data, {
+      const response = await authDevApi.post(`${API_ROUTES.PAYMENT_SUCCESS_FUL_BY_GUIDE}`, data, {
         headers: {
           "api-key": key
         },
@@ -132,4 +132,122 @@ export const detailsRepositoryImpl: DetailsRepository = {
       throw error;
     }
   },
+
+  async listPorductData(token: string) {
+    try {
+      return {
+        "statusCode": 200,
+        "data": {
+          "id": 54,
+          "codigo": "00792983",
+          "bodega": "Q01",
+          "fecha": "2011-01-21T00:00:00",
+          "canal": "MIXTO",
+          "codigoCliente": "000000009305",
+          "codigoGuia": "24335",
+          "dfr": "71979.95",
+          "detalles": [
+            {
+              "id": 30,
+              "linea": 2,
+              "producto": {
+                "id": 30,
+                "codigo": "5103           ",
+                "nombre": "LONA 180 CALIMA TIPO A "
+              },
+              "imagenUrl": 'https://th.bing.com/th?id=OIF.%2fuc23H9lZ7AVVE7Zp%2bsJYw&rs=1&pid=ImgDetMain&o=7&rm=3',
+              "valorBaseProducto": "7574.00",
+              "totalImpuestos": "151006.63",
+              "estado": {
+                "tipo": 10,
+                "nombre": "Validado",
+                "codigo": "EST_DET_VALIDADO"
+              },
+              "unidadesSolicitadas": 198,
+              "unidadesRechazadas": 2,
+              "unidadesEntregadas": 0,
+              "totalEntregado": "17000.00",
+              "totalImpuestoEntrega": "20000.00",
+              "novedades": [
+                {
+                  "id": 4,
+                  "causal": {
+                    "codigo": "CS_NOV_DIN_INSUF",
+                    "nombre": "Dinero insuficiente",
+                    "requiereEvidencia": false
+                  },
+                  "valor": "250000.00"
+                },
+                {
+                  "id": 5,
+                  "causal": {
+                    "codigo": "CS_NOV_PROD_VENC",
+                    "nombre": "Producto vencido",
+                    "requiereEvidencia": false
+                  },
+                  "valor": "2.00"
+                },
+                {
+                  "id": 6,
+                  "causal": {
+                    "codigo": "CS_NOV_PROD_DAÑADO",
+                    "nombre": "Producto dañado",
+                    "requiereEvidencia": false
+                  },
+                  "valor": "1.00"
+                },
+                {
+                  "id": 7,
+                  "causal": {
+                    "codigo": "CS_NOV_PROD_VENC",
+                    "nombre": "Producto vencido",
+                    "requiereEvidencia": false
+                  },
+                  "valor": "2.00"
+                }
+              ]
+            },
+            {
+              "id": 31,
+              "linea": 1,
+              "producto": {
+                "id": 31,
+                "codigo": "5407           ",
+                "nombre": "TARTAN ROJO 1.40MTS TIPO A "
+              },
+              "imagenUrl": 'https://th.bing.com/th?id=OIF.%2fuc23H9lZ7AVVE7Zp%2bsJYw&rs=1&pid=ImgDetMain&o=7&rm=3',
+              "valorBaseProducto": "5940.00",
+              "totalImpuestos": "73930.72",
+              "estado": {
+                "tipo": 10,
+                "nombre": "Validado",
+                "codigo": "EST_DET_VALIDADO"
+              },
+              "unidadesSolicitadas": 100,
+              "unidadesRechazadas": 2,
+              "unidadesEntregadas": 2,
+              "totalEntregado": "100000.00",
+              "totalImpuestoEntrega": "200000.00",
+              "novedades": [
+                {
+                  "id": 8,
+                  "causal": {
+                    "codigo": "CS_NOV_PROD_DAÑADO",
+                    "nombre": "Producto dañado",
+                    "requiereEvidencia": false
+                  },
+                  "valor": "1.00"
+                }
+              ]
+            }
+          ]
+        },
+        "message": "Pedido obtenido exitosamente",
+        "success": true
+      }
+    } catch (error) {
+      throw error;
+    }
+  },
+
 };

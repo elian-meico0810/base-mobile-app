@@ -48,3 +48,55 @@ export interface PaymentsByInvoice {
   facturas_entregables: number,
   puede_entregar_todo: boolean,
 }
+
+export interface Document {
+  id: number;
+  codigo: string;
+  bodega: string;
+  fecha: string; // ISO date
+  canal: string;
+  codigoCliente: string;
+  codigoGuia: string;
+  dfr: string;
+  detalles: Detail[];
+}
+
+export interface Detail {
+  id: number;
+  linea: number;
+  producto: Product;
+  imagenUrl?: string;
+  valorBaseProducto: string;
+  totalImpuestos: string;
+  estado: Status;
+  unidadesSolicitadas: number;
+  unidadesRechazadas: number;
+  unidadesEntregadas: number;
+  totalEntregado: string;
+  totalImpuestoEntrega: string;
+  novedades: Novelty[];
+}
+
+export interface Product {
+  id: number;
+  codigo: string;
+  nombre: string;
+}
+
+export interface Status {
+  tipo: number;
+  nombre: string;
+  codigo: string;
+}
+
+export interface Novelty {
+  id: number;
+  causal: Cause;
+  valor: string;
+}
+
+export interface Cause {
+  codigo: string;
+  nombre: string;
+  requiereEvidencia: boolean;
+}

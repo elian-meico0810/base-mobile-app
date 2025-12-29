@@ -49,15 +49,23 @@ export interface PaymentsByInvoice {
   puede_entregar_todo: boolean,
 }
 
+export interface ConditionPago {
+  id: number;
+  nombre: string;
+  codigo: string;
+}
+
 export interface Document {
   id: number;
   codigo: string;
   bodega: string;
-  fecha: string; // ISO date
+  fecha: string;
   canal: string;
   codigoCliente: string;
   codigoGuia: string;
   dfr: string;
+  porcentajeDFR: string;
+  condicionPago: ConditionPago;
   detalles: Detail[];
 }
 

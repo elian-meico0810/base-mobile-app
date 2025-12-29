@@ -87,16 +87,16 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
                     <View style={styles.row}>
                         <View style={styles.leftInfo}>
                             <View style={styles.productHeader}>
-                                {valuesById[item.id] ? (
+                                {Number(item.unidadesRechazadas) > 0 ? (
                                     <Text style={styles.quantityText}>
-                                        {Number(item.unidadesSolicitadas) - Number(valuesById[item.id].tatolValue)}
+                                        {Number(item.unidadesSolicitadas) - Number(item.unidadesRechazadas)}
                                     </Text>
                                 ) : (
                                     <Text style={styles.quantityText}>{item.unidadesSolicitadas}</Text>
 
                                 )}
 
-                                {valuesById[item.id] && (
+                                {Number(item.unidadesRechazadas) > 0 && (
                                     <Text style={styles.quantityTextValue}>
                                         {item.unidadesSolicitadas}
                                     </Text>
@@ -115,7 +115,7 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
 
                         <View style={styles.priceRow}>
                             <Text style={styles.totalPrice}>
-                                ${formatNumber(calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_1) ?? 0)}
+                                ${formatNumber(calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_3) ?? 0)}
                             </Text>
                             <Text style={styles.unitPrice}>$ {formatNumber(calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_2) ?? 0)} c/u</Text>
                         </View>

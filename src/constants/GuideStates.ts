@@ -67,7 +67,6 @@ export enum OptionsRefusedEnum {
     PRODUCTOS = "Productos"
 }
 
-
 export enum TypeInvoiceEnum {
     CREDITO = "CREDITO",
     CONTADO_EFECTIVO = "CONTADO EFECTIVO",
@@ -80,10 +79,7 @@ export enum TypeConPagoEnum {
 }
 
 export enum TypeCaculateValueEnum {
-    ACTION_1 = "ACTION_1",
-    ACTION_2 = "ACTION_2",
-    ACTION_3 = "ACTION_3",
-    ACTION_4 = "ACTION_4",
-    ACTION_5 = "ACTION_5",
-    ACTION_6 = "ACTION_6"
+    ACTION_1 = "TOTAL_VALUE_BY_PRODUCTS",
+    ACTION_2 = "TOTAL_UNIT_VALUE_BY_PRODUCTS",
+    ACTION_3 = "TOTAL_VALUE_BY_PRODUCTS_REFUSED",
 }

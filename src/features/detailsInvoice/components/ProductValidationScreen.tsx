@@ -1,5 +1,5 @@
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { TypeCaculateValueEnum } from '@/src/constants/GuideStates';
+import { TypeCaculateValueEnum, TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import { calculateVlueByPorducts, capitalizeFirst, formatNumber, formatStringToNumber } from '@/src/utils/uitls';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
@@ -489,16 +489,20 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     const totalProducts = pendingCount + validatedCount;
     const progressPercentage = totalProducts > 0 ? (validatedCount / totalProducts) * 100 : 0;
     var totalValue = 0;
+
     // Calcular valor total a recaudar
     totalValue = allProducts.reduce((totalSum, doc) => {
         return totalSum + doc.detalles.reduce((docSum, product) => {
-            // Calcular el valor real del producto
-            const productValue = calculateVlueByPorducts(product, TypeCaculateValueEnum.ACTION_3) ?? 0;
+            if (allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CREDITO ||
+                allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CONTADO_EFECTIVO) {
 
-            return docSum + Number(productValue);
+                // Calcular el valor real del producto
+                const productValue = calculateVlueByPorducts(product, TypeCaculateValueEnum.ACTION_3) ?? 0;
+                return docSum + Number(productValue);
+            }
+            return docSum; // Si no cumple la condición, mantener el acumulado actual
         }, 0);
     }, 0);
-
 
     // Calcular valor por tipo
     const totalValueSuccess = validatedProducts.reduce((totalSum, doc) => {
@@ -662,12 +666,15 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                         </View>
                     </View>
                 </View>
-
-                <View style={styles.valueRow}>
-                    <Text style={styles.valueLabel}>Valor a recaudar:</Text>
-                    <Text style={styles.valueAmount}>$ {formatNumber(Number(totalValue))}</Text>
-                </View>
-
+                
+                {allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CREDITO ||
+                allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CONTADO_EFECTIVO ? (
+                    <View style={styles.valueRow}>
+                        <Text style={styles.valueLabel}>Valor a recaudar:</Text>
+                        <Text style={styles.valueAmount}>$ {formatNumber(Number(totalValue))}</Text>
+                    </View>
+                ) : null}
+            
                 <View style={styles.buttonRow}>
                     <PrimaryButton
                         title="Finalizar"

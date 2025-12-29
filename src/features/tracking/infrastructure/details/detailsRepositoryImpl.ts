@@ -146,6 +146,12 @@ export const detailsRepositoryImpl: DetailsRepository = {
           "codigoCliente": "000000009305",
           "codigoGuia": "24335",
           "dfr": "71979.95",
+          "porcentajeDFR": "2.60",
+          "condicionPago": {
+            "id": 32,
+            "nombre": "Credito",
+            "codigo": "CREDITO"
+          },
           "detalles": [
             {
               "id": 30,
@@ -164,8 +170,8 @@ export const detailsRepositoryImpl: DetailsRepository = {
                 "codigo": "EST_DET_VALIDADO"
               },
               "unidadesSolicitadas": 198,
-              "unidadesRechazadas": 2,
-              "unidadesEntregadas": 0,
+              "unidadesRechazadas": 0,
+              "unidadesEntregadas": 10,
               "totalEntregado": "17000.00",
               "totalImpuestoEntrega": "20000.00",
               "novedades": [
@@ -224,8 +230,8 @@ export const detailsRepositoryImpl: DetailsRepository = {
                 "codigo": "EST_DET_VALIDADO"
               },
               "unidadesSolicitadas": 100,
-              "unidadesRechazadas": 2,
-              "unidadesEntregadas": 2,
+              "unidadesRechazadas": 0,
+              "unidadesEntregadas": 0,
               "totalEntregado": "100000.00",
               "totalImpuestoEntrega": "200000.00",
               "novedades": [

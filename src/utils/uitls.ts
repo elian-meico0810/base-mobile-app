@@ -104,22 +104,23 @@ export function toUpperCase(text?: string) {
     return text ? text.toUpperCase() : '';
 }
 
+
 export function calculateVlueByPorducts(data: Detail, action: string) {
     const baseValue = Number(data?.valorBaseProducto ?? 0);
     const totalTaxes = Number(data?.totalImpuestos ?? 0);
     const unit = Number(data?.unidadesSolicitadas ?? 0);
-    const unitEntry = Number(data?.unidadesEntregadas ?? 0);
+    const unitRefused = Number(data?.unidadesRechazadas ?? 0);
     const form_1 = (totalTaxes / unit) + baseValue
 
     switch (action) {
         case TypeCaculateValueEnum.ACTION_1:
-            return (baseValue * unit);
+            return (form_1 * unit);
 
         case TypeCaculateValueEnum.ACTION_2:
-            return (totalTaxes / unit) + baseValue;
+            return form_1;
 
         case TypeCaculateValueEnum.ACTION_3:
-            var value = unitEntry > 0 ? unitEntry : unit;
+            var value = unitRefused > 0 ? unit - unitRefused : unit;
             return (form_1 * value);
         default:
             return 0;

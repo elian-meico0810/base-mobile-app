@@ -73,7 +73,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const [isExpanded, setIsExpanded] = useState(false);
     const [showPorductData, setPorductData] = useState<Document[]>([]);
     const router = useRouter();
-    
+
     const handleGoBack = () => {
         if (routeStarted && isCountryDelivery) {
             router.push(
@@ -296,7 +296,10 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
             {/** Listado de productos */}
             <ProductValidationSection
-                onFinalize={handleSubmit}
+                onFinalize={(data) => {
+                    handleSubmit;
+                    setUploadPhoto(true);
+                }}
                 onSuccessAlet={successButton}
                 onErrorAlert={alertButton}
                 onStatusNovelty={(data) => {

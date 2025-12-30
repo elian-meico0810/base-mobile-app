@@ -1,4 +1,5 @@
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LogoText } from '@/components/generals/LogoText';
 import { NetworkStatus } from '@/components/generals/NetworkStatus';
@@ -8,10 +9,11 @@ import { ThemedView } from '@/components/themed-view';
 import { authRepositoryImpl } from '@/src/features/auth/infrastructure/login/authRepositoryImpl';
 import { decodeJWT } from '@/src/utils/jwt';
 import NetInfo from '@react-native-community/netinfo';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
+  BackHandler,
   Dimensions,
   Image, Keyboard,
   StyleSheet,
@@ -29,6 +31,11 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
   const [tokenEncode, setTokeEncode] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
+  const [modalButtonLabelClose, setModalButtonLabelClose] = useState("Cerrar");
   const isValid = guide.length >= 5;
   const router = useRouter();
 
@@ -47,7 +54,33 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
     };
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        setModalVisible(true);
+        setModalTitle("Salir de la aplicación");
+        setModalMessage("¿Deseas salir de la aplicación?");
+        setModalButtonLabel("Salir");
+        setModalButtonLabelClose("Cerrar");
 
+        // 🔴 Bloquea navegación atrás
+        return true;
+      };
+
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress
+      );
+
+      return () => subscription.remove();
+    }, [])
+  );
+
+  const handleExitApp = () => {
+    setModalVisible(false);
+    BackHandler.exitApp();
+  };
+  
   useEffect(() => {
     const fetchToken = async () => {
       try {
@@ -125,6 +158,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
           }
 
         });
+        setGuide("");
       } else {
         setErrorMessage(response?.message || "La guía no existe o es incorrecta.");
       }
@@ -194,6 +228,18 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
               height={43}
             />
           </View>
+          <ExceptionModal
+            visible={modalVisible}
+            onClose={() => setModalVisible(false)}
+            title={modalTitle}
+            message={modalMessage}
+            buttonLabel={modalButtonLabel}
+            close={modalButtonLabelClose}
+            isButtonsClosed={true}
+            onExit={() => {
+              handleExitApp();
+            }}
+          />
         </View>
       </View>
       {isLoading && <LoadingBlue />}

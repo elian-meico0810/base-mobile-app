@@ -7,26 +7,49 @@ type Props = {
   title: string;
   message: string;
   buttonLabel: string;
+  isButtonsClosed?: boolean;
+  close?: string;
+  onExit?: () => void;
 };
 
-export const ExceptionModal: React.FC<Props> = ({ 
-  visible, 
-  onClose, 
-  title, 
-  message, 
-  buttonLabel 
+export const ExceptionModal: React.FC<Props> = ({
+  visible,
+  onClose,
+  title,
+  message,
+  buttonLabel,
+  isButtonsClosed = false,
+  close,
+  onExit
 }) => {
-
   return (
     <Modal transparent visible={visible} animationType="fade">
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.message}>{message}</Text>
-          
-          <TouchableOpacity style={styles.button} onPress={onClose}>
-            <Text style={styles.buttonText}>{buttonLabel}</Text>
-          </TouchableOpacity>
+
+          {isButtonsClosed ? (
+            <>
+              <View style={styles.buttonsRow}>
+                <TouchableOpacity style={styles.buttonOutline} onPress={onClose}>
+                  <Text style={styles.buttonOutlineText}>{close}</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.buttonPrimary} onPress={onExit}>
+                  <Text style={styles.buttonPrimaryText}>{buttonLabel}</Text>
+                </TouchableOpacity>
+              </View>
+
+            </>
+
+          ) : (
+            <TouchableOpacity style={styles.button} onPress={onClose}>
+              <Text style={styles.buttonText}>{buttonLabel}</Text>
+            </TouchableOpacity>
+          )}
+
+
         </View>
       </View>
     </Modal>
@@ -67,4 +90,39 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  buttonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    gap: 12, 
+  },
+
+  buttonPrimary: {
+    flex: 1,
+    backgroundColor: '#164194',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+
+  buttonPrimaryText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+
+  buttonOutline: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#164194',
+    alignItems: 'center',
+  },
+
+  buttonOutlineText: {
+    color: '#164194',
+    fontWeight: 'bold',
+  },
+
 });

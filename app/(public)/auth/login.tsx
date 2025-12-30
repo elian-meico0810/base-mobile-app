@@ -11,7 +11,6 @@ export default function LoginPage() {
     try {
       await login(guide);
     } catch (err) {
-      console.log("Error login:", err);
     }
   }
 

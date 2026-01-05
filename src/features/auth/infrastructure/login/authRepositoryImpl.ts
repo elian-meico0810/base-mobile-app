@@ -12,13 +12,6 @@ export const authRepositoryImpl: AuthRepository = {
     const { data } = await authApi.post(API_ROUTES.LOGIN_GUIDE, payload);
     return data
     
-    //return {
-    //  statusCode: 200,
-    //  data: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJudW1lcm9HdWlhIjo3MTM4MCwiZW1wcmVzYSI6Ik1laWNvIiwicGxhY2EiOiJxZWs1NzMiLCJleHAiOjE3NjM2MTQ3NDB9.bj5tTfNMWGELmHEep7NXKwfxf-1_7E5sBLPCdmLn7wg",
-    //  message: "Guía autenticada con éxito",
-    //  success: true
-    //}
-
   },
 
   async logout() {

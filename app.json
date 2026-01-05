@@ -4,7 +4,7 @@
     "slug": "Meico-Track",
     "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/icons/LogoMeitruckNew.png",
+    "icon": "./assets/newIcon/1024.png",
     "scheme": "basemobileapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -13,9 +13,9 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icons/LogoMeitruckNew.png",
+        "foregroundImage": "./assets/newIcon/newIcon_adaptive_fore.png",
         "backgroundColor": "#00000000",
-        "monochromeImage": "./assets/icons/LogoMeitruckNew.png"
+        "monochromeImage": "./assets/newIcon/newIcon_adaptive_fore.png"
       },
       "permissions": [
         "CAMERA",

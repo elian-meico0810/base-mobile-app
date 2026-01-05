@@ -1,6 +1,5 @@
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
-import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/UploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { ProductValidationSection } from '@/src/features/detailsInvoice/components/ProductValidationScreen';
@@ -10,6 +9,7 @@ import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/de
 import { capitalizeFirst, cleanSpaces } from '@/src/utils/uitls';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from "react";
 import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 const { width, height } = Dimensions.get('window');
@@ -62,6 +62,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const [alertButton, setAlertButton] = useState(false);
     const [uploadPhotoFile, setUploadPhotoFile] = useState(false);
     const [showViewModal, setViewModal] = useState(false);
+
     const [modalStatusNovelty, setStatusNovelty] = useState<'left' | 'right' | null>(null);
     const [RefreshingOnPress, setRefreshingOnPress] = useState(false);
     const [finalizedData, setFinalizedData] = useState<FinalizedData | null>(null);
@@ -73,6 +74,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const [isExpanded, setIsExpanded] = useState(false);
     const [showPorductData, setPorductData] = useState<Document[]>([]);
     const router = useRouter();
+    const orderId = initialGuide?.pedidos?.[0]?.id;
 
     const handleGoBack = () => {
         if (routeStarted && isCountryDelivery) {
@@ -181,11 +183,13 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const getDataProduct = async () => {
         try {
             setLoading(true);
-            const responseQuery = await detailsRepositoryImpl.listPorductData(token);
+            const responseQuery = await detailsRepositoryImpl.listPorductData(token, Number(orderId));
             if (responseQuery?.statusCode == 200) {
                 if (typeof responseQuery.data === "object" && !Array.isArray(responseQuery.data)) {
                     setPorductData(responseQuery.data ? [responseQuery.data] : []);
+
                 }
+
             }
         } catch (error: any) {
             setModalTitle("¡Error!");
@@ -196,10 +200,41 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         }
     };
 
+    useEffect(() => {
+        if (Array.isArray(showPorductData) && showPorductData.length > 0) {
+            tokenData();
+        }
+    }, [showPorductData]);
+
 
     useEffect(() => {
         getDataProduct();
     }, []);
+
+
+    const tokenData = async () => {
+        try {
+            const responseData = await detailsRepositoryImpl.tokenPorducts(token);
+            if (responseData?.statusCode == 200 && responseData?.data &&
+                !Array.isArray(responseData.data) &&
+                typeof responseData.data !== "string") {
+
+                await SecureStore.setItemAsync('service_token', responseData.data.token);
+                await SecureStore.setItemAsync('base_url', responseData.data.base_url);
+
+                const testToken = await SecureStore.getItemAsync('service_token');
+                const testUrl = await SecureStore.getItemAsync('base_url');
+
+            }
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
 
     useEffect(() => {
@@ -210,9 +245,10 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         dataProduct();
 
     }, [token]);
+
     return (
         <ThemedView style={styles.container}>
-            <NetworkStatus />
+            {/* <NetworkStatus /> */}
 
             {/* Fondo gris */}
             <View style={styles.background} />

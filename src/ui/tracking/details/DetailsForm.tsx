@@ -3,7 +3,6 @@ import { DetailsGudes } from '@/components/generals/DetailsGudes';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { GuideCard } from '@/components/generals/GuideCard';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
-import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { TodayDeliveries } from '@/components/generals/TodayDeliveries';
 import { SearchInput } from '@/components/inputs/SearchInput';
 import { GuideCardSkeleton } from '@/components/skeleton/GuideCardSkeleton';
@@ -284,7 +283,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
 
     return (
         <ThemedView style={styles.container}>
-            <NetworkStatus />
+            {/* <NetworkStatus /> */}
 
             <View style={[styles.backgroundFill, { width, height }]} pointerEvents="none">
                 <Image

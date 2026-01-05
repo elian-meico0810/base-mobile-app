@@ -8,6 +8,18 @@ export interface Factura {
   tipoCliente: string;
 }
 
+export interface Pedidos {
+    id : number;
+    codigo : string;
+    bodega : string;
+    fecha : string;
+    canal : string;
+    codigoCliente : string;
+    codigoGuia : string;
+    dfr : number;
+    porcentajeDFR : number;
+}
+
 export interface GuideDetails {
   idDireccion: number;
   direccion: string;
@@ -18,6 +30,7 @@ export interface GuideDetails {
   longitud: string;
   estado: string;
   facturas: Factura[];
+  pedidos?: Pedidos[];
 }
 
 export interface RuteInitPorps {
@@ -107,4 +120,9 @@ export interface Cause {
   codigo: string;
   nombre: string;
   requiereEvidencia: boolean;
+}
+
+export interface TokenProducts {
+  base_url: string;
+  token: string;
 }

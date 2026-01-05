@@ -12,8 +12,9 @@ export default function IndexDetailsInvoiceScreen() {
     const isSelectInvocies = params.isSelectInvocies as string;
     const routeStartedBotton = params.routeStarted as string;
     const documentMeico = params.documentMeico as string;
+    const viewOrder = params.viewOrder as string;
     const shouldShowViewSelectInvoice = guideObj.facturas.length >= 2 || documentMeico;
-
+    
     return (
         <>
             <Stack.Screen

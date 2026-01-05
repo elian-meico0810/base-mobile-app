@@ -6,7 +6,6 @@ import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails'
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
-import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/UploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
@@ -53,11 +52,13 @@ type OptionsRefusedPorps = 'Dinero' | 'Dueño' | 'Tienda' | 'Productos' | null;
 export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton }: InfoInvoiceFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [guideAny, setGuideAny] = useState<GuideDetails[]>([]);
+    const [guideByProduct, setGuideByPorduct] = useState<GuideDetails[]>([]);
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
     const [showPayment, setShowPayment] = useState(false);
     const [showDetailInvoiceQR, setShowDetailInvoiceQR] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
+    const [viewOrder, setIsOrder] = useState<GuideDetails | null>(null);
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
@@ -252,7 +253,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setLoading(false);
         }
     };
-
+  
     const handleSubmit = async () => {
         try {
             setvalidateIsBotton(true);
@@ -286,6 +287,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 token
             );
             if (response?.statusCode === 200) {
+  
                 router.push(
                     `/views/IndexDetailsInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
                 );
@@ -604,7 +606,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         const fetchGuideList = async () => {
             try {
                 if (routeStarted && isCountryDelivery) {
-
                     const response = await detailsRepositoryImpl.listGuide(
                         Number(numberGuide),
                         token
@@ -617,7 +618,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         const result = data.find(item =>
                             item.facturas.some(f => f.numeroFactura === numeroFactura)
                         );
-                        setResultData(result ?? null)
+                        setResultData(result ?? null);
                     }
                 }
 
@@ -656,7 +657,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     return (
         <ThemedView style={styles.container}>
-            <NetworkStatus />
+            {/* <NetworkStatus /> */}
 
             {/* Fondo gris */}
             <View style={styles.background} />

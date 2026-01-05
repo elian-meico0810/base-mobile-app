@@ -133,127 +133,147 @@ export const detailsRepositoryImpl: DetailsRepository = {
     }
   },
 
-  async listPorductData(token: string) {
+  async listPorductData(token: string, order: number) {
     try {
-      return {
-        "statusCode": 200,
-        "data": {
-          "id": 54,
-          "codigo": "00792983",
-          "bodega": "Q01",
-          "fecha": "2011-01-21T00:00:00",
-          "canal": "MIXTO",
-          "codigoCliente": "000000009305",
-          "codigoGuia": "24335",
-          "dfr": "71979.95",
-          "porcentajeDFR": "2.60",
-          "condicionPago": {
-            "id": 32,
-            "nombre": "Credito",
-            "codigo": "CREDITO"
-          },
-          "detalles": [
-            {
-              "id": 30,
-              "linea": 2,
-              "producto": {
-                "id": 30,
-                "codigo": "5103           ",
-                "nombre": "LONA 180 CALIMA TIPO A "
-              },
-              "imagenUrl": 'https://th.bing.com/th?id=OIF.%2fuc23H9lZ7AVVE7Zp%2bsJYw&rs=1&pid=ImgDetMain&o=7&rm=3',
-              "valorBaseProducto": "7574.00",
-              "totalImpuestos": "151006.63",
-              "estado": {
-                "tipo": 10,
-                "nombre": "Validado",
-                "codigo": "EST_DET_VALIDADO"
-              },
-              "unidadesSolicitadas": 198,
-              "unidadesRechazadas": 0,
-              "unidadesEntregadas": 10,
-              "totalEntregado": "17000.00",
-              "totalImpuestoEntrega": "20000.00",
-              "novedades": [
-                {
-                  "id": 4,
-                  "causal": {
-                    "codigo": "CS_NOV_DIN_INSUF",
-                    "nombre": "Dinero insuficiente",
-                    "requiereEvidencia": false
-                  },
-                  "valor": "250000.00"
-                },
-                {
-                  "id": 5,
-                  "causal": {
-                    "codigo": "CS_NOV_PROD_VENC",
-                    "nombre": "Producto vencido",
-                    "requiereEvidencia": false
-                  },
-                  "valor": "2.00"
-                },
-                {
-                  "id": 6,
-                  "causal": {
-                    "codigo": "CS_NOV_PROD_DAÑADO",
-                    "nombre": "Producto dañado",
-                    "requiereEvidencia": false
-                  },
-                  "valor": "1.00"
-                },
-                {
-                  "id": 7,
-                  "causal": {
-                    "codigo": "CS_NOV_PROD_VENC",
-                    "nombre": "Producto vencido",
-                    "requiereEvidencia": false
-                  },
-                  "valor": "2.00"
-                }
-              ]
-            },
-            {
-              "id": 31,
-              "linea": 1,
-              "producto": {
-                "id": 31,
-                "codigo": "5407           ",
-                "nombre": "TARTAN ROJO 1.40MTS TIPO A "
-              },
-              "imagenUrl": 'https://th.bing.com/th?id=OIF.%2fuc23H9lZ7AVVE7Zp%2bsJYw&rs=1&pid=ImgDetMain&o=7&rm=3',
-              "valorBaseProducto": "5940.00",
-              "totalImpuestos": "73930.72",
-              "estado": {
-                "tipo": 10,
-                "nombre": "Validado",
-                "codigo": "EST_DET_VALIDADO"
-              },
-              "unidadesSolicitadas": 100,
-              "unidadesRechazadas": 0,
-              "unidadesEntregadas": 0,
-              "totalEntregado": "100000.00",
-              "totalImpuestoEntrega": "200000.00",
-              "novedades": [
-                {
-                  "id": 8,
-                  "causal": {
-                    "codigo": "CS_NOV_PROD_DAÑADO",
-                    "nombre": "Producto dañado",
-                    "requiereEvidencia": false
-                  },
-                  "valor": "1.00"
-                }
-              ]
-            }
-          ]
+      const response = await authApi.get(`${API_ROUTES.GET_ORDER}${order}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-        "message": "Pedido obtenido exitosamente",
-        "success": true
-      }
+      });
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+
+      // return {
+      //   "statusCode": 200,
+      //   "data": {
+      //     "id": 54,
+      //     "codigo": "00792983",
+      //     "bodega": "Q01",
+      //     "fecha": "2011-01-21T00:00:00",
+      //     "canal": "MIXTO",
+      //     "codigoCliente": "000000009305",
+      //     "codigoGuia": "24335",
+      //     "dfr": "71979.95",
+      //     "porcentajeDFR": "2.60",
+      //     "condicionPago": {
+      //       "id": 32,
+      //       "nombre": "Credito",
+      //       "codigo": "CREDITO"
+      //     },
+      //     "detalles": [
+      //       {
+      //         "id": 30,
+      //         "linea": 2,
+      //         "producto": {
+      //           "id": 30,
+      //           "codigo": "5103           ",
+      //           "nombre": "LONA 180 CALIMA TIPO A "
+      //         },
+      //         "imagenUrl": 'https://th.bing.com/th?id=OIF.%2fuc23H9lZ7AVVE7Zp%2bsJYw&rs=1&pid=ImgDetMain&o=7&rm=3',
+      //         "valorBaseProducto": "7574.00",
+      //         "totalImpuestos": "151006.63",
+      //         "estado": {
+      //           "tipo": 10,
+      //           "nombre": "Validado",
+      //           "codigo": "EST_DET_VALIDADO"
+      //         },
+      //         "unidadesSolicitadas": 198,
+      //         "unidadesRechazadas": 0,
+      //         "unidadesEntregadas": 10,
+      //         "totalEntregado": "17000.00",
+      //         "totalImpuestoEntrega": "20000.00",
+      //         "novedades": [
+      //           {
+      //             "id": 4,
+      //             "causal": {
+      //               "codigo": "CS_NOV_DIN_INSUF",
+      //               "nombre": "Dinero insuficiente",
+      //               "requiereEvidencia": false
+      //             },
+      //             "valor": "250000.00"
+      //           },
+      //           {
+      //             "id": 5,
+      //             "causal": {
+      //               "codigo": "CS_NOV_PROD_VENC",
+      //               "nombre": "Producto vencido",
+      //               "requiereEvidencia": false
+      //             },
+      //             "valor": "2.00"
+      //           },
+      //           {
+      //             "id": 6,
+      //             "causal": {
+      //               "codigo": "CS_NOV_PROD_DAÑADO",
+      //               "nombre": "Producto dañado",
+      //               "requiereEvidencia": false
+      //             },
+      //             "valor": "1.00"
+      //           },
+      //           {
+      //             "id": 7,
+      //             "causal": {
+      //               "codigo": "CS_NOV_PROD_VENC",
+      //               "nombre": "Producto vencido",
+      //               "requiereEvidencia": false
+      //             },
+      //             "valor": "2.00"
+      //           }
+      //         ]
+      //       },
+      //       {
+      //         "id": 31,
+      //         "linea": 1,
+      //         "producto": {
+      //           "id": 31,
+      //           "codigo": "5407           ",
+      //           "nombre": "TARTAN ROJO 1.40MTS TIPO A "
+      //         },
+      //         "imagenUrl": 'https://th.bing.com/th?id=OIF.%2fuc23H9lZ7AVVE7Zp%2bsJYw&rs=1&pid=ImgDetMain&o=7&rm=3',
+      //         "valorBaseProducto": "5940.00",
+      //         "totalImpuestos": "73930.72",
+      //         "estado": {
+      //           "tipo": 10,
+      //           "nombre": "Validado",
+      //           "codigo": "EST_DET_VALIDADO"
+      //         },
+      //         "unidadesSolicitadas": 100,
+      //         "unidadesRechazadas": 0,
+      //         "unidadesEntregadas": 0,
+      //         "totalEntregado": "100000.00",
+      //         "totalImpuestoEntrega": "200000.00",
+      //         "novedades": [
+      //           {
+      //             "id": 8,
+      //             "causal": {
+      //               "codigo": "CS_NOV_PROD_DAÑADO",
+      //               "nombre": "Producto dañado",
+      //               "requiereEvidencia": false
+      //             },
+      //             "valor": "1.00"
+      //           }
+      //         ]
+      //       }
+      //     ]
+      //   },
+      //   "message": "Pedido obtenido exitosamente",
+      //   "success": true
+      // }
+    } catch (error) {
+      throw error;
+    }
+  },
+  async tokenPorducts(token: string) {
+    try {
+      const response = await authApi.get(`${API_ROUTES.GET_TOKEN_PRODUCTS}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {
       throw error;
     }
   },
 
+  
 };

@@ -1,7 +1,9 @@
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import { ProductItemSkeleton } from '@/components/skeleton/ProductItemSkeleton';
 import { TypeCaculateValueEnum, TypeInvoiceEnum } from '@/src/constants/GuideStates';
-import { calculateVlueByPorducts, capitalizeFirst, formatNumber, formatStringToNumber } from '@/src/utils/uitls';
+import { calculateVlueByPorducts, capitalizeWords, formatNumber, formatStringToNumber } from '@/src/utils/uitls';
 import { MaterialIcons } from '@expo/vector-icons';
+import * as SecureStore from 'expo-secure-store';
 import { useEffect, useRef, useState } from 'react';
 import {
     Animated,
@@ -15,7 +17,6 @@ import {
 } from 'react-native';
 import { Detail, Document } from '../../tracking/domain/details/DetailsGuide';
 import { ValidPorductScreen } from './ValidPorductScreen';
-
 const { width, height } = Dimensions.get('window');
 
 
@@ -30,6 +31,8 @@ interface ProductItemProps {
     setActiveSwipeId: (id: string | null) => void;
     onCloseReport?: (value: boolean) => void;
     id?: number;
+    testToken?: string;
+    testUrl?: string;
 }
 
 
@@ -42,7 +45,9 @@ const ProductItem = ({
     activeSwipeId,
     setActiveSwipeId,
     onCloseReport,
-    id
+    id,
+    testToken,
+    testUrl
 }: ProductItemProps & { shouldAutoValidate?: boolean }) => {
     const [swipePosition] = useState(new Animated.Value(0));
     const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
@@ -51,6 +56,20 @@ const ProductItem = ({
     const [hasAutoValidated, setHasAutoValidated] = useState(false);
     const swipeThreshold = 50;
     const itemIdString = item.id.toString();
+    const buildImageUrl = (
+        baseUrl?: string | null,
+        token?: string | null,
+        code?: string
+    ): string | null => {
+        if (!baseUrl || !token || !code) return null;
+        return `${baseUrl}/${code}.webp${token}`;
+    };
+
+    const imagUrl = buildImageUrl(
+        testUrl,
+        testToken,
+        item?.producto?.codigo
+    );
 
     // Efecto para cerrar este elemento si otro se activa
     useEffect(() => {
@@ -225,6 +244,8 @@ const ProductItem = ({
 
     return (
         <View style={styles.productContainer}>
+
+
             {/* Barra lateral de fondo (se muestra detrás del contenido) */}
             {showSideBar && (
                 <View style={[
@@ -264,16 +285,15 @@ const ProductItem = ({
             >
                 <View style={styles.productRow}>
                     <View style={styles.imageContainer}>
-                        {item?.imagenUrl ? (
+                        {imagUrl ? (
                             <Image
-                                source={{ uri: item?.imagenUrl }}
+                                source={{ uri: imagUrl }}
                                 style={styles.productImage}
                                 resizeMode="cover"
                             />
                         ) : (
                             <View style={styles.imagePlaceholder}>
                                 <MaterialIcons name="photo" size={32} color="#D1D3D8" />
-                                <Text style={styles.placeholderText}>Sin imagen</Text>
                             </View>
                         )}
                     </View>
@@ -286,7 +306,7 @@ const ProductItem = ({
                                 </View>
 
                                 <Text style={styles.productName} numberOfLines={2}>
-                                    {capitalizeFirst(item.producto.nombre)}
+                                    {capitalizeWords(item.producto.nombre)}
                                 </Text>
 
                                 <Text style={styles.productSku}>
@@ -338,9 +358,10 @@ interface ProductValidationSectionProps {
     data?: ReasonData[];
     messages?: (messages: string) => void;
     dataPorduct?: Document[];
+    token?: string;
 }
 
-export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAlet, onStatusNovelty, shouldAutoValidate, modalStatusNovelty, onCloseReportPorduct, data, messages, dataPorduct }: ProductValidationSectionProps) => {
+export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAlet, onStatusNovelty, shouldAutoValidate, modalStatusNovelty, onCloseReportPorduct, data, messages, dataPorduct, token }: ProductValidationSectionProps) => {
     const [allProducts, setAllProducts] = useState<Document[]>(dataPorduct || []);
     const [validatedProducts, setValidatedProducts] = useState<Document[]>([]);
     const [showValidatedModal, setShowValidatedModal] = useState(false);
@@ -349,6 +370,9 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     const [tatolValue, setTotal] = useState(0);
     const [idValue, setIdValue] = useState(0);
     const [totalUnits, setTotalUnits] = useState(0);
+    const [serviceToken, setServiceToken] = useState("");
+    const [serviceUrl, setBaseUrl] = useState("");
+
     useEffect(() => {
         if (showDirection) {
             onStatusNovelty?.(showDirection);
@@ -566,6 +590,21 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
         return validatedDetails;
     };
 
+    useEffect(() => {
+        if (serviceUrl == "" || serviceToken == "") {
+            const loadSecureData = async () => {
+
+                const testToken = await SecureStore.getItemAsync('service_token');
+                const testUrl = await SecureStore.getItemAsync('base_url');
+                setServiceToken(testToken || "");
+                setBaseUrl(testUrl || "");
+
+            };
+            loadSecureData();
+
+        }
+    }, []);
+
     const validatedDetailsFlat = getAllValidatedDetails();
 
     return (
@@ -585,7 +624,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
             >
                 <View style={styles.container}>
                     {/* Mostrar productos pendientes */}
-                    {pendingDetailsFlat.length > 0 && (
+                    {pendingDetailsFlat.length > 0 ? (
                         pendingDetailsFlat.map((item, index) => (
                             <ProductItem
                                 key={item.id}
@@ -599,9 +638,16 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                 setActiveSwipeId={setActiveSwipeId}
                                 shouldAutoValidate={shouldAutoValidate}
                                 onCloseReport={(value) => onCloseReportPorduct?.(value)}
+                                testToken={serviceToken}
+                                testUrl={serviceUrl}
                             />
                         ))
+                    ) : (
+                        Array.from({ length: 4 }).map((_, i) => (
+                            <ProductItemSkeleton key={i} />
+                        ))
                     )}
+
 
                     {/* Mostrar productos validados */}
                     {validatedDetailsFlat.length > 0 && (
@@ -628,6 +674,8 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                     validationType={item.estado?.codigo === 'EST_DET_VALIDADO_WARNING' ? 'warning' : 'success'}
                                     idValue={idValue}
                                     tatolValue={tatolValue}
+                                    testToken={serviceToken}
+                                    testUrl={serviceUrl}
                                 />
                             ))}
                         </>
@@ -666,15 +714,15 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                         </View>
                     </View>
                 </View>
-                
+
                 {allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CREDITO ||
-                allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CONTADO_EFECTIVO ? (
+                    allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CONTADO_EFECTIVO ? (
                     <View style={styles.valueRow}>
                         <Text style={styles.valueLabel}>Valor a recaudar:</Text>
                         <Text style={styles.valueAmount}>$ {formatNumber(Number(totalValue))}</Text>
                     </View>
                 ) : null}
-            
+
                 <View style={styles.buttonRow}>
                     <PrimaryButton
                         title="Finalizar"

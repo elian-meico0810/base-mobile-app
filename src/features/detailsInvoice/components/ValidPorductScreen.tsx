@@ -1,5 +1,5 @@
 import { TypeCaculateValueEnum } from '@/src/constants/GuideStates';
-import { calculateVlueByPorducts, capitalizeFirst, formatNumber } from '@/src/utils/uitls';
+import { calculateVlueByPorducts, capitalizeWords, formatNumber } from '@/src/utils/uitls';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import {
@@ -19,6 +19,8 @@ interface ProductItemProps {
     validationType?: string | null;
     idValue?: number | null;
     tatolValue?: number | null;
+    testToken?: string;
+    testUrl?: string;
 }
 type ValueById = {
     idValue: number;
@@ -26,7 +28,7 @@ type ValueById = {
 };
 const { width, height } = Dimensions.get('window');
 
-export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationType, idValue, tatolValue }: ProductItemProps) => {
+export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationType, idValue, tatolValue, testToken, testUrl }: ProductItemProps) => {
     const [valuesById, setValuesById] = useState<Record<number, ValueById>>({});
     useEffect(() => {
         if (
@@ -47,15 +49,28 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
 
     const quantityEntry = Number(item?.unidadesSolicitadas);
     const quantity = Number(item?.unidadesEntregadas);
+    const buildImageUrl = (
+        baseUrl?: string | null,
+        token?: string | null,
+        code?: string
+    ): string | null => {
+        if (!baseUrl || !token || !code) return null;
+        return `${baseUrl}/${code}.webp${token}`;
+    };
 
+    const imagUrl = buildImageUrl(
+        testUrl,
+        testToken,
+        item?.producto?.codigo
+    );
     return (
         <View style={styles.productContainer}>
             <View style={styles.productRow}>
                 <View style={styles.imageContainer}>
-                    {item.imagenUrl ? (
+                    {imagUrl ? (
                         <View style={styles.imageWrapper}>
                             <Image
-                                source={{ uri: item.imagenUrl }}
+                                source={{ uri: imagUrl}}
                                 style={styles.productImage}
                                 resizeMode="cover"
                             />
@@ -105,7 +120,7 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
                             </View>
 
                             <Text style={styles.productName} numberOfLines={2}>
-                                {capitalizeFirst(item.producto.nombre)}
+                                {capitalizeWords(item.producto.nombre)}
                             </Text>
 
                             <Text style={styles.productSku}>

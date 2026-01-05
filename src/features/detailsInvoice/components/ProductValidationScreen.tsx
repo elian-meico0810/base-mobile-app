@@ -115,89 +115,12 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
             setTotal(Number(totalUnits));
         }
 
-        // Buscar el detalle y el documento que lo contiene
-        let productToValidate: Detail | undefined;
-        let sourceDocument: Document | undefined;
-        let docIndex = -1;
-        let detailIndex = -1;
-
-        // Buscar en todos los documentos
-        for (let i = 0; i < allProducts.length; i++) {
-            const doc = allProducts[i];
-            const index = doc.detalles.findIndex(detalle => detalle?.producto?.id === id);
-            if (index !== -1) {
-                productToValidate = doc.detalles[index];
-                sourceDocument = doc;
-                docIndex = i;
-                detailIndex = index;
-                break;
-            }
-        }
-
-        if (!productToValidate || !sourceDocument) return;
-
-        // Quitar de la lista principal
-        setAllProducts(prev => {
-            const newDocs = [...prev];
-            if (docIndex >= 0 && newDocs[docIndex]) {
-                // Remover el detalle específico del documento
-                newDocs[docIndex] = {
-                    ...newDocs[docIndex],
-                    detalles: newDocs[docIndex].detalles.filter((_, idx) => idx !== detailIndex)
-                };
-
-                // Si el documento queda sin detalles, eliminarlo
-                if (newDocs[docIndex].detalles.length === 0) {
-                    newDocs.splice(docIndex, 1);
-                }
-            }
-            return newDocs;
-        });
-
-        // Agregar a la lista de validados
-        setValidatedProducts(prev => {
-            // Actualizar el estado del detalle
-            const updatedDetail: Detail = {
-                ...productToValidate!,
-                estado: direction === 'left'
-                    ? {
-                        tipo: 10,
-                        nombre: "Validado",
-                        codigo: "EST_DET_VALIDADO"
-                    }
-                    : {
-                        tipo: 20,
-                        nombre: "Validado con Novedad",
-                        codigo: "EST_DET_VALIDADO_WARNING"
-                    }
-            };
-
-            // Buscar si ya existe el documento en validados
-            const existingDocIndex = prev.findIndex(doc => doc.id === sourceDocument!.id);
-
-            if (existingDocIndex !== -1) {
-                // Agregar el detalle al documento existente
-                return prev.map((doc, idx) => {
-                    if (idx === existingDocIndex) {
-                        return {
-                            ...doc,
-                            detalles: [...doc.detalles, updatedDetail]
-                        };
-                    }
-                    return doc;
-                });
-            } else {
-                const newDoc: Document = {
-                    ...sourceDocument!,
-                    detalles: [updatedDetail]
-                };
-                return [...prev, newDoc];
-            }
-        });
+      
     };
-
+    console.log("datos: ", allProducts[0]?.detalles?.length);
+    
     // Calcular estadísticas CORREGIDAS
-    const pendingCount = allProducts.reduce((total, doc) => total + doc.detalles.length, 0);
+    const pendingCount = allProducts.reduce((total, doc) => doc.detalles.length, 0);
     const validatedCount = validatedProducts.reduce((total, doc) => total + doc.detalles.length, 0);
     const totalProducts = pendingCount + validatedCount;
     const progressPercentage = totalProducts > 0 ? (validatedCount / totalProducts) * 100 : 0;
@@ -239,21 +162,8 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     const isValid = pendingCount === 0;
 
     const handleFinalize = () => {
-        const finalData: FinalizedData = {
-            validatedCount,
-            pendingCount,
-            totalValue,
-            totalValueSuccess,
-            totalValueWarning,
-            validatedProducts,
-            statistics: {
-                successCount: validatedProducts.reduce((sum, doc) =>
-                    sum + doc.detalles.filter(p => p?.estado?.codigo === 'EST_DET_VALIDADO').length, 0),
-                warningCount: validatedProducts.reduce((sum, doc) =>
-                    sum + doc.detalles.filter(p => p?.estado?.codigo === 'EST_DET_VALIDADO_WARNING').length, 0),
-            }
-        };
-        onFinalize?.(finalData);
+       
+        // onFinalize?.();
         setShowValidatedModal(true);
     };
 

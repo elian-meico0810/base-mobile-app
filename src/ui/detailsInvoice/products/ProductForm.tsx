@@ -202,7 +202,35 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
     useEffect(() => {
         if (Array.isArray(showPorductData) && showPorductData.length > 0) {
-            tokenData();
+            const checkDateToken = async () => {
+                const dateToken = await SecureStore.getItemAsync('date_token');
+                if (dateToken) {
+                    // Parsear la fecha guardada
+                    const parts = dateToken.split(/[- :]/);
+                    const savedDate = new Date(
+                        parseInt(parts[0]),
+                        parseInt(parts[1]) - 1,
+                        parseInt(parts[2]),
+                        parseInt(parts[3]),
+                        parseInt(parts[4]), 
+                        parseInt(parts[5])
+                    );
+
+                    // Crear fecha actual
+                    const now = new Date();
+
+                    // Crear fecha de medianoche del día de la fecha guardada
+                    const midnightOfSavedDay = new Date(savedDate);
+                    midnightOfSavedDay.setHours(23, 59, 59, 999); // Exactamente antes de medianoche
+
+                    // Verificar si AHORA es después de medianoche del día guardado
+                    if (now > midnightOfSavedDay) {
+                        tokenData();
+                    }
+                }
+            };
+            checkDateToken();
+
         }
     }, [showPorductData]);
 
@@ -218,12 +246,20 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
             if (responseData?.statusCode == 200 && responseData?.data &&
                 !Array.isArray(responseData.data) &&
                 typeof responseData.data !== "string") {
-
+                
                 await SecureStore.setItemAsync('service_token', responseData.data.token);
                 await SecureStore.setItemAsync('base_url', responseData.data.base_url);
+                const inicializateToken = new Date();
+                const formatted = inicializateToken.toLocaleString('sv-SE').replace('T', ' ');
+
+                // Opción 1: Guardar como timestamp (recomendado)
+                await SecureStore.setItemAsync('date_token', formatted);
+
 
                 const testToken = await SecureStore.getItemAsync('service_token');
                 const testUrl = await SecureStore.getItemAsync('base_url');
+                const dateToken = await SecureStore.getItemAsync('date_token');
+
 
             }
         } catch (error) {

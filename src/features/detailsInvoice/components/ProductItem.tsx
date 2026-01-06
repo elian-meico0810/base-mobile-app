@@ -1,7 +1,7 @@
 import { TypeCaculateValueEnum } from '@/src/constants/GuideStates';
 import { calculateVlueByPorducts, capitalizeWords, formatNumber } from '@/src/utils/uitls';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
     Animated,
     Dimensions,
@@ -15,7 +15,6 @@ import { Detail } from '../../tracking/domain/details/DetailsGuide';
 
 const { width } = Dimensions.get('window');
 
-// Props del componente ProductItem
 interface ProductItemProps {
     item: Detail;
     isLastItem: boolean;
@@ -42,12 +41,18 @@ export const ProductItem = ({
     testUrl
 }: ProductItemProps) => {
     const swipePosition = useRef(new Animated.Value(0)).current;
-    const swipeDirection = useRef<'left' | 'right' | null>(null);
-    const isSwiped = useRef(false);
-    const isClosing = useRef(false);
+    const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
+    const [isSwiped, setIsSwiped] = useState(false);
+    const [showSideBar, setShowSideBar] = useState(false);
+    const [barConfig, setBarConfig] = useState({
+        color: '#FFA400',
+        position: 'left' as 'left' | 'right',
+        icon: 'warning' as 'warning' | 'success'
+    });
     const hasAutoValidated = useRef(false);
-    const panResponder = useRef<ReturnType<typeof PanResponder.create> | null>(null);
-    const swipeThreshold = 50;
+    const isAnimating = useRef(false);
+    const swipeThreshold = width * 0.15;
+    const minSwipeDistance = 20;
     const itemIdString = item.id.toString();
 
     const buildImageUrl = (
@@ -58,61 +63,83 @@ export const ProductItem = ({
         if (!baseUrl || !token || !code) return null;
         return `${baseUrl}/${code}.webp${token}`;
     };
-    
-    const imagUrl = buildImageUrl(
-        testUrl,
-        testToken,
-        item?.producto?.codigo
-    );
 
-    // Efecto para cerrar este elemento si otro se activa
+    const imagUrl = buildImageUrl(testUrl, testToken, item?.producto?.codigo);
+
+    // Actualizar barra de colores cuando cambia el estado
+    useEffect(() => {
+        if (isSwiped && swipeDirection) {
+            if (swipeDirection === 'left') {
+                setBarConfig({
+                    color: '#4CAF50',
+                    position: 'right',
+                    icon: 'success'
+                });
+            } else if (swipeDirection === 'right') {
+                setBarConfig({
+                    color: '#FFA400',
+                    position: 'left',
+                    icon: 'warning'
+                });
+            }
+            setShowSideBar(true);
+        } else {
+            setShowSideBar(false);
+        }
+    }, [isSwiped, swipeDirection]);
+
+    // Efecto para cerrar este elemento si otro se activa (SOLO para swipe derecho)
     useEffect(() => {
         if (activeSwipeId !== null &&
             activeSwipeId !== itemIdString &&
-            swipeDirection.current === 'right' &&
-            !isClosing.current) {
+            isSwiped &&
+            swipeDirection === 'right' &&
+            !isAnimating.current) {
             handleCloseSwipe();
-            isClosing.current = true;
         }
-    }, [activeSwipeId, itemIdString]);
+    }, [activeSwipeId, itemIdString, isSwiped, swipeDirection]);
 
     useEffect(() => {
         if (shouldAutoValidate &&
             activeSwipeId === itemIdString &&
-            swipeDirection.current === 'right' &&
+            swipeDirection === 'right' &&
             !hasAutoValidated.current) {
 
             hasAutoValidated.current = true;
-
             setTimeout(() => {
                 handleRightSwipeValidation();
-            }, 300);
+            }, 500);
         }
-    }, [shouldAutoValidate, activeSwipeId, itemIdString]);
+    }, [shouldAutoValidate, activeSwipeId, itemIdString, swipeDirection]);
 
     useEffect(() => {
-        // Resetear hasAutoValidated cuando el elemento deja de ser el activo
         if (activeSwipeId !== itemIdString) {
             hasAutoValidated.current = false;
         }
     }, [activeSwipeId, itemIdString]);
 
     useEffect(() => {
-        onPresssNovlety?.(swipeDirection.current);
-    }, [swipeDirection.current, onPresssNovlety]);
+        onPresssNovlety?.(swipeDirection);
+    }, [swipeDirection, onPresssNovlety]);
 
     const handleCloseSwipe = useCallback(() => {
+        if (isAnimating.current) return;
+        
+        isAnimating.current = true;
         hasAutoValidated.current = false;
-        Animated.timing(swipePosition, {
+        
+        Animated.spring(swipePosition, {
             toValue: 0,
-            duration: 200,
+            tension: 50,
+            friction: 7,
             useNativeDriver: true
         }).start(() => {
             swipePosition.setValue(0);
-            isSwiped.current = false;
-            swipeDirection.current = null;
-            isClosing.current = false;
-
+            setIsSwiped(false);
+            setSwipeDirection(null);
+            setShowSideBar(false);
+            isAnimating.current = false;
+            
             if (activeSwipeId === itemIdString) {
                 setActiveSwipeId(null);
             }
@@ -120,16 +147,23 @@ export const ProductItem = ({
     }, [activeSwipeId, itemIdString, setActiveSwipeId, swipePosition]);
 
     const handleRightSwipeValidation = useCallback(() => {
-        Animated.timing(swipePosition, {
+        if (isAnimating.current) return;
+        
+        isAnimating.current = true;
+        
+        Animated.spring(swipePosition, {
             toValue: 0,
-            duration: 200,
+            tension: 50,
+            friction: 7,
             useNativeDriver: true
         }).start(() => {
             swipePosition.setValue(0);
-            isSwiped.current = false;
-            swipeDirection.current = null;
-            isClosing.current = false;
+            setIsSwiped(false);
+            setSwipeDirection(null);
+            setShowSideBar(false);
             setActiveSwipeId(null);
+            isAnimating.current = false;
+            
             onValidate(item.id, 'right');
             if (shouldAutoValidate) {
                 onCloseReport?.(true);
@@ -137,108 +171,151 @@ export const ProductItem = ({
         });
     }, [item.id, onCloseReport, onValidate, setActiveSwipeId, shouldAutoValidate, swipePosition]);
 
-    // Crear PanResponder una sola vez
-    if (!panResponder.current) {
-        panResponder.current = PanResponder.create({
-            onStartShouldSetPanResponder: () => true,
-            onMoveShouldSetPanResponder: () => true,
-            onPanResponderMove: (_, gestureState) => {
-                // Determinar dirección del deslizamiento mientras se mueve
-                if (gestureState.dx < -10) {
-                    swipeDirection.current = 'left';
-                } else if (gestureState.dx > 10) {
-                    swipeDirection.current = 'right';
-                }
+    const handleLeftSwipeValidation = useCallback(() => {
+        if (isAnimating.current) return;
+        
+        isAnimating.current = true;
+        
+        Animated.spring(swipePosition, {
+            toValue: 0,
+            tension: 50,
+            friction: 7,
+            useNativeDriver: true
+        }).start(() => {
+            swipePosition.setValue(0);
+            setIsSwiped(false);
+            setSwipeDirection(null);
+            setShowSideBar(false);
+            isAnimating.current = false;
+            
+            onValidate(item.id, 'left');
+        });
+    }, [item.id, onValidate, swipePosition]);
 
-                // Usar setValue en lugar de Animated.event para mejor rendimiento
-                swipePosition.setValue(gestureState.dx);
+    const panResponder = useRef(
+        PanResponder.create({
+            onStartShouldSetPanResponder: () => {
+                // No permitir gestos si ya hay una animación en curso
+                return !isAnimating.current;
+            },
+            onMoveShouldSetPanResponder: (_, gestureState) => {
+                if (isAnimating.current) return false;
+                return Math.abs(gestureState.dx) > Math.abs(gestureState.dy * 2);
+            },
+            onPanResponderMove: (_, gestureState) => {
+                if (isAnimating.current) return;
+                
+                const limitedDx = Math.max(Math.min(gestureState.dx, 100), -100);
+                
+                if (Math.abs(gestureState.dx) > minSwipeDistance) {
+                    if (gestureState.dx < 0) {
+                        setSwipeDirection('left');
+                    } else if (gestureState.dx > 0) {
+                        setSwipeDirection('right');
+                    }
+                }
+                
+                swipePosition.setValue(limitedDx);
             },
             onPanResponderRelease: (_, gestureState) => {
-                if (gestureState.dx > swipeThreshold) {
-                    // Establecer este como el elemento activo inmediatamente
+                if (isAnimating.current) return;
+                
+                const isRightSwipe = gestureState.dx > swipeThreshold;
+                const isLeftSwipe = gestureState.dx < -swipeThreshold;
+                
+                if (isRightSwipe) {
+                    // Para swipe derecho: establecer como activo y cerrar otros
                     setActiveSwipeId(itemIdString);
-
-                    swipeDirection.current = 'right';
-                    isSwiped.current = true;
-                    isClosing.current = false;
-
-                    // Swipe derecha = amarillo = WARNING
-                    Animated.timing(swipePosition, {
-                        toValue: 40,
-                        duration: 200,
+                    setSwipeDirection('right');
+                    setIsSwiped(true);
+                    isAnimating.current = true;
+                    
+                    Animated.spring(swipePosition, {
+                        toValue: 60,
+                        tension: 100,
+                        friction: 8,
                         useNativeDriver: true
                     }).start(() => {
+                        isAnimating.current = false;
                         if (shouldAutoValidate) {
                             handleRightSwipeValidation();
                         }
                     });
-
-                } else if (gestureState.dx < -swipeThreshold) {
-                    swipeDirection.current = 'left';
-                    isSwiped.current = true;
-
-                    Animated.timing(swipePosition, {
-                        toValue: -40,
-                        duration: 200,
+                    
+                } else if (isLeftSwipe) {
+                    // Para swipe izquierdo: no afecta a otros elementos
+                    setSwipeDirection('left');
+                    setIsSwiped(true);
+                    isAnimating.current = true;
+                    
+                    Animated.spring(swipePosition, {
+                        toValue: -60,
+                        tension: 100,
+                        friction: 8,
                         useNativeDriver: true
                     }).start(() => {
-                        const timer = setTimeout(() => {
-                            Animated.timing(swipePosition, {
-                                toValue: 0,
-                                duration: 200,
-                                useNativeDriver: true
-                            }).start(() => {
-                                swipePosition.setValue(0);
-                                isSwiped.current = false;
-                                swipeDirection.current = null;
-                                onValidate(item.id, 'left');
-                            });
-                        }, 300);
-
-                        return () => clearTimeout(timer);
+                        isAnimating.current = false;
+                        setTimeout(() => {
+                            handleLeftSwipeValidation();
+                        }, 800);
                     });
+                    
                 } else {
-                    // Volver a la posición original si no superó el threshold
+                    // Cancelar swipe
+                    isAnimating.current = true;
+                    
                     Animated.spring(swipePosition, {
                         toValue: 0,
+                        tension: 50,
+                        friction: 7,
                         useNativeDriver: true
-                    }).start();
-
-                    // Si este elemento estaba activo y el usuario cancela el swipe
+                    }).start(() => {
+                        setIsSwiped(false);
+                        setSwipeDirection(null);
+                        setShowSideBar(false);
+                        isAnimating.current = false;
+                        
+                        // Si este era el activo y se cancela, limpiar
+                        if (activeSwipeId === itemIdString) {
+                            setActiveSwipeId(null);
+                        }
+                    });
+                }
+            },
+            onPanResponderTerminate: () => {
+                if (isAnimating.current) return;
+                
+                isAnimating.current = true;
+                
+                Animated.spring(swipePosition, {
+                    toValue: 0,
+                    tension: 50,
+                    friction: 7,
+                    useNativeDriver: true
+                }).start(() => {
+                    setIsSwiped(false);
+                    setSwipeDirection(null);
+                    setShowSideBar(false);
+                    isAnimating.current = false;
+                    
                     if (activeSwipeId === itemIdString) {
                         setActiveSwipeId(null);
                     }
-                }
+                });
             }
-        });
-    }
-
-    // Determinar qué mostrar basado en el estado
-    const showSideBar = isSwiped.current;
-
-    let barColor = '#FFA400';
-    let barPosition: 'left' | 'right' = 'left';
-
-    if (isSwiped.current) {
-        if (swipeDirection.current === 'left') {
-            barColor = '#4CAF50';
-            barPosition = 'right';
-        } else if (swipeDirection.current === 'right') {
-            barColor = '#FFA400';
-            barPosition = 'left';
-        }
-    }
+        })
+    ).current;
 
     return (
         <View style={styles.productContainer}>
-            {/* Barra lateral de fondo (se muestra detrás del contenido) */}
+            {/* Barra lateral de fondo */}
             {showSideBar && (
                 <View style={[
-                    barPosition === 'left' ? styles.sideBarLeft : styles.sideBarRight,
-                    { backgroundColor: barColor }
+                    barConfig.position === 'left' ? styles.sideBarLeft : styles.sideBarRight,
+                    { backgroundColor: barConfig.color }
                 ]}>
                     <View style={styles.iconContainer}>
-                        {barPosition === 'left' ? (
+                        {barConfig.icon === 'warning' ? (
                             <Image
                                 source={require("@/assets/icons/WarningImage.png")}
                                 style={styles.sideIcon}
@@ -264,7 +341,7 @@ export const ProductItem = ({
                         backgroundColor: '#F9F9FA'
                     }
                 ]}
-                {...panResponder.current.panHandlers}
+                {...panResponder.panHandlers}
             >
                 <View style={styles.productRow}>
                     <View style={styles.imageContainer}>
@@ -313,6 +390,7 @@ export const ProductItem = ({
 };
 
 // Mantén los mismos estilos...
+
 const styles = StyleSheet.create({
     breakdownRow: {
         flexDirection: 'row',

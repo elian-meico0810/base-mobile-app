@@ -117,8 +117,6 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
 
       
     };
-    console.log("datos: ", allProducts[0]?.detalles?.length);
-    
     // Calcular estadísticas CORREGIDAS
     const pendingCount = allProducts.reduce((total, doc) => doc.detalles.length, 0);
     const validatedCount = validatedProducts.reduce((total, doc) => total + doc.detalles.length, 0);

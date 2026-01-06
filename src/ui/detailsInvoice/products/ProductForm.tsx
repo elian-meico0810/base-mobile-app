@@ -2,11 +2,12 @@ import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { UploadPhoto } from '@/components/photo/UploadPhoto';
 import { ThemedView } from '@/components/themed-view';
+import { CausalRefusedEnum, TyepeCausalRefusedEnum, TypeCaculateValueEnum } from '@/src/constants/GuideStates';
 import { ProductValidationSection } from '@/src/features/detailsInvoice/components/ProductValidationScreen';
 import { ReportNoveltyScreen } from '@/src/features/detailsInvoice/components/ReportNoveltyScreen';
 import { Detail, Document, GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
-import { capitalizeFirst, cleanSpaces } from '@/src/utils/uitls';
+import { calculateVlueByPorducts, capitalizeFirst, cleanSpaces } from '@/src/utils/uitls';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -64,7 +65,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const [showViewModal, setViewModal] = useState(false);
 
     const [modalStatusNovelty, setStatusNovelty] = useState<'left' | 'right' | null>(null);
-    const [RefreshingOnPress, setRefreshingOnPress] = useState(false);
+    const [refreshing, setRefreshingOnPress] = useState(false);
     const [finalizedData, setFinalizedData] = useState<FinalizedData | null>(null);
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
@@ -78,6 +79,8 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const router = useRouter();
     const orderId = initialGuide?.pedidos?.[0]?.id;
 
+    console.log("refreshing: ",refreshing);
+    
     const handleGoBack = () => {
         if (routeStarted && isCountryDelivery) {
             router.push(
@@ -103,6 +106,18 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (dataNovlety.length > 0) {
+            submitDataByActions();
+            // Aquí puedes hacer lo que necesites con los datos actualizados
+            // Por ejemplo, hacer una llamada API, actualizar UI, etc.
+
+            // Cerrar el modal después de procesar los datos
+            setStatusNovelty(null);
+        }
+    }, [dataNovlety]); // Se ejecuta cada vez que dataNovlety cambia
+
 
     useEffect(() => {
         if (showViewModal || modalStatusNovelty == 'right') {
@@ -188,19 +203,20 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         }
     }, [modalStatusNovelty, productItemData]);
 
+
     const submitDataByActions = async () => {
         try {
             setLoading(true);
             if (modalStatusNovelty == "left" &&
                 productItemData?.id
             ) {
-                const response = await detailsRepositoryImpl.sendOrderProps(
+                const response = await detailsRepositoryImpl.sendOrder(
                     {
                         totalEntregado: String(Number(productItemData.unidadesSolicitadas) * Number(productItemData.valorBaseProducto)),
                         totalImpuestoEntrega: String(productItemData?.totalImpuestos),
                     }
                     , String(productItemData?.id), token);
-                    
+
                 if (response?.statusCode != 200) {
                     setModalTitle("¡Alerta!");
                     setModalMessage(response.message || "Ocurrio un error al actualizar el producto.");
@@ -210,7 +226,64 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
             } else if (modalStatusNovelty == "right" &&
                 productItemData?.id
             ) {
-                console.log("Llego aca por que es con novedad");
+                // Array para acumular todas las novedades
+                let novedadesArray = [];
+
+                for (const novelty of dataNovlety) {
+
+                    // Solo agregar si tiene unidades
+                    if (novelty.units > 0 && Number(productItemData?.unidadesSolicitadas) - Number(novelty.units) > 0) {
+                        let novelty_value = "";
+
+                        switch (novelty.type) {
+                            case TyepeCausalRefusedEnum.DINERO_INSUFICIENTE:
+                                novelty_value = CausalRefusedEnum.CS_NOV_DIN_INSUF
+
+                            case TyepeCausalRefusedEnum.PRODUCTOS_DANADOS:
+                                novelty_value = CausalRefusedEnum.CS_NOV_PROD_DAÑADO
+
+                            case TyepeCausalRefusedEnum.PRODUCTOS_VENCIDOS:
+                                novelty_value = CausalRefusedEnum.CS_NOV_PROD_VENC
+
+                            default:
+                                novelty_value = CausalRefusedEnum.CS_NOV_OTRO
+
+                        }
+                        // console.log("productItemData?.unidadesSolicitadas: ", productItemData?.unidadesSolicitadas);
+                        // console.log("novelty?.units: ", novelty?.units);
+                        // console.log("Resta: ", Number(productItemData?.unidadesSolicitadas) - Number(novelty.units));
+
+                        const noveltyData = {
+                            pedidoDetalleId: Number(productItemData?.id),
+                            causalCodigo: novelty_value,
+                            valor: novelty.units.toString(),
+                            unidadesRechazadas: Number(productItemData?.unidadesSolicitadas) - Number(novelty.units),
+                            unidadesEntregadas: calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_6, novelty.units),
+                            totalEntregado: calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_5, novelty.units),
+                            totalImpuestoEntrega: calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_7, novelty.units),
+                        };
+
+                        novedadesArray.push(noveltyData);
+                    }
+                }
+
+
+                // Verificar si hay novedades para enviar
+                if (novedadesArray.length > 0) {
+
+                    const response = await detailsRepositoryImpl.noveltyOrder(
+                        novedadesArray
+                        , token);
+
+                    novedadesArray = [];
+
+                    if (response?.statusCode != 200) {
+                        setModalTitle("¡Alerta!");
+                        setModalMessage(response.message || "Ocurrio un error al actualizar el producto.");
+                        setModalVisible(true);
+                    }
+                }
+
             }
 
         } catch (error) {
@@ -423,6 +496,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 modalStatusNovelty={modalStatusNovelty}
                 onCloseReportPorduct={(value) => {
                     setViewModal(value);
+                 
                 }}
                 data={dataNovlety}
                 messages={(messages) => {
@@ -470,16 +544,17 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
             {modalStatusNovelty == 'right' && (
                 <ReportNoveltyScreen
                     title="Reportar novedad"
-                    onClose={() => setStatusNovelty(null)}
+                    onClose={() => {
+                        setStatusNovelty(null); 
+                        setRefreshingOnPress(true);
+                    }}
                     width={width}
                     onPress={(data) => {
-                        // if (data.length === 0) {
-                        //     setModalTitle("¡Alerta!");
-                        //     setModalMessage("Debe especificar la cantidad de unidades en la novedad.");
-                        //     setModalVisible(true);
-                        // }
                         setDataNovlety(data);
                         setNovelty(true);
+                        setTimeout(() => {
+                            setStatusNovelty(null);
+                        }, 100);
                     }}
                     showViewModal={showViewModal}
 

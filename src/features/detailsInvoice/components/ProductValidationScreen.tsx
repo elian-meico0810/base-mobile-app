@@ -48,7 +48,7 @@ interface ProductValidationSectionProps {
     messages?: (messages: string) => void;
     dataPorduct?: Document[];
     token?: string;
-    onItemData?: (data: Detail) => void; 
+    onItemData?: (data: Detail) => void;
 }
 
 export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAlet, onStatusNovelty, shouldAutoValidate, modalStatusNovelty, onCloseReportPorduct, data, messages, dataPorduct, token, onItemData }: ProductValidationSectionProps) => {
@@ -68,6 +68,8 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
             onStatusNovelty?.(showDirection);
         }
     }, [showDirection]);
+
+    console.log("showDirection: ", showDirection);
 
     useEffect(() => {
         if (dataPorduct && dataPorduct.length > 0) {
@@ -239,8 +241,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                 testToken={serviceToken}
                                 testUrl={serviceUrl}
                                 onItemData={(data) => {
-                                    onItemData?.(data); 
-                                    console.log("data  es: ", data);
+                                    onItemData?.(data);
                                 }}
                             />
                         ))

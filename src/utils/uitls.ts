@@ -105,12 +105,13 @@ export function toUpperCase(text?: string) {
 }
 
 
-export function calculateVlueByPorducts(data: Detail, action: string) {
+export function calculateVlueByPorducts(data: Detail, action: string, unitRefusedValue?: number) {
     const baseValue = Number(data?.valorBaseProducto ?? 0);
     const totalTaxes = Number(data?.totalImpuestos ?? 0);
     const unit = Number(data?.unidadesSolicitadas ?? 0);
     const unitRefused = Number(data?.unidadesRechazadas ?? 0);
     const form_1 = (totalTaxes / unit) + baseValue
+    let valueUnit = 0;
 
     switch (action) {
         case TypeCaculateValueEnum.ACTION_1:
@@ -126,11 +127,22 @@ export function calculateVlueByPorducts(data: Detail, action: string) {
         case TypeCaculateValueEnum.ACTION_4:
             return totalTaxes / unit;
 
+        case TypeCaculateValueEnum.ACTION_5:
+            valueUnit = unitRefusedValue ? (form_1 * unitRefusedValue) : (form_1 * unitRefused);
+            return valueUnit;
+
+        case TypeCaculateValueEnum.ACTION_6:
+            return unitRefusedValue ? unitRefusedValue : unit;
+
+        case TypeCaculateValueEnum.ACTION_7:
+            return unitRefusedValue  ? (totalTaxes / unitRefusedValue ? unitRefusedValue : unit) : 0;
+        
         default:
             return 0;
     }
 
 }
+
 
 export function capitalizeWords(text?: string) {
     if (!text) return "";

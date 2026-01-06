@@ -1,6 +1,6 @@
 import { API_ROUTES } from "@/src/constants/apiRoutes";
 import { authApi, authDevApi } from "@/src/features/auth/infrastructure/authApi";
-import { PaymentsByInvoicePorps, RuteInitPorps, SendOrderProps } from "../../domain/details/DetailsGuide";
+import { NoveltyRefusedProps, PaymentsByInvoicePorps, RuteInitPorps, SendOrderProps } from "../../domain/details/DetailsGuide";
 import { DetailsRepository } from "../../domain/details/DetailsRepository";
 
 export const detailsRepositoryImpl: DetailsRepository = {
@@ -26,7 +26,7 @@ export const detailsRepositoryImpl: DetailsRepository = {
           "Content-Type": "application/json",
         },
       });
-     
+
       return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {
       throw error;
@@ -104,9 +104,23 @@ export const detailsRepositoryImpl: DetailsRepository = {
     }
   },
 
-  async sendOrderProps(data: SendOrderProps, detalleId: string, token: string) {
+  async sendOrder(data: SendOrderProps, detalleId: string, token: string) {
     try {
       const response = await authApi.post(`${API_ROUTES.SENT_ORRDE_ORDER}${detalleId}/validar/`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async noveltyOrder(data: NoveltyRefusedProps[], token: string) {
+    try {
+      const response = await authApi.post(`${API_ROUTES.SEND_NOVELTY_ORDER}`, data, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -117,6 +131,4 @@ export const detailsRepositoryImpl: DetailsRepository = {
       throw error;
     }
   },
-
-  
 };

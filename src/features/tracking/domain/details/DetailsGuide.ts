@@ -128,6 +128,16 @@ export interface TokenProducts {
 }
 
 export interface SendOrderProps {
-  totalEntregado: string,
-  totalImpuestoEntrega: string,
+  totalEntregado: string;
+  totalImpuestoEntrega: string;
+}
+
+export interface NoveltyRefusedProps {
+  pedidoDetalleId: number;
+  causalCodigo: string;
+  valor: string;
+  unidadesRechazadas: number;
+  unidadesEntregadas: number;
+  totalEntregado: number;
+  totalImpuestoEntrega: number;
 }

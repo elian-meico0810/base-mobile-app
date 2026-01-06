@@ -48,13 +48,13 @@ export function ReportNoveltyScreen({
     disabled = false,
     width = 360,
     height = 500,
-    showViewModal =false
+    showViewModal = false
 }: ReportNoveltysProps) {
     const [units, setUnits] = useState<string[]>(["", "", "", ""]);
     const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
     const [keyboardHeight] = useState(new Animated.Value(0));
     const [hasValues, setHasValues] = useState(false); // Nuevo estado
-    
+
     const handleUnitChange = (text: string, index: number) => {
         try {
             const numericText = text.replace(/[^0-9]/g, '');
@@ -73,7 +73,7 @@ export function ReportNoveltyScreen({
     // Función separada para verificar valores
     const checkForValues = (unitsArray: string[]) => {
         const hasAny = unitsArray.some(unit => {
-            if (unit === "" ) return false;
+            if (unit === "") return false;
             const unitValue = parseInt(unit, 10);
             return !isNaN(unitValue);
         });
@@ -122,33 +122,32 @@ export function ReportNoveltyScreen({
 
     }, []);
 
-    const handleFinalize = () => {
+    const handleFinalize = async () => {
         try {
             Keyboard.dismiss();
 
             if (units.length >= 0) {
                 // Obtener los datos estructurados
                 const reasonData = getReasonValues();
+
+                // Enviar los datos al padre PRIMERO
+                onPress?.(reasonData);
+
+                // Esperar un ciclo de renderizado para que React actualice
+                await new Promise(resolve => setTimeout(resolve, 0));
+
                 if (reasonData.length >= 0) {
-
-                    // Enviar los datos al padre si existe la función onPress
-                    if (onPress) {
-                        onPress(reasonData);
-                    }
-
-                    // Cerrar el modal después de enviar
+                    // Cerrar el modal DESPUÉS de enviar los datos
                     if (onClose) {
-                        setTimeout(onClose, 300);
+                        setTimeout(onClose, 100);
                     }
                     setHasValues(false);
                     setUnits(['']);
                 }
             }
-
         } catch (error) {
             throw error;
         }
-
     };
 
     useEffect(() => {

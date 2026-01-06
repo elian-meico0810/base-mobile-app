@@ -96,8 +96,8 @@ export const ProductItem = ({
         if (activeSwipeId !== null &&
             activeSwipeId !== itemIdString &&
             isSwiped &&
-            swipeDirection === 'right' &&
             !isAnimating.current) {
+            // Cerrar TODOS los swipes, no solo los derechos
             handleCloseSwipe();
         }
     }, [activeSwipeId, itemIdString, isSwiped, swipeDirection]);
@@ -227,7 +227,7 @@ export const ProductItem = ({
                 const isLeftSwipe = gestureState.dx < -swipeThreshold;
 
                 if (isRightSwipe) {
-                    console.log("👉 SWIPE DERECHA - ID:", item.id, "Producto:", item);
+                    // console.log("👉 SWIPE DERECHA - ID:", item.id, "Producto:", item);
                     onItemData?.(item);
                     // Para swipe derecho: establecer como activo y cerrar otros
                     setActiveSwipeId(itemIdString);
@@ -248,7 +248,7 @@ export const ProductItem = ({
                     });
 
                 } else if (isLeftSwipe) {
-                    console.log("👈 SWIPE IZQUIERDA - ID:", item.id, "Producto:", item);
+                    // console.log("👈 SWIPE IZQUIERDA - ID:", item.id, "Producto:", item);
                     onItemData?.(item);
 
                     // Para swipe izquierdo: no afecta a otros elementos

@@ -82,5 +82,22 @@ export enum TypeCaculateValueEnum {
     ACTION_1 = "TOTAL_VALUE_BY_PRODUCTS",
     ACTION_2 = "TOTAL_UNIT_VALUE_BY_PRODUCTS",
     ACTION_3 = "TOTAL_VALUE_BY_PRODUCTS_REFUSED",
-    ACTION_4 = "TOTAL_TAXES_BY_ORDER"
+    ACTION_4 = "TOTAL_TAXES_BY_ORDER",
+    ACTION_5 = "TOTAL_ENTRY_REFUSED",
+    ACTION_6=  "TOTAL_UNITS_ENTRY_REFUSED",
+    ACTION_7 = "TOTAL_ENTRY_TAX_REFUSED",
+}
+
+export enum TyepeCausalRefusedEnum {
+    DINERO_INSUFICIENTE = "Dinero insuficiente",
+    PRODUCTOS_DANADOS = "Producto dañado",
+    PRODUCTOS_VENCIDOS = "Producto vencido",
+    OTROS = "Otro"
+}
+
+export enum CausalRefusedEnum {
+    CS_NOV_DIN_INSUF = "CS_NOV_DIN_INSUF",
+    CS_NOV_PROD_DAÑADO = "CS_NOV_PROD_DAÑADO",
+    CS_NOV_PROD_VENC = "CS_NOV_PROD_VENC",
+    CS_NOV_OTRO = "CS_NOV_OTRO"
 }

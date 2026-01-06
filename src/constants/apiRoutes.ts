@@ -13,6 +13,7 @@ export const API_ROUTES = {
   GET_ORDER: "pedidos/",
   GET_TOKEN_PRODUCTS: "productos/sas-token/",
   SENT_ORRDE_ORDER: "pedidos/detalle/",
+  SEND_NOVELTY_ORDER: "novedades/registrar/",
   // Back contado anticipado
   SEND_PAYMENT_GATEWAY: "pagos/generar-link-pasarela/",
   GENERATE_QR: "pagos/generar_qr_bancolombia/",

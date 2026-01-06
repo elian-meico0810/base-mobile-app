@@ -141,3 +141,9 @@ export interface NoveltyRefusedProps {
   totalEntregado: number;
   totalImpuestoEntrega: number;
 }
+
+export interface SendOrderArrayProps {
+  totalEntregado: string;
+  totalImpuestoEntrega: string;
+  idPedidoDetalle: number;
+}

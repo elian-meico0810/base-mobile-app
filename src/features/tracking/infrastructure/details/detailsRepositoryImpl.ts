@@ -1,6 +1,6 @@
 import { API_ROUTES } from "@/src/constants/apiRoutes";
 import { authApi, authDevApi } from "@/src/features/auth/infrastructure/authApi";
-import { NoveltyRefusedProps, PaymentsByInvoicePorps, RuteInitPorps, SendOrderProps } from "../../domain/details/DetailsGuide";
+import { NoveltyRefusedProps, PaymentsByInvoicePorps, RuteInitPorps, SendOrderArrayProps, SendOrderProps } from "../../domain/details/DetailsGuide";
 import { DetailsRepository } from "../../domain/details/DetailsRepository";
 
 export const detailsRepositoryImpl: DetailsRepository = {
@@ -125,7 +125,21 @@ export const detailsRepositoryImpl: DetailsRepository = {
           Authorization: `Bearer ${token}`,
         },
       });
-      
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async sendOrderArray(data: SendOrderArrayProps[], token: string) {
+    try {
+      const response = await authApi.post(`${API_ROUTES.SENT_ORRDE_ARRAY}`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {
       throw error;

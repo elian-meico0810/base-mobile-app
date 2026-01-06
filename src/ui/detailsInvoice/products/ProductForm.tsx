@@ -201,12 +201,78 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         }
     }, [modalStatusNovelty, productItemData]);
 
+    useEffect(() => {
+        if (successButton || alertButton) {
+            submitDataByActionsAlert();
+        }
+    }, [successButton, alertButton]);
+
+    const submitDataByActionsAlert = async () => {
+        try {
+            const detalles = showPorductData?.[0]?.detalles;
+
+            if (successButton) {
+
+                const payload = detalles.map((productItemData: any) => ({
+                    idPedidoDetalle: productItemData.id, // opcional
+                    totalEntregado: String(
+                        Number(productItemData.unidadesSolicitadas) *
+                        Number(productItemData.valorBaseProducto)
+                    ),
+                    totalImpuestoEntrega: String(
+                        Number(productItemData.totalImpuestos)
+                    ),
+                }));
+
+                // const response = await detailsRepositoryImpl.sendOrderArray(
+                //     payload
+                //     , token);
+
+                // if (response?.statusCode != 200) {
+                //     setModalTitle("¡Alerta!");
+                //     setModalMessage(response.message || "Ocurrio un error al actualizar el producto.");
+                //     setModalVisible(true);
+                // }
+            } else if (alertButton) {
+                const payload = detalles.map((productItemData: any) => ({
+                    pedidoDetalleId: Number(productItemData?.id),
+                    causalCodigo: CausalRefusedEnum.CS_NOV_OTRO,
+                    valor: "0",
+                    unidadesRechazadas: Number(productItemData?.unidadesSolicitadas),
+                    unidadesEntregadas: 0,
+                    totalEntregado: 0,
+                    totalImpuestoEntrega: 0,
+                }));
+                
+                // const response = await detailsRepositoryImpl.noveltyOrder(
+                //     payload
+                //     , token);
+
+                // if (response?.statusCode != 200) {
+                //     setModalTitle("¡Alerta!");
+                //     setModalMessage(response.message || "Ocurrio un error al actualizar el producto.");
+                //     setModalVisible(true);
+                // }
+            }
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const submitDataByActions = async () => {
         try {
+            if (!productItemData) {
+                setModalTitle("¡Alerta!");
+                setModalMessage("Información del producto no disponible.");
+                setModalVisible(true);
+                return;
+            }
             setLoading(true);
-            if (modalStatusNovelty == "left" &&
-                productItemData?.id
+            if (modalStatusNovelty == "left" && productItemData?.id || successButton
             ) {
                 const response = await detailsRepositoryImpl.sendOrder(
                     {
@@ -222,7 +288,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 }
 
             } else if (modalStatusNovelty == "right" &&
-                productItemData?.id
+                productItemData?.id || alertButton
             ) {
                 // Array para acumular todas las novedades
                 let novedadesArray = [];
@@ -247,7 +313,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                                 novelty_value = CausalRefusedEnum.CS_NOV_OTRO
 
                         }
-   
+
                         const noveltyData = {
                             pedidoDetalleId: Number(productItemData?.id),
                             causalCodigo: novelty_value,

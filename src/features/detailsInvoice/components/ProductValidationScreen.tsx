@@ -56,6 +56,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     const [allProducts, setAllProducts] = useState<Document[]>(dataPorduct || []);
     const [validatedProducts, setValidatedProducts] = useState<Document[]>([]);
     const [showValidatedModal, setShowValidatedModal] = useState(false);
+    const [showFinishAlert, setFinishAlert] = useState(false);
     const [currentValidationType, setCurrentValidationType] = useState<'success' | 'warning' | 'error' | 'null'>('null');
     const [showDirection, setDirection] = useState<'left' | 'right' | null>(null);
     const [tatolValue, setTotal] = useState(0);
@@ -79,6 +80,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     useEffect(() => {
         if (onErrorAlert || onSuccessAlet) {
             const validationType = onErrorAlert ? 'error' : 'success';
+            setFinishAlert(true);
             validateAllProducts(validationType);
             setCurrentValidationType(validationType);
         }
@@ -86,12 +88,6 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
 
     const validateAllProducts = (validationType: 'success' | 'warning' | 'error' = 'success') => {
         if (allProducts.length === 0) return;
-
-        // Mover todos los productos a validados
-        setValidatedProducts(prev => [...prev, ...allProducts]);
-
-        // Vaciar la lista principal
-        setAllProducts([]);
     };
 
     const handleValidate = (id: number, direction: 'left' | 'right') => {
@@ -209,7 +205,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     );
     return (
         <View style={styles.mainContainer}>
-            {(hasItemsToValidate && pendingDetailsFlat.length > 0) && (
+            {(hasItemsToValidate && pendingDetailsFlat.length > 0 ) && (
                 <View style={styles.subtitleContainer}>
                     <Text style={styles.headerTSubitle}>Por validar</Text>
                 </View>
@@ -260,7 +256,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                     {/* Mostrar productos validados */}
                     {pendingDetailsFlat.length > 0 && (
                         <>
-                            {hasItemsValidateSuccess && (
+                            {(showFinishAlert || hasItemsValidateSuccess) && (
                                 <View style={styles.subtitleContainer}>
                                     <Text style={styles.headerTSubitle}>Validados</Text>
                                 </View>

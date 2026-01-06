@@ -53,6 +53,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
 
     const paymentGateway = async () => {
         try {
+
             if (!phone || !/^\d{10}$/.test(phone)) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Debe ingresar un número de teléfono válido de 10 dígitos.");
@@ -101,17 +102,19 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                 setModalVisible(true);
                 return;
             }
-
+            
             setLoading(true);
             if (onGenerateQR) {
                 onGenerateQR(TypeQr.BANCARIA);
             }
+            
 
             const response = await invoiceRepositoryImpl.generateQR(
                 {
                     numdoc: String(dataInvoice?.numeroFactura),
                     tipodoc: 'TD_FACTURA',
                     cus_no: String(data?.codigoCliente),
+                    tipoCliente: String(data?.facturas?.[0]?.tipoCliente), 
                 },
                 ENV_DEV.KEY_APP
             );

@@ -2,7 +2,6 @@ import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LogoText } from '@/components/generals/LogoText';
-import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { TokenExpiredModal } from '@/components/generals/TokenExpiredModal';
 import { PrimaryInput } from '@/components/inputs/PrimaryInput';
 import { ThemedView } from '@/components/themed-view';
@@ -173,7 +172,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
     <ThemedView style={styles.container}>
       <TokenExpiredModal visible={showModal} onClose={() => setShowModal(false)} />
 
-      <NetworkStatus />
+      {/* <NetworkStatus /> */}
 
       <View style={[styles.backgroundFill, { width, height }]} pointerEvents="none">
         <Image

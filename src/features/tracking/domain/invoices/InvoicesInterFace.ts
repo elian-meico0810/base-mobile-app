@@ -1,7 +1,7 @@
 export interface RuteInitPorps {
-  codigoGuia: string,
-  latitud: string,
-  longitud: string,
+  codigoGuia: string;
+  latitud: string;
+  longitud: string;
   fechaHoraDispositivo: string
 }
 
@@ -16,15 +16,16 @@ export interface PaymentGatewayProps {
 }
 
 export interface GenerateQRPorps {
-  numdoc: string,
-  tipodoc: string,
-  cus_no: string,
+  numdoc: string;
+  tipodoc: string;
+  cus_no: string;
+  tipoCliente: string;
 }
 
 export interface ReportWhatsAppQRPorps {
-  whatsapp: string,
-  nombre_cliente: string,
-  link_pago: string,
+  whatsapp: string;
+  nombre_cliente: string;
+  link_pago: string;
 }
 
 export interface Payment {
@@ -69,8 +70,8 @@ export interface EvidenceFile {
 }
 
 export interface WhatsappProps {
-  whatsapp: string,
-  nombre_cliente: string,
+  whatsapp: string;
+  nombre_cliente: string;
   link_pago: string
 }
 
@@ -99,10 +100,10 @@ export interface OpneAddressesDeliveryProps {
 }
 
 export interface WhatsappTATImageProps {
-  cus_no: string,
-  numdoc: string,
-  tipodoc: string,
-  tipoCliente: string,
-  cliente: string,
-  numeroWhatsapp: string,
+  cus_no: string;
+  numdoc: string;
+  tipodoc: string;
+  tipoCliente: string;
+  cliente: string;
+  numeroWhatsapp: string;
 }

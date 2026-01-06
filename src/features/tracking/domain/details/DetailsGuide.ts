@@ -9,15 +9,15 @@ export interface Factura {
 }
 
 export interface Pedidos {
-    id : number;
-    codigo : string;
-    bodega : string;
-    fecha : string;
-    canal : string;
-    codigoCliente : string;
-    codigoGuia : string;
-    dfr : number;
-    porcentajeDFR : number;
+  id: number;
+  codigo: string;
+  bodega: string;
+  fecha: string;
+  canal: string;
+  codigoCliente: string;
+  codigoGuia: string;
+  dfr: number;
+  porcentajeDFR: number;
 }
 
 export interface GuideDetails {
@@ -125,4 +125,9 @@ export interface Cause {
 export interface TokenProducts {
   base_url: string;
   token: string;
+}
+
+export interface SendOrderProps {
+  totalEntregado: string,
+  totalImpuestoEntrega: string,
 }

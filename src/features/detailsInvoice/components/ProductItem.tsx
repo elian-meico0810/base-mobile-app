@@ -15,6 +15,7 @@ import { Detail } from '../../tracking/domain/details/DetailsGuide';
 
 const { width } = Dimensions.get('window');
 
+
 interface ProductItemProps {
     item: Detail;
     isLastItem: boolean;
@@ -27,6 +28,7 @@ interface ProductItemProps {
     id?: number;
     testToken?: string;
     testUrl?: string;
+    onItemData?: (data: Detail) => void; // <-- Cambia a función
 }
 
 export const ProductItem = ({
@@ -38,7 +40,8 @@ export const ProductItem = ({
     setActiveSwipeId,
     onCloseReport,
     testToken,
-    testUrl
+    testUrl,
+    onItemData
 }: ProductItemProps) => {
     const swipePosition = useRef(new Animated.Value(0)).current;
     const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
@@ -124,10 +127,10 @@ export const ProductItem = ({
 
     const handleCloseSwipe = useCallback(() => {
         if (isAnimating.current) return;
-        
+
         isAnimating.current = true;
         hasAutoValidated.current = false;
-        
+
         Animated.spring(swipePosition, {
             toValue: 0,
             tension: 50,
@@ -139,7 +142,7 @@ export const ProductItem = ({
             setSwipeDirection(null);
             setShowSideBar(false);
             isAnimating.current = false;
-            
+
             if (activeSwipeId === itemIdString) {
                 setActiveSwipeId(null);
             }
@@ -148,9 +151,9 @@ export const ProductItem = ({
 
     const handleRightSwipeValidation = useCallback(() => {
         if (isAnimating.current) return;
-        
+
         isAnimating.current = true;
-        
+
         Animated.spring(swipePosition, {
             toValue: 0,
             tension: 50,
@@ -163,7 +166,7 @@ export const ProductItem = ({
             setShowSideBar(false);
             setActiveSwipeId(null);
             isAnimating.current = false;
-            
+
             onValidate(item.id, 'right');
             if (shouldAutoValidate) {
                 onCloseReport?.(true);
@@ -173,9 +176,9 @@ export const ProductItem = ({
 
     const handleLeftSwipeValidation = useCallback(() => {
         if (isAnimating.current) return;
-        
+
         isAnimating.current = true;
-        
+
         Animated.spring(swipePosition, {
             toValue: 0,
             tension: 50,
@@ -187,7 +190,7 @@ export const ProductItem = ({
             setSwipeDirection(null);
             setShowSideBar(false);
             isAnimating.current = false;
-            
+
             onValidate(item.id, 'left');
         });
     }, [item.id, onValidate, swipePosition]);
@@ -204,9 +207,9 @@ export const ProductItem = ({
             },
             onPanResponderMove: (_, gestureState) => {
                 if (isAnimating.current) return;
-                
+
                 const limitedDx = Math.max(Math.min(gestureState.dx, 100), -100);
-                
+
                 if (Math.abs(gestureState.dx) > minSwipeDistance) {
                     if (gestureState.dx < 0) {
                         setSwipeDirection('left');
@@ -214,22 +217,24 @@ export const ProductItem = ({
                         setSwipeDirection('right');
                     }
                 }
-                
+
                 swipePosition.setValue(limitedDx);
             },
             onPanResponderRelease: (_, gestureState) => {
                 if (isAnimating.current) return;
-                
+
                 const isRightSwipe = gestureState.dx > swipeThreshold;
                 const isLeftSwipe = gestureState.dx < -swipeThreshold;
-                
+
                 if (isRightSwipe) {
+                    console.log("👉 SWIPE DERECHA - ID:", item.id, "Producto:", item);
+                    onItemData?.(item);
                     // Para swipe derecho: establecer como activo y cerrar otros
                     setActiveSwipeId(itemIdString);
                     setSwipeDirection('right');
                     setIsSwiped(true);
                     isAnimating.current = true;
-                    
+
                     Animated.spring(swipePosition, {
                         toValue: 60,
                         tension: 100,
@@ -241,13 +246,16 @@ export const ProductItem = ({
                             handleRightSwipeValidation();
                         }
                     });
-                    
+
                 } else if (isLeftSwipe) {
+                    console.log("👈 SWIPE IZQUIERDA - ID:", item.id, "Producto:", item);
+                    onItemData?.(item);
+
                     // Para swipe izquierdo: no afecta a otros elementos
                     setSwipeDirection('left');
                     setIsSwiped(true);
                     isAnimating.current = true;
-                    
+
                     Animated.spring(swipePosition, {
                         toValue: -60,
                         tension: 100,
@@ -259,11 +267,11 @@ export const ProductItem = ({
                             handleLeftSwipeValidation();
                         }, 800);
                     });
-                    
+
                 } else {
                     // Cancelar swipe
                     isAnimating.current = true;
-                    
+
                     Animated.spring(swipePosition, {
                         toValue: 0,
                         tension: 50,
@@ -274,7 +282,7 @@ export const ProductItem = ({
                         setSwipeDirection(null);
                         setShowSideBar(false);
                         isAnimating.current = false;
-                        
+
                         // Si este era el activo y se cancela, limpiar
                         if (activeSwipeId === itemIdString) {
                             setActiveSwipeId(null);
@@ -284,9 +292,9 @@ export const ProductItem = ({
             },
             onPanResponderTerminate: () => {
                 if (isAnimating.current) return;
-                
+
                 isAnimating.current = true;
-                
+
                 Animated.spring(swipePosition, {
                     toValue: 0,
                     tension: 50,
@@ -297,7 +305,7 @@ export const ProductItem = ({
                     setSwipeDirection(null);
                     setShowSideBar(false);
                     isAnimating.current = false;
-                    
+
                     if (activeSwipeId === itemIdString) {
                         setActiveSwipeId(null);
                     }

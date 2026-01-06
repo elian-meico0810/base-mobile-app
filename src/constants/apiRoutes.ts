@@ -12,6 +12,7 @@ export const API_ROUTES = {
   REPORT_NOTIFICTION_WHATSAPP_TAT: "entregas/QR-bancolombia-whatsapp/",
   GET_ORDER: "pedidos/",
   GET_TOKEN_PRODUCTS: "productos/sas-token/",
+  SENT_ORRDE_ORDER: "pedidos/detalle/",
   // Back contado anticipado
   SEND_PAYMENT_GATEWAY: "pagos/generar-link-pasarela/",
   GENERATE_QR: "pagos/generar_qr_bancolombia/",

@@ -122,6 +122,10 @@ export function calculateVlueByPorducts(data: Detail, action: string) {
         case TypeCaculateValueEnum.ACTION_3:
             var value = unitRefused > 0 ? unit - unitRefused : unit;
             return (form_1 * value);
+
+        case TypeCaculateValueEnum.ACTION_4:
+            return totalTaxes / unit;
+
         default:
             return 0;
     }

@@ -48,9 +48,10 @@ interface ProductValidationSectionProps {
     messages?: (messages: string) => void;
     dataPorduct?: Document[];
     token?: string;
+    onItemData?: (data: Detail) => void; 
 }
 
-export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAlet, onStatusNovelty, shouldAutoValidate, modalStatusNovelty, onCloseReportPorduct, data, messages, dataPorduct, token }: ProductValidationSectionProps) => {
+export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAlet, onStatusNovelty, shouldAutoValidate, modalStatusNovelty, onCloseReportPorduct, data, messages, dataPorduct, token, onItemData }: ProductValidationSectionProps) => {
     const [allProducts, setAllProducts] = useState<Document[]>(dataPorduct || []);
     const [validatedProducts, setValidatedProducts] = useState<Document[]>([]);
     const [showValidatedModal, setShowValidatedModal] = useState(false);
@@ -115,7 +116,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
             setTotal(Number(totalUnits));
         }
 
-      
+
     };
     // Calcular estadísticas CORREGIDAS
     const pendingCount = allProducts.reduce((total, doc) => doc.detalles.length, 0);
@@ -160,7 +161,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     const isValid = pendingCount === 0;
 
     const handleFinalize = () => {
-       
+
         // onFinalize?.();
         setShowValidatedModal(true);
     };
@@ -237,6 +238,10 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                 onCloseReport={(value) => onCloseReportPorduct?.(value)}
                                 testToken={serviceToken}
                                 testUrl={serviceUrl}
+                                onItemData={(data) => {
+                                    onItemData?.(data); 
+                                    console.log("data  es: ", data);
+                                }}
                             />
                         ))
                     ) : (

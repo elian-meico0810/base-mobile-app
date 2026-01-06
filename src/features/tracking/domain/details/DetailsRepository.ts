@@ -1,5 +1,5 @@
 import { ApiResponse } from "@/src/features/auth/domain/ApiResponse";
-import { Document, GuideDetails, PaymentsByInvoicePorps, RuteByCodeGuide, RuteInitPorps, TokenProducts } from "./DetailsGuide";
+import { Document, GuideDetails, PaymentsByInvoicePorps, RuteByCodeGuide, RuteInitPorps, SendOrderProps, TokenProducts } from "./DetailsGuide";
 
 export interface DetailsRepository {
   listGuide: (guide: number, token: string) => Promise<ApiResponse<GuideDetails>>;
@@ -9,5 +9,6 @@ export interface DetailsRepository {
   paymentsByGuide: (data: PaymentsByInvoicePorps, token: string) => Promise<any>;
   listPorductData: (token: string, order: number) => Promise<ApiResponse<Document>>;
   tokenPorducts: ( token: string) => Promise<ApiResponse<TokenProducts>>;
+  sendOrderProps: (data: SendOrderProps, detalleId: string, token: string) => Promise<any>;
 
 }

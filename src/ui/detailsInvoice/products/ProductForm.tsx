@@ -4,7 +4,7 @@ import { UploadPhoto } from '@/components/photo/UploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { ProductValidationSection } from '@/src/features/detailsInvoice/components/ProductValidationScreen';
 import { ReportNoveltyScreen } from '@/src/features/detailsInvoice/components/ReportNoveltyScreen';
-import { Document, GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { Detail, Document, GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { capitalizeFirst, cleanSpaces } from '@/src/utils/uitls';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -73,6 +73,8 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [isExpanded, setIsExpanded] = useState(false);
     const [showPorductData, setPorductData] = useState<Document[]>([]);
+    const [productItemData, setProductItemData] = useState<Detail | null>(null);
+
     const router = useRouter();
     const orderId = initialGuide?.pedidos?.[0]?.id;
 
@@ -180,6 +182,46 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         }
     };
 
+    useEffect(() => {
+        if (modalStatusNovelty && productItemData) {
+            submitDataByActions();
+        }
+    }, [modalStatusNovelty, productItemData]);
+
+    const submitDataByActions = async () => {
+        try {
+            setLoading(true);
+            if (modalStatusNovelty == "left" &&
+                productItemData?.id
+            ) {
+                const response = await detailsRepositoryImpl.sendOrderProps(
+                    {
+                        totalEntregado: String(Number(productItemData.unidadesSolicitadas) * Number(productItemData.valorBaseProducto)),
+                        totalImpuestoEntrega: String(productItemData?.totalImpuestos),
+                    }
+                    , String(productItemData?.id), token);
+                    
+                if (response?.statusCode != 200) {
+                    setModalTitle("¡Alerta!");
+                    setModalMessage(response.message || "Ocurrio un error al actualizar el producto.");
+                    setModalVisible(true);
+                }
+
+            } else if (modalStatusNovelty == "right" &&
+                productItemData?.id
+            ) {
+                console.log("Llego aca por que es con novedad");
+            }
+
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const getDataProduct = async () => {
         try {
             setLoading(true);
@@ -212,7 +254,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                         parseInt(parts[1]) - 1,
                         parseInt(parts[2]),
                         parseInt(parts[3]),
-                        parseInt(parts[4]), 
+                        parseInt(parts[4]),
                         parseInt(parts[5])
                     );
 
@@ -246,7 +288,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
             if (responseData?.statusCode == 200 && responseData?.data &&
                 !Array.isArray(responseData.data) &&
                 typeof responseData.data !== "string") {
-                
+
                 await SecureStore.setItemAsync('service_token', responseData.data.token);
                 await SecureStore.setItemAsync('base_url', responseData.data.base_url);
                 const inicializateToken = new Date();
@@ -389,6 +431,9 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     setModalVisible(true);
                 }}
                 dataPorduct={showPorductData}
+                onItemData={(data) => {
+                    setProductItemData(data);
+                }}
             />
 
             {(uploadPhoto) && (

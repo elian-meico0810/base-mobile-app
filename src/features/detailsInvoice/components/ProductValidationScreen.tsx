@@ -288,7 +288,6 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                                 })).filter(document => document.detalles.length > 0);
                                             });
                                         }}
-                                        validationType={item.estado?.codigo === 'EST_DET_VALIDADO_WARNING' ? 'warning' : 'success'}
                                         idValue={idValue}
                                         tatolValue={tatolValue}
                                         testToken={serviceToken}

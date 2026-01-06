@@ -63,6 +63,7 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
         testToken,
         item?.producto?.codigo
     );
+
     return (
         <View style={styles.productContainer}>
             <View style={styles.productRow}>
@@ -70,7 +71,7 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
                     {imagUrl ? (
                         <View style={styles.imageWrapper}>
                             <Image
-                                source={{ uri: imagUrl}}
+                                source={{ uri: imagUrl }}
                                 style={styles.productImage}
                                 resizeMode="cover"
                             />
@@ -78,20 +79,33 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
                                 <View style={styles.statusDot}>
                                     <MaterialIcons name="check" size={9} color="#FFFFFF" />
                                 </View>
-                            ) : (validationType === "error" || quantityEntry === 0) ? (
+                            ) : (validationType === "error" || quantity === 0) ? (
                                 <View style={styles.errorDot}>
                                     <MaterialIcons name="close" size={9} color="#FFFFFF" />
                                 </View>
-                            ) : (validationType === "warning" || (quantityEntry > 0 && quantityEntry < quantity)) ? (
+                            ) : (validationType === "warning" || (quantityEntry > 0 && Number(item.unidadesSolicitadas) != Number(item.unidadesRechazadas))) ? (
                                 <View style={styles.warningDot}>
-                                    <MaterialIcons name="warning" size={9} color="#FFA400" />
+                                    <MaterialIcons name="warning" size={12} color="#FFA400" />
                                 </View>
                             ) : null}
 
                         </View>
                     ) : (
                         <View style={styles.imagePlaceholder}>
-                            <MaterialIcons name="photo" size={40} color="#D1D3D8" />
+                            {(validationType === "success" || quantityEntry === quantity) ? (
+                                <View style={styles.statusDot}>
+                                    <MaterialIcons name="check" size={9} color="#FFFFFF" />
+                                </View>
+                            ) : (validationType === "error" || quantity === 0) ? (
+                                <View style={styles.errorDot}>
+                                    <MaterialIcons name="close" size={9} color="#FFFFFF" />
+                                </View>
+                            ) : (validationType === "warning" || (quantityEntry > 0 && Number(item.unidadesSolicitadas) != Number(item.unidadesRechazadas))) ? (
+                                <View style={styles.warningDot}>
+                                    <MaterialIcons name="warning" size={12} color="#FFA400" />
+                                </View>
+                            ) : null}
+                            <MaterialIcons name="photo" size={30} color="#D1D3D8" />
                             <Text style={styles.placeholderText}>Sin imagen</Text>
                         </View>
                     )}
@@ -178,7 +192,7 @@ const styles = StyleSheet.create({
     placeholderText: {
         fontSize: 10,
         color: '#999',
-        marginTop: 4,
+        marginTop: 2,
         textAlign: 'center',
     },
     productInfo: {
@@ -275,8 +289,8 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 1.5,
         left: 1.5,
-        width: 13,
-        height: 13,
+        width: 20,
+        height: 20,
         borderRadius: 6.5,
         backgroundColor: 'transparent',
         borderWidth: 2,

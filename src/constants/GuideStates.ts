@@ -72,6 +72,7 @@ export enum TypeInvoiceEnum {
     CREDITO = "CREDITO",
     CONTADO_EFECTIVO = "CONTADO EFECTIVO",
     ANTICIPO = "CONTADO ANTICIPADO",
+    MIXTO = "MIXTO"
 }
 
 

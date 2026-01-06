@@ -23,7 +23,7 @@ export default function IndexInvoiceScreen() {
         factura => factura.tipo === TypeInvoiceEnum.CREDITO
     );
     const areAllInvoicesConutreDlivery = guideObj.facturas.every(
-        factura => factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO
+        factura => factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO || TypeInvoiceEnum.MIXTO
     );
     const areAllInvoicesAnticipe = guideObj.facturas.every(
         factura => factura.tipo === TypeInvoiceEnum.ANTICIPO || TypeInvoiceEnum.CONTADO_EFECTIVO

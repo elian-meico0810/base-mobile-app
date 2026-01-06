@@ -28,7 +28,8 @@ interface ProductItemProps {
     id?: number;
     testToken?: string;
     testUrl?: string;
-    onItemData?: (data: Detail) => void; // <-- Cambia a función
+    onItemData?: (data: Detail) => void; 
+    refreshing?:  boolean;
 }
 
 export const ProductItem = ({
@@ -41,12 +42,14 @@ export const ProductItem = ({
     onCloseReport,
     testToken,
     testUrl,
-    onItemData
+    onItemData,
+    refreshing
 }: ProductItemProps) => {
     const swipePosition = useRef(new Animated.Value(0)).current;
     const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
     const [isSwiped, setIsSwiped] = useState(false);
     const [showSideBar, setShowSideBar] = useState(false);
+    const [showRefreshing, setRefreshing] = useState(refreshing ? true: false);
     const [barConfig, setBarConfig] = useState({
         color: '#FFA400',
         position: 'left' as 'left' | 'right',
@@ -96,11 +99,15 @@ export const ProductItem = ({
         if (activeSwipeId !== null &&
             activeSwipeId !== itemIdString &&
             isSwiped &&
-            !isAnimating.current) {
-            // Cerrar TODOS los swipes, no solo los derechos
+            swipeDirection === 'right' &&
+            !isAnimating.current || showRefreshing) {
+            hasAutoValidated.current = true;
+
             handleCloseSwipe();
+            setRefreshing(false);
+            
         }
-    }, [activeSwipeId, itemIdString, isSwiped, swipeDirection]);
+    }, [activeSwipeId, itemIdString, isSwiped, swipeDirection, showRefreshing]);
 
     useEffect(() => {
         if (shouldAutoValidate &&
@@ -109,9 +116,7 @@ export const ProductItem = ({
             !hasAutoValidated.current) {
 
             hasAutoValidated.current = true;
-            setTimeout(() => {
-                handleRightSwipeValidation();
-            }, 500);
+            handleRightSwipeValidation();
         }
     }, [shouldAutoValidate, activeSwipeId, itemIdString, swipeDirection]);
 
@@ -227,7 +232,6 @@ export const ProductItem = ({
                 const isLeftSwipe = gestureState.dx < -swipeThreshold;
 
                 if (isRightSwipe) {
-                    // console.log("👉 SWIPE DERECHA - ID:", item.id, "Producto:", item);
                     onItemData?.(item);
                     // Para swipe derecho: establecer como activo y cerrar otros
                     setActiveSwipeId(itemIdString);
@@ -248,7 +252,6 @@ export const ProductItem = ({
                     });
 
                 } else if (isLeftSwipe) {
-                    // console.log("👈 SWIPE IZQUIERDA - ID:", item.id, "Producto:", item);
                     onItemData?.(item);
 
                     // Para swipe izquierdo: no afecta a otros elementos

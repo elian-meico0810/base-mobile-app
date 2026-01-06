@@ -79,8 +79,6 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const router = useRouter();
     const orderId = initialGuide?.pedidos?.[0]?.id;
 
-    console.log("refreshing: ",refreshing);
-    
     const handleGoBack = () => {
         if (routeStarted && isCountryDelivery) {
             router.push(
@@ -249,10 +247,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                                 novelty_value = CausalRefusedEnum.CS_NOV_OTRO
 
                         }
-                        // console.log("productItemData?.unidadesSolicitadas: ", productItemData?.unidadesSolicitadas);
-                        // console.log("novelty?.units: ", novelty?.units);
-                        // console.log("Resta: ", Number(productItemData?.unidadesSolicitadas) - Number(novelty.units));
-
+   
                         const noveltyData = {
                             pedidoDetalleId: Number(productItemData?.id),
                             causalCodigo: novelty_value,
@@ -285,7 +280,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 }
 
             }
-
+            getDataProduct();
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
@@ -496,7 +491,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 modalStatusNovelty={modalStatusNovelty}
                 onCloseReportPorduct={(value) => {
                     setViewModal(value);
-                 
+
                 }}
                 data={dataNovlety}
                 messages={(messages) => {
@@ -508,6 +503,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 onItemData={(data) => {
                     setProductItemData(data);
                 }}
+                refreshing={refreshing}
             />
 
             {(uploadPhoto) && (
@@ -545,11 +541,12 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 <ReportNoveltyScreen
                     title="Reportar novedad"
                     onClose={() => {
-                        setStatusNovelty(null); 
-                        setRefreshingOnPress(true);
+                        setStatusNovelty(null);
+                        setRefreshingOnPress(false);
                     }}
                     width={width}
                     onPress={(data) => {
+                        setRefreshingOnPress(false);
                         setDataNovlety(data);
                         setNovelty(true);
                         setTimeout(() => {

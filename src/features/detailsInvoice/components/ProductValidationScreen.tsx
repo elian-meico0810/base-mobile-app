@@ -1,7 +1,7 @@
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { ProductItemSkeleton } from '@/components/skeleton/ProductItemSkeleton';
 import { TypeCaculateValueEnum, TypeInvoiceEnum } from '@/src/constants/GuideStates';
-import { calculateVlueByPorducts, formatNumber, formatStringToNumber } from '@/src/utils/uitls';
+import { calculateVlueByPorducts, formatNumber } from '@/src/utils/uitls';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
 import {
@@ -49,9 +49,10 @@ interface ProductValidationSectionProps {
     dataPorduct?: Document[];
     token?: string;
     onItemData?: (data: Detail) => void;
+    refreshing?: boolean;
 }
 
-export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAlet, onStatusNovelty, shouldAutoValidate, modalStatusNovelty, onCloseReportPorduct, data, messages, dataPorduct, token, onItemData }: ProductValidationSectionProps) => {
+export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAlet, onStatusNovelty, shouldAutoValidate, modalStatusNovelty, onCloseReportPorduct, data, messages, dataPorduct, token, onItemData, refreshing }: ProductValidationSectionProps) => {
     const [allProducts, setAllProducts] = useState<Document[]>(dataPorduct || []);
     const [validatedProducts, setValidatedProducts] = useState<Document[]>([]);
     const [showValidatedModal, setShowValidatedModal] = useState(false);
@@ -68,8 +69,6 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
             onStatusNovelty?.(showDirection);
         }
     }, [showDirection]);
-
-    console.log("showDirection: ", showDirection);
 
     useEffect(() => {
         if (dataPorduct && dataPorduct.length > 0) {
@@ -121,8 +120,21 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
 
     };
     // Calcular estadísticas CORREGIDAS
-    const pendingCount = allProducts.reduce((total, doc) => doc.detalles.length, 0);
-    const validatedCount = validatedProducts.reduce((total, doc) => total + doc.detalles.length, 0);
+    const pendingCount = allProducts.reduce((total, doc) => {
+        // Filtrar los detalles que NO están validados y sumar
+        const detallesNoValidados = doc.detalles.filter(detalle =>
+            detalle?.estado?.codigo !== 'EST_DET_VALIDADO'
+        );
+        return total + detallesNoValidados.length;
+    }, 0);
+
+    const validatedCount = allProducts.reduce((total, doc) => {
+        const detallesValidados = doc.detalles.filter(detalle =>
+            detalle?.estado?.codigo === 'EST_DET_VALIDADO'
+        );
+        return total + detallesValidados.length;
+    }, 0);
+
     const totalProducts = pendingCount + validatedCount;
     const progressPercentage = totalProducts > 0 ? (validatedCount / totalProducts) * 100 : 0;
     var totalValue = 0;
@@ -141,24 +153,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
         }, 0);
     }, 0);
 
-    // Calcular valor por tipo
-    const totalValueSuccess = validatedProducts.reduce((totalSum, doc) => {
-        return totalSum + doc.detalles
-            .filter(product => product?.estado?.codigo === 'EST_DET_VALIDADO')
-            .reduce((sum, product) => {
-                const numericValue = formatStringToNumber(product.unidadesEntregadas.toString());
-                return sum + numericValue;
-            }, 0);
-    }, 0);
 
-    const totalValueWarning = validatedProducts.reduce((totalSum, doc) => {
-        return totalSum + doc.detalles
-            .filter(product => product?.estado?.codigo === 'EST_DET_VALIDADO_WARNING')
-            .reduce((sum, product) => {
-                const numericValue = formatStringToNumber(product.unidadesEntregadas.toString());
-                return sum + numericValue;
-            }, 0);
-    }, 0);
 
     const isValid = pendingCount === 0;
 
@@ -205,11 +200,16 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
         }
     }, []);
 
-    const validatedDetailsFlat = getAllValidatedDetails();
+    const hasItemsToValidate = pendingDetailsFlat.some(item =>
+        item.estado?.codigo !== 'EST_DET_VALIDADO'
+    );
 
+    const hasItemsValidateSuccess = pendingDetailsFlat.some(item =>
+        item.estado?.codigo === 'EST_DET_VALIDADO'
+    );
     return (
         <View style={styles.mainContainer}>
-            {pendingDetailsFlat.length > 0 && (
+            {(hasItemsToValidate && pendingDetailsFlat.length > 0) && (
                 <View style={styles.subtitleContainer}>
                     <Text style={styles.headerTSubitle}>Por validar</Text>
                 </View>
@@ -225,7 +225,11 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                 <View style={styles.container}>
                     {/* Mostrar productos pendientes */}
                     {pendingDetailsFlat.length > 0 ? (
-                        pendingDetailsFlat.map((item, index) => (
+                        pendingDetailsFlat.filter(item => {
+                            // Aquí aplicas tu condición de filtro
+                            return item.estado?.codigo !== 'EST_DET_VALIDADO';
+
+                        }).map((item, index) => (
                             <ProductItem
                                 key={item.id}
                                 item={item}
@@ -243,6 +247,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                 onItemData={(data) => {
                                     onItemData?.(data);
                                 }}
+                                refreshing={refreshing}
                             />
                         ))
                     ) : (
@@ -253,34 +258,43 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
 
 
                     {/* Mostrar productos validados */}
-                    {validatedDetailsFlat.length > 0 && (
+                    {pendingDetailsFlat.length > 0 && (
                         <>
-                            <View style={styles.subtitleContainer}>
-                                <Text style={styles.headerTSubitle}>Validados</Text>
-                            </View>
-                            {validatedDetailsFlat.map((item, index) => (
-                                <ValidPorductScreen
-                                    key={item.id}
-                                    item={item}
-                                    isLastItem={index === validatedDetailsFlat.length - 1}
-                                    onValidate={() => {
-                                        // Regresar a la lista principal
-                                        setValidatedProducts(prev => {
-                                            return prev.map(document => ({
-                                                ...document,
-                                                detalles: document.detalles.filter(
-                                                    detalle => detalle?.id !== item.id
-                                                )
-                                            })).filter(document => document.detalles.length > 0);
-                                        });
-                                    }}
-                                    validationType={item.estado?.codigo === 'EST_DET_VALIDADO_WARNING' ? 'warning' : 'success'}
-                                    idValue={idValue}
-                                    tatolValue={tatolValue}
-                                    testToken={serviceToken}
-                                    testUrl={serviceUrl}
-                                />
-                            ))}
+                            {hasItemsValidateSuccess && (
+                                <View style={styles.subtitleContainer}>
+                                    <Text style={styles.headerTSubitle}>Validados</Text>
+                                </View>
+                            )}
+
+                            {pendingDetailsFlat
+                                .filter(item => {
+                                    // Aquí aplicas tu condición de filtro
+                                    // Ejemplo: excluir elementos con código específico
+                                    return item.estado?.codigo === 'EST_DET_VALIDADO';
+
+                                })
+                                .map((item, index, filteredArray) => (
+                                    <ValidPorductScreen
+                                        key={item.id}
+                                        item={item}
+                                        isLastItem={index === filteredArray.length - 1}
+                                        onValidate={() => {
+                                            setValidatedProducts(prev => {
+                                                return prev.map(document => ({
+                                                    ...document,
+                                                    detalles: document.detalles.filter(
+                                                        detalle => detalle?.id !== item.id
+                                                    )
+                                                })).filter(document => document.detalles.length > 0);
+                                            });
+                                        }}
+                                        validationType={item.estado?.codigo === 'EST_DET_VALIDADO_WARNING' ? 'warning' : 'success'}
+                                        idValue={idValue}
+                                        tatolValue={tatolValue}
+                                        testToken={serviceToken}
+                                        testUrl={serviceUrl}
+                                    />
+                                ))}
                         </>
                     )}
 

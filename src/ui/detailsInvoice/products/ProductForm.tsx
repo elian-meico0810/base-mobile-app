@@ -94,9 +94,9 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const handleCollapse = () => setIsExpanded(false);
 
 
-    const handleSubmit = async (data: FinalizedData) => {
+    const handleSubmit = async () => {
         try {
-            console.log("entor aca: ", data);
+            console.log("entor aca: ");
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
@@ -553,7 +553,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
             {/** Listado de productos */}
             <ProductValidationSection
-                onFinalize={(data) => {
+                onFinalize={() => {
                     handleSubmit;
                     setUploadPhoto(true);
                 }}

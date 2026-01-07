@@ -1,4 +1,5 @@
 import { AddEvidenceButton } from '@/components/inputs/AddEvidenceButton';
+import { TypeDelivery } from '@/src/constants/GuideStates';
 import { useState } from 'react';
 import { Dimensions, ScrollView, StyleSheet } from 'react-native';
 import { DerliveryDocument } from '../../domain/invoices/InvoicesInterFace';
@@ -73,14 +74,20 @@ export function DeliveryStatusAction({
             borderColor: '#164194',
         },
     });
-
+    const isInvalidDelivery = [
+        TypeDelivery.RECHAZADO,
+        TypeDelivery.ENT_PARCIAL,
+        TypeDelivery.ENT_TOTAL,
+    ].includes(typeDerlivery as TypeDelivery);
+    
     return (
         <ScrollView
             style={styles.scrollContainer}
             contentContainerStyle={styles.scrollContent}
         >
             {/* Entrega total */}
-            
+
+            {isInvalidDelivery ? (
                 <AddEvidenceButton
                     title="Evidencias cargadas"
                     backgroundColor="#EAF7ED"
@@ -89,11 +96,9 @@ export function DeliveryStatusAction({
                     onPress={onUploadPhoto}
                     showEndIcon={true}
                     spaced={true}
-                    height={33}
-                    width={360}
                 />
-
-
+            ) : null
+            }
 
         </ScrollView>
     );
@@ -120,5 +125,5 @@ const styles = StyleSheet.create({
         opacity: 0.5,
         pointerEvents: 'none'
     },
-    
+
 });

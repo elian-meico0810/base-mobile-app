@@ -243,7 +243,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     totalEntregado: 0,
                     totalImpuestoEntrega: 0,
                 }));
-                
+
                 // const response = await detailsRepositoryImpl.noveltyOrder(
                 //     payload
                 //     , token);

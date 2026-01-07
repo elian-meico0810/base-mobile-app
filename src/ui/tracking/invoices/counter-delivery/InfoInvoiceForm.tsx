@@ -9,23 +9,23 @@ import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { UploadPhoto } from '@/components/photo/UploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
-import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeConPagoEnum, TypeDelivery, TypeInvoiceEnum, TypeQr } from '@/src/constants/GuideStates';
+import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeCaculateValueEnum, TypeConPagoEnum, TypeDelivery, TypeInvoiceEnum, TypeQr } from '@/src/constants/GuideStates';
 import { DeliveryStatus } from '@/src/features/tracking/components/checkbox/DeliveryStatus';
+import { DeliveryStatusAction } from '@/src/features/tracking/components/checkbox/DeliveryStatusAction';
 import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
 import { ChangePhoneModal } from '@/src/features/tracking/components/screens/ChangePhoneModal';
 import { DetailsInvoiceQR } from '@/src/features/tracking/components/screens/DetailsInvoiceQR';
 import { InfoPayments } from '@/src/features/tracking/components/screens/InfoPayments';
 import { ViewQrModal } from '@/src/features/tracking/components/screens/ViewQrModal';
-import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { Detail, Document, GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { CreateEntregaProps, DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
-import { capitalizeFirst, cleanSpaces, getDeviceDateTime, getDistanceInMeters } from '@/src/utils/uitls';
-import { Image } from 'expo-image';
+import { calculateVlueByPorducts, capitalizeFirst, cleanSpaces, getDeviceDateTime, getDistanceInMeters, toUpperCase } from '@/src/utils/uitls';
 import * as Location from "expo-location";
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from "react";
-import { Dimensions, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 const { width, height } = Dimensions.get('window');
 
 interface InfoInvoiceFormProps {
@@ -74,6 +74,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [showStatusDelivery, setShowStatusDelivery] = useState<"total" | "parcial" | "rechazo" | null>(null);
     const [isInicilizationApi, setInicilizationApi] = useState(false);
     const [showOptionRefused, setShowOptionRefused] = useState<OptionsRefusedPorps>(null);
+    const [valueOrderCalculate, setValueOrderCalculate] = useState(0);
+    const [showPorductData, setPorductData] = useState<Document[]>([]);
     const [showPaymentPending, setShowPaymentPending] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [RefreshingOnPress, setRefreshingOnPress] = useState(false);
@@ -90,6 +92,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [validateIsBotton, setvalidateIsBotton] = useState(false);
     const btnRef = useRef<any>(null);
     const router = useRouter();
+    const orderId = initialGuide?.pedidos?.[0]?.id;
+
     const handleGoBack = () => {
         if (routeStarted && isCountryDelivery) {
             router.push(
@@ -136,7 +140,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 setLoading(false);
             }
         };
-
+        getDataProduct();
         fetchGuide();
     }, [Number(initialGuide?.facturas[0]?.numeroFactura), token]);
 
@@ -253,14 +257,15 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setLoading(false);
         }
     };
-  
+
     const handleSubmit = async () => {
         try {
+            setLoading(true);
             setvalidateIsBotton(true);
             setEntryVisible(true);
-            setLoading(true);
             setShowDetailInvoiceQR(false);
             setShowPayment(false);
+
             const location = await Location.getCurrentPositionAsync({
                 accuracy: Location.Accuracy.Highest,
             });
@@ -287,10 +292,15 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 token
             );
             if (response?.statusCode === 200) {
-  
-                router.push(
-                    `/views/IndexDetailsInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
-                );
+                router.push({
+                    pathname: '/views/IndexDetailsInvoice',
+                    params: {
+                        guide: JSON.stringify(guide),
+                        numberGuide: numberGuide,
+                        token: token ?? ""
+                    }
+                });
+
                 setvalidateIsBotton(true);
                 setEntryVisible(true);
                 setRouteStarted(true);
@@ -312,6 +322,39 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setLoading(false);
         }
     };
+
+    const getDataProduct = async () => {
+        try {
+            setLoading(true);
+            const responseQuery = await detailsRepositoryImpl.listPorductData(token, Number(orderId));
+            if (responseQuery?.statusCode == 200) {
+                if (typeof responseQuery.data === "object" && !Array.isArray(responseQuery.data)) {
+                    setPorductData(responseQuery.data ? [responseQuery.data] : []);
+                }
+
+            }
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    useEffect(() => {
+        // Calcular el valor cuando showPorductData cambie
+        const calcularTotal = () => {
+            const total = showPorductData?.[0]?.detalles?.reduce((suma, detalle) => {
+                return suma + calculateVlueByPorducts(detalle as Detail, TypeCaculateValueEnum.ACTION_5);
+            }, 0) || 0;
+
+            setValueOrderCalculate(total);
+        };
+
+        calcularTotal();
+    }, [showPorductData]);
 
     const submitData = async () => {
         try {
@@ -699,6 +742,89 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
                 {/* Card blanco centrado */}
                 <View style={styles.card}>
+
+                    {/* Línea divisoria */}
+                    <View style={styles.orderInfo}>
+
+                        <View style={styles.storeRow}>
+                            <Image
+                                source={require("@/assets/icons/HouseIcon.png")}
+                                style={styles.storeIcon}
+                                resizeMode="contain"
+                            />
+
+                            <View style={styles.storeText}>
+                                <Text style={styles.labelTwo}>Nombre de la tienda</Text>
+                                <Text style={styles.value}>
+                                    {toUpperCase(guide?.nombreCliente)}
+                                </Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.divider} />
+                        <View style={styles.storeRow}>
+                            <Image
+                                source={require("@/assets/icons/UbicationIcon.png")}
+                                style={styles.storeIcon}
+                                resizeMode="contain"
+                            />
+                            <View style={styles.storeText}>
+                                <Text style={styles.labelTwo}>Dirección</Text>
+                                <Text style={styles.direccionText}>{cleanSpaces(guide?.direccion)}, {cleanSpaces(guide?.poblacion)}</Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.divider} />
+
+                        <View style={styles.storeRow}>
+                            <Image
+                                source={require("@/assets/icons/NumberIcon.png")}
+                                style={styles.storeIcon}
+                                resizeMode="contain"
+                            />
+                            <View style={styles.storeText}>
+                                <Text style={styles.labelTwo}>ID de tienda</Text>
+                                <Text style={styles.value}>
+                                    {guide?.codigoCliente ?? '0'}
+                                </Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.divider} />
+
+                        <View style={styles.storeRow}>
+                            <Image
+                                source={require("@/assets/icons/CashIcon.png")}
+                                style={styles.storeIcon}
+                                resizeMode="contain"
+                            />
+                            <View style={styles.storeText}>
+
+                                <Text style={styles.labelTwo}>Método de pago</Text>
+                                <Text style={styles.value}>
+                                    {capitalizeFirst(value)}
+                                </Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.divider} />
+
+                        <View style={styles.storeRow}>
+                            <Image
+                                source={require("@/assets/icons/InvoiceIcon.png")}
+                                style={styles.storeIcon}
+                                resizeMode="contain"
+                            />
+                            <View style={styles.storeText}>
+                                <Text style={styles.labelTwo}>N° de factura</Text>
+                                <Text style={styles.value}>{guide?.facturas[0]?.numeroFactura ?? '0'}</Text>
+                            </View>
+
+                        </View>
+                    </View>
+                </View>
+
+                <View style={styles.cardTwo}>
                     {/* Encabezado */}
                     <View style={styles.cardHeader}>
                         <View
@@ -718,27 +844,9 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         </View>
                     </View>
 
-                    {/* Información del minimercado */}
-                    <View style={styles.merchantInfo}>
-                        <Text style={styles.merchantName}>{guide?.nombreCliente ?? ''}</Text>
-                        <Text style={styles.documentNumber}>{guide?.codigoCliente ?? '0'}</Text>
-                        <Text style={styles.address}>{cleanSpaces(guide?.direccion)}, {cleanSpaces(guide?.poblacion)}</Text>
-                    </View>
-
                     {/* Línea divisoria */}
                     <View style={styles.orderInfo}>
-                        <View style={styles.divider} />
-                        <View style={styles.row}>
-                            <Text style={styles.label}>Método de pago</Text>
-                            <Text style={styles.value}>
-                                {capitalizeFirst(value)}
-                            </Text>
-                        </View>
-                        <View style={styles.row}>
-                            <Text style={styles.label}>N° de factura</Text>
-                            <Text style={styles.value}>{guide?.facturas[0]?.numeroFactura ?? '0'}</Text>
-                        </View>
-                        <View style={styles.divider} />
+
                         <View style={styles.row}>
                             <Text style={styles.label}>Subtotal</Text>
                             <Text style={styles.value}>{'$ ' + (Number(guide?.facturas[0]?.valorTotal) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
@@ -750,7 +858,11 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             </Text>
                         </View>
                         <View style={styles.row}>
-                            <Text style={styles.labelTotal}>Total</Text>
+                            <Text style={styles.label}>Productos rechazados</Text>
+                            <Text style={styles.value}>{'$ ' + Number(valueOrderCalculate).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
+                        </View>
+                        <View style={styles.row}>
+                            <Text style={styles.labelTotal}>Valor total</Text>
                             <Text style={[styles.value, { color: '#141D32', fontWeight: '800' }]}>
                                 {'$ ' + Number(totalValue || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                             </Text>
@@ -787,27 +899,15 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                 }}
                             >
                                 <View style={styles.qrButtonContent}>
-                                    <Image
-                                        source={require('@/assets/icons/GenerateQR.png')}
-                                        style={styles.qrButtonIcon}
-                                    />
-                                    <Text style={styles.qrButtonText}>Generar QR de pago</Text>
+                                    <Text style={styles.qrButtonText}>Registrar pago</Text>
                                 </View>
                             </TouchableOpacity>
                         )}
-
-                        <TouchableOpacity style={styles.qrButtonDetail} onPress={() => { setShowPayment(true) }}>
-                            <Text style={styles.qrButtonText}>Detalle de pagos</Text>
-                        </TouchableOpacity>
                     </View>
                 </View>
 
-                <View style={styles.headerContainerTwo}>
-                    <Text style={styles.headerTitleTWO}>Estado de entrega</Text>
-                </View>
-
                 <View>
-                    <DeliveryStatus
+                    <DeliveryStatusAction
                         onStatusChange={(status) => {
                             setShowStatusDelivery(status);
                             // Resetear completado si cambia el estado
@@ -1075,7 +1175,7 @@ const styles = StyleSheet.create({
     },
     card: {
         width: 360,
-        minHeight: 368,
+        minHeight: 300,
         backgroundColor: '#FFFFFF',
         borderColor: '#F0F1F5',
         borderWidth: 1,
@@ -1088,41 +1188,32 @@ const styles = StyleSheet.create({
         shadowColor: "#000",
         marginTop: 1,
     },
+    cardTwo: {
+        width: 360,
+        minHeight: 229,
+        backgroundColor: '#FFFFFF',
+        borderColor: '#F0F1F5',
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingTop: 10,
+        paddingBottom: 16,
+        paddingLeft: 12,
+        paddingRight: 12,
+        gap: 5,
+        shadowColor: "#000",
+        marginTop: 10,
+    },
     cardHeader: {
         alignItems: 'center',
         marginBottom: 4,
-    },
-    merchantInfo: {
-        alignItems: 'center',
-        marginBottom: 0,
-    },
-    merchantName: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#000',
-        textAlign: 'center',
-    },
-    documentNumber: {
-        fontFamily: 'Rubik',
-        fontWeight: '600',
-        fontSize: 12,
-        lineHeight: 16,
-        color: '#141D32',
-        textAlign: 'center',
-    },
-    address: {
-        fontFamily: 'Rubik',
-        fontWeight: '600',
-        fontSize: 12,
-        lineHeight: 16,
-        color: '#141D32',
-        textAlign: 'center',
     },
     divider: {
         height: 1,
         backgroundColor: '#E0E0E0',
         width: '100%',
         marginVertical: 2,
+        marginTop: 12,
+
     },
     dividerTwo: {
         borderBottomColor: '#E0E0E0',
@@ -1145,12 +1236,31 @@ const styles = StyleSheet.create({
         color: '#141D32',
         flex: 1,
     },
+    labelTwo: {
+        fontFamily: 'Rubik',
+        fontWeight: '400',
+        fontSize: 12,
+        color: '#788095',
+    },
     value: {
         fontFamily: 'Rubik',
         fontWeight: '600',
         fontSize: 12,
         color: '#141D32',
-        textAlign: 'right',
+        alignItems: 'flex-start',
+        overflow: 'hidden',
+    },
+    direccionText: {
+        fontFamily: 'Rubik',
+        fontWeight: '600',
+        fontSize: 12,
+        color: '#141D32',
+        alignItems: 'flex-start',
+        overflow: 'hidden',
+        flexWrap: 'wrap',
+        flexShrink: 1,
+        width: '100%',
+        maxWidth: '100%',
     },
     labelTotal: {
         fontFamily: 'Rubik',
@@ -1246,5 +1356,22 @@ const styles = StyleSheet.create({
         backgroundColor: "#F9F9FA",
         zIndex: 0,
     },
+    storeRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    storeIcon: {
+        width: 24,
+        height: 24,
+    },
+    storeText: {
+        width: '100%',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        flexWrap: 'wrap',
+        flexShrink: 1,
+    },
+
 });
 

@@ -112,7 +112,7 @@ export function calculateVlueByPorducts(data: Detail, action: string, unitRefuse
     const unitRefused = Number(data?.unidadesRechazadas ?? 0);
     const form_1 = (totalTaxes / unit) + baseValue
     let valueUnit = 0;
-
+    
     switch (action) {
         case TypeCaculateValueEnum.ACTION_1:
             return (form_1 * unit);

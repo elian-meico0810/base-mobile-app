@@ -79,7 +79,7 @@ export function DeliveryStatusAction({
         TypeDelivery.ENT_PARCIAL,
         TypeDelivery.ENT_TOTAL,
     ].includes(typeDerlivery as TypeDelivery);
-    
+
     return (
         <ScrollView
             style={styles.scrollContainer}
@@ -96,6 +96,8 @@ export function DeliveryStatusAction({
                     onPress={onUploadPhoto}
                     showEndIcon={true}
                     spaced={true}
+                    width={360}
+                    height={33}
                 />
             ) : null
             }

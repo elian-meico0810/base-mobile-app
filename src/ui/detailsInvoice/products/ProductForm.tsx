@@ -338,7 +338,6 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
                 // Verificar si hay novedades para enviar
                 if (novedadesArray.length > 0) {
-
                     const response = await detailsRepositoryImpl.noveltyOrder(
                         novedadesArray
                         , token);

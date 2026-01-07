@@ -93,7 +93,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const btnRef = useRef<any>(null);
     const router = useRouter();
     const orderId = initialGuide?.pedidos?.[0]?.id;
-    
+
     const handleGoBack = () => {
         if (routeStarted && isCountryDelivery) {
             router.push(
@@ -136,8 +136,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 setModalTitle("¡Error!");
                 setModalMessage("Ocurrio un error inesperado.");
                 setModalVisible(true);
-            } finally {
-                setLoading(false);
             }
         };
         getDataProduct();
@@ -278,6 +276,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     setModalTitle("¡Alerta!");
                     setModalMessage("Estás fuera del rango permitido de 100 metros.");
                     setModalVisible(true);
+                    return;
                 }
 
             }
@@ -291,6 +290,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 guide?.idDireccion || 0,
                 token
             );
+
+
             if (response?.statusCode === 200) {
                 router.push({
                     pathname: '/views/IndexDetailsInvoice',
@@ -328,6 +329,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setLoading(true);
             const responseQuery = await detailsRepositoryImpl.listPorductData(token, Number(orderId));
             if (responseQuery?.statusCode == 200) {
+                setLoading(false);
                 if (typeof responseQuery.data === "object" && !Array.isArray(responseQuery.data)) {
                     setPorductData(responseQuery.data ? [responseQuery.data] : []);
                 }
@@ -338,7 +340,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {
-            setLoading(false);
         }
     };
 
@@ -550,7 +551,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     );
                     if (success) {
                         listDocumentQuery();
-                        setLoading(false);
                         setModalTitle("¡Procesado!");
                         setModalMessage(`Soporte(s) procesados exitosamente.`);
                         setModalVisible(true);
@@ -680,8 +680,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const totalAproved = paymentSuccessful?.pagos
         ?.filter(pago => pago.estado === "APPROVED")
         .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0);
-    const totalValue = Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.dfr);
-    const totalRecauder = Number(totalValue) - Number(totalAproved) || null;
+    const totalValue = (Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.dfr)) - Number(valueOrderCalculate);
+    const totalRecauder = (Number(totalValue) - Number(totalAproved) - Number(valueOrderCalculate)) || null;
 
     var value = '';
     switch (guide?.facturas[0]?.tipo) {

@@ -93,6 +93,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const handleExpand = () => setIsExpanded(true);
     const handleCollapse = () => setIsExpanded(false);
 
+
     const handleSubmit = async (data: FinalizedData) => {
         try {
             console.log("entor aca: ", data);
@@ -210,6 +211,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const submitDataByActionsAlert = async () => {
         try {
             const detalles = showPorductData?.[0]?.detalles;
+            setLoading(true);
 
             if (successButton) {
 
@@ -224,15 +226,15 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     ),
                 }));
 
-                // const response = await detailsRepositoryImpl.sendOrderArray(
-                //     payload
-                //     , token);
+                const response = await detailsRepositoryImpl.sendOrderArray(
+                    payload
+                    , token);
 
-                // if (response?.statusCode != 200) {
-                //     setModalTitle("¡Alerta!");
-                //     setModalMessage(response.message || "Ocurrio un error al actualizar el producto.");
-                //     setModalVisible(true);
-                // }
+                if (response?.statusCode != 200) {
+                    setModalTitle("¡Alerta!");
+                    setModalMessage(response.message || "Ocurrio un error al actualizar el producto.");
+                    setModalVisible(true);
+                }
             } else if (alertButton) {
                 const payload = detalles.map((productItemData: any) => ({
                     pedidoDetalleId: Number(productItemData?.id),
@@ -244,16 +246,17 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     totalImpuestoEntrega: 0,
                 }));
 
-                // const response = await detailsRepositoryImpl.noveltyOrder(
-                //     payload
-                //     , token);
+                const response = await detailsRepositoryImpl.noveltyOrder(
+                    payload
+                    , token);
 
-                // if (response?.statusCode != 200) {
-                //     setModalTitle("¡Alerta!");
-                //     setModalMessage(response.message || "Ocurrio un error al actualizar el producto.");
-                //     setModalVisible(true);
-                // }
+                if (response?.statusCode != 200) {
+                    setModalTitle("¡Alerta!");
+                    setModalMessage(response.message || "Ocurrio un error al actualizar el producto.");
+                    setModalVisible(true);
+                }
             }
+            getDataProduct();
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
@@ -262,6 +265,10 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
             setLoading(false);
         }
     };
+
+    const hasItemsValidateSuccess = !!showPorductData?.[0]?.detalles?.some(
+        item => item.estado?.codigo === 'EST_DET_VALIDADO'
+    );
 
     const submitDataByActions = async () => {
         try {
@@ -484,6 +491,8 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     <TouchableOpacity
                         style={styles.expandButton}
                         onPress={isExpanded ? handleCollapse : handleExpand}
+                        disabled={hasItemsValidateSuccess}
+
                     >
                         <View style={styles.arrowsContainer}>
                             {/* Icono superior */}
@@ -499,7 +508,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 </View>
 
                 {/* Contenido expandido */}
-                {isExpanded && (
+                {(isExpanded && !hasItemsValidateSuccess) && (
                     <View style={styles.expandedContent}>
                         <Text style={styles.address}>{cleanSpaces(guide?.direccion)}, {cleanSpaces(guide?.poblacion)}</Text>
 
@@ -509,7 +518,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                                 style={styles.rejectButton}
                                 onPress={() => {
                                     setSuccessButton(false);
-                                    setUploadPhoto(true);
+                                    // setUploadPhoto(true);
                                     setAlertButton(true);
                                 }}
                             >
@@ -521,7 +530,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                                 style={styles.acceptButton}
                                 onPress={() => {
                                     setAlertButton(false);
-                                    setUploadPhoto(true);
+                                    // setUploadPhoto(true);
                                     setSuccessButton(true);
                                 }}
                             >
@@ -629,6 +638,9 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 }
 
 const styles = StyleSheet.create({
+    expandButtonDisabled: {
+        opacity: 0.4,
+    },
     container: {
         flex: 1,
         width: width,

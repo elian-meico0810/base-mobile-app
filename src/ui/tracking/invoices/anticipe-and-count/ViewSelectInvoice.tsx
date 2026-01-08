@@ -111,11 +111,10 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 return;
             }
         } catch (error) {
+            setLoading(false);
             setModalTitle("¡Error!");
             setModalMessage("Ocurrió un error inesperado.");
             setModalVisible(true);
-        } finally {
-            setLoading(false);
         }
     };
 

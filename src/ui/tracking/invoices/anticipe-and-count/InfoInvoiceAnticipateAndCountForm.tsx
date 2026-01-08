@@ -121,9 +121,7 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
                 setModalTitle("¡Error!");
                 setModalMessage("Ocurrio un error inesperado.");
                 setModalVisible(true);
-            } finally {
-                setLoading(false);
-            }
+            } 
         };
 
         fetchGuide();

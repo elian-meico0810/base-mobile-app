@@ -62,7 +62,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
         setModalButtonLabel("Salir");
         setModalButtonLabelClose("Cerrar");
 
-        // 🔴 Bloquea navegación atrás
+        // Bloquea navegación atrás
         return true;
       };
 

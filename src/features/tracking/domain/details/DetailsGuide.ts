@@ -147,3 +147,8 @@ export interface SendOrderArrayProps {
   totalImpuestoEntrega: string;
   idPedidoDetalle: number;
 }
+
+export interface ReportNoveltyFileArrayProps {
+  id_pedido: number;
+  files: string[]; 
+}

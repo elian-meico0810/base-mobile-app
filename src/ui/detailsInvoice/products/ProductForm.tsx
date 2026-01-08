@@ -126,55 +126,34 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const handleSubmitData = async () => {
         try {
             setLoading(true);
-            if (uploadPhotoFile) {
-                // const facturasArray: CreateEntregaProps[] = [];
-                // let responses: any[] = [];
-                // if (guide?.facturas && guide.facturas.length > 0) {
-                //     guide.facturas.forEach((factura, index) => {
-                //         facturasArray.push({
-                //             ruta: String(numberGuide),
-                //             documentMeico: String(factura.numeroFactura),
-                //             direccion: Number(guide?.idDireccion),
-                //             causal: null,
-                //             estado: "ACT_EST_ENTREGA",
-                //             files: multiplePhotos.map((item) => ({
-                //                 tipoEntrega: TypeDelivery.RECHAZADO,
-                //                 rutaArchivo: item.base64 ?? null,
-                //             }))
+            if (uploadPhotoFile && multiplePhotos) {
+                const validBase64 = multiplePhotos
+                    .filter(photo => photo.base64 && photo.base64.trim() !== '')
+                    .map(photo => photo.base64!);
 
+                if (validBase64.length === 0) {
+                    setUploadPhotoFile(false);
+                    setModalTitle("Alerta");
+                    setModalMessage(`Ninguna foto tiene datos base64 válidos`);
+                    setModalVisible(true);
+                    return;
+                }
 
-                //         });
-                //     });
-                // }
-
-                // if (facturasArray.length > 0) {
-                //     responses = await Promise.all(
-                //         facturasArray.map(facturaData =>
-                //             invoiceRepositoryImpl.createDelivery(facturaData, token)
-                //         )
-                //     );
-
-                //     // Verificar si todas las respuestas fueron exitosas
-                //     const success = responses.every((resp: any) =>
-                //         resp?.statusCode === 200 || resp?.success === true
-                //     );
-                //     if (success) {
-                //         setLoading(false);
-                //         setUploadPhotoFile(false);
-                //         setModalTitle("¡Procesado!");
-                //         setModalMessage(`Soporte(s) procesados exitosamente.`);
-                //         setModalVisible(true);
-                //     } else {
-                //         setLoading(false);
-                //         // Opcional: mostrar detalles del primer error
-                //         const oneError = responses.find((resp: any) =>
-                //             !(resp?.statusCode === 200 || resp?.success === true)
-                //         );
-                //         setModalTitle("Alerta");
-                //         setModalMessage(oneError?.message || "Error inesperado.");
-                //         setModalVisible(true);
-                //     }
-                // }
+                const payload = {
+                    id_pedido: Number(orderId),
+                    files: validBase64
+                };
+                const response = await detailsRepositoryImpl.reportNoveltyFileArray(payload, token);
+                if (response) {
+                    setUploadPhotoFile(false);
+                    setModalTitle("¡Procesado!");
+                    setModalMessage(`Soporte(s) procesados exitosamente.`);
+                    setModalVisible(true);
+                } else {
+                    setModalTitle("Alerta");
+                    setModalMessage(response?.message || "Error inesperado.");
+                    setModalVisible(true);
+                }
             }
         } catch (error) {
             setModalTitle("¡Error!");
@@ -254,7 +233,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
     const submitDataByActions = async (data?: ReasonData[]) => {
         try {
-            
+
             if (!productItemData) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Información del producto no disponible.");
@@ -405,7 +384,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
 
     useEffect(() => {
-        if (modalStatusNovelty == "left" && productItemData?.id || successButton){
+        if (modalStatusNovelty == "left" && productItemData?.id || successButton) {
             submitDataByActions();
         }
     }, [modalStatusNovelty, productItemData?.id, successButton]);

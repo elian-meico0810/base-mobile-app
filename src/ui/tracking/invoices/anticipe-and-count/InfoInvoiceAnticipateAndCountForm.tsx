@@ -563,7 +563,7 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
         }
     }, [isSelectInvocies]);
 
-    const newValue = Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.valorTotal)
+    const newValue = Math.max(0,Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.valorTotal));
 
     var value = '';
     switch (guide?.facturas[0]?.tipo) {

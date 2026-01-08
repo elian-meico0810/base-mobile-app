@@ -171,7 +171,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         tipodoc: "TD_FACTURA",
                         tipoCliente: String(guide?.facturas?.[0]?.tipoCliente),
                         cliente: String(guide?.nombreCliente),
-                        numeroWhatsapp: "57"+String(phone),
+                        numeroWhatsapp: "57" + String(phone),
                     },
                     token
                 );
@@ -633,7 +633,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         ?.filter(pago => pago.estado === "APPROVED")
         .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0);
     const totalValue = Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.dfr);
-    const totalRecauder = Number(totalValue) - Number(totalAproved) || null;
+    const totalRecauder = Math.max(0, Number(totalValue) - Number(totalAproved));
 
     var value = '';
     switch (guide?.facturas[0]?.tipo) {
@@ -705,10 +705,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             <Text
                                 style={[
                                     styles.status,
-                                    totalRecauder  == 0  && { color: '#1F9144' },
+                                    totalRecauder == 0 && { color: '#1F9144' },
                                 ]}
                             >
-                                {totalRecauder == 0  ? 'Pago realizado' : 'Pendiente'}
+                                {totalRecauder == 0 ? 'Pago realizado' : 'Pendiente'}
                             </Text>
                         </View>
                     </View>

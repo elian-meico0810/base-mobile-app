@@ -23,17 +23,18 @@ export default function IndexInvoiceScreen() {
         factura => factura.tipo === TypeInvoiceEnum.CREDITO
     );
     const areAllInvoicesConutreDlivery = guideObj.facturas.every(
-        factura => factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO || TypeInvoiceEnum.MIXTO
+        factura => factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO ||
+            factura.tipo === TypeInvoiceEnum.MIXTO
     );
     const areAllInvoicesAnticipe = guideObj.facturas.every(
-        factura => factura.tipo === TypeInvoiceEnum.ANTICIPO || TypeInvoiceEnum.CONTADO_EFECTIVO
+        factura => factura.tipo === TypeInvoiceEnum.ANTICIPO ||   factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO
     );
     const areAllInvoicesAnticipeOne = guideObj.facturas.every(
         factura => factura.tipo === TypeInvoiceEnum.ANTICIPO
     );
     const isCountryDelivery = params.isCountryDelivery as string;
     const IsGoBack = params.IsGoBack as string;
-
+  
     return (
         <>
             <Stack.Screen

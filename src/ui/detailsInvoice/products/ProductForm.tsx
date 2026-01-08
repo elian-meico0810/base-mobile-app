@@ -252,8 +252,9 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         item => item.estado?.codigo === 'EST_DET_VALIDADO'
     );
 
-    const submitDataByActions = async () => {
+    const submitDataByActions = async (data?: ReasonData[]) => {
         try {
+            
             if (!productItemData) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Información del producto no disponible.");
@@ -261,8 +262,10 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 return;
             }
             setLoading(true);
+
             if (modalStatusNovelty == "left" && productItemData?.id || successButton
             ) {
+
                 const response = await detailsRepositoryImpl.sendOrder(
                     {
                         totalEntregado: String(Number(productItemData.unidadesSolicitadas) * Number(productItemData.valorBaseProducto)),
@@ -279,12 +282,10 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
             } else if (modalStatusNovelty == "right" &&
                 productItemData?.id || alertButton
             ) {
-                console.log("dataNovelty.length: ", dataNovelty.length, "- ", dataNovelty);
-                
-                // Array para acumular todas las novedades
+                // Array para acumular todas las nove   dades
                 let novedadesArray = [];
-                if (dataNovelty.length > 0) {
-                    for (const novelty of dataNovelty) {
+                if (data && data.length > 0) {
+                    for (const novelty of data) {
                         // Solo agregar si tiene unidades
                         if (novelty.units > 0 && Number(productItemData?.unidadesSolicitadas) - Number(novelty.units) > 0) {
                             let novelty_value = "";
@@ -402,10 +403,12 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         getDataProduct();
     }, []);
 
-    // Verifica si se está actualizando realmente
+
     useEffect(() => {
-        console.log("dataNovelty actualizado:", dataNovelty);
-    }, [dataNovelty]);
+        if (modalStatusNovelty == "left" && productItemData?.id || successButton){
+            submitDataByActions();
+        }
+    }, [modalStatusNovelty, productItemData?.id, successButton]);
 
     const tokenData = async () => {
         try {
@@ -561,6 +564,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 dataPorduct={showPorductData}
                 onItemData={(data) => {
                     setProductItemData(data);
+
                 }}
                 refreshing={refreshing}
                 onRefreshing={() => {
@@ -608,10 +612,9 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     }}
                     width={width}
                     onPress={(data) => {
-                        console.log("ProductForm: ", data);
-                        submitDataByActions();
-                        setRefreshingOnPress(false);
                         setDataNovelty(data);
+                        submitDataByActions(data);
+                        setRefreshingOnPress(false);
                         setNovelty(true);
                         setTimeout(() => {
                             setStatusNovelty(null);

@@ -249,8 +249,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                 testToken={serviceToken}
                                 testUrl={serviceUrl}
                                 onItemData={(data) => {
-                                    console.log("ProductValidationScreen: ", data);
-                                    if (data) {
+                                    if (data?.estado) {
                                         onItemData?.(data);
 
                                     }

@@ -47,6 +47,16 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
         }
     }, [idValue, tatolValue]);
 
+    let sumTotal = 0;
+    if (item?.novedades) {
+        for (const novedad of item.novedades) {
+            const valor = parseFloat(novedad.valor);
+            if (!isNaN(valor)) {
+                sumTotal += valor;
+            }
+
+        }
+    }
     const quantityEntry = Number(item?.unidadesSolicitadas);
     const quantity = Number(item?.unidadesEntregadas);
     const buildImageUrl = (
@@ -83,7 +93,7 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
                                 <View style={styles.errorDot}>
                                     <MaterialIcons name="close" size={9} color="#FFFFFF" />
                                 </View>
-                            ) : (validationType === "warning" || (quantityEntry > 0 && Number(item.unidadesSolicitadas) != Number(item.unidadesRechazadas))) ? (
+                            ) : (validationType === "warning" || (quantityEntry > 0 && Number(sumTotal) != Number(item.unidadesRechazadas))) ? (
                                 <View style={styles.warningDot}>
                                     <MaterialIcons name="warning" size={12} color="#FFA400" />
                                 </View>
@@ -118,7 +128,7 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
                             <View style={styles.productHeader}>
                                 {Number(item.unidadesRechazadas) > 0 ? (
                                     <Text style={styles.quantityText}>
-                                        {Number(item.unidadesSolicitadas) - Number(item.unidadesRechazadas)}
+                                        {Number(item.unidadesSolicitadas) - Number(sumTotal)}
                                     </Text>
                                 ) : (
                                     <Text style={styles.quantityText}>{item.unidadesSolicitadas}</Text>

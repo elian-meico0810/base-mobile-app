@@ -300,7 +300,7 @@ export const ProductItem = ({
 
                 } else if (isLeftSwipe) {
                     onItemData?.(item);
-
+                    
                     // Para swipe izquierdo: no afecta a otros elementos
                     setSwipeDirection('left');
                     setIsSwiped(true);

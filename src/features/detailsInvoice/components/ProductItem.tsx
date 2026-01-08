@@ -28,8 +28,10 @@ interface ProductItemProps {
     id?: number;
     testToken?: string;
     testUrl?: string;
-    onItemData?: (data: Detail) => void; 
-    refreshing?:  boolean;
+    onItemData?: (data: Detail | null) => void; // <-- Cambia aquí
+    refreshing?: boolean;
+    onRefreshing?: () => void;
+
 }
 
 export const ProductItem = ({
@@ -43,13 +45,15 @@ export const ProductItem = ({
     testToken,
     testUrl,
     onItemData,
-    refreshing
+    refreshing,
+    onRefreshing
 }: ProductItemProps) => {
     const swipePosition = useRef(new Animated.Value(0)).current;
     const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
     const [isSwiped, setIsSwiped] = useState(false);
     const [showSideBar, setShowSideBar] = useState(false);
-    const [showRefreshing, setRefreshing] = useState(refreshing ? true: false);
+    const [showRefreshing, setRefreshing] = useState(refreshing ? true : false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const [barConfig, setBarConfig] = useState({
         color: '#FFA400',
         position: 'left' as 'left' | 'right',
@@ -71,6 +75,40 @@ export const ProductItem = ({
     };
 
     const imagUrl = buildImageUrl(testUrl, testToken, item?.producto?.codigo);
+
+    // Efecto para manejar refreshing externo
+    useEffect(() => {
+        if (refreshing && !isRefreshing) {
+            setIsRefreshing(true);
+
+            if (isSwiped || swipeDirection) {
+
+                if (isAnimating.current) {
+                    isAnimating.current = false;
+                }
+                Animated.timing(swipePosition, {
+                    toValue: 0,
+                    duration: 0,
+                    useNativeDriver: true
+                }).start();
+
+                handleCloseSwipe();
+                onRefreshing?.();
+                onItemData?.(null);
+
+                // Resetear completamente el estado
+                setSwipeDirection(null);
+                setIsSwiped(false);
+                setShowSideBar(false);
+
+                // Notificar que se cerró
+                onCloseReport?.(false);
+                setIsRefreshing(false);
+            } else {
+                setIsRefreshing(false);
+            }
+        }
+    }, [refreshing, isSwiped, swipeDirection]);
 
     // Actualizar barra de colores cuando cambia el estado
     useEffect(() => {
@@ -105,7 +143,7 @@ export const ProductItem = ({
 
             handleCloseSwipe();
             setRefreshing(false);
-            
+
         }
     }, [activeSwipeId, itemIdString, isSwiped, swipeDirection, showRefreshing]);
 
@@ -199,7 +237,15 @@ export const ProductItem = ({
             onValidate(item.id, 'left');
         });
     }, [item.id, onValidate, swipePosition]);
+    const swipeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+    // Función para limpiar el timeout
+    const clearSwipeTimeout = () => {
+        if (swipeTimeoutRef.current) {
+            clearTimeout(swipeTimeoutRef.current);
+            swipeTimeoutRef.current = null;
+        }
+    };
     const panResponder = useRef(
         PanResponder.create({
             onStartShouldSetPanResponder: () => {
@@ -233,6 +279,7 @@ export const ProductItem = ({
 
                 if (isRightSwipe) {
                     onItemData?.(item);
+
                     // Para swipe derecho: establecer como activo y cerrar otros
                     setActiveSwipeId(itemIdString);
                     setSwipeDirection('right');
@@ -399,8 +446,6 @@ export const ProductItem = ({
         </View>
     );
 };
-
-// Mantén los mismos estilos...
 
 const styles = StyleSheet.create({
     breakdownRow: {

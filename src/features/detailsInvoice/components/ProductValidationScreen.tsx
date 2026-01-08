@@ -50,9 +50,11 @@ interface ProductValidationSectionProps {
     token?: string;
     onItemData?: (data: Detail) => void;
     refreshing?: boolean;
+    onRefreshing?: () => void;
+
 }
 
-export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAlet, onStatusNovelty, shouldAutoValidate, modalStatusNovelty, onCloseReportPorduct, data, messages, dataPorduct, token, onItemData, refreshing }: ProductValidationSectionProps) => {
+export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAlet, onStatusNovelty, shouldAutoValidate, modalStatusNovelty, onCloseReportPorduct, data, messages, dataPorduct, token, onItemData, refreshing, onRefreshing }: ProductValidationSectionProps) => {
     const [allProducts, setAllProducts] = useState<Document[]>(dataPorduct || []);
     const [validatedProducts, setValidatedProducts] = useState<Document[]>([]);
     const [showValidatedModal, setShowValidatedModal] = useState(false);
@@ -109,8 +111,14 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
             if (product && totalUnits > Number(product.unidadesSolicitadas)) {
                 messages?.("La cantidad reportada no puede ser mayor a la despachada.");
                 return;
+            } else if (product && totalUnits == Number(product.unidadesSolicitadas)) {
+                messages?.("La cantidad reportada no puede ser igual a la despachada.");
+                return;
+            } else {
+                setTotal(Number(totalUnits));
+
             }
-            setTotal(Number(totalUnits));
+
         }
 
 
@@ -205,7 +213,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     );
     return (
         <View style={styles.mainContainer}>
-            {(hasItemsToValidate && pendingDetailsFlat.length > 0 ) && (
+            {(hasItemsToValidate && pendingDetailsFlat.length > 0) && (
                 <View style={styles.subtitleContainer}>
                     <Text style={styles.headerTSubitle}>Por validar</Text>
                 </View>
@@ -241,9 +249,16 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                 testToken={serviceToken}
                                 testUrl={serviceUrl}
                                 onItemData={(data) => {
-                                    onItemData?.(data);
+                                    console.log("ProductValidationScreen: ", data);
+                                    if (data) {
+                                        onItemData?.(data);
+
+                                    }
                                 }}
                                 refreshing={refreshing}
+                                onRefreshing={() => {
+                                    onRefreshing?.();
+                                }}
                             />
                         ))
                     ) : (

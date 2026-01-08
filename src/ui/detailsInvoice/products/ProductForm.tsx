@@ -58,7 +58,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
     const [multiplePhotos, setMultiplePhotos] = useState<EvidencePhoto[]>([]);
     const [uploadPhoto, setUploadPhoto] = useState(false);
-    const [dataNovlety, setDataNovlety] = useState<ReasonData[]>([]);
+    const [dataNovelty, setDataNovelty] = useState<ReasonData[]>([]);
     const [successButton, setSuccessButton] = useState(false);
     const [alertButton, setAlertButton] = useState(false);
     const [uploadPhotoFile, setUploadPhotoFile] = useState(false);
@@ -105,17 +105,6 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
             setLoading(false);
         }
     };
-
-    useEffect(() => {
-        if (dataNovlety.length > 0) {
-            submitDataByActions();
-            // Aquí puedes hacer lo que necesites con los datos actualizados
-            // Por ejemplo, hacer una llamada API, actualizar UI, etc.
-
-            // Cerrar el modal después de procesar los datos
-            setStatusNovelty(null);
-        }
-    }, [dataNovlety]); // Se ejecuta cada vez que dataNovlety cambia
 
 
     useEffect(() => {
@@ -197,12 +186,6 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     };
 
     useEffect(() => {
-        if (modalStatusNovelty && productItemData) {
-            submitDataByActions();
-        }
-    }, [modalStatusNovelty, productItemData]);
-
-    useEffect(() => {
         if (successButton || alertButton) {
             submitDataByActionsAlert();
         }
@@ -214,7 +197,6 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
             setLoading(true);
 
             if (successButton) {
-
                 const payload = detalles.map((productItemData: any) => ({
                     idPedidoDetalle: productItemData.id, // opcional
                     totalEntregado: String(
@@ -297,58 +279,57 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
             } else if (modalStatusNovelty == "right" &&
                 productItemData?.id || alertButton
             ) {
+                console.log("dataNovelty.length: ", dataNovelty.length, "- ", dataNovelty);
+                
                 // Array para acumular todas las novedades
                 let novedadesArray = [];
+                if (dataNovelty.length > 0) {
+                    for (const novelty of dataNovelty) {
+                        // Solo agregar si tiene unidades
+                        if (novelty.units > 0 && Number(productItemData?.unidadesSolicitadas) - Number(novelty.units) > 0) {
+                            let novelty_value = "";
 
-                for (const novelty of dataNovlety) {
+                            switch (novelty.type) {
+                                case TyepeCausalRefusedEnum.DINERO_INSUFICIENTE:
+                                    novelty_value = CausalRefusedEnum.CS_NOV_DIN_INSUF
 
-                    // Solo agregar si tiene unidades
-                    if (novelty.units > 0 && Number(productItemData?.unidadesSolicitadas) - Number(novelty.units) > 0) {
-                        let novelty_value = "";
+                                case TyepeCausalRefusedEnum.PRODUCTOS_DANADOS:
+                                    novelty_value = CausalRefusedEnum.CS_NOV_PROD_DAÑADO
 
-                        switch (novelty.type) {
-                            case TyepeCausalRefusedEnum.DINERO_INSUFICIENTE:
-                                novelty_value = CausalRefusedEnum.CS_NOV_DIN_INSUF
+                                case TyepeCausalRefusedEnum.PRODUCTOS_VENCIDOS:
+                                    novelty_value = CausalRefusedEnum.CS_NOV_PROD_VENC
 
-                            case TyepeCausalRefusedEnum.PRODUCTOS_DANADOS:
-                                novelty_value = CausalRefusedEnum.CS_NOV_PROD_DAÑADO
+                                default:
+                                    novelty_value = CausalRefusedEnum.CS_NOV_OTRO
 
-                            case TyepeCausalRefusedEnum.PRODUCTOS_VENCIDOS:
-                                novelty_value = CausalRefusedEnum.CS_NOV_PROD_VENC
+                            }
 
-                            default:
-                                novelty_value = CausalRefusedEnum.CS_NOV_OTRO
+                            const noveltyData = {
+                                pedidoDetalleId: Number(productItemData?.id),
+                                causalCodigo: novelty_value,
+                                valor: novelty.units.toString(),
+                                unidadesRechazadas: Number(productItemData?.unidadesSolicitadas) - Number(novelty.units),
+                                unidadesEntregadas: calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_6, novelty.units),
+                                totalEntregado: calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_5, novelty.units),
+                                totalImpuestoEntrega: calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_7, novelty.units),
+                            };
 
+                            novedadesArray.push(noveltyData);
                         }
-
-                        const noveltyData = {
-                            pedidoDetalleId: Number(productItemData?.id),
-                            causalCodigo: novelty_value,
-                            valor: novelty.units.toString(),
-                            unidadesRechazadas: Number(productItemData?.unidadesSolicitadas) - Number(novelty.units),
-                            unidadesEntregadas: calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_6, novelty.units),
-                            totalEntregado: calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_5, novelty.units),
-                            totalImpuestoEntrega: calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_7, novelty.units),
-                        };
-
-                        novedadesArray.push(noveltyData);
                     }
-                }
 
-
-                // Verificar si hay novedades para enviar
-                if (novedadesArray.length > 0) {
+                    // Verificar si hay novedades para enviar
                     const response = await detailsRepositoryImpl.noveltyOrder(
                         novedadesArray
                         , token);
 
-                    novedadesArray = [];
 
                     if (response?.statusCode != 200) {
                         setModalTitle("¡Alerta!");
                         setModalMessage(response.message || "Ocurrio un error al actualizar el producto.");
                         setModalVisible(true);
                     }
+                    novedadesArray = [];
                 }
 
             }
@@ -421,6 +402,10 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         getDataProduct();
     }, []);
 
+    // Verifica si se está actualizando realmente
+    useEffect(() => {
+        console.log("dataNovelty actualizado:", dataNovelty);
+    }, [dataNovelty]);
 
     const tokenData = async () => {
         try {
@@ -567,7 +552,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     setViewModal(value);
 
                 }}
-                data={dataNovlety}
+                data={dataNovelty}
                 messages={(messages) => {
                     setModalTitle("¡Alerta!");
                     setModalMessage(messages);
@@ -578,6 +563,9 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     setProductItemData(data);
                 }}
                 refreshing={refreshing}
+                onRefreshing={() => {
+                    setRefreshingOnPress(false);
+                }}
             />
 
             {(uploadPhoto) && (
@@ -616,12 +604,14 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     title="Reportar novedad"
                     onClose={() => {
                         setStatusNovelty(null);
-                        setRefreshingOnPress(false);
+                        setRefreshingOnPress(true);
                     }}
                     width={width}
                     onPress={(data) => {
+                        console.log("ProductForm: ", data);
+                        submitDataByActions();
                         setRefreshingOnPress(false);
-                        setDataNovlety(data);
+                        setDataNovelty(data);
                         setNovelty(true);
                         setTimeout(() => {
                             setStatusNovelty(null);

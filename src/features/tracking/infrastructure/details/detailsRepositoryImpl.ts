@@ -120,13 +120,15 @@ export const detailsRepositoryImpl: DetailsRepository = {
 
   async noveltyOrder(data: NoveltyRefusedProps[], token: string) {
     try {
-      const response = await authApi.post(`${API_ROUTES.SEND_NOVELTY_ORDER}`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      console.log("noveltyOrder: ",data);
 
-      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+      // const response = await authApi.post(`${API_ROUTES.SEND_NOVELTY_ORDER}`, data, {
+      //   headers: {
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      // });
+
+      // return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {
       throw error;
     }
@@ -134,13 +136,15 @@ export const detailsRepositoryImpl: DetailsRepository = {
 
   async sendOrderArray(data: SendOrderArrayProps[], token: string) {
     try {
-      const response = await authApi.post(`${API_ROUTES.SENT_ORRDE_ARRAY}`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      console.log("sendOrderArray: ",data);
+      
+      // const response = await authApi.post(`${API_ROUTES.SENT_ORRDE_ARRAY}`, data, {
+      //   headers: {
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      // });
 
-      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+      // return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {
       throw error;
     }

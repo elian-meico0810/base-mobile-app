@@ -304,7 +304,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const totalRecauder = Math.max(0, totalFacturas - totalAproved);
     const conditionButton = conceptDelivery.length > 0 || routeStarted;
     const validateCheckboxlength = conceptDelivery.length == guide?.facturas?.length;
-
+    const isSmallScreen = height <= 780;
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -355,10 +355,10 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                             <Text
                                 style={[
                                     styles.status,
-                                    validateCheckboxlength  && { color: '#1F9144' },
+                                    validateCheckboxlength && { color: '#1F9144' },
                                 ]}
                             >
-                                {validateCheckboxlength ? 'Pedido entregado' : 'Pendiente'}                            
+                                {validateCheckboxlength ? 'Pedido entregado' : 'Pendiente'}
                             </Text>
                         </View>
                     </View>
@@ -375,7 +375,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         <View style={styles.divider} />
                         <View style={styles.row}>
                             <Text style={styles.label}>Ordenes a entregar</Text>
-                            <Text style={styles.value}> {Number(guide?.facturas?.length) -  Number(conceptDelivery.length)}</Text>
+                            <Text style={styles.value}> {Number(guide?.facturas?.length) - Number(conceptDelivery.length)}</Text>
                         </View>
                         <View style={styles.row}>
                             <Text style={styles.labelTotal}>Valor total del pedido</Text>
@@ -427,10 +427,13 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 </View>
             </ScrollView>
             {guide?.estado === 'Pendiente' && (
-                <View style={styles.redBackground} />
+                <View style={[styles.redBackground, { height: isSmallScreen ? 60 : 90 }]} />
             )}
 
-            <View style={[styles.footer, { marginBottom: 10 }]}>
+            <View style={[styles.footer, {
+                marginBottom: isSmallScreen ? 0 : 10,
+                bottom: isSmallScreen ? 10 : 30
+            }]}>
                 {guide?.estado === 'Pendiente' && (
                     <PrimaryButtonDetails
                         ref={btnRef}

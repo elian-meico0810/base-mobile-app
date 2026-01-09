@@ -53,7 +53,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const router = useRouter();
 
     const isValid = guide.length >= 5;
-
+    const isSmallScreen = height <= 780;
     useEffect(() => {
         const fetchToken = async () => {
             const savedToken = await SecureStore.getItemAsync('user_token');
@@ -134,7 +134,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                         );
 
                         setDataResult(responseData?.data?.resumen);
-                        
+
                         // Asignar la variable según el resultado
                         setData(sortedData as GuideDetails[]);
                         setFilteredGuides(sortedData as GuideDetails[]);
@@ -168,7 +168,6 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                             setDate(await SecureStore.getItemAsync('expiration_date'));
                             setRunApiFinish(false);
                             setRouteStarted(true);
-                            break;
 
                         case StatusInvoiceID.PENDING:
                             setStatusValue(StatusInvoice.PENDING);
@@ -304,7 +303,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
 
             <View style={[
                 styles.whitePanel,
-                { height: height - 200 }
+                { height: isSmallScreen ? height - 170 : height - 200 }
             ]}>
                 <View style={styles.content}>
 
@@ -357,7 +356,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                     </View>
 
                     {(!routeStarted && (statusValue == StatusInvoice.PENDING)) && (
-                        <View style={{ alignItems: 'center', marginBottom: 25 }}>
+                        <View style={{ alignItems: 'center', marginBottom: isSmallScreen ? 0 : 25 }}>
                             <PrimaryButtonDetails
                                 ref={btnRef}
                                 title="Comenzar ruta"

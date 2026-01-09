@@ -517,7 +517,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             );
         }
     }, [showCheckbox, selectedMultipleInvoices]);
-
+    const isSmallScreen = height <= 780;
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -682,10 +682,13 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
             </ScrollView>
             {guide?.estado === 'Pendiente' && (
-                <View style={styles.redBackground} />
+                <View style={[styles.redBackground, { height: isSmallScreen ? 60 : 90 }]} />
             )}
 
-            <View style={[styles.footer, { marginBottom: 10 }]}>
+            <View style={[styles.footer, {
+                marginBottom: isSmallScreen ? 0 : 10,
+                bottom: isSmallScreen ? 10 : 30
+            }]}>
 
                 {(() => {
                     if (guide?.estado !== 'Pendiente') return null;

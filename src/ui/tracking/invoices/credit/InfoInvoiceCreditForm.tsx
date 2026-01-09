@@ -152,7 +152,7 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
                         tipodoc: "TD_FACTURA",
                         tipoCliente: String(guide?.facturas?.[0]?.tipoCliente),
                         cliente: String(guide?.nombreCliente),
-                        numeroWhatsapp: "57"+String(phone),
+                        numeroWhatsapp: "57" + String(phone),
                     },
                     token
                 );
@@ -568,6 +568,7 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
     if (conceptDelivery?.id && guide?.facturas?.length) {
         validateCheckboxlength = true;
     }
+    const isSmallScreen = height <= 780;
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -681,10 +682,13 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
                 </View>
             </ScrollView>
             {guide?.estado === 'Pendiente' && (
-                <View style={styles.redBackground} />
+                <View style={[styles.redBackground, { height: isSmallScreen ? 60 : 90 }]} />
             )}
 
-            <View style={[styles.footer, { marginBottom: 10 }]}>
+            <View style={[styles.footer, {
+                marginBottom: isSmallScreen ? 0 : 10,
+                bottom: isSmallScreen ? 10 : 30
+            }]}>
 
                 {isSelectInvocies ? (
                     <PrimaryButton

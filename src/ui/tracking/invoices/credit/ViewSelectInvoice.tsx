@@ -461,7 +461,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         processPhotos();
     }, [showStatusDelivery, isInicilizationApi, showOptionRefused]);
 
-    const validateCheckbox = conceptDelivery.length != (guide?.facturas?.length ) && conceptDelivery.length != 0;
+    const validateCheckbox = conceptDelivery.length != (guide?.facturas?.length) && conceptDelivery.length != 0;
     const conditionButton = routeStarted || conceptDelivery.length === guide?.facturas?.length && conceptDelivery.length === guide.facturas.length;
     const validateCheckboxlength = conceptDelivery.length == guide?.facturas?.length;
 
@@ -473,7 +473,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
         }
     }, [selectedMultipleInvoices]);
-
+    const isSmallScreen = height <= 780;
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -518,7 +518,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                                     validateCheckboxlength && { color: '#1F9144' },
                                 ]}
                             >
-                                {validateCheckboxlength ? 'Pedido entregado' : 'Pendiente'}                            
+                                {validateCheckboxlength ? 'Pedido entregado' : 'Pendiente'}
                             </Text>
                         </View>
                     </View>
@@ -604,10 +604,13 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
             </ScrollView>
             {guide?.estado === 'Pendiente' && (
-                <View style={styles.redBackground} />
+                <View style={[styles.redBackground, { height: isSmallScreen ? 60 : 90 }]} />
             )}
 
-            <View style={[styles.footer, { marginBottom: 10 }]}>
+            <View style={[styles.footer, {
+                marginBottom: isSmallScreen ? 0 : 10,
+                bottom: isSmallScreen ? 10 : 10
+            }]}>
 
                 {(() => {
                     if (guide?.estado !== 'Pendiente') return null;
@@ -634,10 +637,10 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                                     disabled={false}
                                     width={328}
                                     height={43}
-                                    buttonColor={validateCheckboxlength ?  undefined : conditionButton ? "#DDDFE8" : undefined}
-                                    buttonColorEnd={validateCheckboxlength ?  undefined : conditionButton ? "#DDDFE8" : undefined}
+                                    buttonColor={validateCheckboxlength ? undefined : conditionButton ? "#DDDFE8" : undefined}
+                                    buttonColorEnd={validateCheckboxlength ? undefined : conditionButton ? "#DDDFE8" : undefined}
                                     titleColor={conditionButton ? "#FFFFFF" : undefined}
-                                    circleColor={validateCheckboxlength ?  undefined : conditionButton ? "#788095" : undefined}
+                                    circleColor={validateCheckboxlength ? undefined : conditionButton ? "#788095" : undefined}
                                 />
                             );
                         }

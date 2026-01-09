@@ -2,7 +2,7 @@ import { GuideState, TypeInvoiceEnum } from "@/src/constants/GuideStates";
 import { GuideDetails, PaymentsByInvoice } from "@/src/features/tracking/domain/details/DetailsGuide";
 import { formatNumber } from "@/src/utils/uitls";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Dimensions, StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from "react-native";
 import { TodayDeliveriesSkeleton } from "../skeleton/TodayDeliveriesSkeleton";
 
@@ -133,11 +133,11 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
     };
 
     // Ajustar altura dinámica según el estado
-    const dynamicHeight = height * (routeStarted ? (showSummary ? 0.30 : 0.15) : 0.11);
+    // const dynamicHeight = height * (routeStarted ? (showSummary ? 0.30 : 0.15) : 0.11);
     const cardStyle = [
         styles.card,
         style,
-        { height: dynamicHeight }
+        // { height: dynamicHeight }
     ];
 
     // Mostrar skeleton mientras se carga

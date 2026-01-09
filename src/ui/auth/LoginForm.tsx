@@ -79,7 +79,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
     setModalVisible(false);
     BackHandler.exitApp();
   };
-  
+
   useEffect(() => {
     const fetchToken = async () => {
       try {
@@ -167,148 +167,168 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
       setIsLoading(false);
     }
   };
+  const isSmallScreen = height <= 757.3333333333334;
 
-  return (
-    <ThemedView style={styles.container}>
-      <TokenExpiredModal visible={showModal} onClose={() => setShowModal(false)} />
+ 
+    return (
+      <ThemedView style={styles.container}>
+        <TokenExpiredModal visible={showModal} onClose={() => setShowModal(false)} />
 
-      {/* <NetworkStatus /> */}
-
-      <View style={[styles.backgroundFill, { width, height }]} pointerEvents="none">
-        <Image
-          source={require('@/assets/icons/Welcome.png')}
-          style={[styles.backgroundImage, { width, height }]}
-          resizeMode="cover"
-        />
-      </View>
-
-      {[...Array(4)].map((_, i) => (
-        <View key={i} style={[styles.separator, { top: (i + 1) * (height / 5) - 1 }]} />
-      ))}
-
-      <LogoText style={styles.logo} />
-
-      {/* Panel blanco con altura fija */}
-      <View style={[
-        styles.whitePanel,
-        { height: height - 200 }
-      ]}>
-        <View style={styles.content}>
-          <View style={styles.topContent}>
-            <Text style={styles.title}>¡Bienvenido!</Text>
-            <Text style={styles.subtitle}>
-              Ingresa el número de guía para comenzar tu ruta
-            </Text>
-
-            <PrimaryInput
-              placeholder="Número de guía"
-              value={guide}
-              onChangeText={(text) => {
-                setGuide(text);
-                setErrorMessage("");
-              }}
-              error={errorMessage !== ""}
-            />
-
-            {errorMessage !== "" && (
-              <Text style={styles.errorText}>{errorMessage}</Text>
-            )}
-          </View>
-
-          <View style={[
-            styles.buttonContainer,
-            { marginBottom: keyboardHeight > 0 ? keyboardHeight + 40 : 25 }
-          ]}>
-            <PrimaryButton
-              title="Ingresar"
-              onPress={handleSubmit}
-              disabled={!isValid}
-              width={328}
-              height={43}
-            />
-          </View>
-          <ExceptionModal
-            visible={modalVisible}
-            onClose={() => setModalVisible(false)}
-            title={modalTitle}
-            message={modalMessage}
-            buttonLabel={modalButtonLabel}
-            close={modalButtonLabelClose}
-            isButtonsClosed={true}
-            onExit={() => {
-              handleExitApp();
-            }}
+        {/* Fondo e imágenes */}
+        <View style={[styles.backgroundFill, { width, height }]} pointerEvents="none">
+          <Image
+            source={require('@/assets/icons/Welcome.png')}
+            style={[styles.backgroundImage, { width, height }]}
+            resizeMode="cover"
           />
         </View>
-      </View>
-      {isLoading && <LoadingBlue />}
-    </ThemedView>
-  );
-}
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    position: 'relative',
-    alignItems: 'center',
-  },
-  backgroundFill: {
-    backgroundColor: '#143881ff',
-  },
-  backgroundImage: {
-    zIndex: 1,
-  },
-  separator: {
-    position: 'absolute',
-    height: 5,
-    transform: [{ rotate: '-15deg' }],
-    zIndex: 2,
-  },
-  logo: {
-    zIndex: 10,
-    position: 'absolute',
-    top: 100,
-  },
-  whitePanel: {
-    position: 'absolute',
-    top: 200,
-    left: 0,
-    right: 0,
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    padding: 27,
-    zIndex: 3,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'space-between',
-  },
-  topContent: {
-    flex: 1,
-  },
-  title: {
-    fontFamily: "Rubik",
-    fontWeight: "700",
-    fontSize: 24,
-    textAlign: "center",
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontFamily: "Rubik",
-    fontWeight: "400",
-    fontSize: 14,
-    textAlign: "center",
-    marginBottom: 24,
-  },
-  errorText: {
-    color: "red",
-    fontSize: 12,
-    marginTop: 4,
-    textAlign: "center",
-  },
-  buttonContainer: {
-    width: "100%",
-    alignItems: 'center',
-  },
-});
+        {[...Array(4)].map((_, i) => (
+          <View key={i} style={[styles.separator, { top: (i + 1) * (height / 5) - 1 }]} />
+        ))}
+
+        <LogoText style={styles.logo} />
+
+        {/* Panel blanco modificado */}
+        <View style={[
+          styles.whitePanel,
+          {
+            height: height - 200,
+            // Agregar paddingBottom dinámico cuando el teclado está visible
+            paddingBottom: keyboardHeight > 0 ? keyboardHeight : 0
+          }
+        ]}>
+          <View style={[
+            styles.content,
+            // Reducir el espacio entre elementos cuando hay teclado
+            keyboardHeight > 0 && styles.contentWithKeyboard
+          ]}>
+            <View style={styles.topContent}>
+              <Text style={styles.title}>¡Bienvenido!</Text>
+              <Text style={styles.subtitle}>
+                Ingresa el número de guía para comenzar tu ruta
+              </Text>
+
+              <PrimaryInput
+                placeholder="Número de guía"
+                value={guide}
+                onChangeText={(text) => {
+                  setGuide(text);
+                  setErrorMessage("");
+                }}
+                error={errorMessage !== ""}
+              />
+
+              {errorMessage !== "" && (
+                <Text style={styles.errorText}>{errorMessage}</Text>
+              )}
+            </View>
+
+            {/* Botón con margen ajustado */}
+            <View style={[
+              styles.buttonContainer,
+              {
+                marginBottom: isSmallScreen ? 0: 60,
+                // Subir el botón cuando el teclado está visible
+                marginTop: keyboardHeight > 0 ? 40 : 'auto'
+              }
+            ]}>
+              <PrimaryButton
+                title="Ingresar"
+                onPress={handleSubmit}
+                disabled={!isValid}
+                width={328}
+                height={43}
+              />
+            </View>
+          </View>
+        </View>
+
+        {/* Modal de excepción */}
+        <ExceptionModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          title={modalTitle}
+          message={modalMessage}
+          buttonLabel={modalButtonLabel}
+          close={modalButtonLabelClose}
+          isButtonsClosed={true}
+          onExit={() => {
+            handleExitApp();
+          }}
+        />
+
+        {isLoading && <LoadingBlue />}
+      </ThemedView>
+    );
+  }
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      position: 'relative',
+      alignItems: 'center',
+    },
+    backgroundFill: {
+      backgroundColor: '#143881ff',
+    },
+    backgroundImage: {
+      zIndex: 1,
+    },
+    separator: {
+      position: 'absolute',
+      height: 5,
+      transform: [{ rotate: '-15deg' }],
+      zIndex: 2,
+    },
+    logo: {
+      zIndex: 10,
+      position: 'absolute',
+      top: 100,
+    },
+    whitePanel: {
+      position: 'absolute',
+      top: 200,
+      left: 0,
+      right: 0,
+      backgroundColor: '#FFFFFF',
+      borderTopLeftRadius: 16,
+      borderTopRightRadius: 16,
+      padding: 27,
+      zIndex: 3,
+    },
+    content: {
+      flex: 1,
+      justifyContent: 'space-between',
+    },
+    topContent: {
+      flex: 1,
+    },
+    title: {
+      fontFamily: "Rubik",
+      fontWeight: "700",
+      fontSize: 24,
+      textAlign: "center",
+      marginBottom: 8,
+    },
+    subtitle: {
+      fontFamily: "Rubik",
+      fontWeight: "400",
+      fontSize: 14,
+      textAlign: "center",
+      marginBottom: 24,
+    },
+    errorText: {
+      color: "red",
+      fontSize: 12,
+      marginTop: 4,
+      textAlign: "center",
+    },
+    buttonContainer: {
+      width: "100%",
+      alignItems: 'center',
+    },
+    contentWithKeyboard: {
+      justifyContent: 'flex-start',
+    },
+  });

@@ -2,7 +2,7 @@
   "expo": {
     "name": "MeiTruck",
     "slug": "Meico-Track",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "orientation": "portrait",
     "icon": "./assets/newIcon/1024.png",
     "scheme": "basemobileapp",

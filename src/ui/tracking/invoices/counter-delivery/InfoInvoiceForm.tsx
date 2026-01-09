@@ -635,6 +635,9 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const totalValue = Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.dfr);
     const totalRecauder = Math.max(0, Number(totalValue) - Number(totalAproved));
 
+    // const isSmallScreen = height <= 757.3333333333334;
+    const isSmallScreen = height <= 780;
+
     var value = '';
     switch (guide?.facturas[0]?.tipo) {
         case TypeInvoiceEnum.CONTADO_EFECTIVO:
@@ -824,11 +827,13 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 </View>
             </ScrollView>
             {guide?.estado === 'Pendiente' && (
-                <View style={styles.redBackground} />
+                <View style={[styles.redBackground, { height: isSmallScreen ? 60 : 90 }]} />
             )}
 
-            <View style={[styles.footer, { marginBottom: 10 }]}>
-
+            <View style={[styles.footer, {
+                marginBottom: isSmallScreen ? 0 : 20,
+                bottom: isSmallScreen ? 10 : 30
+            }]}>
                 {isSelectInvocies ? (
                     <PrimaryButton
                         title="Entregar"

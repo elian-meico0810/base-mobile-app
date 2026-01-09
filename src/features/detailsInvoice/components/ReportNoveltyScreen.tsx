@@ -104,13 +104,11 @@ export function ReportNoveltyScreen({
 
         reasons.forEach((reason, index) => {
             const unitValue = units[index] ? parseInt(units[index], 10) : 0;
-            if (unitValue >= 0) {
-                data.push({
-                    type: reason,
-                    units: unitValue
-                });
+            data.push({
+                type: reason,
+                units: unitValue
+            });
 
-            }
         });
 
         return data;

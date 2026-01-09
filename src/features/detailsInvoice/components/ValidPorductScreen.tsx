@@ -57,8 +57,10 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
 
         }
     }
+
     const quantityEntry = Number(item?.unidadesSolicitadas);
     const quantity = Number(item?.unidadesEntregadas);
+
     const buildImageUrl = (
         baseUrl?: string | null,
         token?: string | null,
@@ -89,11 +91,11 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
                                 <View style={styles.statusDot}>
                                     <MaterialIcons name="check" size={9} color="#FFFFFF" />
                                 </View>
-                            ) : (validationType === "error" || quantity === 0) ? (
+                            ) : (validationType === "error" || quantity === 0 && Number(sumTotal) == 0) ? (
                                 <View style={styles.errorDot}>
                                     <MaterialIcons name="close" size={9} color="#FFFFFF" />
                                 </View>
-                            ) : (validationType === "warning" || (quantityEntry > 0 && Number(sumTotal) != Number(item.unidadesRechazadas))) ? (
+                            ) : (validationType === "warning" || (quantityEntry > 0 && Number(sumTotal) != Number(quantityEntry))) ? (
                                 <View style={styles.warningDot}>
                                     <MaterialIcons name="warning" size={12} color="#FFA400" />
                                 </View>
@@ -106,11 +108,11 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
                                 <View style={styles.statusDot}>
                                     <MaterialIcons name="check" size={9} color="#FFFFFF" />
                                 </View>
-                            ) : (validationType === "error" || quantity === 0) ? (
+                            ) : (validationType === "error" || quantity === 0 && Number(sumTotal) == 0) ? (
                                 <View style={styles.errorDot}>
                                     <MaterialIcons name="close" size={9} color="#FFFFFF" />
                                 </View>
-                            ) : (validationType === "warning" || (quantityEntry > 0 && Number(item.unidadesSolicitadas) != Number(item.unidadesRechazadas))) ? (
+                            ) : (validationType === "warning" || (quantityEntry > 0 && Number(sumTotal) != Number(quantityEntry))) ? (
                                 <View style={styles.warningDot}>
                                     <MaterialIcons name="warning" size={12} color="#FFA400" />
                                 </View>
@@ -126,16 +128,21 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
                     <View style={styles.row}>
                         <View style={styles.leftInfo}>
                             <View style={styles.productHeader}>
-                                {Number(item.unidadesRechazadas) > 0 ? (
+                                {Number(sumTotal) > 0 ? (
                                     <Text style={styles.quantityText}>
                                         {Number(item.unidadesSolicitadas) - Number(sumTotal)}
                                     </Text>
+                                ) : (Number(sumTotal) == 0 && quantityEntry != quantity) ? (
+                                    <Text style={styles.quantityText}>
+                                        {Number(sumTotal)}
+                                    </Text>
                                 ) : (
-                                    <Text style={styles.quantityText}>{item.unidadesSolicitadas}</Text>
-
+                                    <Text style={styles.quantityText}>
+                                        {item.unidadesSolicitadas}
+                                    </Text>
                                 )}
 
-                                {Number(item.unidadesRechazadas) > 0 && (
+                                {(quantityEntry != quantity && (Number(sumTotal) > 0 || Number(sumTotal) == 0)) && (
                                     <Text style={styles.quantityTextValue}>
                                         {item.unidadesSolicitadas}
                                     </Text>
@@ -153,9 +160,17 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
                         </View>
 
                         <View style={styles.priceRow}>
-                            <Text style={styles.totalPrice}>
-                                ${formatNumber(calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_3) ?? 0)}
+                            {(Number(sumTotal) > 0 || quantityEntry === quantity) ? (
+                                <Text style={styles.totalPrice}>
+                                    ${formatNumber(calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_3) ?? 0)}
+                                </Text>
+                            ) : <Text style={styles.totalPrice}>
+                                ${0}
                             </Text>
+                            }
+
+
+
                             <Text style={styles.unitPrice}>$ {formatNumber(calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_2) ?? 0)} c/u</Text>
                         </View>
                     </View>

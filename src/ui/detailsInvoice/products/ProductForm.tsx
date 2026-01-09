@@ -241,10 +241,15 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 return;
             }
             setLoading(true);
+            let novedadesArray = [];
 
             if (modalStatusNovelty == "left" && productItemData?.id || successButton
             ) {
-
+                console.log("=====================================");
+                console.log("Entro al if");
+                console.log("modalStatusNovelty: ", modalStatusNovelty);
+                console.log("productItemData?.id: ", productItemData?.id);
+                console.log("successButton: ", successButton);
                 const response = await detailsRepositoryImpl.sendOrder(
                     {
                         totalEntregado: String(Number(productItemData.unidadesSolicitadas) * Number(productItemData.valorBaseProducto)),
@@ -258,62 +263,72 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     setModalVisible(true);
                 }
 
-            } else if (modalStatusNovelty == "right" &&
-                productItemData?.id || alertButton
-            ) {
-                // Array para acumular todas las nove   dades
-                let novedadesArray = [];
-                if (data && data.length > 0) {
-                    for (const novelty of data) {
-                        // Solo agregar si tiene unidades
-                        if (novelty.units > 0 && Number(productItemData?.unidadesSolicitadas) - Number(novelty.units) > 0) {
-                            let novelty_value = "";
+            } else {
+                if (modalStatusNovelty == "right" &&
+                    productItemData?.id || alertButton
+                ) {
+                    console.log("=====================================");
+                    console.log("Entro al else if");
+                    console.log("modalStatusNovelty: ", modalStatusNovelty);
+                    console.log("productItemData?.id: ", productItemData?.id);
+                    console.log("alertButton: ", alertButton);
 
-                            switch (novelty.type) {
-                                case TyepeCausalRefusedEnum.DINERO_INSUFICIENTE:
-                                    novelty_value = CausalRefusedEnum.CS_NOV_DIN_INSUF
+                    // Array para acumular todas las nove   dades
+                    if (data && data.length > 0) {
+                        for (const novelty of data) {
+                            // Solo agregar si tiene unidades
+                            if (novelty.units >= 0 && Number(productItemData?.unidadesSolicitadas) - Number(novelty.units) >= 0) {
+                                let novelty_value = "";
 
-                                case TyepeCausalRefusedEnum.PRODUCTOS_DANADOS:
-                                    novelty_value = CausalRefusedEnum.CS_NOV_PROD_DAÑADO
+                                switch (novelty.type) {
+                                    case TyepeCausalRefusedEnum.DINERO_INSUFICIENTE:
+                                        novelty_value = CausalRefusedEnum.CS_NOV_DIN_INSUF
 
-                                case TyepeCausalRefusedEnum.PRODUCTOS_VENCIDOS:
-                                    novelty_value = CausalRefusedEnum.CS_NOV_PROD_VENC
+                                    case TyepeCausalRefusedEnum.PRODUCTOS_DANADOS:
+                                        novelty_value = CausalRefusedEnum.CS_NOV_PROD_DAÑADO
 
-                                default:
-                                    novelty_value = CausalRefusedEnum.CS_NOV_OTRO
+                                    case TyepeCausalRefusedEnum.PRODUCTOS_VENCIDOS:
+                                        novelty_value = CausalRefusedEnum.CS_NOV_PROD_VENC
 
+                                    default:
+                                        novelty_value = CausalRefusedEnum.CS_NOV_OTRO
+
+                                }
+
+
+                                const noveltyData = {
+                                    pedidoDetalleId: Number(productItemData?.id),
+                                    causalCodigo: novelty_value,
+                                    valor: Number(novelty.units) == 0 ? '0' : novelty.units.toString(),
+                                    unidadesRechazadas: Number(novelty.units) == 0 ? 0 : Number(productItemData?.unidadesSolicitadas) - Number(novelty.units),
+                                    unidadesEntregadas: Number(novelty.units) == 0 ? 0 : calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_6, novelty.units),
+                                    totalEntregado: Number(novelty.units) == 0 ? 0 : calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_5, novelty.units),
+                                    totalImpuestoEntrega: Number(novelty.units) == 0 ? 0 : calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_7, novelty.units),
+                                };
+
+                                novedadesArray.push(noveltyData);
                             }
+                        }
 
-                            const noveltyData = {
-                                pedidoDetalleId: Number(productItemData?.id),
-                                causalCodigo: novelty_value,
-                                valor: novelty.units.toString(),
-                                unidadesRechazadas: Number(productItemData?.unidadesSolicitadas) - Number(novelty.units),
-                                unidadesEntregadas: calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_6, novelty.units),
-                                totalEntregado: calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_5, novelty.units),
-                                totalImpuestoEntrega: calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_7, novelty.units),
-                            };
+                        // Verificar si hay novedades para enviar
+                        const response = await detailsRepositoryImpl.noveltyOrder(
+                            novedadesArray
+                            , token);
 
-                            novedadesArray.push(noveltyData);
+                        novedadesArray = [];
+
+                        if (response?.statusCode != 200) {
+                            setModalTitle("¡Alerta!");
+                            setModalMessage(response.message || "Ocurrio un error al actualizar el producto.");
+                            setModalVisible(true);
                         }
                     }
-
-                    // Verificar si hay novedades para enviar
-                    const response = await detailsRepositoryImpl.noveltyOrder(
-                        novedadesArray
-                        , token);
-
-
-                    if (response?.statusCode != 200) {
-                        setModalTitle("¡Alerta!");
-                        setModalMessage(response.message || "Ocurrio un error al actualizar el producto.");
-                        setModalVisible(true);
-                    }
-                    novedadesArray = [];
                 }
-
             }
             getDataProduct();
+            novedadesArray = [];
+
+            setProductItemData(null);
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");

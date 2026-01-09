@@ -1,5 +1,5 @@
 import { TypeCaculateValueEnum } from "../constants/GuideStates";
-import { Detail } from "../features/tracking/domain/details/DetailsGuide";
+import { Detail, Novelty } from "../features/tracking/domain/details/DetailsGuide";
 
 export function cleanSpaces(text: string = "") {
     return text.replace(/\s+/g, " ").trim();
@@ -105,14 +105,16 @@ export function toUpperCase(text?: string) {
 }
 
 
-export function calculateVlueByPorducts(data: Detail, action: string, unitRefusedValue?: number) {
+export function calculateVlueByPorducts(data: Detail, action: string, unitRefusedValue?: number, novelty?: Novelty[]) {
+    console.log("novelty: ", novelty);
+
     const baseValue = Number(data?.valorBaseProducto ?? 0);
     const totalTaxes = Number(data?.totalImpuestos ?? 0);
     const unit = Number(data?.unidadesSolicitadas ?? 0);
     const unitRefused = Number(data?.unidadesRechazadas ?? 0);
     const form_1 = (totalTaxes / unit) + baseValue
     let valueUnit = 0;
-    
+
     switch (action) {
         case TypeCaculateValueEnum.ACTION_1:
             return (form_1 * unit);
@@ -135,14 +137,23 @@ export function calculateVlueByPorducts(data: Detail, action: string, unitRefuse
             return unitRefusedValue ? unitRefusedValue : unit;
 
         case TypeCaculateValueEnum.ACTION_7:
-            return unitRefusedValue  ? (totalTaxes / unitRefusedValue ? unitRefusedValue : unit) : 0;
-        
+            return unitRefusedValue ? (totalTaxes / unitRefusedValue ? unitRefusedValue : unit) : 0;
+
+        case TypeCaculateValueEnum.ACTION_8:
+            let totalNovelty = 0;
+            if (novelty && Array.isArray(novelty)) {
+                totalNovelty = novelty.reduce((totalSum, doc: Novelty) => {
+                    const valor = parseFloat(doc.valor) || 0;
+                    return totalSum + valor;
+                }, 0)
+            }
+            return totalNovelty > 0 ? ( form_1 * totalNovelty): 0;
+
         default:
             return 0;
     }
 
 }
-
 
 export function capitalizeWords(text?: string) {
     if (!text) return "";

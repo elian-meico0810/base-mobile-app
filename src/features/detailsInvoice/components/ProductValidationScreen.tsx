@@ -142,20 +142,53 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     const totalProducts = pendingCount + validatedCount;
     const progressPercentage = totalProducts > 0 ? (validatedCount / totalProducts) * 100 : 0;
     var totalValue = 0;
+    var totalValueDesc = 0;
 
     // Calcular valor total a recaudar
     totalValue = allProducts.reduce((totalSum, doc) => {
-        return totalSum + doc.detalles.reduce((docSum, product) => {
+        const docSum = doc.detalles.reduce((docSum, product) => {
+            // DEPURACIÓN: Ver qué se está procesando
+            let sumTotal = 0;
+            let novedadesConValor = 0;
+
             if (allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CREDITO ||
                 allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CONTADO_EFECTIVO) {
 
-                // Calcular el valor real del producto
                 const productValue = calculateVlueByPorducts(product, TypeCaculateValueEnum.ACTION_3) ?? 0;
                 return docSum + Number(productValue);
             }
-            return docSum; // Si no cumple la condición, mantener el acumulado actual
+
+            return docSum;
         }, 0);
+
+        return totalSum + docSum;
     }, 0);
+
+
+    totalValueDesc = allProducts.reduce((totalSum, doc) => {
+        const docSum = doc.detalles.reduce((docSum, product) => {
+            // DEPURACIÓN: Ver qué se está procesando
+            if (product?.estado?.codigo === 'EST_DET_VALIDADO') {
+
+                let sumTotalRefused = 0;
+                let novedadesConValor = 0;
+
+                if (allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CREDITO ||
+                    allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CONTADO_EFECTIVO) {
+
+                    const productValue = calculateVlueByPorducts(product, TypeCaculateValueEnum.ACTION_8, sumTotalRefused, product?.novedades) ?? 0;
+
+                    return docSum + Number(productValue);
+                }
+            }
+
+            return docSum ?? 0;
+        }, 0);
+
+        return totalSum + docSum;
+    }, 0);
+
+    console.log("TOTAL FINAL:", totalValueDesc);
 
 
 
@@ -341,13 +374,23 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                     </View>
                 </View>
 
-                {allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CREDITO ||
-                    allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CONTADO_EFECTIVO ? (
-                    <View style={styles.valueRow}>
-                        <Text style={styles.valueLabel}>Valor a recaudar:</Text>
-                        <Text style={styles.valueAmount}>$ {formatNumber(Number(totalValue))}</Text>
-                    </View>
-                ) : null}
+                {!hasItemsValidateSuccess ? (
+                    allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CREDITO ||
+                        allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CONTADO_EFECTIVO ? (
+                        <View style={styles.valueRow}>
+                            <Text style={styles.valueLabel}>Valor a recaudar:</Text>
+                            <Text style={styles.valueAmount}>$ {formatNumber(Number(totalValue))}</Text>
+                        </View>
+                    ) : null
+                ) : (
+                    allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CREDITO ||
+                        allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CONTADO_EFECTIVO ? (
+                        <View style={styles.valueRow}>
+                            <Text style={styles.valueLabel}>Valor a recaudar:</Text>
+                            <Text style={styles.valueAmount}>$ {formatNumber(Number(totalValueDesc))}</Text>
+                        </View>
+                    ) : null
+                )}
 
                 <View style={styles.buttonRow}>
                     <PrimaryButton

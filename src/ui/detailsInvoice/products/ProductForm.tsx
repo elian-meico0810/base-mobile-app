@@ -1,3 +1,4 @@
+import { ActionAllData } from '@/components/generals/ActionAllData';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { UploadPhoto } from '@/components/photo/UploadPhoto';
@@ -63,7 +64,8 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const [alertButton, setAlertButton] = useState(false);
     const [uploadPhotoFile, setUploadPhotoFile] = useState(false);
     const [showViewModal, setViewModal] = useState(false);
-
+    const [showViewModalActionRefused, setViewModalActionRefused] = useState(false);
+    const [showViewModalActionSuccess, setViewModalActionSuccess] = useState(false);
     const [modalStatusNovelty, setStatusNovelty] = useState<'left' | 'right' | null>(null);
     const [refreshing, setRefreshingOnPress] = useState(false);
     const [finalizedData, setFinalizedData] = useState<FinalizedData | null>(null);
@@ -498,9 +500,10 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                             <TouchableOpacity
                                 style={styles.rejectButton}
                                 onPress={() => {
-                                    setSuccessButton(false);
+                                    setViewModalActionRefused(true);
+                                    // setSuccessButton(false);
                                     // setUploadPhoto(true);
-                                    setAlertButton(true);
+                                    // setAlertButton(true);
                                 }}
                             >
                                 <MaterialIcons name="close" size={16} color="#C62828" />
@@ -510,9 +513,10 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                             <TouchableOpacity
                                 style={styles.acceptButton}
                                 onPress={() => {
-                                    setAlertButton(false);
+                                    setViewModalActionSuccess(true);
+                                    // setAlertButton(false);
                                     // setUploadPhoto(true);
-                                    setSuccessButton(true);
+                                    // setSuccessButton(true);
                                 }}
                             >
                                 <MaterialIcons name="check" size={16} color="#1F9144" />
@@ -615,7 +619,40 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                         }, 100);
                     }}
                     showViewModal={showViewModal}
+                />
+            )}
 
+            {showViewModalActionRefused && (
+                <ActionAllData
+                    title="¿Estás seguro de que deseas rechazar todos los productos?"
+                    onClose={() => {
+                        setViewModalActionRefused(false);
+                        // setAlertButton(false);
+                        // setSuccessButton(false);
+                    }}
+                    width={width}
+                    onConfirmation={() => {
+                        setAlertButton(true);
+                        setSuccessButton(false);
+                        setViewModalActionRefused(false);
+                    }}
+                />
+            )}
+
+            {showViewModalActionSuccess && (
+                  <ActionAllData
+                    title="¿Estás seguro de que deseas aceptar todos los productos?"
+                    onClose={() => {
+                        setViewModalActionSuccess(false);
+                        // setAlertButton(false);
+                        // setSuccessButton(false);
+                    }}
+                    width={width}
+                    onConfirmation={() => {
+                        setAlertButton(false);
+                        setSuccessButton(true);
+                        setViewModalActionSuccess(false);
+                    }}
                 />
             )}
             {loading && <LoadingBlue />}

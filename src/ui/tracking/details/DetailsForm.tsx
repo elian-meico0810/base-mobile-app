@@ -42,6 +42,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
+    const [modalVisibleTwo, setModalVisibleTwo] = useState(false);
     const [validateException, setValidateException] = useState(false);
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
@@ -89,7 +90,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                         setModalVisible(false);
                         setWaitingForPermission(false);
                     }
-                }, 500); 
+                }, 500);
             }
 
             appStateRef.current = nextAppState;
@@ -118,11 +119,11 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                 setModalTitle("Permiso denegado ¡Alerta!");
                 setModalMessage("Se requiere acceso a la ubicación.");
                 setLoading(false);
-                setModalVisible(true);
+                setModalVisibleTwo(true);
                 setWaitingForPermission(true);
             } else {
                 setWaitingForPermission(false);
-                setModalVisible(false);
+                setModalVisibleTwo(false);
                 setLoading(false);
             }
         } catch (error) {
@@ -417,6 +418,16 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                         visible={modalVisible}
                         onClose={() => {
                             setModalVisible(false);
+                        }}
+                        title={modalTitle}
+                        message={modalMessage}
+                        buttonLabel={modalButtonLabel}
+                    />
+
+                    <ExceptionModal
+                        visible={modalVisibleTwo}
+                        onClose={() => {
+                            setModalVisibleTwo(false);
                             setWaitingForPermission(false);
                         }}
                         title={modalTitle}

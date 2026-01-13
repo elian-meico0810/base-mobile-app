@@ -687,7 +687,7 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
 
             <View style={[styles.footer, {
                 marginBottom: isSmallScreen ? 0 : 10,
-                bottom: isSmallScreen ? 10 : 30
+                bottom: isSmallScreen ? 10 : 40
             }]}>
 
                 {isSelectInvocies ? (

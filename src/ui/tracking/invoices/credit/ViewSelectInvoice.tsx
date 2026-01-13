@@ -608,8 +608,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             )}
 
             <View style={[styles.footer, {
-                marginBottom: isSmallScreen ? 0 : 10,
-                bottom: isSmallScreen ? 10 : 10
+                
+                marginBottom: isSmallScreen ? 0 : 0,
+                bottom: isSmallScreen ? 10 : 50
             }]}>
 
                 {(() => {

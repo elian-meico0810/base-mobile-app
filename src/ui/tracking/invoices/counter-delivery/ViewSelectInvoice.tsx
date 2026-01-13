@@ -432,7 +432,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
             <View style={[styles.footer, {
                 marginBottom: isSmallScreen ? 0 : 10,
-                bottom: isSmallScreen ? 10 : 30
+                bottom: isSmallScreen ? 10 : 40
             }]}>
                 {guide?.estado === 'Pendiente' && (
                     <PrimaryButtonDetails

@@ -48,12 +48,12 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [waitingForPermission, setWaitingForPermission] = useState(false);
     const [date, setDate] = useState<string | null>(null);
-
     const btnRef = useRef<any>(null);
     const router = useRouter();
 
     const isValid = guide.length >= 5;
     const isSmallScreen = height <= 780;
+    
     useEffect(() => {
         const fetchToken = async () => {
             const savedToken = await SecureStore.getItemAsync('user_token');
@@ -168,6 +168,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                             setDate(await SecureStore.getItemAsync('expiration_date'));
                             setRunApiFinish(false);
                             setRouteStarted(true);
+                            break;
 
                         case StatusInvoiceID.PENDING:
                             setStatusValue(StatusInvoice.PENDING);

@@ -17,6 +17,8 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useRef, useState } from "react";
 import {
+    AppState,
+    AppStateStatus,
     Dimensions,
     Image, ScrollView, StyleSheet,
     Text,
@@ -48,7 +50,6 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [waitingForPermission, setWaitingForPermission] = useState(false);
     const [date, setDate] = useState<string | null>(null);
-
     const btnRef = useRef<any>(null);
     const router = useRouter();
 
@@ -62,10 +63,56 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
         fetchToken();
     }, []);
 
+
+    // Listener de AppState mejorado
     useEffect(() => {
-        const fetchPermissions = async () => {
+        let isMounted = true;
+        let checkTimeout: ReturnType<typeof setTimeout> | null = null;
+
+        const appStateRef = { current: AppState.currentState };
+
+        const handleAppStateChange = (nextAppState: AppStateStatus) => {
+            if (appStateRef.current.match(/background|inactive/) &&
+                nextAppState === 'active') {
+
+                if (checkTimeout) {
+                    clearTimeout(checkTimeout);
+                    checkTimeout = null;
+                }
+
+                checkTimeout = setTimeout(async () => {
+                    if (!isMounted || !waitingForPermission) return;
+
+                    const { status } = await Location.requestForegroundPermissionsAsync();
+
+                    if (status === 'granted') {
+                        setModalVisible(false);
+                        setWaitingForPermission(false);
+                    }
+                }, 500); 
+            }
+
+            appStateRef.current = nextAppState;
+        };
+
+        const subscription = AppState.addEventListener('change', handleAppStateChange);
+
+        return () => {
+            isMounted = false;
+            if (checkTimeout) {
+                clearTimeout(checkTimeout);
+            }
+            subscription.remove();
+        };
+    }, [waitingForPermission]);
+
+    // Función para verificar permisos
+    const checkLocationPermissions = async () => {
+        try {
             const { status } = await Location.requestForegroundPermissionsAsync();
+
             if (status !== 'granted') {
+                // Permiso denegado
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("Permiso denegado ¡Alerta!");
@@ -73,28 +120,25 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                 setLoading(false);
                 setModalVisible(true);
                 setWaitingForPermission(true);
-                return;
             } else {
                 setWaitingForPermission(false);
+                setModalVisible(false);
+                setLoading(false);
             }
-        };
-        fetchPermissions();
-    }, []);
+        } catch (error) {
+            setWaitingForPermission(false);
+        }
+    };
 
     useEffect(() => {
-        if (!modalVisible && waitingForPermission) {
-            const recheckPermissions = async () => {
-                const { status } = await Location.requestForegroundPermissionsAsync();
-                if (status !== 'granted') {
-                    setModalVisible(true);
-                } else {
-                    setWaitingForPermission(false);
-                    setValidateException(false);
-                }
-            };
-            recheckPermissions();
+        const fetchPermissions = async () => {
+            await checkLocationPermissions();
+        };
+
+        if (token && !waitingForPermission) {
+            fetchPermissions();
         }
-    }, [modalVisible, waitingForPermission]);
+    }, [token, !waitingForPermission]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -134,7 +178,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                         );
 
                         setDataResult(responseData?.data?.resumen);
-                        
+
                         // Asignar la variable según el resultado
                         setData(sortedData as GuideDetails[]);
                         setFilteredGuides(sortedData as GuideDetails[]);
@@ -371,10 +415,15 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                     )}
                     <ExceptionModal
                         visible={modalVisible}
-                        onClose={() => setModalVisible(false)}
+                        onClose={() => {
+                            setModalVisible(false);
+                            setWaitingForPermission(false);
+                        }}
                         title={modalTitle}
                         message={modalMessage}
                         buttonLabel={modalButtonLabel}
+                        showSettingsButton={true}
+                        settingsButtonLabel="Abrir Ajustes"
                     />
                 </View>
             </View>

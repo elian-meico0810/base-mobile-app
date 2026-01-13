@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Linking, Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type Props = {
   visible: boolean;
@@ -7,6 +7,9 @@ type Props = {
   title: string;
   message: string;
   buttonLabel: string;
+  showSettingsButton?: boolean;
+  settingsButtonLabel?: string;
+  onSettingsPress?: () => void;
 };
 
 export const ExceptionModal: React.FC<Props> = ({ 
@@ -14,9 +17,34 @@ export const ExceptionModal: React.FC<Props> = ({
   onClose, 
   title, 
   message, 
-  buttonLabel 
+  buttonLabel,
+  showSettingsButton = false,
+  settingsButtonLabel = "Ir a Ajustes",
+  onSettingsPress
 }) => {
 
+  const defaultSettingsPress = async () => {
+    try {
+      if (Platform.OS === 'ios') {
+        await Linking.openURL('app-settings:');
+      } else {
+        await Linking.openSettings();
+      }
+    } catch (error) {
+      onClose();
+    }
+  };
+  
+  const handleSettingsPress = onSettingsPress || defaultSettingsPress;
+  
+  const handleButtonPress = () => {
+    if (showSettingsButton) {
+      handleSettingsPress();
+    } else {
+      onClose();
+    }
+  };
+  
   return (
     <Modal transparent visible={visible} animationType="fade">
       <View style={styles.overlay}>
@@ -24,15 +52,22 @@ export const ExceptionModal: React.FC<Props> = ({
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.message}>{message}</Text>
           
-          <TouchableOpacity style={styles.button} onPress={onClose}>
-            <Text style={styles.buttonText}>{buttonLabel}</Text>
+          {/* Botón único con texto dinámico */}
+          <TouchableOpacity
+            style={[styles.button, showSettingsButton && styles.settingsButton]}
+            onPress={handleButtonPress}
+          >
+            <Text style={styles.buttonText}>
+              {showSettingsButton ? settingsButtonLabel : buttonLabel}
+            </Text>
           </TouchableOpacity>
+          
         </View>
       </View>
     </Modal>
   );
-};
 
+};
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
@@ -62,6 +97,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 30,
     borderRadius: 8,
+  },
+  settingsButton: {
+    backgroundColor: '#164194',
   },
   buttonText: {
     color: '#fff',

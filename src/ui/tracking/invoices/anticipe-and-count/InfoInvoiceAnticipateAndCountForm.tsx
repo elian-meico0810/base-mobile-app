@@ -855,13 +855,13 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
                     }}
                     onPermisionsPhoto={() => {
                         setUploadPhoto(false);
-                        setModalTitle("Permiso denegado ¡Alerta!");
+                        setModalTitle(" denegado ¡Alerta!");
                         setModalMessage("No podemos acceder a la cámara. Activa el permiso en la configuración del dispositivo para continuar.");
                         setModalVisible(true);
                     }}
                     onPermisionsGallery={() => {
                         setUploadPhoto(false);
-                        setModalTitle("Permiso denegado ¡Alerta!");
+                        setModalTitle(" denegado ¡Alerta!");
                         setModalMessage("No podemos acceder a la galería. Activa el permiso en la configuración del dispositivo para continuar.");
                         setModalVisible(true);
                     }}

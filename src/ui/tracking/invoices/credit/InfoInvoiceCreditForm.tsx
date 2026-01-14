@@ -79,6 +79,7 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
     const [qrType, setQrType] = useState<string>('');
     const [phone, setPhone] = useState("");
     const [validateIsBotton, setvalidateIsBotton] = useState(false);
+    const [bottonValue, setBottonValue] = useState(false);
     const btnRef = useRef<any>(null);
     const router = useRouter();
     const handleGoBack = () => {
@@ -702,9 +703,9 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
                     <PrimaryButtonDetails
                         ref={btnRef}
                         autoReset={validateException}
-                        key={routeStarted ? "cerrar" : "llegue"}
-                        title={routeStarted ? "Cerrar pedido" : "Ya llegué"}
-                        onPress={routeStarted ? submitData : handleSubmit}
+                        key={routeStarted || bottonValue ? "cerrar" : "llegue"}
+                        title={routeStarted || bottonValue ? "Cerrar pedido" : "Ya llegué"}
+                        onPress={routeStarted || bottonValue ? submitData : handleSubmit}
                         disabled={false}
                         width={328}
                         height={43}

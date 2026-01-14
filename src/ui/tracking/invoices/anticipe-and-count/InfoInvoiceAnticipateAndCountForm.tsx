@@ -83,6 +83,7 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
     const [qrType, setQrType] = useState<string>('');
     const [phone, setPhone] = useState("");
     const [validateIsBotton, setvalidateIsBotton] = useState(false);
+    const [bottonValue, setBottonValue] = useState(false);
     const btnRef = useRef<any>(null);
     const router = useRouter();
     const handleGoBack = () => {
@@ -121,7 +122,7 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
                 setModalTitle("¡Error!");
                 setModalMessage("Ocurrio un error inesperado.");
                 setModalVisible(true);
-            } 
+            }
         };
 
         fetchGuide();
@@ -159,7 +160,7 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
                         tipodoc: "TD_FACTURA",
                         tipoCliente: String(guide?.facturas?.[0]?.tipoCliente),
                         cliente: String(guide?.nombreCliente),
-                        numeroWhatsapp: "57"+String(phone),
+                        numeroWhatsapp: "57" + String(phone),
                     },
                     token
                 );
@@ -561,7 +562,7 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
         }
     }, [isSelectInvocies]);
 
-    const newValue = Math.max(0,Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.valorTotal));
+    const newValue = Math.max(0, Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.valorTotal));
 
     var value = '';
     switch (guide?.facturas[0]?.tipo) {
@@ -693,7 +694,7 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
                                 {'$ ' + (Number(newValue) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                             </Text>
                         </View>
-                        
+
                         {newValue != 0 && (
                             <TouchableOpacity
                                 style={styles.qrButton}
@@ -762,9 +763,9 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
                     <PrimaryButtonDetails
                         ref={btnRef}
                         autoReset={validateException}
-                        key={routeStarted ? "cerrar" : "llegue"}
-                        title={routeStarted ? "Cerrar pedido" : "Ya llegué"}
-                        onPress={routeStarted ? submitData : handleSubmit}
+                        key={routeStarted  || bottonValue ? "cerrar" : "llegue"}
+                        title={routeStarted  || bottonValue ? "Cerrar pedido" : "Ya llegué"}
+                        onPress={routeStarted  || bottonValue ? submitData : handleSubmit}
                         disabled={false}
                         width={328}
                         height={43}

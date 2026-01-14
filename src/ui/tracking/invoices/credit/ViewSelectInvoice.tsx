@@ -73,7 +73,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [activateSelect, setActivateSelect] = useState(false);
     const prevSelectedCountRef = useRef<number>(0);
     const btnRef = useRef<any>(null);
-
+    const [bottonValue, setBottonValue] = useState(false);
     const router = useRouter();
     const handleGoBack = () => {
         router.back();
@@ -632,9 +632,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                                 <PrimaryButtonDetails
                                     ref={btnRef}
                                     autoReset={validateException}
-                                    key={conditionButton ? "cerrar" : "llegue"}
-                                    title={conditionButton ? "Cerrar pedido" : "Ya llegué"}
-                                    onPress={conditionButton ? submitData : handleSubmit}
+                                    key={conditionButton || bottonValue ? "cerrar" : "llegue"}
+                                    title={conditionButton || bottonValue ? "Cerrar pedido" : "Ya llegué"}
+                                    onPress={conditionButton || bottonValue ? submitData : handleSubmit}
                                     disabled={false}
                                     width={328}
                                     height={43}

@@ -85,6 +85,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [qrBase64, setQrBase64] = useState<string>('');
     const [qrType, setQrType] = useState<string>('');
     const [phone, setPhone] = useState("");
+    const [bottonValue, setBottonValue] = useState(false);
     const [validateIsBotton, setvalidateIsBotton] = useState(false);
     const btnRef = useRef<any>(null);
     const router = useRouter();
@@ -97,6 +98,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             router.back();
         }
     };
+
+    console.log("bottonValue: ", bottonValue);
 
     useEffect(() => {
         setPhone(phone);
@@ -117,12 +120,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         }
     }, [isSelectInvocies]);
 
-        useEffect(() => {
+    useEffect(() => {
         if (conceptDelivery?.tipoEntrega?.codigo) {
             setvalidateIsBotton(false);
         }
     }, [token]);
-    
+
     useEffect(() => {
 
         const fetchGuide = async () => {
@@ -317,7 +320,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const submitData = async () => {
         try {
-
             if (!conceptDelivery?.tipoEntrega?.codigo) {
                 setValidateException(true);
                 btnRef.current?.reset();
@@ -545,6 +547,14 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
         processPhotos();
     }, [showStatusDelivery, isInicilizationApi, showOptionRefused]);
+
+
+    // useEffect(() => {
+    //     if (token && !bottonValue) {
+    //         listDocumentQuery();
+    //         setBottonValue(true);
+    //     }
+    // }, [token]);
 
     const listDocumentQuery = async () => {
         try {
@@ -823,7 +833,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                 setMultiplePhotos([]);
                             }
                         }}
-                        EntryVisible={isCountryDelivery ? true : isSelectInvocies ? true : EntryVisible}
+                        EntryVisible={isCountryDelivery ? true : isSelectInvocies ? true : bottonValue ? true : EntryVisible}
                         onOpenRefusedModal={() => setShowModalRefused(true)}
                         onUploadPhoto={() => {
                             setUploadPhoto(true);
@@ -865,9 +875,9 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             <PrimaryButtonDetails
                                 ref={btnRef}
                                 autoReset={validateException}
-                                key={routeStarted ? "cerrar" : "llegue"}
-                                title={routeStarted ? "Cerrar pedido" : "Ya llegué"}
-                                onPress={routeStarted ? submitData : handleSubmit}
+                                key={routeStarted || bottonValue ? "cerrar" : "llegue"}
+                                title={routeStarted || bottonValue ? "Cerrar pedido" : "Ya llegué"}
+                                onPress={routeStarted || bottonValue ? submitData : handleSubmit}
                                 disabled={false}
                                 width={328}
                                 height={43}

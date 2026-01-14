@@ -85,21 +85,20 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [qrBase64, setQrBase64] = useState<string>('');
     const [qrType, setQrType] = useState<string>('');
     const [phone, setPhone] = useState("");
-    const [bottonValue, setBottonValue] = useState(false);
+    const [buttonValue, setButtonValue] = useState(false);
     const [validateIsBotton, setvalidateIsBotton] = useState(false);
     const btnRef = useRef<any>(null);
     const router = useRouter();
-    const handleGoBack = () => {
-        if (routeStarted && isCountryDelivery) {
-            router.push(
-                `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
-            );
-        } else {
-            router.back();
-        }
-    };
 
-    console.log("bottonValue: ", bottonValue);
+    const handleGoBack = () => {
+        // if (routeStarted && isCountryDelivery) {
+        router.push(
+            `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+        );
+        // } else {
+        //     router.back();
+        // }
+    };
 
     useEffect(() => {
         setPhone(phone);
@@ -359,14 +358,14 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         try {
             setShowDetailInvoiceQR(false);
             setShowPayment(false);
-            if (!routeStarted && !isSelectInvocies) {
+            if (!routeStarted && !isSelectInvocies && !buttonValue) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Debe indicar que ya llegó al lugar de la dirección para poder ejecutar esta acción.");
                 setModalVisible(true);
                 return;
             }
-
-            if (condPago) {
+            
+            if (condPago || buttonValue) {
                 setTypeQRSendWhatsApp(true);
                 setModalgenerateQR(true);
                 setShowDetailInvoiceQR(true);
@@ -549,12 +548,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     }, [showStatusDelivery, isInicilizationApi, showOptionRefused]);
 
 
-    // useEffect(() => {
-    //     if (token && !bottonValue) {
-    //         listDocumentQuery();
-    //         setBottonValue(true);
-    //     }
-    // }, [token]);
+    useEffect(() => {
+        if (guide?.fecha_apertura && !buttonValue) {
+            listDocumentQuery();
+            setButtonValue(true);
+        }
+    }, [token]);
 
     const listDocumentQuery = async () => {
         try {
@@ -833,7 +832,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                 setMultiplePhotos([]);
                             }
                         }}
-                        EntryVisible={isCountryDelivery ? true : isSelectInvocies ? true : bottonValue ? true : EntryVisible}
+                        EntryVisible={isCountryDelivery ? true : isSelectInvocies ? true : buttonValue ? true : EntryVisible}
                         onOpenRefusedModal={() => setShowModalRefused(true)}
                         onUploadPhoto={() => {
                             setUploadPhoto(true);
@@ -875,9 +874,9 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             <PrimaryButtonDetails
                                 ref={btnRef}
                                 autoReset={validateException}
-                                key={routeStarted || bottonValue ? "cerrar" : "llegue"}
-                                title={routeStarted || bottonValue ? "Cerrar pedido" : "Ya llegué"}
-                                onPress={routeStarted || bottonValue ? submitData : handleSubmit}
+                                key={routeStarted || buttonValue ? "cerrar" : "llegue"}
+                                title={routeStarted || buttonValue ? "Cerrar pedido" : "Ya llegué"}
+                                onPress={routeStarted || buttonValue ? submitData : handleSubmit}
                                 disabled={false}
                                 width={328}
                                 height={43}
@@ -890,9 +889,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
                     </>
                 )}
-
-
-
             </View>
 
             <ExceptionModal

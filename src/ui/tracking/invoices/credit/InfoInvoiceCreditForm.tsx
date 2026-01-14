@@ -79,11 +79,14 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
     const [qrType, setQrType] = useState<string>('');
     const [phone, setPhone] = useState("");
     const [validateIsBotton, setvalidateIsBotton] = useState(false);
-    const [bottonValue, setBottonValue] = useState(false);
+    const [buttonValue, setButtonValue] = useState(false);
     const btnRef = useRef<any>(null);
     const router = useRouter();
     const handleGoBack = () => {
-        router.back();
+        // router.back();
+        router.push(
+            `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+        );
     };
 
     useEffect(() => {
@@ -98,6 +101,13 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
             setRouteStarted(true);
         }
     }, [isSelectInvocies]);
+
+    useEffect(() => {
+        if (guide?.fecha_apertura && !buttonValue) {
+            listDocumentQuery();
+            setButtonValue(true);
+        }
+    }, [token]);
 
     useEffect(() => {
 
@@ -670,7 +680,7 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
                                 setMultiplePhotos([]);
                             }
                         }}
-                        EntryVisible={isSelectInvocies ? true : EntryVisible}
+                        EntryVisible={isSelectInvocies ? true : buttonValue ? true : EntryVisible}
                         onOpenRefusedModal={() => setShowModalRefused(true)}
                         onUploadPhoto={() => {
                             setUploadPhoto(true);
@@ -703,9 +713,9 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
                     <PrimaryButtonDetails
                         ref={btnRef}
                         autoReset={validateException}
-                        key={routeStarted || bottonValue ? "cerrar" : "llegue"}
-                        title={routeStarted || bottonValue ? "Cerrar pedido" : "Ya llegué"}
-                        onPress={routeStarted || bottonValue ? submitData : handleSubmit}
+                        key={routeStarted || buttonValue ? "cerrar" : "llegue"}
+                        title={routeStarted || buttonValue ? "Cerrar pedido" : "Ya llegué"}
+                        onPress={routeStarted || buttonValue ? submitData : handleSubmit}
                         disabled={false}
                         width={328}
                         height={43}

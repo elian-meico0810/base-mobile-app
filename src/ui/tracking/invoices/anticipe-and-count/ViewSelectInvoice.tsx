@@ -72,15 +72,25 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [showStatusDelivery, setShowStatusDelivery] = useState<"total" | "parcial" | "rechazo" | null>(null);
     const [deliveryStatus, setDeliveryStatus] = useState(false);
     const [nextPages, setNextPages] = useState(false);
-    const [bottonValue, setBottonValue] = useState(false);
+    const [buttonValue, setButtonValue] = useState(false);
     const [activateSelect, setActivateSelect] = useState(false);
     const prevSelectedCountRef = useRef<number>(0);
     const btnRef = useRef<any>(null);
 
     const router = useRouter();
     const handleGoBack = () => {
-        router.back();
+        // router.back();
+        router.push(
+            `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+        );
     };
+
+    useEffect(() => {
+        if (guide?.fecha_apertura && !buttonValue) {
+            listDocumentQuery();
+            setButtonValue(true);
+        }
+    }, [token]);
 
     useEffect(() => {
         const currentCount = selectedMultipleInvoices.length;
@@ -710,9 +720,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                                 <PrimaryButtonDetails
                                     ref={btnRef}
                                     autoReset={validateException}
-                                    key={conditionButton  || bottonValue ? "cerrar" : "llegue"}
-                                    title={conditionButton  || bottonValue ? "Cerrar pedido" : "Ya llegué"}
-                                    onPress={conditionButton  || bottonValue ? submitData : handleSubmit}
+                                    key={conditionButton || buttonValue ? "cerrar" : "llegue"}
+                                    title={conditionButton || buttonValue ? "Cerrar pedido" : "Ya llegué"}
+                                    onPress={conditionButton || buttonValue ? submitData : handleSubmit}
                                     disabled={false}
                                     width={328}
                                     height={43}

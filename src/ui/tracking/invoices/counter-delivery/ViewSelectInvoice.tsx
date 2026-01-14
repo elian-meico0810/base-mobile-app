@@ -49,16 +49,26 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [validateIsBotton, setvalidateIsBotton] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState<GuideDetails | null>(null);
     const [activeView, setActiveView] = useState(true);
-    const [bottonValue, setBottonValue] = useState(false);
+    const [buttonValue, setButtonValue] = useState(false);
     const btnRef = useRef<any>(null);
     const router = useRouter();
     const handleGoBack = () => {
-        router.back();
+        // router.back();
+        router.push(
+            `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+        );
     };
 
     useEffect(() => {
         if (token) {
             listGuideData();
+        }
+    }, [token]);
+
+    useEffect(() => {
+        if (guide?.fecha_apertura && !buttonValue) {
+            listDocumentQuery();
+            setButtonValue(true);
         }
     }, [token]);
 
@@ -439,9 +449,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                     <PrimaryButtonDetails
                         ref={btnRef}
                         autoReset={validateException}
-                        key={conditionButton || bottonValue ? "cerrar" : "llegue"}
-                        title={conditionButton || bottonValue ? "Cerrar pedido" : "Ya llegué"}
-                        onPress={conditionButton || bottonValue ? submitData : handleSubmit}
+                        key={conditionButton || buttonValue ? "cerrar" : "llegue"}
+                        title={conditionButton || buttonValue ? "Cerrar pedido" : "Ya llegué"}
+                        onPress={conditionButton || buttonValue ? submitData : handleSubmit}
                         disabled={false}
                         width={328}
                         height={43}

@@ -18,6 +18,7 @@ export interface GuideDetails {
   longitud: string;
   estado: string;
   whatsapp?: string;
+  fecha_apertura?: string | null;
   facturas: Factura[];
 }
 

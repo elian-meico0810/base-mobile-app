@@ -73,10 +73,13 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [activateSelect, setActivateSelect] = useState(false);
     const prevSelectedCountRef = useRef<number>(0);
     const btnRef = useRef<any>(null);
-    const [bottonValue, setBottonValue] = useState(false);
+    const [buttonValue, setButtonValue] = useState(false);
     const router = useRouter();
     const handleGoBack = () => {
-        router.back();
+        // router.back();
+        router.push(
+            `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+        );
     };
 
     useEffect(() => {
@@ -89,6 +92,13 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         prevSelectedCountRef.current = currentCount;
     }, [selectedMultipleInvoices]);
 
+    useEffect(() => {
+
+        if (guide?.fecha_apertura && !buttonValue) {
+            listDocumentQuery();
+            setButtonValue(true);
+        }
+    }, [guide]);
 
     useEffect(() => {
         if (conceptDelivery.length === guide?.facturas.length) {
@@ -608,7 +618,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             )}
 
             <View style={[styles.footer, {
-                
+
                 marginBottom: isSmallScreen ? 0 : 0,
                 bottom: isSmallScreen ? 10 : 50
             }]}>
@@ -632,9 +642,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                                 <PrimaryButtonDetails
                                     ref={btnRef}
                                     autoReset={validateException}
-                                    key={conditionButton || bottonValue ? "cerrar" : "llegue"}
-                                    title={conditionButton || bottonValue ? "Cerrar pedido" : "Ya llegué"}
-                                    onPress={conditionButton || bottonValue ? submitData : handleSubmit}
+                                    key={conditionButton || buttonValue ? "cerrar" : "llegue"}
+                                    title={conditionButton || buttonValue ? "Cerrar pedido" : "Ya llegué"}
+                                    onPress={conditionButton || buttonValue ? submitData : handleSubmit}
                                     disabled={false}
                                     width={328}
                                     height={43}

@@ -394,10 +394,15 @@ const styles = StyleSheet.create({
         backgroundColor: "rgba(0,0,0,0.5)",
     },
     container: {
-        paddingHorizontal: 24,
+       paddingHorizontal: 24,
         paddingTop: 32,
         position: "relative",
         paddingBottom: 20,
+        backgroundColor: "#F9F9FA",
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        width: "100%",
+        maxHeight: "90%",
     },
     track: {
         position: "absolute",
@@ -480,7 +485,7 @@ const styles = StyleSheet.create({
         color: "#788095",
     },
     // Botón de basura (trash)
-    trashButton: {
+   trashButton: {
         width: 40,
         height: 40,
         justifyContent: "center",

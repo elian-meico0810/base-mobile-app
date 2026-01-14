@@ -290,7 +290,7 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
 
     const submitData = async () => {
         try {
-            if (validateIsBotton) {
+            if (!conceptDelivery?.tipoEntrega?.codigo) {
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");

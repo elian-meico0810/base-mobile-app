@@ -297,7 +297,7 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
 
     const submitData = async () => {
         try {
-            if (validateIsBotton) {
+            if (!conceptDelivery?.tipoEntrega?.codigo) {
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");

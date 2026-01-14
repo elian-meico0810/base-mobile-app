@@ -102,6 +102,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         setPhone(phone);
     }, [phone]);
 
+
+
     useEffect(() => {
         if (modalRefused) {
             setShowDetailInvoiceQR(false);
@@ -115,6 +117,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         }
     }, [isSelectInvocies]);
 
+        useEffect(() => {
+        if (conceptDelivery?.tipoEntrega?.codigo) {
+            setvalidateIsBotton(false);
+        }
+    }, [token]);
+    
     useEffect(() => {
 
         const fetchGuide = async () => {
@@ -309,7 +317,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const submitData = async () => {
         try {
-            if (validateIsBotton) {
+
+            if (!conceptDelivery?.tipoEntrega?.codigo) {
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");
@@ -868,7 +877,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                 circleColor={validateIsBotton ? "#788095" : undefined}
                             />
                         )}
-
 
                     </>
                 )}

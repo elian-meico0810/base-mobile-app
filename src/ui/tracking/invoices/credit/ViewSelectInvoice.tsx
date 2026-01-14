@@ -174,7 +174,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
     const submitData = async () => {
         try {
-            if (validateIsBotton) {
+            if (!conceptDelivery?.[0].tipoEntrega?.codigo) {
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");

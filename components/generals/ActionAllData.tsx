@@ -1,8 +1,8 @@
 import {
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { PrimaryButton } from "../buttons/PrimaryButton";
 import { SecondaryButtonCancel } from "../buttons/SecondaryButtonCancel";
@@ -27,7 +27,7 @@ export function ActionAllData({
   const handleSubmit = async () => {
     try {
       onConfirmation?.();
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const handleClose = async () => {
@@ -114,14 +114,15 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   title: {
-    fontFamily: "Rubik",
+    fontFamily: 'Rubik-SemiBold',
     fontSize: 22,
-    fontWeight: "700",
-    color: "#141D32",
+    fontWeight: '700',
+    color: '#141D32',
+    lineHeight: 22,
     marginBottom: 8,
   },
   subTitleLabel: {
-    fontFamily: "Rubik",
+    fontFamily: 'Rubik-SemiBold',
     fontWeight: "400",
     fontSize: 14,
     lineHeight: 18,

@@ -1,16 +1,22 @@
-import { SecondaryButton } from "@/components/buttons/SecondaryButton";
+import { PrimaryButton } from "@/components/buttons/PrimaryButton";
 import { ExceptionModal } from "@/components/generals/ExecptionModal";
 import { LoadingBlue } from "@/components/generals/LoadingBlue";
 import { Row } from "@/components/generals/Row";
-import { ENV_DEV } from "@/src/constants/apiRoutes";
-import { TypeQr } from "@/src/constants/GuideStates";
 import { formatNumber } from "@/src/utils/uitls";
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+    Animated,
+    Keyboard,
+    Platform,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from "react-native";
 import { GuideDetails } from "../../domain/details/DetailsGuide";
-import { invoiceRepositoryImpl } from "../../infrastructure/invoices/invoiceRepositoryImpl";
 
-interface DetailsInvoiceQRProps {
+interface DetailsPaymenTypeEfectyProps {
     data?: GuideDetails;
     onClose: () => void;
     onChangePhone?: () => void;
@@ -22,7 +28,6 @@ interface DetailsInvoiceQRProps {
     onPressPayment: () => void;
     onErrorPayment?: () => void;
     statusTypeQR?: boolean;
-
 }
 
 interface Invoice {
@@ -33,52 +38,49 @@ interface Invoice {
     valorTotal: number;
 }
 
-export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone, onGenerateQR, onPressPayment, onErrorPayment, statusTypeQR }: DetailsInvoiceQRProps) {
+export function DetailsPaymenTypeEfecty({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone, onGenerateQR, onPressPayment, onErrorPayment, statusTypeQR }: DetailsPaymenTypeEfectyProps) {
     const [loading, setLoading] = useState(false);
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [modalVisible, setModalVisible] = useState(false);
-    
+    const [phoneSet, setPhone] = useState('');
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+
     const dataInvoice: Invoice = data?.facturas?.[0] ?? {
         dfr: 0,
         numeroFactura: "",
         valorRecaudar: 0,
         valorTotal: 0,
         condPago: "",
-    };  
+    };
+    const isValidCashValue = Number(phoneSet) > 0;
 
+    useEffect(() => {
+        const keyboardDidShowListener = Keyboard.addListener(
+            Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+            (e) => {
+                setKeyboardHeight(e.endCoordinates.height);
+            }
+        );
+
+        const keyboardDidHideListener = Keyboard.addListener(
+            Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+            () => {
+                setKeyboardHeight(0);
+            }
+        );
+
+        return () => {
+            keyboardDidShowListener.remove();
+            keyboardDidHideListener.remove();
+        };
+    }, []);
 
     const paymentGateway = async () => {
         try {
-            if (!phone || !/^\d{10}$/.test(phone)) {
-                setModalTitle("¡Alerta!");
-                setModalMessage("Debe ingresar un número de teléfono válido de 10 dígitos.");
-                setModalVisible(true);
-                return;
-            }
-
-            setLoading(true);
-            if (onGenerateQR) {
-                onGenerateQR(TypeQr.PASARELA);
-            }
-            const response = await invoiceRepositoryImpl.sendPaymentGetway(
-                {
-                    documento: {
-                        numero: String(dataInvoice?.numeroFactura),
-                        codigoCliente: String(data?.codigoCliente),
-                        tipoDocumento: "Factura",
-                    },
-                    linkFisico: false,
-                    linkVirtual: true,
-                },
-                ENV_DEV.KEY_APP
-            );
-            if (response?.statusCode === 200) {
-                onPressPayment();
-                onGenerateQR?.(TypeQr.PASARELA, response?.data?.linkPagoVirtual);
-            } else {
-                onErrorPayment?.();
+            if (isValidCashValue) {
+                onClose?.();
             }
         } catch (error: any) {
             setModalTitle("¡Error!");
@@ -89,66 +91,18 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
         }
     };
 
-    const generateQR = async () => {
-        try {
-            if (!phone || !/^\d{10}$/.test(phone)) {
-                setModalTitle("¡Alerta!");
-                setModalMessage("Debe ingresar un número de teléfono válido de 10 dígitos.");
-                setModalVisible(true);
-                return;
-            }
+    const formatPhoneNumber = (number: string) => {
+        if (!number) return '';
 
-            setLoading(true);
-            if (onGenerateQR) {
-                onGenerateQR(TypeQr.BANCARIA);
-            }
+        const num = parseInt(number, 10);
+        if (isNaN(num)) return '';
 
-            const response = await invoiceRepositoryImpl.generateQR(
-                {
-                    numdoc: String(dataInvoice?.numeroFactura),
-                    tipodoc: 'TD_FACTURA',
-                    cus_no: String(data?.codigoCliente),
-                },
-                ENV_DEV.KEY_APP
-            );
-            if (response?.statusCode === 200) {
-                onPressPayment();
-                onGenerateQR?.(TypeQr.BANCARIA, response?.data?.qr);
-            } else {
-                onErrorPayment?.();
-            }
-        } catch (error: any) {
-            setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
-            setModalVisible(true);
-        } finally {
-            setLoading(false);
-        }
+        return num.toLocaleString('es-ES');
     };
 
-    useEffect(() => {
-        if (statusTypeQR) {
-            generateQR();
-
-        }
-    }, [statusTypeQR]);
-
-    // const condPago = dataInvoice?.condPago == TypeConPagoEnum.TAT;
-
-    // if (condPago) return (
-    //     <ExceptionModal
-    //         visible={modalVisible}
-    //         onClose={() => setModalVisible(false)}
-    //         title={modalTitle}
-    //         message={modalMessage}
-    //         buttonLabel={modalButtonLabel}
-    //     />
-    // );
 
     return (
-
         <View style={styles.overlay} pointerEvents="box-none">
-
             {/* FONDO — SOLO CAPTURA TOQUES FUERA */}
             <TouchableOpacity
                 style={styles.backgroundOverlay}
@@ -156,59 +110,57 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                 activeOpacity={1}
             />
 
-            {/* MODAL — NO ES BLOQUEADO POR EL FONDO */}
-            <View style={[styles.container, { width: width }]} pointerEvents="box-none">
-
+            {/* CONTENIDO DEL MODAL CON ANIMACIÓN */}
+            <Animated.View
+                style={[
+                    styles.container,
+                    {
+                        width: width,
+                        transform: [{
+                            translateY: keyboardHeight > 0 ? -keyboardHeight : 0
+                        }]
+                    }
+                ]}
+                pointerEvents="box-none"
+            >
                 {/* BOTÓN X */}
                 <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                     <Text style={styles.closeText}>X</Text>
                 </TouchableOpacity>
 
-                <Text style={styles.title}>QR de pago</Text>
-
+                <Text style={styles.title}>Efectivo</Text>
+                <Text style={styles.phoneDescription}>
+                    Ingresa la cantidad recibida en billetes.
+                </Text>
                 <View style={styles.box}>
                     <Row label="N° de factura" value={dataInvoice.numeroFactura} />
-                    <Row label="Valor total" value={`$${formatNumber(dataInvoice.valorTotal)}`} />
                     <Row bold label="Valor a pagar" value={`$${formatNumber(dataInvoice.valorRecaudar)}`} />
                 </View>
 
                 <View style={styles.phoneContainer}>
-                    <Text style={styles.phoneLabel}>N° de teléfono asociado</Text>
-                    <Text style={styles.phoneDescription}>
-                        Usaremos este número para enviarte el QR.
-                    </Text>
-
                     <View style={styles.phoneRow}>
                         <TextInput
                             style={styles.phoneInput}
-                            value={phone ?? ""}
-                            editable={false}
+                            keyboardType="number-pad"
+                            value={formatPhoneNumber(phoneSet)}
+                            onChangeText={(text) => {
+                                const onlyNumbers = text.replace(/[^0-9]/g, '');
+                                setPhone(onlyNumbers);
+                            }}
+                            editable={true}
                         />
-                        <TouchableOpacity onPress={onChangePhone}>
-                            <Text style={styles.phoneChange}>Cambiar</Text>
-                        </TouchableOpacity>
                     </View>
                 </View>
 
-                <Text style={styles.QrTitle}>Generar QR de pago</Text>
                 <View style={styles.buttonsContainer}>
-                    <SecondaryButton
-                        title="Pasarela de Pago"
+                    <PrimaryButton
+                        title="Confirmar"
                         onPress={paymentGateway}
-                        disabled={disabled}
-                        width={350}
-                        height={43}
-                    />
-
-                    <SecondaryButton
-                        title="Aplicación Bancaria"
-                        onPress={generateQR}
-                        disabled={disabled}
+                        disabled={!isValidCashValue}
                         width={350}
                         height={43}
                     />
                 </View>
-
 
                 <ExceptionModal
                     visible={modalVisible}
@@ -217,9 +169,9 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                     message={modalMessage}
                     buttonLabel={modalButtonLabel}
                 />
-            </View>
-            {loading && <LoadingBlue />}
+            </Animated.View>
 
+            {loading && <LoadingBlue />}
         </View>
     );
 }
@@ -241,7 +193,7 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
     container: {
-        height: 500,
+        height: 360,
         backgroundColor: "#F9F9FA",
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
@@ -288,7 +240,7 @@ const styles = StyleSheet.create({
         fontWeight: "600",
         fontSize: 12,
         color: "#788095",
-        marginBottom: 8,
+        marginTop:10
     },
     phoneRow: {
         flexDirection: "row",
@@ -330,7 +282,6 @@ const styles = StyleSheet.create({
         color: "#164194",
         fontWeight: "700",
     },
-
     QrTitle: {
         fontFamily: "Rubik",
         fontWeight: "800",

@@ -6,6 +6,7 @@ import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails'
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
+import { TypePayment } from '@/components/generals/TypePayment';
 import { UploadPhoto } from '@/components/photo/UploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
@@ -15,6 +16,7 @@ import { DeliveryStatusAction } from '@/src/features/tracking/components/checkbo
 import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
 import { ChangePhoneModal } from '@/src/features/tracking/components/screens/ChangePhoneModal';
 import { DetailsInvoiceQR } from '@/src/features/tracking/components/screens/DetailsInvoiceQR';
+import { DetailsPaymenTypeEfecty } from '@/src/features/tracking/components/screens/DetailsPaymenTypeEfecty';
 import { InfoPayments } from '@/src/features/tracking/components/screens/InfoPayments';
 import { ViewQrModal } from '@/src/features/tracking/components/screens/ViewQrModal';
 import { Detail, Document, GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
@@ -83,6 +85,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [deliveryStatus, setDeliveryStatus] = useState(false);
     const [modalRefused, setShowModalRefused] = useState(false);
     const [uploadPhoto, setUploadPhoto] = useState(false);
+    const [typePayment, setTypePayment] = useState(false);
+    const [typePaymentTypeEfecty, setTypePaymenTypeEfecty] = useState(false);
     const [conceptDelivery, setConceptDelivery] = useState<DerliveryDocument | null>(null);
     const [validateException, setValidateException] = useState(false);
     const [paymentSuccessful, setPaymentSuccessful] = useState<Invoice | undefined>();
@@ -929,8 +933,9 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             <TouchableOpacity
                                 style={styles.qrButton}
                                 onPress={() => {
-                                    validateButton();
-                                    setShowDetailInvoiceQR(true);
+                                    // validateButton();
+                                    // setShowDetailInvoiceQR(true);
+                                    setTypePayment(true);
                                 }}
                             >
                                 <View style={styles.qrButtonContent}>
@@ -1031,7 +1036,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 />
             )}
 
-            {(showDetailInvoiceQR && routeStarted) && (
+            {(showDetailInvoiceQR) && (
                 <DetailsInvoiceQR
                     data={guide}
                     onClose={() => setShowDetailInvoiceQR(false)}
@@ -1153,6 +1158,46 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             setInicilizationApi(true);
                         }
                     }}
+                />
+            )}
+
+            {(typePayment) && (
+                <TypePayment
+                    title="Registrar pago"
+                    subTitle="Seleccioná el método de pago del cliente."
+                    onClose={() => {
+                        setTypePayment(false);
+                        // setAlertButton(false);
+                        // setSuccessButton(false);
+                    }}
+                    width={width}
+                    onEfecty={() => {
+                        setTypePayment(false);
+                        setTypePaymenTypeEfecty(true);
+                    }} 
+                    onOthers={() => console.log("Llego a onOthers")}
+                    onQr={() => {
+                        setTypePayment(false); 
+                        setTypePaymenTypeEfecty(false);
+                        setShowDetailInvoiceQR(true);
+                    }}
+                />
+            )}
+
+            {typePaymentTypeEfecty && (
+                <DetailsPaymenTypeEfecty
+                    data={guide}
+                    onClose={() => setTypePaymenTypeEfecty(false)}
+                    onChangePhone={() => {
+                        setTypePaymenTypeEfecty(false);
+                        setShowChangePhone(true);
+                    }}
+                    width={width}
+                    phone={phone}
+                    onGenerateQR={handleGenerateQR}
+                    onPressPayment={() => setRefreshingOnPress(true)}
+                    onErrorPayment={() => setShowErrorQRP(true)}
+                    statusTypeQR={typeQRSendWhatsApp}
                 />
             )}
             {loading && <LoadingBlue />}

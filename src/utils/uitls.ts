@@ -104,10 +104,7 @@ export function toUpperCase(text?: string) {
     return text ? text.toUpperCase() : '';
 }
 
-
 export function calculateVlueByPorducts(data: Detail, action: string, unitRefusedValue?: number, novelty?: Novelty[]) {
-    console.log("novelty: ", novelty);
-
     const baseValue = Number(data?.valorBaseProducto ?? 0);
     const totalTaxes = Number(data?.totalImpuestos ?? 0);
     const unit = Number(data?.unidadesSolicitadas ?? 0);

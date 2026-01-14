@@ -51,6 +51,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [activeView, setActiveView] = useState(true);
     const btnRef = useRef<any>(null);
     const router = useRouter();
+    const [checkUbication, setCheckUbication] = useState(false);
+
     const handleGoBack = () => {
         router.back();
     };
@@ -138,6 +140,39 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             setLoading(false);
         }
     };
+
+    const checkUnicationPermissions = async () => {
+        try {
+            // 2. Obtener ubicación
+            const location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Highest,
+            });
+            if (!location?.coords) {
+                setModalTitle('Permiso denegado ¡Alerta!');
+                setModalMessage('Debe activar el permiso de ubicación del dispositivo');
+                setModalButtonLabel("Cerrar");
+                setModalVisible(true);
+                return;
+            } else {
+                setCheckUbication(true);
+            }
+        } catch (error: any) {
+            setModalTitle("Permiso denegado ¡Alerta!");
+            setModalMessage("Debe activar la ubicación del dispositivo");
+            setModalButtonLabel("Cerrar");
+            setModalVisible(true);
+        }
+    };
+
+    useEffect(() => {
+        if (checkUbication) return;
+
+        const interval = setInterval(() => {
+            checkUnicationPermissions();
+        }, 10);
+
+        return () => clearInterval(interval);
+    }, [checkUbication]);
 
     const submitData = async () => {
         try {
@@ -355,10 +390,10 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                             <Text
                                 style={[
                                     styles.status,
-                                    validateCheckboxlength  && { color: '#1F9144' },
+                                    validateCheckboxlength && { color: '#1F9144' },
                                 ]}
                             >
-                                {validateCheckboxlength ? 'Pedido entregado' : 'Pendiente'}                            
+                                {validateCheckboxlength ? 'Pedido entregado' : 'Pendiente'}
                             </Text>
                         </View>
                     </View>
@@ -375,7 +410,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         <View style={styles.divider} />
                         <View style={styles.row}>
                             <Text style={styles.label}>Ordenes a entregar</Text>
-                            <Text style={styles.value}> {Number(guide?.facturas?.length) -  Number(conceptDelivery.length)}</Text>
+                            <Text style={styles.value}> {Number(guide?.facturas?.length) - Number(conceptDelivery.length)}</Text>
                         </View>
                         <View style={styles.row}>
                             <Text style={styles.labelTotal}>Valor total del pedido</Text>

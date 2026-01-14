@@ -83,6 +83,7 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
     const [qrType, setQrType] = useState<string>('');
     const [phone, setPhone] = useState("");
     const [validateIsBotton, setvalidateIsBotton] = useState(false);
+    const [checkUbication, setCheckUbication] = useState(false);
     const btnRef = useRef<any>(null);
     const router = useRouter();
     const handleGoBack = () => {
@@ -161,7 +162,7 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
                         tipodoc: "TD_FACTURA",
                         tipoCliente: String(guide?.facturas?.[0]?.tipoCliente),
                         cliente: String(guide?.nombreCliente),
-                        numeroWhatsapp: "57"+String(phone),
+                        numeroWhatsapp: "57" + String(phone),
                     },
                     token
                 );
@@ -190,6 +191,40 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
         }
     }
 
+    const checkUnicationPermissions = async () => {
+        try {
+            // 2. Obtener ubicación
+            const location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Highest,
+            });
+            if (!location?.coords) {
+                setModalTitle('Permiso denegado ¡Alerta!');
+                setModalMessage('Debe activar el permiso de ubicación del dispositivo');
+                setModalButtonLabel("Cerrar");
+                setModalVisible(true);
+                return;
+            } else {
+                setCheckUbication(true);
+            }
+        } catch (error: any) {
+            setModalTitle("Permiso denegado ¡Alerta!");
+            setModalMessage("Debe activar la ubicación del dispositivo");
+            setModalButtonLabel("Cerrar");
+            setModalVisible(true);
+        }
+    };
+
+    useEffect(() => {
+        if (checkUbication) return; 
+
+        const interval = setInterval(() => {
+            checkUnicationPermissions();
+        }, 10); 
+
+        return () => clearInterval(interval); 
+    }, [checkUbication]);
+
+    
     const handleSubmitData = async () => {
         try {
 
@@ -695,7 +730,7 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
                                 {'$ ' + (Number(newValue) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                             </Text>
                         </View>
-                        
+
                         {newValue != 0 && (
                             <TouchableOpacity
                                 style={styles.qrButton}

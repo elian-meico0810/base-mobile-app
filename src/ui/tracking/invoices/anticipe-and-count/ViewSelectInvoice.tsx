@@ -75,7 +75,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [activateSelect, setActivateSelect] = useState(false);
     const prevSelectedCountRef = useRef<number>(0);
     const btnRef = useRef<any>(null);
-
+    const [checkUbication, setCheckUbication] = useState(false);
     const router = useRouter();
     const handleGoBack = () => {
         router.back();
@@ -118,6 +118,39 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             setLoading(false);
         }
     };
+
+    const checkUnicationPermissions = async () => {
+        try {
+            // 2. Obtener ubicación
+            const location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Highest,
+            });
+            if (!location?.coords) {
+                setModalTitle('Permiso denegado ¡Alerta!');
+                setModalMessage('Debe activar el permiso de ubicación del dispositivo');
+                setModalButtonLabel("Cerrar");
+                setModalVisible(true);
+                return;
+            } else {
+                setCheckUbication(true);
+            }
+        } catch (error: any) {
+            setModalTitle("Permiso denegado ¡Alerta!");
+            setModalMessage("Debe activar la ubicación del dispositivo");
+            setModalButtonLabel("Cerrar");
+            setModalVisible(true);
+        }
+    };
+
+    useEffect(() => {
+        if (checkUbication) return; 
+
+        const interval = setInterval(() => {
+            checkUnicationPermissions();
+        }, 10); 
+
+        return () => clearInterval(interval); 
+    }, [checkUbication]);
 
 
     const handleSubmit = async () => {

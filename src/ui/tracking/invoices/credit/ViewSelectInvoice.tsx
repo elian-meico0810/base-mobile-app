@@ -73,7 +73,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [activateSelect, setActivateSelect] = useState(false);
     const prevSelectedCountRef = useRef<number>(0);
     const btnRef = useRef<any>(null);
-
+    const [checkUbication, setCheckUbication] = useState(false);
     const router = useRouter();
     const handleGoBack = () => {
         router.back();
@@ -171,6 +171,39 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             setLoading(false);
         }
     };
+
+    const checkUnicationPermissions = async () => {
+        try {
+            // 2. Obtener ubicación
+            const location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Highest,
+            });
+            if (!location?.coords) {
+                setModalTitle('Permiso denegado ¡Alerta!');
+                setModalMessage('Debe activar el permiso de ubicación del dispositivo');
+                setModalButtonLabel("Cerrar");
+                setModalVisible(true);
+                return;
+            } else {
+                setCheckUbication(true);
+            }
+        } catch (error: any) {
+            setModalTitle("Permiso denegado ¡Alerta!");
+            setModalMessage("Debe activar la ubicación del dispositivo");
+            setModalButtonLabel("Cerrar");
+            setModalVisible(true);
+        }
+    };
+
+    useEffect(() => {
+        if (checkUbication) return;
+
+        const interval = setInterval(() => {
+            checkUnicationPermissions();
+        }, 10);
+
+        return () => clearInterval(interval);
+    }, [checkUbication]);
 
     const submitData = async () => {
         try {
@@ -461,7 +494,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         processPhotos();
     }, [showStatusDelivery, isInicilizationApi, showOptionRefused]);
 
-    const validateCheckbox = conceptDelivery.length != (guide?.facturas?.length ) && conceptDelivery.length != 0;
+    const validateCheckbox = conceptDelivery.length != (guide?.facturas?.length) && conceptDelivery.length != 0;
     const conditionButton = routeStarted || conceptDelivery.length === guide?.facturas?.length && conceptDelivery.length === guide.facturas.length;
     const validateCheckboxlength = conceptDelivery.length == guide?.facturas?.length;
 
@@ -518,7 +551,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                                     validateCheckboxlength && { color: '#1F9144' },
                                 ]}
                             >
-                                {validateCheckboxlength ? 'Pedido entregado' : 'Pendiente'}                            
+                                {validateCheckboxlength ? 'Pedido entregado' : 'Pendiente'}
                             </Text>
                         </View>
                     </View>
@@ -634,10 +667,10 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                                     disabled={false}
                                     width={328}
                                     height={43}
-                                    buttonColor={validateCheckboxlength ?  undefined : conditionButton ? "#DDDFE8" : undefined}
-                                    buttonColorEnd={validateCheckboxlength ?  undefined : conditionButton ? "#DDDFE8" : undefined}
+                                    buttonColor={validateCheckboxlength ? undefined : conditionButton ? "#DDDFE8" : undefined}
+                                    buttonColorEnd={validateCheckboxlength ? undefined : conditionButton ? "#DDDFE8" : undefined}
                                     titleColor={conditionButton ? "#FFFFFF" : undefined}
-                                    circleColor={validateCheckboxlength ?  undefined : conditionButton ? "#788095" : undefined}
+                                    circleColor={validateCheckboxlength ? undefined : conditionButton ? "#788095" : undefined}
                                 />
                             );
                         }

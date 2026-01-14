@@ -44,6 +44,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const [modalVisible, setModalVisible] = useState(false);
     const [modalVisibleTwo, setModalVisibleTwo] = useState(false);
     const [validateException, setValidateException] = useState(false);
+    const [checkUbication, setCheckUbication] = useState(false);
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [statusValue, setStatusValue] = useState("");
@@ -63,7 +64,6 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
         };
         fetchToken();
     }, []);
-
 
     // Listener de AppState mejorado
     useEffect(() => {
@@ -140,6 +140,41 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
             fetchPermissions();
         }
     }, [token, !waitingForPermission]);
+
+
+    const checkUnicationPermissions = async () => {
+        try {
+            // 2. Obtener ubicación
+            const location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Highest,
+            });
+            if (!location?.coords) {
+                setModalTitle('Permiso denegado ¡Alerta!');
+                setModalMessage('Debe activar el permiso de ubicación del dispositivo');
+                setModalButtonLabel("Cerrar");
+                setModalVisible(true);
+                return;
+            } else {
+                setCheckUbication(true);
+            }
+        } catch (error: any) {
+            setModalTitle("Permiso denegado ¡Alerta!");
+            setModalMessage("Debe activar la ubicación del dispositivo");
+            setModalButtonLabel("Cerrar");
+            setModalVisible(true);
+        }
+    };
+
+    useEffect(() => {
+        if (checkUbication) return; 
+
+        const interval = setInterval(() => {
+            checkUnicationPermissions();
+        }, 10); 
+
+        return () => clearInterval(interval); 
+    }, [checkUbication]);
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -359,7 +394,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                             <TodayDeliveries
                                 data={data}
                                 routeStarted={routeStarted}
-                                waitingForPermission={waitingForPermission}
+                                waitingForPermission={waitingForPermission || !checkUbication}
                                 dataResult={dataResult}
                             />
                         </View>
@@ -374,7 +409,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                             style={styles.guidesScroll}
                             contentContainerStyle={{ paddingBottom: 20 }}
                         >
-                            {((data.length === 0) || (waitingForPermission)) ? (
+                            {((data.length === 0) || (waitingForPermission || !checkUbication)) ? (
                                 Array.from({ length: 3 }).map((_, i) => (
                                     <GuideCardSkeleton key={i} />
                                 ))

@@ -18,7 +18,7 @@ import { cleanSpaces, getDeviceDateTime, getDistanceInMeters } from '@/src/utils
 import * as Location from "expo-location";
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from "react";
-import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BackHandler, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 const { width, height } = Dimensions.get('window');
 
 interface ViewSelectInvoiceProps {
@@ -75,15 +75,34 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [buttonValue, setButtonValue] = useState(false);
     const [activateSelect, setActivateSelect] = useState(false);
     const prevSelectedCountRef = useRef<number>(0);
+    const [allowBack, setAllowBack] = useState(false);
     const btnRef = useRef<any>(null);
-
     const router = useRouter();
+
+    useEffect(() => {
+        const backAction = () => {
+            if (!allowBack) {
+                router.push(`/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`);
+                return true; 
+            }
+        };
+
+        const backHandler = BackHandler.addEventListener(
+            'hardwareBackPress',
+            backAction
+        );
+
+        return () => backHandler.remove();
+    }, [allowBack, numberGuide, token]); 
+
     const handleGoBack = () => {
         // router.back();
         router.push(
             `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
         );
     };
+
+
 
     useEffect(() => {
         if (guide?.fecha_apertura && !buttonValue) {

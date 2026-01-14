@@ -25,7 +25,7 @@ import { Image } from 'expo-image';
 import * as Location from "expo-location";
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from "react";
-import { Dimensions, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BackHandler, Dimensions, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 const { width, height } = Dimensions.get('window');
 
 interface InfoInvoiceFormProps {
@@ -87,17 +87,31 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [phone, setPhone] = useState("");
     const [buttonValue, setButtonValue] = useState(false);
     const [validateIsBotton, setvalidateIsBotton] = useState(false);
+    const [allowBack, setAllowBack] = useState(false);
     const btnRef = useRef<any>(null);
     const router = useRouter();
 
+    useEffect(() => {
+        const backAction = () => {
+            if (!allowBack) {
+                router.push(`/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`);
+                return true; 
+            }
+        };
+
+        const backHandler = BackHandler.addEventListener(
+            'hardwareBackPress',
+            backAction
+        );
+
+        return () => backHandler.remove();
+    }, [allowBack, numberGuide, token]); 
+
     const handleGoBack = () => {
-        // if (routeStarted && isCountryDelivery) {
+        // router.back();
         router.push(
             `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
         );
-        // } else {
-        //     router.back();
-        // }
     };
 
     useEffect(() => {
@@ -364,7 +378,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 setModalVisible(true);
                 return;
             }
-            
+
             if (condPago || buttonValue) {
                 setTypeQRSendWhatsApp(true);
                 setModalgenerateQR(true);

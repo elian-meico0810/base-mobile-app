@@ -1,5 +1,5 @@
 import { PrimaryButton } from "@/components/buttons/PrimaryButton";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
     Animated,
     Keyboard,
@@ -95,7 +95,7 @@ export function ChangePhoneModal({ visible, onClose, onConfirm, onAlert }: Chang
                             </Text>
 
                             <TextInput
-                                value={phone}
+                                // value={phone}
                                 onChangeText={setPhone}
                                 style={[
                                     styles.input,

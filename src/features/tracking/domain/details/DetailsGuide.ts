@@ -17,6 +17,7 @@ export interface GuideDetails {
   latitud: string;
   longitud: string;
   estado: string;
+  whatsapp?: string;
   facturas: Factura[];
 }
 

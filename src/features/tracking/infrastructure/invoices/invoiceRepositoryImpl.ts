@@ -30,7 +30,6 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
 
   async generateQR(data: GenerateQRPorps, key: string) {
     try {
-
       const response = await authDevApi.post(API_ROUTES.GENERATE_QR, data, {
         headers: {
           "api-key": key,
@@ -126,7 +125,6 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
       // Aquí devuelves solo el JSON que envió el servidor
       return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {
-      console.log("error: ", error);
       throw error;
     }
   },

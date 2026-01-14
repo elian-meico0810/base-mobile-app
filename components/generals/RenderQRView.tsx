@@ -1,5 +1,5 @@
 import { TypeConPagoEnum, TypeQr } from "@/src/constants/GuideStates";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, Image, Linking, Text, TextInput, TouchableOpacity, View } from "react-native";
 import QRCode from 'react-native-qrcode-svg';
 import { SvgXml } from "react-native-svg";
@@ -47,6 +47,7 @@ export default function RenderQRView({
     const [isQRGenerating, setIsQRGenerating] = useState(false);
     const [localQRData, setLocalQRData] = useState<string | undefined>(qrData);
     const [changingTypeLoading, setChangingTypeLoading] = useState(false);
+    const [localPhone, setLocalPhone] = useState(phone ?? '');
 
     useEffect(() => {
         setLocalQRData(qrData);

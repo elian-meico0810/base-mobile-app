@@ -41,6 +41,13 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
     const [modalVisible, setModalVisible] = useState(false);
     const [actionBottonQR, setActionBottonQR] = useState(false);
     const [actionBottonPayment, setActionBottonPayment] = useState(false);
+    const [localPhone, setLocalPhone] = useState('');
+
+    // Inicializar con el valor que viene
+    useEffect(() => {
+        const initialValue = phone ? phone : data?.whatsapp ?? "";
+        setLocalPhone(initialValue);
+    }, [phone, data?.whatsapp]);
 
     const dataInvoice: Invoice = data?.facturas?.[0] ?? {
         dfr: 0,
@@ -48,17 +55,17 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
         valorRecaudar: 0,
         valorTotal: 0,
         condPago: "",
-    };  
-
+    };
 
     const paymentGateway = async () => {
         try {
-
-            if (!phone || !/^\d{10}$/.test(phone)) {
+            
+            if ((!phone || !/^\d{10}$/.test(phone)) && Number(data?.whatsapp?.length) != 10) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Debe ingresar un número de teléfono válido de 10 dígitos.");
                 setModalVisible(true);
                 return;
+
             }
 
             setLoading(true);
@@ -95,29 +102,29 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
     const generateQR = async () => {
         try {
             
-            console.log("paso por aca: ", statusTypeQR);
-            if (!phone || !/^\d{10}$/.test(phone)) {
+            if ((!phone || !/^\d{10}$/.test(phone)) && Number(data?.whatsapp?.length) != 10) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Debe ingresar un número de teléfono válido de 10 dígitos.");
                 setModalVisible(true);
                 return;
+
             }
-            
+
             setLoading(true);
             if (onGenerateQR) {
                 onGenerateQR(TypeQr.BANCARIA);
             }
-            
 
             const response = await invoiceRepositoryImpl.generateQR(
                 {
                     numdoc: String(dataInvoice?.numeroFactura),
                     tipodoc: 'TD_FACTURA',
                     cus_no: String(data?.codigoCliente),
-                    tipoCliente: String(data?.facturas?.[0]?.tipoCliente), 
+                    tipoCliente: String(data?.facturas?.[0]?.tipoCliente),
                 },
                 ENV_DEV.KEY_APP
             );
+            
             if (response?.statusCode === 200) {
                 onPressPayment();
                 onGenerateQR?.(TypeQr.BANCARIA, response?.data?.qr);
@@ -139,6 +146,22 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
 
         }
     }, [statusTypeQR]);
+
+    const handlePhoneChange = (text: string) => {
+        // 1. Remover todos los caracteres no numéricos
+        const onlyNumbers = text.replace(/[^0-9]/g, '');
+
+        // 2. Limitar a máximo 10 dígitos
+        const limitedNumbers = onlyNumbers.slice(0, 10);
+
+        // 3. Actualizar estado
+        setLocalPhone(limitedNumbers);
+
+
+    };
+
+    // Función para verificar si es válido
+    const isValidPhone = localPhone.length === 10;
 
     const condPago = dataInvoice?.condPago == TypeConPagoEnum.TAT;
 
@@ -188,7 +211,10 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                     <View style={styles.phoneRow}>
                         <TextInput
                             style={styles.phoneInput}
-                            value={phone ?? ""}
+                            value={localPhone.length == 10 ? localPhone : ""}
+                            onChangeText={handlePhoneChange}
+                            keyboardType="phone-pad"
+                            maxLength={10}
                             editable={false}
                         />
                         <TouchableOpacity onPress={onChangePhone}>
@@ -240,7 +266,6 @@ const styles = StyleSheet.create({
         bottom: 0,
         justifyContent: "flex-end",
         alignItems: "center",
-        zIndex: 999,
     },
     backgroundOverlay: {
         ...StyleSheet.absoluteFillObject,

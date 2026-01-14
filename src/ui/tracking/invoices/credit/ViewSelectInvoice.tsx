@@ -128,7 +128,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const handleMultiSelect = (selectedGuides: GuideDetails[]) => {
         try {
             setSelectedMultipleInvoices(selectedGuides);
-            if (!routeStarted && !conditionButton && !validateCheckbox) {
+            if (!routeStarted && !conditionButton && !validateCheckbox && !buttonValue) {
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");
@@ -202,7 +202,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
     const submitData = async () => {
         try {
-            if (!conceptDelivery?.[0].tipoEntrega?.codigo) {
+            if (conceptDelivery?.length !=guide?.facturas?.length ) {
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");
@@ -593,8 +593,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                             isSelectInvocies={isSelectInvocies}
                             token={token}
                             conceptDelivery={conceptDelivery}
-                            activeView={validateCheckbox ? true : activeView}
-                            showCheckboxes={validateCheckbox ? true : showCheckboxes}
+                            activeView={validateCheckbox ? true : buttonValue ? true: activeView}
+                            showCheckboxes={validateCheckbox ? true: buttonValue ? true : showCheckboxes}
                         />
                     </View>
                 )}

@@ -332,6 +332,7 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
                 guide?.idDireccion || 0,
                 token
             );
+            
             if (response?.statusCode === 200) {
                 setEntryVisible(true);
                 setRouteStarted(true);

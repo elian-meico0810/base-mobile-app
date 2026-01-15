@@ -1,6 +1,7 @@
 import { TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import { GuideDetails, PaymentsByInvoice } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { ViewSelectInvoice as AnticipateAndCountViewSelectInvoice } from '@/src/ui/tracking/invoices/anticipe-and-count/ViewSelectInvoice';
+import { DetailsCounterDelivery } from '@/src/ui/tracking/invoices/counter-delivery/DetailsCounterDelivery';
 import { InfoInvoiceForm } from '@/src/ui/tracking/invoices/counter-delivery/InfoInvoiceForm';
 import { ViewSelectInvoice } from '@/src/ui/tracking/invoices/counter-delivery/ViewSelectInvoice';
 import { InfoInvoiceCreditForm } from '@/src/ui/tracking/invoices/credit/InfoInvoiceCreditForm';
@@ -18,6 +19,7 @@ export default function IndexInvoiceScreen() {
     const isSelectInvocies = params.isSelectInvocies as string;
     const routeStartedBotton = params.routeStarted as string;
     const documentMeico = params.documentMeico as string;
+    const detailsCounterDelivery = params.detailsCounterDelivery as string;
     const shouldShowViewSelectInvoice = guideObj.facturas.length >= 2 || documentMeico;
     const areAllInvoicesCredito = guideObj.facturas.every(
         factura => factura.tipo === TypeInvoiceEnum.CREDITO
@@ -34,6 +36,8 @@ export default function IndexInvoiceScreen() {
     const isCountryDelivery = params.isCountryDelivery as string;
     const IsGoBack = params.IsGoBack as string;
 
+    console.log("detailsCounterDelivery: ",detailsCounterDelivery);
+    
     return (
         <>
             <Stack.Screen
@@ -119,6 +123,21 @@ export default function IndexInvoiceScreen() {
                         />
                     );
 
+                }
+
+                if(detailsCounterDelivery){
+                      <DetailsCounterDelivery
+                            initialGuide={guideObj}
+                            token={token || ""}
+                            onSubmit={async ({ guide, token }) => { }}
+                            numberGuide={Number(numberGuide)}
+                            isSelectInvocies={isSelectInvocies}
+                            documentMeico={documentMeico}
+                            isCountryDelivery={isCountryDelivery ? true : false}
+                            IsGoBack={IsGoBack ? true : false}
+                            routeStartedBotton={routeStartedBotton}
+                        />
+                    
                 }
                 return null;
             })()}

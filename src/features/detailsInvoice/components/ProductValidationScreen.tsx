@@ -69,6 +69,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     // VARIABLES NUEVAS - Separar productos según condiciones
     const [productsSold, setProductsSold] = useState<Detail[]>([]);
     const [productsPending, setProductsPending] = useState<Detail[]>([]);
+    const [activeSwipeId, setActiveSwipeId] = useState<string | null>(null);
 
     useEffect(() => {
         if (showDirection) {
@@ -246,19 +247,19 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
         return totalSum + docSum;
     }, 0);
 
-    console.log("TOTAL FINAL:", totalValueDesc);
-
-
-
     const isValid = pendingCount === 0;
 
     const handleFinalize = () => {
-
-        onFinalize?.();
-        setShowValidatedModal(true);
+        try {
+            if (productsPending.length == 0) {
+                onFinalize?.();
+                setShowValidatedModal(true);
+            }
+        } catch (error) {
+            throw error;
+        }
     };
 
-    const [activeSwipeId, setActiveSwipeId] = useState<string | null>(null);
 
     // Función para obtener todos los detalles pendientes
     const getAllPendingDetails = () => {

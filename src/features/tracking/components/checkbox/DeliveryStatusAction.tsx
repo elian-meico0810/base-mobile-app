@@ -74,8 +74,6 @@ export function DeliveryStatusAction({
         },
     });
 
-    console.log("typeDerlivery: ",typeDerlivery);
-    
     return (
         <ScrollView
             style={styles.scrollContainer}

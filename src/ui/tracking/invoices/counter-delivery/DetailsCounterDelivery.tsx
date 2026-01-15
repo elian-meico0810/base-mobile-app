@@ -30,7 +30,7 @@ import { useEffect, useRef, useState } from "react";
 import { Dimensions, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 const { width, height } = Dimensions.get('window');
 
-interface InfoInvoiceFormProps {
+interface DetailsCounterDeliveryProps {
     initialGuide?: GuideDetails;
     token?: string;
     onSubmit: (params: { guide: GuideDetails; token: string }) => void | Promise<void>;
@@ -51,7 +51,7 @@ interface EvidencePhoto {
 type DeliveryStatus = "total" | "parcial" | "rechazo" | null;
 type OptionsRefusedPorps = 'Dinero' | 'Dueño' | 'Tienda' | 'Productos' | null;
 
-export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton }: InfoInvoiceFormProps) {
+export function DetailsCounterDelivery({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton }: DetailsCounterDeliveryProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [guideAny, setGuideAny] = useState<GuideDetails[]>([]);
     const [guideByProduct, setGuideByPorduct] = useState<GuideDetails[]>([]);
@@ -227,7 +227,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             }
         } catch (error: any) {
             setModalTitle("Permiso denegado ¡Alerta!");
-            setModalMessage("Debe activar la ubicación del dispositivossssss");
+            setModalMessage("Debe activar la ubicación del dispositivo");
             setModalButtonLabel("Cerrar");
             setModalVisible(true);
         }
@@ -590,7 +590,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         resp?.statusCode === 200 || resp?.success === true
                     );
                     if (success) {
-                        console.log("guide: ",guide);
                         listDocumentQuery();
                         setModalTitle("¡Procesado!");
                         setModalMessage(`Soporte(s) procesados exitosamente.`);

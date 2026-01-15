@@ -6,7 +6,7 @@ import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails'
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
-import { UploadPhoto } from '@/components/photo/UploadPhoto';
+import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
 import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeDelivery, TypeInvoiceEnum, TypeQr } from '@/src/constants/GuideStates';

@@ -7,7 +7,7 @@ import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { TypePayment } from '@/components/generals/TypePayment';
-import { UploadPhoto } from '@/components/photo/UploadPhoto';
+import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
 import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeCaculateValueEnum, TypeConPagoEnum, TypeDelivery, TypeInvoiceEnum, TypeQr } from '@/src/constants/GuideStates';
@@ -98,7 +98,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const router = useRouter();
     const orderId = initialGuide?.pedidos?.[0]?.id;
     const [checkUbication, setCheckUbication] = useState(false);
-
+    console.log("conceptDelivery : ",conceptDelivery);
+    
     const handleGoBack = () => {
         if (routeStarted && isCountryDelivery) {
             router.push(
@@ -226,7 +227,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             }
         } catch (error: any) {
             setModalTitle("Permiso denegado ¡Alerta!");
-            setModalMessage("Debe activar la ubicación del dispositivo");
+            setModalMessage("Debe activar la ubicación del dispositivossssss");
             setModalButtonLabel("Cerrar");
             setModalVisible(true);
         }
@@ -303,6 +304,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setShowDetailInvoiceQR(false);
             setShowPayment(false);
 
+            console.log("handleSubmit");
+            
             const location = await Location.getCurrentPositionAsync({
                 accuracy: Location.Accuracy.Highest,
             });
@@ -329,8 +332,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 guide?.idDireccion || 0,
                 token
             );
-
-
             if (response?.statusCode === 200) {
                 router.push({
                     pathname: '/views/IndexDetailsInvoice',
@@ -366,13 +367,15 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const getDataProduct = async () => {
         try {
             setLoading(true);
-            const responseQuery = await detailsRepositoryImpl.listPorductData(token, Number(orderId));
-            if (responseQuery?.statusCode == 200) {
-                setLoading(false);
-                if (typeof responseQuery.data === "object" && !Array.isArray(responseQuery.data)) {
-                    setPorductData(responseQuery.data ? [responseQuery.data] : []);
-                }
+            if (token && Number(orderId)) {
+                const responseQuery = await detailsRepositoryImpl.listPorductData(token, Number(orderId));
+                if (responseQuery?.statusCode == 200) {
+                    setLoading(false);
+                    if (typeof responseQuery.data === "object" && !Array.isArray(responseQuery.data)) {
+                        setPorductData(responseQuery.data ? [responseQuery.data] : []);
+                    }
 
+                }
             }
         } catch (error: any) {
             setModalTitle("¡Error!");
@@ -627,6 +630,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const listDocumentQuery = async () => {
         try {
+            console.log("listDocumentQuery: ");
+            
             setLoading(true);
 
             const responseQuery = await invoiceRepositoryImpl.listDocument(
@@ -634,6 +639,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 Number(guide?.idDireccion),
                 token
             );
+            console.log("responseQuery: ",responseQuery);
+            
             let concept: DerliveryDocument | null = null;
             if (responseQuery?.statusCode == 200) {
                 if (Array.isArray(responseQuery.data)) {
@@ -1174,10 +1181,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     onEfecty={() => {
                         setTypePayment(false);
                         setTypePaymenTypeEfecty(true);
-                    }} 
+                    }}
                     onOthers={() => console.log("Llego a onOthers")}
                     onQr={() => {
-                        setTypePayment(false); 
+                        setTypePayment(false);
                         setTypePaymenTypeEfecty(false);
                         setShowDetailInvoiceQR(true);
                     }}

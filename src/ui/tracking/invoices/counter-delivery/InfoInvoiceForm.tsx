@@ -91,8 +91,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const btnRef = useRef<any>(null);
     const router = useRouter();
 
-    console.log("conceptDelivery: ",conceptDelivery);
-    
     useEffect(() => {
         const backAction = () => {
             if (!allowBack) {

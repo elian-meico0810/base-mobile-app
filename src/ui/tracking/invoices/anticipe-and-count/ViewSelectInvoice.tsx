@@ -499,7 +499,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const validateCondition = showCheckbox &&
         selectedMultipleInvoices.length <= 1 &&
         selectedMultipleInvoices[0]?.facturas[0]?.tipo !== TypeInvoiceEnum.CONTADO_EFECTIVO;
-    const conditionButton = routeStarted || conceptDelivery.length === guide?.facturas?.length && conceptDelivery.length === guide.facturas.length;
+    const conditionButton = routeStarted || conceptDelivery.length === guide?.facturas?.length && conceptDelivery.length === guide.facturas.length || !conceptDelivery;
     const validateCheckbox = conceptDelivery.length != (guide?.facturas?.length ?? 0) && conceptDelivery.length != 0;
     const validateCheckboxConturyDelivery = showCheckbox && selectedMultipleInvoices.length <= 1 && selectedMultipleInvoices[0]?.facturas[0]?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO
     const conditionData = showCheckbox && selectedMultipleInvoices.length > 1;

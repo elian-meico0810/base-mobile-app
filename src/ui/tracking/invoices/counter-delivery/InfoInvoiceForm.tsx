@@ -91,6 +91,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const btnRef = useRef<any>(null);
     const router = useRouter();
 
+    console.log("conceptDelivery: ",conceptDelivery);
+    
     useEffect(() => {
         const backAction = () => {
             if (!allowBack) {
@@ -664,7 +666,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     useEffect(() => {
     }, [condPago || buttonValue]);
-    
+
     const totalAproved = paymentSuccessful?.pagos
         ?.filter(pago => pago.estado === "APPROVED")
         .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0);
@@ -898,10 +900,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                 disabled={false}
                                 width={328}
                                 height={43}
-                                buttonColor={validateIsBotton ? "#DDDFE8" : undefined}
-                                buttonColorEnd={validateIsBotton ? "#DDDFE8" : undefined}
-                                titleColor={routeStarted ? "#FFFFFF" : undefined}
-                                circleColor={validateIsBotton ? "#788095" : undefined}
+                                buttonColor={!conceptDelivery || validateIsBotton ? "#DDDFE8" : undefined}
+                                buttonColorEnd={!conceptDelivery || validateIsBotton ? "#DDDFE8" : undefined}
+                                titleColor={!conceptDelivery || routeStarted ? "#FFFFFF" : undefined}
+                                circleColor={!conceptDelivery || validateIsBotton ? "#788095" : undefined}
                             />
                         )}
 

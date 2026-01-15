@@ -490,7 +490,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     }, [showStatusDelivery, isInicilizationApi, showOptionRefused]);
 
     const validateCheckbox = conceptDelivery.length != (guide?.facturas?.length) && conceptDelivery.length != 0;
-    const conditionButton = routeStarted || conceptDelivery.length === guide?.facturas?.length && conceptDelivery.length === guide.facturas.length;
+    const conditionButton = routeStarted || conceptDelivery.length === guide?.facturas?.length && conceptDelivery.length === guide.facturas.length || !conceptDelivery;
     const validateCheckboxlength = conceptDelivery.length == guide?.facturas?.length;
 
     useEffect(() => {

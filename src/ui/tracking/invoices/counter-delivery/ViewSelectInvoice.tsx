@@ -332,7 +332,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     }, 0) || 0;
 
     const totalRecauder = Math.max(0, totalFacturas - totalAproved);
-    const conditionButton = conceptDelivery.length > 0 || routeStarted;
+    const conditionButton = conceptDelivery.length > 0 || routeStarted || !conceptDelivery;
     const validateCheckboxlength = conceptDelivery.length == guide?.facturas?.length;
     const isSmallScreen = height <= 780;
     return (

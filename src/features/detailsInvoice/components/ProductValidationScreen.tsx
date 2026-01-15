@@ -66,6 +66,64 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     const [totalUnits, setTotalUnits] = useState(0);
     const [serviceToken, setServiceToken] = useState("");
     const [serviceUrl, setBaseUrl] = useState("");
+    // VARIABLES NUEVAS - Separar productos según condiciones
+    const [productsSold, setProductsSold] = useState<Detail[]>([]);
+    const [productsPending, setProductsPending] = useState<Detail[]>([]);
+
+    useEffect(() => {
+        if (showDirection) {
+            onStatusNovelty?.(showDirection);
+        }
+    }, [showDirection]);
+
+    useEffect(() => {
+        if (dataPorduct && dataPorduct.length > 0) {
+            setAllProducts(dataPorduct);
+        }
+    }, [dataPorduct]);
+
+    useEffect(() => {
+        if (onErrorAlert || onSuccessAlet) {
+            const validationType = onErrorAlert ? 'error' : 'success';
+            setFinishAlert(true);
+            validateAllProducts(validationType);
+            setCurrentValidationType(validationType);
+        }
+    }, [onErrorAlert, onSuccessAlet]);
+
+    // Efecto para actualizar las variables separadas cuando cambien los productos
+    useEffect(() => {
+        const procesarProductos = () => {
+            if (allProducts.length === 0) {
+                setProductsSold([]);
+                setProductsPending([]);
+                return;
+            }
+
+            // Obtener todos los detalles de forma plana
+            const todosDetalles: Detail[] = [];
+            allProducts.forEach(doc => {
+                todosDetalles.push(...doc.detalles);
+            });
+
+            // Separar según las condiciones
+            const validados = todosDetalles.filter(item =>
+                item.estado?.codigo === 'EST_DET_VALIDADO'
+            );
+
+            const pendientes = todosDetalles.filter(item =>
+                item.estado?.codigo !== 'EST_DET_VALIDADO'
+            );
+
+            // Actualizar las variables
+            setProductsSold(validados);
+            setProductsPending(pendientes);
+
+        };
+
+        procesarProductos();
+    }, [allProducts]);
+
 
     useEffect(() => {
         if (showDirection) {

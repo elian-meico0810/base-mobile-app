@@ -87,6 +87,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [uploadPhoto, setUploadPhoto] = useState(false);
     const [typePayment, setTypePayment] = useState(false);
     const [typePaymentTypeEfecty, setTypePaymenTypeEfecty] = useState(false);
+    const [statusDOcument, setStatusDOcument] = useState(false);
     const [conceptDelivery, setConceptDelivery] = useState<DerliveryDocument | null>(null);
     const [validateException, setValidateException] = useState(false);
     const [paymentSuccessful, setPaymentSuccessful] = useState<Invoice | undefined>();
@@ -98,8 +99,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const router = useRouter();
     const orderId = initialGuide?.pedidos?.[0]?.id;
     const [checkUbication, setCheckUbication] = useState(false);
-    console.log("conceptDelivery : ",conceptDelivery);
-    
+    console.log("statusDOcument : ", statusDOcument);
+
     const handleGoBack = () => {
         if (routeStarted && isCountryDelivery) {
             router.push(
@@ -304,8 +305,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setShowDetailInvoiceQR(false);
             setShowPayment(false);
 
-            console.log("handleSubmit");
-            
             const location = await Location.getCurrentPositionAsync({
                 accuracy: Location.Accuracy.Highest,
             });
@@ -630,28 +629,16 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const listDocumentQuery = async () => {
         try {
-            console.log("listDocumentQuery: ");
-            
             setLoading(true);
-
-            const responseQuery = await invoiceRepositoryImpl.listDocument(
-                String(guide?.facturas[0]?.numeroFactura),
-                Number(guide?.idDireccion),
+            const response = await detailsRepositoryImpl.novletyOrderByParams(
+                Number(orderId),
                 token
-            );
-            console.log("responseQuery: ",responseQuery);
-            
-            let concept: DerliveryDocument | null = null;
-            if (responseQuery?.statusCode == 200) {
-                if (Array.isArray(responseQuery.data)) {
-                    concept = responseQuery.data[0] ?? null;
-                } else if (responseQuery.data && typeof responseQuery.data === "object") {
-                    concept = responseQuery.data;
-                }
-                setConceptDelivery(concept);
-                setLoading(false);
-            }
+            )
 
+            if (response && response.data && Array.isArray(response.data) && response.data.length > 0) {
+                setStatusDOcument(true);
+
+            }
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
@@ -686,10 +673,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     };
 
     useEffect(() => {
-        if (isSelectInvocies) {
+        if (token) {
             listDocumentQuery();
         }
-    }, [isSelectInvocies]);
+    }, [token]);
 
     useEffect(() => {
         const fetchGuideList = async () => {
@@ -970,7 +957,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         }}
                         isCompleted={isDeliveryCompleted}
                         selectedStatus={showStatusDelivery}
-                        typeDerlivery={conceptDelivery?.tipoEntrega?.codigo ?? undefined}
+                        typeDerlivery={statusDOcument ?? undefined}
                         conceptDelivery={conceptDelivery}
                     />
                 </View>

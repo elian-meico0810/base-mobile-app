@@ -14,6 +14,7 @@ export const API_ROUTES = {
   GET_TOKEN_PRODUCTS: "productos/sas-token/",
   SENT_ORRDE_ORDER: "pedidos/detalle/",
   SEND_NOVELTY_ORDER: "novedades/registrar/",
+  GET_NOVELTY_ORDER_BY_PARAMS: "novedades/novedad-pedido/",
   SEND_ORRDE_ARRAY: "pedidos/detalle/validar_todos/",
   SEND_REPORT_NOLVETY_ARRAY: "entregas/reportar-novedad-pedido/",
   // Back contado anticipado

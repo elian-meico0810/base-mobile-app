@@ -247,11 +247,11 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
             if (modalStatusNovelty == "left" && productItemData?.id || successButton
             ) {
-                console.log("=====================================");
-                console.log("Entro al if");
-                console.log("modalStatusNovelty: ", modalStatusNovelty);
-                console.log("productItemData?.id: ", productItemData?.id);
-                console.log("successButton: ", successButton);
+                // console.log("=====================================");
+                // console.log("Entro al if");
+                // console.log("modalStatusNovelty: ", modalStatusNovelty);
+                // console.log("productItemData?.id: ", productItemData?.id);
+                // console.log("successButton: ", successButton);
                 const response = await detailsRepositoryImpl.sendOrder(
                     {
                         totalEntregado: String(Number(productItemData.unidadesSolicitadas) * Number(productItemData.valorBaseProducto)),
@@ -269,11 +269,11 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 if (modalStatusNovelty == "right" &&
                     productItemData?.id || alertButton
                 ) {
-                    console.log("=====================================");
-                    console.log("Entro al else if");
-                    console.log("modalStatusNovelty: ", modalStatusNovelty);
-                    console.log("productItemData?.id: ", productItemData?.id);
-                    console.log("alertButton: ", alertButton);
+                    // console.log("=====================================");
+                    // console.log("Entro al else if");
+                    // console.log("modalStatusNovelty: ", modalStatusNovelty);
+                    // console.log("productItemData?.id: ", productItemData?.id);
+                    // console.log("alertButton: ", alertButton);
 
                     // Array para acumular todas las nove   dades
                     if (data && data.length > 0) {

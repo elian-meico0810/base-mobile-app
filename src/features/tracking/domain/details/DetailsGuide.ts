@@ -152,3 +152,10 @@ export interface ReportNoveltyFileArrayProps {
   id_pedido: number;
   files: string[]; 
 }
+
+export interface NovletyOrder {
+  id: number;
+  id_pedido: number;
+  ruta_novedad: string;
+  momento_reporte: string;
+}

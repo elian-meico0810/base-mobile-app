@@ -159,4 +159,18 @@ export const detailsRepositoryImpl: DetailsRepository = {
       throw error;
     }
   },
+
+  async novletyOrderByParams(orderId: number, token: string) {
+    try {
+      const response = await authApi.get(`${API_ROUTES.GET_NOVELTY_ORDER_BY_PARAMS}${orderId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
 };

@@ -1,5 +1,5 @@
 import { ApiResponse } from "@/src/features/auth/domain/ApiResponse";
-import { Document, GuideDetails, NoveltyRefusedProps, PaymentsByInvoicePorps, ReportNoveltyFileArrayProps, RuteByCodeGuide, RuteInitPorps, SendOrderArrayProps, SendOrderProps, TokenProducts } from "./DetailsGuide";
+import { Document, GuideDetails, NoveltyRefusedProps, NovletyOrder, PaymentsByInvoicePorps, ReportNoveltyFileArrayProps, RuteByCodeGuide, RuteInitPorps, SendOrderArrayProps, SendOrderProps, TokenProducts } from "./DetailsGuide";
 
 export interface DetailsRepository {
   listGuide: (guide: number, token: string) => Promise<ApiResponse<GuideDetails>>;
@@ -13,5 +13,6 @@ export interface DetailsRepository {
   noveltyOrder: (data: NoveltyRefusedProps[], token: string) => Promise<any>;
   sendOrderArray: (data: SendOrderArrayProps[], token: string) => Promise<any>;
   reportNoveltyFileArray: (data: ReportNoveltyFileArrayProps, token: string) => Promise<any>;
+  novletyOrderByParams: (orderId: number, token: string) => Promise<ApiResponse<NovletyOrder>>;
 
 }

@@ -1,7 +1,6 @@
 import { TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import { GuideDetails, PaymentsByInvoice } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { ViewSelectInvoice as AnticipateAndCountViewSelectInvoice } from '@/src/ui/tracking/invoices/anticipe-and-count/ViewSelectInvoice';
-import { DetailsCounterDelivery } from '@/src/ui/tracking/invoices/counter-delivery/DetailsCounterDelivery';
 import { InfoInvoiceForm } from '@/src/ui/tracking/invoices/counter-delivery/InfoInvoiceForm';
 import { ViewSelectInvoice } from '@/src/ui/tracking/invoices/counter-delivery/ViewSelectInvoice';
 import { InfoInvoiceCreditForm } from '@/src/ui/tracking/invoices/credit/InfoInvoiceCreditForm';
@@ -36,8 +35,8 @@ export default function IndexInvoiceScreen() {
     const isCountryDelivery = params.isCountryDelivery as string;
     const IsGoBack = params.IsGoBack as string;
 
-    console.log("detailsCounterDelivery: ",detailsCounterDelivery);
-    
+    console.log("detailsCounterDelivery: ", detailsCounterDelivery);
+
     return (
         <>
             <Stack.Screen
@@ -76,6 +75,8 @@ export default function IndexInvoiceScreen() {
                             isCountryDelivery={isCountryDelivery ? true : false}
                             IsGoBack={IsGoBack ? true : false}
                             routeStartedBotton={routeStartedBotton}
+                            detailsCounterDelivery={detailsCounterDelivery ? true : false}
+
                         />
                     );
                 }
@@ -125,20 +126,7 @@ export default function IndexInvoiceScreen() {
 
                 }
 
-                if(detailsCounterDelivery){
-                      <DetailsCounterDelivery
-                            initialGuide={guideObj}
-                            token={token || ""}
-                            onSubmit={async ({ guide, token }) => { }}
-                            numberGuide={Number(numberGuide)}
-                            isSelectInvocies={isSelectInvocies}
-                            documentMeico={documentMeico}
-                            isCountryDelivery={isCountryDelivery ? true : false}
-                            IsGoBack={IsGoBack ? true : false}
-                            routeStartedBotton={routeStartedBotton}
-                        />
-                    
-                }
+
                 return null;
             })()}
 

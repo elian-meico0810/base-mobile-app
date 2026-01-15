@@ -40,6 +40,7 @@ interface InfoInvoiceFormProps {
     isCountryDelivery?: boolean;
     IsGoBack?: boolean;
     routeStartedBotton?: string;
+    detailsCounterDelivery?: boolean;
 }
 
 interface EvidencePhoto {
@@ -51,7 +52,7 @@ interface EvidencePhoto {
 type DeliveryStatus = "total" | "parcial" | "rechazo" | null;
 type OptionsRefusedPorps = 'Dinero' | 'Dueño' | 'Tienda' | 'Productos' | null;
 
-export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton }: InfoInvoiceFormProps) {
+export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton, detailsCounterDelivery }: InfoInvoiceFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [guideAny, setGuideAny] = useState<GuideDetails[]>([]);
     const [guideByProduct, setGuideByPorduct] = useState<GuideDetails[]>([]);
@@ -99,6 +100,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const router = useRouter();
     const orderId = initialGuide?.pedidos?.[0]?.id;
     const [checkUbication, setCheckUbication] = useState(false);
+
+    console.log("InfoInvoiceForm: ", detailsCounterDelivery);
 
     const handleGoBack = () => {
         if (routeStarted && isCountryDelivery) {
@@ -362,6 +365,21 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         }
     };
 
+    const handleSubmitConfirmation = async () => {
+        try {
+            console.log("handleSubmitConfirmation");
+            
+        } catch (error: any) {
+            setValidateException(true);
+            btnRef.current?.reset();
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const getDataProduct = async () => {
         try {
             setLoading(true);
@@ -590,7 +608,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         resp?.statusCode === 200 || resp?.success === true
                     );
                     if (success) {
-                        console.log("guide: ",guide);
+                        console.log("guide: ", guide);
                         listDocumentQuery();
                         setModalTitle("¡Procesado!");
                         setModalMessage(`Soporte(s) procesados exitosamente.`);
@@ -923,7 +941,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             </Text>
                         </View>
 
-                        {totalRecauder != 0 && (
+                        {totalRecauder != 0 ? (
                             <TouchableOpacity
                                 style={styles.qrButton}
                                 onPress={() => {
@@ -936,7 +954,13 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                     <Text style={styles.qrButtonText}>Registrar pago</Text>
                                 </View>
                             </TouchableOpacity>
+                        ) : (
+                            <TouchableOpacity style={styles.qrButtonDetail} onPress={() => { setShowPayment(true) }}>
+                                <Text style={styles.qrButtonText}>Detalle de pagos</Text>
+                            </TouchableOpacity>
                         )}
+
+
                     </View>
                 </View>
 
@@ -967,7 +991,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             )}
 
             <View style={[styles.footer, { marginBottom: 10 }]}>
-
                 {isSelectInvocies ? (
                     <PrimaryButton
                         title="Entregar"
@@ -976,9 +999,24 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         width={328}
                         height={43}
                     />
+                ) : detailsCounterDelivery ? (
+                    <PrimaryButtonDetails
+                        ref={btnRef}
+                        autoReset={validateException}
+                        key="Enviar confirmación"
+                        title="Enviar confirmación"
+                        onPress={handleSubmitConfirmation}
+                        disabled={false}
+                        width={328}
+                        height={43}
+                        buttonColor={undefined}
+                        buttonColorEnd={undefined}
+                        titleColor={undefined}
+                        circleColor={undefined}
+                    />
                 ) : (
                     <>
-                        {(routeStarted && isCountryDelivery) ? (
+                        {routeStarted && isCountryDelivery ? (
                             <PrimaryButton
                                 title="Continuar"
                                 onPress={redirectContinue}
@@ -1002,10 +1040,9 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                 circleColor={validateIsBotton ? "#788095" : undefined}
                             />
                         )}
-
-
                     </>
                 )}
+
 
 
 

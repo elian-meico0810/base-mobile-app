@@ -151,6 +151,9 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     setModalTitle("¡Procesado!");
                     setModalMessage(`Soporte(s) procesados exitosamente.`);
                     setModalVisible(true);
+                    router.push(
+                        `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&detailsCounterDelivery=${true}`
+                    );
                 } else {
                     setModalTitle("Alerta");
                     setModalMessage(response?.message || "Error inesperado.");
@@ -640,7 +643,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
             )}
 
             {showViewModalActionSuccess && (
-                  <ActionAllData
+                <ActionAllData
                     title="¿Estás seguro de que deseas aceptar todos los productos?"
                     onClose={() => {
                         setViewModalActionSuccess(false);

@@ -95,7 +95,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         const backAction = () => {
             if (!allowBack) {
                 router.push(`/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`);
-                return true; 
+                return true;
             }
         };
 
@@ -105,7 +105,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         );
 
         return () => backHandler.remove();
-    }, [allowBack, numberGuide, token]); 
+    }, [allowBack, numberGuide, token]);
 
     const handleGoBack = () => {
         // router.back();
@@ -177,7 +177,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setLoading(true);
 
             let response;
-
+            
             if (qrType === TypeQr.PASARELA) {
                 response = await invoiceRepositoryImpl.whatsappProps(
                     {
@@ -383,6 +383,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 setTypeQRSendWhatsApp(true);
                 setModalgenerateQR(true);
                 setShowDetailInvoiceQR(true);
+                setRouteStarted(true);
             }
         } catch (error) {
             setModalTitle("¡Error!");
@@ -661,6 +662,9 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         fetchGuideList();
     }, [routeStarted, isCountryDelivery]);
 
+    useEffect(() => {
+    }, [condPago || buttonValue]);
+    
     const totalAproved = paymentSuccessful?.pagos
         ?.filter(pago => pago.estado === "APPROVED")
         .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0);

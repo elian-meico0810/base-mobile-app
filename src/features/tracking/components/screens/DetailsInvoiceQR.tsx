@@ -42,7 +42,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
     const [actionBottonQR, setActionBottonQR] = useState(false);
     const [actionBottonPayment, setActionBottonPayment] = useState(false);
     const [localPhone, setLocalPhone] = useState('');
-
+    
     // Inicializar con el valor que viene
     useEffect(() => {
         const initialValue = phone ? phone : data?.whatsapp ?? "";
@@ -84,6 +84,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                 },
                 ENV_DEV.KEY_APP
             );
+
             if (response?.statusCode === 200) {
                 onPressPayment();
                 onGenerateQR?.(TypeQr.PASARELA, response?.data?.linkPagoVirtual);
@@ -124,7 +125,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                 },
                 ENV_DEV.KEY_APP
             );
-            
+
             if (response?.statusCode === 200) {
                 onPressPayment();
                 onGenerateQR?.(TypeQr.BANCARIA, response?.data?.qr);
@@ -141,11 +142,10 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
     };
 
     useEffect(() => {
-        if (statusTypeQR) {
+        if (statusTypeQR || data?.facturas?.[0]?.condPago == TypeConPagoEnum.TAT) {
             generateQR();
-
         }
-    }, [statusTypeQR]);
+    }, []);
 
     const handlePhoneChange = (text: string) => {
         // 1. Remover todos los caracteres no numéricos
@@ -156,7 +156,6 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
 
         // 3. Actualizar estado
         setLocalPhone(limitedNumbers);
-
 
     };
 

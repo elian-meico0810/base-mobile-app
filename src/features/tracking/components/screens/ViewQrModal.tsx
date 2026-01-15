@@ -65,6 +65,7 @@ export function ViewQrModal({
     
     const handleSendWhatsApp = () => {
         try {
+            
             if (!phone || !/^\d{10}$/.test(phone)) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Debe ingresar un número de teléfono válido de 10 dígitos.");

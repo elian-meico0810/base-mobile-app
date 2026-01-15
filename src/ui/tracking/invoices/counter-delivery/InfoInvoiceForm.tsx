@@ -17,6 +17,7 @@ import { OptionsRefused } from '@/src/features/tracking/components/checkbox/Opti
 import { ChangePhoneModal } from '@/src/features/tracking/components/screens/ChangePhoneModal';
 import { DetailsInvoiceQR } from '@/src/features/tracking/components/screens/DetailsInvoiceQR';
 import { DetailsPaymenTypeEfecty } from '@/src/features/tracking/components/screens/DetailsPaymenTypeEfecty';
+import { DetailsPaymenTypeOthers } from '@/src/features/tracking/components/screens/DetailsPaymenTypeOthers';
 import { InfoPayments } from '@/src/features/tracking/components/screens/InfoPayments';
 import { ViewQrModal } from '@/src/features/tracking/components/screens/ViewQrModal';
 import { Detail, Document, GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
@@ -88,6 +89,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [uploadPhoto, setUploadPhoto] = useState(false);
     const [typePayment, setTypePayment] = useState(false);
     const [typePaymentTypeEfecty, setTypePaymenTypeEfecty] = useState(false);
+    const [typePaymentTypeOthers, setTypePaymenTypeOthers] = useState(false);
     const [statusDOcument, setStatusDOcument] = useState(false);
     const [conceptDelivery, setConceptDelivery] = useState<DerliveryDocument | null>(null);
     const [validateException, setValidateException] = useState(false);
@@ -100,8 +102,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const router = useRouter();
     const orderId = initialGuide?.pedidos?.[0]?.id;
     const [checkUbication, setCheckUbication] = useState(false);
-
-    console.log("InfoInvoiceForm: ", detailsCounterDelivery);
 
     const handleGoBack = () => {
         if (routeStarted && isCountryDelivery) {
@@ -368,7 +368,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const handleSubmitConfirmation = async () => {
         try {
             console.log("handleSubmitConfirmation");
-            
+
         } catch (error: any) {
             setValidateException(true);
             btnRef.current?.reset();
@@ -608,7 +608,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         resp?.statusCode === 200 || resp?.success === true
                     );
                     if (success) {
-                        console.log("guide: ", guide);
                         listDocumentQuery();
                         setModalTitle("¡Procesado!");
                         setModalMessage(`Soporte(s) procesados exitosamente.`);
@@ -1206,7 +1205,11 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         setTypePayment(false);
                         setTypePaymenTypeEfecty(true);
                     }}
-                    onOthers={() => console.log("Llego a onOthers")}
+                    onOthers={() => {
+                        setTypePaymenTypeOthers(true);
+                        setTypePayment(false);
+                        setTypePaymenTypeEfecty(false);
+                    }}
                     onQr={() => {
                         setTypePayment(false);
                         setTypePaymenTypeEfecty(false);
@@ -1219,6 +1222,22 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 <DetailsPaymenTypeEfecty
                     data={guide}
                     onClose={() => setTypePaymenTypeEfecty(false)}
+                    onChangePhone={() => {
+                        setTypePaymenTypeEfecty(false);
+                        setShowChangePhone(true);
+                    }}
+                    width={width}
+                    phone={phone}
+                    onGenerateQR={handleGenerateQR}
+                    onPressPayment={() => setRefreshingOnPress(true)}
+                    onErrorPayment={() => setShowErrorQRP(true)}
+                    statusTypeQR={typeQRSendWhatsApp}
+                />
+            )}
+            {typePaymentTypeOthers && (
+                <DetailsPaymenTypeOthers
+                    data={guide}
+                    onClose={() => setTypePaymenTypeOthers(false)}
                     onChangePhone={() => {
                         setTypePaymenTypeEfecty(false);
                         setShowChangePhone(true);

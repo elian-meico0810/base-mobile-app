@@ -16,7 +16,7 @@ import {
 } from "react-native";
 import { GuideDetails } from "../../domain/details/DetailsGuide";
 
-interface DetailsPaymenTypeEfectyProps {
+interface DetailsPaymenTypeOthersProps {
     data?: GuideDetails;
     onClose: () => void;
     onChangePhone?: () => void;
@@ -38,13 +38,14 @@ interface Invoice {
     valorTotal: number;
 }
 
-export function DetailsPaymenTypeEfecty({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone, onGenerateQR, onPressPayment, onErrorPayment, statusTypeQR }: DetailsPaymenTypeEfectyProps) {
+export function DetailsPaymenTypeOthers({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone, onGenerateQR, onPressPayment, onErrorPayment, statusTypeQR }: DetailsPaymenTypeOthersProps) {
     const [loading, setLoading] = useState(false);
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [modalVisible, setModalVisible] = useState(false);
     const [phoneSet, setPhone] = useState('');
+    const [secondInput, setSecondInput] = useState('');
     const [keyboardHeight, setKeyboardHeight] = useState(0);
 
     const dataInvoice: Invoice = data?.facturas?.[0] ?? {
@@ -100,7 +101,6 @@ export function DetailsPaymenTypeEfecty({ data, onClose, onChangePhone, disabled
         return num.toLocaleString('es-ES');
     };
 
-
     return (
         <View style={styles.overlay} pointerEvents="box-none">
             {/* FONDO — SOLO CAPTURA TOQUES FUERA */}
@@ -128,15 +128,17 @@ export function DetailsPaymenTypeEfecty({ data, onClose, onChangePhone, disabled
                     <Text style={styles.closeText}>X</Text>
                 </TouchableOpacity>
 
-                <Text style={styles.title}>Efectivo</Text>
+                <Text style={styles.title}>Otros</Text>
                 <Text style={styles.phoneDescription}>
-                    Ingresa la cantidad recibida en billetes.
+                    Ingresa la cantidad a justificar en este pedido..
                 </Text>
+                
                 <View style={styles.box}>
                     <Row label="N° de factura" value={dataInvoice.numeroFactura} />
                     <Row bold label="Valor a pagar" value={`$${formatNumber(dataInvoice.valorRecaudar)}`} />
                 </View>
 
+                {/* Primer input - Cantidad recibida */}
                 <View style={styles.phoneContainer}>
                     <View style={styles.phoneRow}>
                         <TextInput
@@ -148,7 +150,33 @@ export function DetailsPaymenTypeEfecty({ data, onClose, onChangePhone, disabled
                                 setPhone(onlyNumbers);
                             }}
                             editable={true}
+                            placeholderTextColor="#788095"
                         />
+                    </View>
+                </View>
+
+                {/* Segundo input - Observaciones (más largo) */}
+                <View style={styles.phoneContainer}>
+                    <Text style={styles.inputLabel}>Descripción del pago</Text>
+                    <View style={styles.phoneRowTwo}>
+                        <TextInput
+                            style={styles.phoneInputTwo}
+                            keyboardType="default"
+                            value={secondInput}
+                            onChangeText={setSecondInput}
+                            editable={true}
+                            placeholder="Describe como realizo el pago el cliente"
+                            placeholderTextColor="#DDDFE8"
+                            multiline={true}
+                            numberOfLines={5}
+                            textAlignVertical="top"
+                            maxLength={500}
+                        />
+                        {secondInput.length > 0 && (
+                            <Text style={styles.charCount}>
+                                {secondInput.length}/500
+                            </Text>
+                        )}
                     </View>
                 </View>
 
@@ -193,7 +221,7 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
     container: {
-        height: 360,
+        height: 520, // Más alto para acomodar el input grande
         backgroundColor: "#F9F9FA",
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
@@ -218,31 +246,33 @@ const styles = StyleSheet.create({
         fontWeight: "800",
         fontSize: 20,
         color: "#141D32",
-    },
-    box: {
-        backgroundColor: "#FFFFFF",
-        borderRadius: 12,
-        padding: 16,
-        marginTop: 20,
-        gap: 8,
-        borderWidth: 1,
-        borderColor: "#F0F1F5",
-    },
-    phoneContainer: {
-        marginTop: 20,
-    },
-    phoneLabel: {
-        fontFamily: "Rubik",
-        fontWeight: "800",
-        fontSize: 14,
-        color: "#141D32",
+        marginBottom: 4,
     },
     phoneDescription: {
         fontFamily: "Rubik",
         fontWeight: "600",
         fontSize: 12,
         color: "#788095",
-        marginTop: 10
+        marginBottom: 16,
+    },
+    box: {
+        backgroundColor: "#FFFFFF",
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 20,
+        gap: 8,
+        borderWidth: 1,
+        borderColor: "#F0F1F5",
+    },
+    phoneContainer: {
+        marginBottom: 16,
+    },
+    inputLabel: {
+        fontFamily: "Rubik",
+        fontWeight: "400",
+        fontSize: 12,
+        color: "#788095",
+        marginBottom: 8,
     },
     phoneRow: {
         flexDirection: "row",
@@ -250,26 +280,57 @@ const styles = StyleSheet.create({
         backgroundColor: "#FFFFFF",
         borderRadius: 12,
         borderWidth: 1,
-        paddingHorizontal: 14,
-        height: 44,
-        marginTop: 4,
-        borderColor: "#F0F1F5",
+        borderColor: "#E0E0E0",
+        paddingHorizontal: 16,
+        height: 48,
+    },
+    currencySymbol: {
+        fontFamily: "Rubik",
+        fontWeight: "600",
+        fontSize: 16,
+        color: "#141D32",
+        marginRight: 8,
     },
     phoneInput: {
         flex: 1,
         fontFamily: "Rubik",
         fontWeight: "600",
+        fontSize: 16,
+        color: "#141D32",
+        height: '100%',
+    },
+    phoneRowTwo: {
+        backgroundColor: "#FFFFFF",
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: "#E0E0E0",
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        height: 100, 
+        position: 'relative',
+    },
+    phoneInputTwo: {
+        flex: 1,
+        fontFamily: "Rubik",
+        fontWeight: "400",
         fontSize: 14,
         color: "#141D32",
+        textAlignVertical: 'top',
+        lineHeight: 20,
+        paddingTop: 0,
+        paddingBottom: 20, 
     },
-    phoneChange: {
+    charCount: {
+        position: 'absolute',
+        bottom: 8,
+        right: 16,
         fontFamily: "Rubik",
-        fontWeight: "600",
-        fontSize: 14,
-        color: "#164194",
+        fontWeight: "400",
+        fontSize: 12,
+        color: "#788095",
     },
     buttonsContainer: {
-        marginTop: 24,
+        marginTop: 8,
         gap: 12,
     },
     button: {

@@ -161,12 +161,27 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     }, [Number(initialGuide?.facturas[0]?.numeroFactura), token]);
 
     const handleGenerateQR = (type: string, qr?: string) => {
+        if (condPago) {
+            setModalgenerateQR(true);
+            setShowDetailInvoiceQR(false);
+            setShowPayment(false);
+            if (qr) setQrBase64(qr);
+            if (type) setQrType(type);
+        }
+
+    };
+
+    const handleGenerateQRNotcondPago = (type: string, qr?: string) => {
         setModalgenerateQR(true);
         setShowDetailInvoiceQR(false);
         setShowPayment(false);
         if (qr) setQrBase64(qr);
         if (type) setQrType(type);
+
     };
+
+
+    console.log("data: ", guide?.whatsapp);
 
     const condPago = guide?.facturas[0]?.condPago == TypeConPagoEnum.TAT;
 
@@ -377,12 +392,15 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 return;
             }
 
-            if (condPago || buttonValue) {
-                setTypeQRSendWhatsApp(true);
-                setModalgenerateQR(true);
-                setShowDetailInvoiceQR(true);
-                setRouteStarted(true);
-            }
+            // if (condPago || buttonValue && condPago) {
+            //     setTypeQRSendWhatsApp(true);
+            //     setModalgenerateQR(true);
+            //     setShowDetailInvoiceQR(true);
+            //     setRouteStarted(true);
+            // }else if ( !condPago || buttonValue && !condPago){
+            //     setShowDetailInvoiceQR(true);
+            //     setRouteStarted(true);
+            // }
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
@@ -688,7 +706,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     }
 
     const closeButton = routeStarted || buttonValue;
-    
+
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -898,10 +916,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                 disabled={false}
                                 width={328}
                                 height={43}
-                                buttonColor={conceptDelivery? undefined : closeButton ? "#DDDFE8" : undefined}
-                                buttonColorEnd={conceptDelivery? undefined : closeButton ? "#DDDFE8" : undefined}
-                                titleColor={conceptDelivery? undefined : closeButton ? "#FFFFFF" : undefined}
-                                circleColor={conceptDelivery? undefined : closeButton ? "#788095" : undefined}
+                                buttonColor={conceptDelivery ? undefined : closeButton ? "#DDDFE8" : undefined}
+                                buttonColorEnd={conceptDelivery ? undefined : closeButton ? "#DDDFE8" : undefined}
+                                titleColor={conceptDelivery ? undefined : closeButton ? "#FFFFFF" : undefined}
+                                circleColor={conceptDelivery ? undefined : closeButton ? "#788095" : undefined}
                             />
                         )}
 
@@ -938,10 +956,11 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     }}
                     width={width}
                     phone={phone}
-                    onGenerateQR={handleGenerateQR}
+                    onGenerateQR={condPago ? handleGenerateQR : handleGenerateQRNotcondPago}
                     onPressPayment={() => setRefreshingOnPress(true)}
                     onErrorPayment={() => setShowErrorQRP(true)}
                     statusTypeQR={typeQRSendWhatsApp}
+
                 />
             )}
 

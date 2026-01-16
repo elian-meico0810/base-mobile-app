@@ -8,8 +8,10 @@ export interface RuteInitPorps {
 export interface PaymentGatewayProps {
   documento: {
     numero: string;
+    nombreCliente?: string;
     codigoCliente: string;
     tipoDocumento: string;
+    valor?: number;
   };
   linkFisico: boolean;
   linkVirtual: boolean;

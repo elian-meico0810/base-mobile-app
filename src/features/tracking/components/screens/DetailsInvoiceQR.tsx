@@ -31,6 +31,7 @@ interface Invoice {
     condPago: string;
     valorRecaudar: number;
     valorTotal: number;
+    // nombreCliente: string;
 }
 
 export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone, onGenerateQR, onPressPayment, onErrorPayment, statusTypeQR }: DetailsInvoiceQRProps) {
@@ -42,7 +43,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
     const [actionBottonQR, setActionBottonQR] = useState(false);
     const [actionBottonPayment, setActionBottonPayment] = useState(false);
     const [localPhone, setLocalPhone] = useState('');
-    
+
     // Inicializar con el valor que viene
     useEffect(() => {
         const initialValue = phone ? phone : data?.whatsapp ?? "";
@@ -55,12 +56,14 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
         valorRecaudar: 0,
         valorTotal: 0,
         condPago: "",
+        // nombreCliente: "",
     };
+    const cleanWhatsapp = data?.whatsapp?.replace(/\D/g, '');
 
     const paymentGateway = async () => {
         try {
-            
-            if ((!phone || !/^\d{10}$/.test(phone)) && Number(data?.whatsapp?.length) != 10) {
+
+            if ((!phone || !/^\d{10}$/.test(phone)) && Number(cleanWhatsapp?.length) != 10) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Debe ingresar un número de teléfono válido de 10 dígitos.");
                 setModalVisible(true);
@@ -76,8 +79,10 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                 {
                     documento: {
                         numero: String(dataInvoice?.numeroFactura),
+                        // nombreCliente: String(dataInvoice?.nombreCliente),
                         codigoCliente: String(data?.codigoCliente),
                         tipoDocumento: "Factura",
+                        valor: Number(dataInvoice.valorRecaudar)
                     },
                     linkFisico: false,
                     linkVirtual: true,
@@ -102,8 +107,9 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
 
     const generateQR = async () => {
         try {
-            
-            if ((!phone || !/^\d{10}$/.test(phone)) && Number(data?.whatsapp?.length) != 10) {
+
+
+            if ((!phone || !/^\d{10}$/.test(phone)) && cleanWhatsapp?.length != 10) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Debe ingresar un número de teléfono válido de 10 dígitos.");
                 setModalVisible(true);
@@ -210,7 +216,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                     <View style={styles.phoneRow}>
                         <TextInput
                             style={styles.phoneInput}
-                            value={localPhone.length == 10 ? localPhone : ""}
+                            value={localPhone.length > 0 ? data?.whatsapp?.replace(/\D/g, '') : ""}
                             onChangeText={handlePhoneChange}
                             keyboardType="phone-pad"
                             maxLength={10}
@@ -265,6 +271,8 @@ const styles = StyleSheet.create({
         bottom: 0,
         justifyContent: "flex-end",
         alignItems: "center",
+        zIndex: 9999,
+        elevation: 9999,
     },
     backgroundOverlay: {
         ...StyleSheet.absoluteFillObject,

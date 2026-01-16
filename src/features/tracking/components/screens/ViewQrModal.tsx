@@ -61,6 +61,8 @@ export function ViewQrModal({
         valorTotal: 0,
         condPago: "",
     };
+
+    
     const condPago = dataInvoice?.condPago == TypeConPagoEnum.TAT;
     
     const handleSendWhatsApp = () => {
@@ -113,7 +115,7 @@ export function ViewQrModal({
                 {/* Renderizar contenido */}
                 < RenderQRView
                     dataInvoice={dataInvoice}
-                    phone={phone ? phone : data?.whatsapp ?? ""}
+                    phone={phone ? phone : data?.whatsapp?.replace(/\D/g, '') ?? ""}
                     onChangePhone={onChangePhone}
                     qrType={qrType}
                     qrData={qrData}

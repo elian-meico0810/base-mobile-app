@@ -171,13 +171,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     };
 
-    const handleGenerateQRNotcondPago = (type: string, qr?: string) => {
+    const handleGenerateQRNotcondPago = async (type: string, qr?: string) => {
         setModalgenerateQR(true);
         setShowDetailInvoiceQR(false);
         setShowPayment(false);
         if (qr) setQrBase64(qr);
         if (type) setQrType(type);
-
     };
 
     const condPago = guide?.facturas[0]?.condPago == TypeConPagoEnum.TAT;
@@ -389,15 +388,17 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 return;
             }
 
-            // if (condPago || buttonValue && condPago) {
-            //     setTypeQRSendWhatsApp(true);
-            //     setModalgenerateQR(true);
-            //     setShowDetailInvoiceQR(true);
-            //     setRouteStarted(true);
-            // }else if ( !condPago || buttonValue && !condPago){
-            //     setShowDetailInvoiceQR(true);
-            //     setRouteStarted(true);
-            // }
+            if (condPago || buttonValue && condPago) {
+                setTypeQRSendWhatsApp(true);
+                setModalgenerateQR(true);
+                setShowDetailInvoiceQR(true);
+                setRouteStarted(true);
+            } else if (!condPago || buttonValue && !condPago) {
+                setRouteStarted(true);
+                setTypeQRSendWhatsApp(false);
+                setShowDetailInvoiceQR(false);
+
+            }
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");

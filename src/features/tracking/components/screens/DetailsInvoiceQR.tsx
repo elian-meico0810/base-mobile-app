@@ -31,7 +31,7 @@ interface Invoice {
     condPago: string;
     valorRecaudar: number;
     valorTotal: number;
-    // nombreCliente: string;
+    nombreCliente?: string;
 }
 
 export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone, onGenerateQR, onPressPayment, onErrorPayment, statusTypeQR }: DetailsInvoiceQRProps) {
@@ -56,7 +56,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
         valorRecaudar: 0,
         valorTotal: 0,
         condPago: "",
-        // nombreCliente: "",
+        nombreCliente: ""
     };
     const cleanWhatsapp = data?.whatsapp?.replace(/\D/g, '');
 
@@ -79,7 +79,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                 {
                     documento: {
                         numero: String(dataInvoice?.numeroFactura),
-                        // nombreCliente: String(dataInvoice?.nombreCliente),
+                        nombreCliente: String(data?.nombreCliente),
                         codigoCliente: String(data?.codigoCliente),
                         tipoDocumento: "Factura",
                         valor: Number(dataInvoice.valorRecaudar)

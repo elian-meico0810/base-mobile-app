@@ -180,9 +180,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     };
 
-
-    console.log("data: ", guide?.whatsapp);
-
     const condPago = guide?.facturas[0]?.condPago == TypeConPagoEnum.TAT;
 
     const handlSendWhatsApp = async () => {

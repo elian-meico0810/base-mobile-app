@@ -95,7 +95,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         try {
             setSelectedInvoice(selectedGuide);
 
-            if (!routeStarted && !conditionButton) {
+            if (!routeStarted && !conditionButton && !buttonValue) {
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");

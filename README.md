@@ -1,50 +1,127 @@
-# Welcome to your Expo app 👋
+# 📱 Proyecto React Native (Expo)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Este proyecto está desarrollado con **React Native usando Expo**. A continuación encontrarás los comandos y pasos necesarios para ejecutar la aplicación, validar el entorno y generar builds tanto en la nube como **localmente**.
 
-## Get started
+---
 
-1. Install dependencies
+## 🚀 Requisitos previos
 
-   ```bash
-   npm install
-   ```
+Asegúrate de tener instalado:
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+* Node.js (LTS recomendado)
+* Java JDK 17
+* Android Studio (con Android SDK y emulador o dispositivo físico)
+* Expo CLI
+* EAS CLI
 
 ```bash
-npm run reset-project
+npm install -g expo-cli eas-cli
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+## ▶️ Ejecutar la app en Android
 
-To learn more about developing your project with Expo, look at the following resources:
+### ✅ PASO 1 — Ubicarse en el proyecto
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Debes estar en la raíz del proyecto (donde está el archivo `package.json`).
 
-## Join the community
+### ✅ PASO 2 — Ejecutar en un dispositivo o emulador
 
-Join our community of developers creating universal apps.
+```bash
+npx expo run:android --device
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Esto compila y ejecuta la app directamente en el dispositivo Android conectado.
+
+---
+
+## 🧪 Validar el proyecto Expo
+
+Antes de generar builds, es recomendable validar el estado del proyecto:
+
+```bash
+npx expo-doctor
+```
+
+Para regenerar los archivos nativos (Android / iOS):
+
+```bash
+npx expo prebuild --clean
+```
+
+---
+
+## 📦 Generación de builds con EAS (Nube)
+
+### 🚀 Generar **AAB** (requerido para Google Play)
+
+```bash
+eas build -p android --profile production-aab
+```
+
+✔ Genera un archivo `.aab` listo para subir a Google Play Console.
+
+---
+
+### 📱 Generar **APK** (pruebas, QA, instalación directa)
+
+```bash
+eas build -p android --profile production-apk
+```
+
+✔ Genera un archivo `.apk` para pruebas internas.
+
+---
+
+## 🖥️ Generar APK **LOCALMENTE** (sin nube)
+
+> ⚠️ Recomendado para Windows o cuando no se desea usar EAS Build en la nube.
+
+### 📱 PASO 1 — Entrar a la carpeta Android
+
+```powershell
+cd android
+```
+
+### 📱 PASO 2 — Generar APK release
+
+```powershell
+.\gradlew assembleRelease
+```
+
+---
+
+## ✅ Resultado esperado
+
+Si todo sale bien, verás:
+
+```text
+BUILD SUCCESSFUL
+```
+
+El APK se generará en la siguiente ruta:
+
+```text
+android\app\build\outputs\apk\release\app-release.apk
+```
+
+Este archivo puede instalarse directamente en dispositivos Android.
+
+---
+
+## 📝 Notas importantes
+
+* El build local **NO usa Expo EAS ni la nube**
+* El APK debe estar **firmado** para instalarse en dispositivos reales
+* La primera compilación puede tardar varios minutos
+
+---
+
+## 👨‍💻 Autor
+
+Proyecto desarrollado con React Native + Expo.
+
+---
+
+✨ ¡Listo! Con estos pasos puedes ejecutar, validar y generar versiones de tu app sin problemas.

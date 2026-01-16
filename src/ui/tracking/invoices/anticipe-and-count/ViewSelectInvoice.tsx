@@ -745,10 +745,10 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                                     disabled={false}
                                     width={328}
                                     height={43}
-                                    buttonColor={validateCheckboxlength ? undefined : conditionButton ? "#DDDFE8" : undefined}
-                                    buttonColorEnd={validateCheckboxlength ? undefined : conditionButton ? "#DDDFE8" : undefined}
-                                    titleColor={conditionButton ? "#FFFFFF" : undefined}
-                                    circleColor={validateCheckboxlength ? undefined : conditionButton ? "#788095" : undefined}
+                                    buttonColor={conceptDelivery? undefined :  validateCheckboxlength ? undefined : conditionButton ? "#DDDFE8" : undefined}
+                                    buttonColorEnd={conceptDelivery? undefined :  validateCheckboxlength ? undefined : conditionButton ? "#DDDFE8" : undefined}
+                                    titleColor={conceptDelivery? undefined :  conditionButton ? "#FFFFFF" : undefined}
+                                    circleColor={conceptDelivery? undefined :  validateCheckboxlength ? undefined : conditionButton ? "#788095" : undefined}
                                 />
                             );
                         }

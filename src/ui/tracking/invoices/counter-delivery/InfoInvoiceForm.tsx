@@ -118,8 +118,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         setPhone(phone);
     }, [phone]);
 
-
-
     useEffect(() => {
         if (modalRefused) {
             setShowDetailInvoiceQR(false);
@@ -177,7 +175,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setLoading(true);
 
             let response;
-            
+
             if (qrType === TypeQr.PASARELA) {
                 response = await invoiceRepositoryImpl.whatsappProps(
                     {
@@ -689,6 +687,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             break;
     }
 
+    const closeButton = routeStarted || buttonValue;
+    
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -892,16 +892,16 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             <PrimaryButtonDetails
                                 ref={btnRef}
                                 autoReset={validateException}
-                                key={routeStarted || buttonValue ? "cerrar" : "llegue"}
-                                title={routeStarted || buttonValue ? "Cerrar pedido" : "Ya llegué"}
-                                onPress={routeStarted || buttonValue ? submitData : handleSubmit}
+                                key={closeButton ? "cerrar" : "llegue"}
+                                title={closeButton ? "Cerrar pedido" : "Ya llegué"}
+                                onPress={closeButton ? submitData : handleSubmit}
                                 disabled={false}
                                 width={328}
                                 height={43}
-                                buttonColor={validateIsBotton ? "#DDDFE8" : undefined}
-                                buttonColorEnd={validateIsBotton ? "#DDDFE8" : undefined}
-                                titleColor={routeStarted ? "#FFFFFF" : undefined}
-                                circleColor={validateIsBotton ? "#788095" : undefined}
+                                buttonColor={conceptDelivery? undefined : closeButton ? "#DDDFE8" : undefined}
+                                buttonColorEnd={conceptDelivery? undefined : closeButton ? "#DDDFE8" : undefined}
+                                titleColor={conceptDelivery? undefined : closeButton ? "#FFFFFF" : undefined}
+                                circleColor={conceptDelivery? undefined : closeButton ? "#788095" : undefined}
                             />
                         )}
 

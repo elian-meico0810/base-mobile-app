@@ -9,7 +9,7 @@ interface InvoicesListProps {
     invoices?: GuideDetails[] | GuideDetails;
     guide?: GuideDetails;
     onInvoiceSelect?: (selectedGuide: GuideDetails | null) => void;
-    onInvoicesMultiSelect?: (selectedGuides: GuideDetails[]) => void; // Nuevo prop para selección múltiple
+    onInvoicesMultiSelect?: (selectedGuides: GuideDetails[]) => void; 
     isSelectInvocies?: string;
     documentMeico?: string;
     numberGuide?: number;
@@ -32,12 +32,12 @@ const InvoicesList = ({
     conceptDelivery,
     isSelect = false,
     activeView = false,
-    showCheckboxes = false // Por defecto no mostrar checkboxes
+    showCheckboxes = false
 }: InvoicesListProps) => {
     const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
-    const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<Set<string>>(new Set()); // Para múltiples selecciones
+    const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<Set<string>>(new Set());
     const [selectedGuideData, setSelectedGuideData] = useState<GuideDetails | null>(null);
-    const [selectedGuidesData, setSelectedGuidesData] = useState<GuideDetails[]>([]); // Para múltiples selecciones
+    const [selectedGuidesData, setSelectedGuidesData] = useState<GuideDetails[]>([]); 
     const [response, setResponse] = useState<any>(null);
     let dataToProcess: GuideDetails[] = [];
 
@@ -49,7 +49,6 @@ const InvoicesList = ({
         dataToProcess = Array.isArray(invoices) ? invoices : [invoices];
     }
 
-    // Preparar datos de todas las facturas con su parentGuide
     const allInvoicesWithParent: Array<{ invoice: any, parentGuide: GuideDetails }> = [];
 
     dataToProcess.forEach((guideItem) => {
@@ -78,20 +77,17 @@ const InvoicesList = ({
             if (newSelectedIds.has(invoiceId)) {
                 newSelectedIds.delete(invoiceId);
 
-                // Remover de la lista de guías seleccionadas
                 const newSelectedGuides = selectedGuidesData.filter(
                     guide => !guide.facturas?.some(f => f.numeroFactura === invoiceId)
                 );
                 setSelectedGuidesData(newSelectedGuides);
 
-                // Notificar al componente padre
                 if (onInvoicesMultiSelect) {
                     onInvoicesMultiSelect(newSelectedGuides);
                 }
             } else {
                 newSelectedIds.add(invoiceId);
 
-                // Agregar a la lista de guías seleccionadas
                 const selectedGuide: GuideDetails = {
                     ...parentGuide,
                     facturas: [invoice]
@@ -99,7 +95,6 @@ const InvoicesList = ({
                 const newSelectedGuides = [...selectedGuidesData, selectedGuide];
                 setSelectedGuidesData(newSelectedGuides);
 
-                // Notificar al componente padre
                 if (onInvoicesMultiSelect) {
                     onInvoicesMultiSelect(newSelectedGuides);
                 }
@@ -107,7 +102,6 @@ const InvoicesList = ({
 
             setSelectedInvoiceIds(newSelectedIds);
         } else {
-            // Modo selección única (comportamiento original)
             if (selectedInvoiceId === invoice.numeroFactura) {
                 setSelectedInvoiceId(null);
                 setSelectedGuideData(null);
@@ -132,7 +126,6 @@ const InvoicesList = ({
         if (!showCheckboxes) return;
 
         if (selectedInvoiceIds.size === allInvoicesWithParent.length) {
-            // Si ya están todas seleccionadas, deseleccionar todas
             setSelectedInvoiceIds(new Set());
             setSelectedGuidesData([]);
             if (onInvoicesMultiSelect) {
@@ -143,12 +136,10 @@ const InvoicesList = ({
             const allIds = new Set<string>();
             const facturaMap = new Map<string, GuideDetails>();
 
-            // 1. Obtener todos los IDs y mapear las guías únicas
             allInvoicesWithParent.forEach(item => {
                 const facturaId = item.invoice.numeroFactura;
                 allIds.add(facturaId);
 
-                // Solo agregar al mapa si no existe ya
                 if (!facturaMap.has(facturaId)) {
                     const selectedGuide: GuideDetails = {
                         ...item.parentGuide,
@@ -158,10 +149,6 @@ const InvoicesList = ({
                 }
             });
 
-            console.log("allIds:", allIds);
-            console.log("conceptDelivery:", conceptDelivery);
-
-            // 2. Filtrar los IDs que NO están en conceptDelivery
             let filteredIds = Array.from(allIds);
 
             // Verificar si conceptDelivery es válido
@@ -173,7 +160,6 @@ const InvoicesList = ({
                     deliveryArray = [conceptDelivery];
                 }
 
-                // Verificar si el array tiene elementos
                 if (deliveryArray.length > 0) {
                     // Obtener los documentMeico ya procesados
                     const existingDocumentMeicos = deliveryArray
@@ -181,7 +167,6 @@ const InvoicesList = ({
                         .filter(Boolean) as string[];
 
 
-                    // Filtrar solo los IDs que NO están en conceptDelivery
                     filteredIds = Array.from(allIds).filter(id =>
                         !existingDocumentMeicos.includes(id)
                     );
@@ -189,10 +174,8 @@ const InvoicesList = ({
                 }
             }
 
-            // 3. Crear Set con los IDs filtrados
             const selectedIdsSet = new Set(filteredIds);
 
-            // 4. Filtrar las guías que corresponden a los IDs seleccionados
             const filteredGuidesArray = Array.from(facturaMap.values())
                 .filter(guide => {
                     const facturaId = guide.facturas[0]?.numeroFactura;
@@ -200,7 +183,6 @@ const InvoicesList = ({
                 });
 
 
-            // 5. Actualizar estados
             setSelectedInvoiceIds(selectedIdsSet);
             setSelectedGuidesData(filteredGuidesArray);
 

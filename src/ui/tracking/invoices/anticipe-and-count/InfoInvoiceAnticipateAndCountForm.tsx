@@ -776,10 +776,10 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
                         disabled={false}
                         width={328}
                         height={43}
-                        buttonColor={validateIsBotton ? "#DDDFE8" : undefined}
-                        buttonColorEnd={validateIsBotton ? "#DDDFE8" : undefined}
-                        titleColor={routeStarted ? "#FFFFFF" : undefined}
-                        circleColor={validateIsBotton ? "#788095" : undefined}
+                        buttonColor={conceptDelivery? undefined : validateIsBotton ? "#DDDFE8" : undefined}
+                        buttonColorEnd={conceptDelivery? undefined : validateIsBotton ? "#DDDFE8" : undefined}
+                        titleColor={conceptDelivery? undefined : routeStarted ? "#FFFFFF" : undefined}
+                        circleColor={conceptDelivery? undefined : validateIsBotton ? "#788095" : undefined}
                     />
                 )
                 }

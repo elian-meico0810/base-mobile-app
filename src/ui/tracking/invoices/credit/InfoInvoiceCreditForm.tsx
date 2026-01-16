@@ -198,10 +198,7 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
                 setCheckUbication(true);
             }
         } catch (error: any) {
-            setModalTitle("Permiso denegado ¡Alerta!");
-            setModalMessage("Debe activar la ubicación del dispositivo");
-            setModalButtonLabel("Cerrar");
-            setModalVisible(true);
+       
         }
     };
 

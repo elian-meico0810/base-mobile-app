@@ -229,10 +229,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 setCheckUbication(true);
             }
         } catch (error: any) {
-            setModalTitle("Permiso denegado ¡Alerta!");
-            setModalMessage("Debe activar la ubicación del dispositivossssss");
-            setModalButtonLabel("Cerrar");
-            setModalVisible(true);
+        
         }
     };
 

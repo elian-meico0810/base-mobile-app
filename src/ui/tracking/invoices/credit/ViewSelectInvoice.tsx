@@ -188,10 +188,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 setCheckUbication(true);
             }
         } catch (error: any) {
-            setModalTitle("Permiso denegado ¡Alerta!");
-            setModalMessage("Debe activar la ubicación del dispositivo");
-            setModalButtonLabel("Cerrar");
-            setModalVisible(true);
+            
         }
     };
 

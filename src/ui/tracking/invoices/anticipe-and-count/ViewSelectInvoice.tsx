@@ -132,7 +132,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const handleMultiSelect = (selectedGuides: GuideDetails[]) => {
         try {
             setSelectedMultipleInvoices(selectedGuides);
-            if (!routeStarted && !conditionButton && !validateCheckbox) {
+            if (!routeStarted && !conditionButton && !validateCheckbox && !buttonValue) {
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");

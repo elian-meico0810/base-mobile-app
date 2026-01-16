@@ -1,174 +1,15 @@
 "use client";
-import { AddEvidenceButton } from '@/components/inputs/AddEvidenceButton';
-import { TypeInvoiceEnum } from '@/src/constants/GuideStates';
-import { formatNumber } from '@/src/utils/uitls';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { GuideDetails } from '../../domain/details/DetailsGuide';
 import { DerliveryDocument } from '../../domain/invoices/InvoicesInterFace';
+import { InvoiceItem } from './InvoiceItem';
 
-interface InvoiceOneItemProps {
-    invoice: any;
-    index: number;
-    isSelected: boolean;
-    onSelect: (invoice: any, parentGuide: GuideDetails) => void;
-    parentGuide: GuideDetails;
-    documentMeico?: string;
-    conceptDelivery?: DerliveryDocument | DerliveryDocument[] | null;
-    isSelect: boolean;
-    activeView: boolean;
-    showCheckbox?: boolean;
-    hasAnySelected: boolean; // Nuevo prop
-}
-
-const InvoiceOneItem = ({
-    invoice,
-    index,
-    isSelected,
-    onSelect,
-    parentGuide,
-    documentMeico,
-    conceptDelivery,
-    isSelect,
-    activeView,
-    showCheckbox = false,
-    hasAnySelected // Nuevo prop
-}: InvoiceOneItemProps) => {
-    const hasEvidence = (numeroFactura: string): boolean => {
-        if (Array.isArray(conceptDelivery)) {
-            return conceptDelivery.some(
-                (doc) => String(doc.documentMeico) === String(numeroFactura)
-            );
-        }
-        return false;
-    };
-    var value = '';
-    switch (invoice?.tipo) {
-        case TypeInvoiceEnum.CONTADO_EFECTIVO:
-            value = 'Contra-entrega';
-            break;
-
-        case TypeInvoiceEnum.CREDITO:
-            value = 'Credito';
-            break;
-
-        case TypeInvoiceEnum.ANTICIPO:
-            value = 'Anticipado';
-            break;
-
-    }
-    const canShowCheckbox =
-        showCheckbox &&
-        (isSelected || !hasAnySelected) &&
-        (!hasEvidence(invoice.numeroFactura));
-
-    return (
-        <TouchableOpacity
-            disabled={hasEvidence(invoice.numeroFactura) ? true : false}
-            style={[
-                styles.invoiceContainer,
-                isSelected && styles.selectedContainer,
-                (!activeView || hasEvidence(invoice.numeroFactura)) && {
-                    backgroundColor: '#FFFFFF',
-                    opacity: 0.6,
-                    borderColor: '#F0F1F5',
-                    borderWidth: 1,
-                }
-            ]}
-            onPress={() => onSelect(invoice, parentGuide)}
-            activeOpacity={0.7}
-        >
-            <View style={styles.rowBetween}>
-                {/* Checkbox individual - SOLO se muestra si:
-            1. Está seleccionada O
-            2. No hay ninguna seleccionada */}
-
-                {canShowCheckbox && (
-                    <TouchableOpacity
-                        style={[
-                            styles.checkbox,
-                            isSelected && styles.checkboxSelected
-                        ]}
-                        onPress={(e) => {
-                            e.stopPropagation();
-                            onSelect(invoice, parentGuide);
-                        }}
-                    >
-                        {isSelected && <Text style={styles.checkboxIcon}>✓</Text>}
-                    </TouchableOpacity>
-                )}
-
-                {/* Espaciador cuando el checkbox está oculto */}
-                {canShowCheckbox && showCheckbox && hasAnySelected && !isSelected && (
-                    <View style={styles.hiddenCheckboxSpace} />
-                )}
-
-                <View style={[
-                    styles.contentContainer,
-                    // Ajustar margen izquierdo dependiendo de si hay checkbox visible
-                    { marginLeft: (showCheckbox && (isSelected || !hasAnySelected)) ? 10 : 0 }
-                ]}>
-                    {/* Estado */}
-                    <View style={[
-                        styles.statusContainer,
-                        hasEvidence(invoice.numeroFactura)
-                            ? { backgroundColor: '#DFF5E1' }
-                            : {}]}>
-                        <Text style={[
-                            styles.status,
-                            hasEvidence(invoice.numeroFactura)
-                                ? { color: '#1F9144' }
-                                : {}]}>
-                            {hasEvidence(invoice.numeroFactura) ? "Entregado" : "Pendiente"}
-                        </Text>
-                    </View>
-
-                    {/* Order + Valor + Flecha */}
-                    <View style={styles.rowBetween}>
-                        <Text style={styles.orderText}>
-                            Factura n° {invoice.numeroFactura || '00000'}
-                        </Text>
-
-                        <View style={styles.priceRow}>
-                            <Text style={styles.amountText}>
-                                {invoice?.tipo != TypeInvoiceEnum.CONTADO_EFECTIVO ? value : `$${formatNumber(invoice.valorRecaudar)}`}
-                            </Text>
-
-                            {/* Icono de enviar */}
-
-                        </View>
-                    </View>
-
-                    {/* Tipo de factura */}
-                    {invoice?.tipo === "CONTADO EFECTIVO" ? (
-                        <Text style={styles.codText} numberOfLines={1} ellipsizeMode="tail">
-                            {value}
-                        </Text>
-                    ) : null}
-
-                </View>
-            </View>
-
-            {hasEvidence(invoice.numeroFactura) && (
-                <AddEvidenceButton
-                    title="Evidencias cargadas"
-                    backgroundColor="#EAF7ED"
-                    textColor="#1F9144"
-                    iconColor="#1F9144"
-                    showEndIcon={true}
-                    spaced={true}
-                    disabled={true}
-                />
-            )}
-        </TouchableOpacity>
-    );
-};
-
-interface InvoicesOneListProps {
+interface InvoicesListProps {
     invoices?: GuideDetails[] | GuideDetails;
     guide?: GuideDetails;
     onInvoiceSelect?: (selectedGuide: GuideDetails | null) => void;
-    onInvoicesMultiSelect?: (selectedGuides: GuideDetails[]) => void;
+    onInvoicesMultiSelect?: (selectedGuides: GuideDetails[]) => void; // Nuevo prop para selección múltiple
     isSelectInvocies?: string;
     documentMeico?: string;
     numberGuide?: number;
@@ -176,10 +17,10 @@ interface InvoicesOneListProps {
     conceptDelivery?: DerliveryDocument | DerliveryDocument[] | null;
     isSelect?: boolean;
     activeView?: boolean;
-    showCheckboxes?: boolean;
+    showCheckboxes?: boolean; // Nuevo prop para mostrar checkboxes
 }
 
-const InvoicesOneList = ({
+const InvoicesList = ({
     invoices,
     guide,
     onInvoiceSelect,
@@ -191,10 +32,12 @@ const InvoicesOneList = ({
     conceptDelivery,
     isSelect = false,
     activeView = false,
-    showCheckboxes = false
-}: InvoicesOneListProps) => {
+    showCheckboxes = false // Por defecto no mostrar checkboxes
+}: InvoicesListProps) => {
     const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
+    const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<Set<string>>(new Set()); // Para múltiples selecciones
     const [selectedGuideData, setSelectedGuideData] = useState<GuideDetails | null>(null);
+    const [selectedGuidesData, setSelectedGuidesData] = useState<GuideDetails[]>([]); // Para múltiples selecciones
     const [response, setResponse] = useState<any>(null);
     let dataToProcess: GuideDetails[] = [];
 
@@ -227,39 +70,52 @@ const InvoicesOneList = ({
     });
 
     const handleInvoiceSelect = (invoice: any, parentGuide: GuideDetails) => {
-        const invoiceId = invoice.numeroFactura;
-
         if (showCheckboxes) {
-            // Modo con checkboxes: selección única
-            if (selectedInvoiceId === invoiceId) {
-                // Si ya está seleccionada, deseleccionar
-                setSelectedInvoiceId(null);
-                setSelectedGuideData(null);
+            // Modo selección múltiple con checkboxes
+            const invoiceId = invoice.numeroFactura;
+            const newSelectedIds = new Set(selectedInvoiceIds);
+
+            if (newSelectedIds.has(invoiceId)) {
+                newSelectedIds.delete(invoiceId);
+
+                // Remover de la lista de guías seleccionadas
+                const newSelectedGuides = selectedGuidesData.filter(
+                    guide => !guide.facturas?.some(f => f.numeroFactura === invoiceId)
+                );
+                setSelectedGuidesData(newSelectedGuides);
+
+                // Notificar al componente padre
                 if (onInvoicesMultiSelect) {
-                    onInvoicesMultiSelect([]);
+                    onInvoicesMultiSelect(newSelectedGuides);
                 }
             } else {
-                // Seleccionar la nueva factura
-                setSelectedInvoiceId(invoiceId);
+                newSelectedIds.add(invoiceId);
+
+                // Agregar a la lista de guías seleccionadas
                 const selectedGuide: GuideDetails = {
                     ...parentGuide,
                     facturas: [invoice]
                 };
-                setSelectedGuideData(selectedGuide);
+                const newSelectedGuides = [...selectedGuidesData, selectedGuide];
+                setSelectedGuidesData(newSelectedGuides);
+
+                // Notificar al componente padre
                 if (onInvoicesMultiSelect) {
-                    onInvoicesMultiSelect([selectedGuide]);
+                    onInvoicesMultiSelect(newSelectedGuides);
                 }
             }
+
+            setSelectedInvoiceIds(newSelectedIds);
         } else {
-            // Modo sin checkboxes: selección única (comportamiento original)
-            if (selectedInvoiceId === invoiceId) {
+            // Modo selección única (comportamiento original)
+            if (selectedInvoiceId === invoice.numeroFactura) {
                 setSelectedInvoiceId(null);
                 setSelectedGuideData(null);
                 if (onInvoiceSelect) {
                     onInvoiceSelect(null);
                 }
             } else {
-                setSelectedInvoiceId(invoiceId);
+                setSelectedInvoiceId(invoice.numeroFactura);
                 const selectedGuide: GuideDetails = {
                     ...parentGuide,
                     facturas: [invoice]
@@ -268,6 +124,88 @@ const InvoicesOneList = ({
                 if (onInvoiceSelect) {
                     onInvoiceSelect(selectedGuide);
                 }
+            }
+        }
+    };
+
+    const handleSelectAll = () => {
+        if (!showCheckboxes) return;
+
+        if (selectedInvoiceIds.size === allInvoicesWithParent.length) {
+            // Si ya están todas seleccionadas, deseleccionar todas
+            setSelectedInvoiceIds(new Set());
+            setSelectedGuidesData([]);
+            if (onInvoicesMultiSelect) {
+                onInvoicesMultiSelect([]);
+            }
+        } else {
+            // Seleccionar todas
+            const allIds = new Set<string>();
+            const facturaMap = new Map<string, GuideDetails>();
+
+            // 1. Obtener todos los IDs y mapear las guías únicas
+            allInvoicesWithParent.forEach(item => {
+                const facturaId = item.invoice.numeroFactura;
+                allIds.add(facturaId);
+
+                // Solo agregar al mapa si no existe ya
+                if (!facturaMap.has(facturaId)) {
+                    const selectedGuide: GuideDetails = {
+                        ...item.parentGuide,
+                        facturas: [item.invoice]
+                    };
+                    facturaMap.set(facturaId, selectedGuide);
+                }
+            });
+
+            console.log("allIds:", allIds);
+            console.log("conceptDelivery:", conceptDelivery);
+
+            // 2. Filtrar los IDs que NO están en conceptDelivery
+            let filteredIds = Array.from(allIds);
+
+            // Verificar si conceptDelivery es válido
+            if (conceptDelivery) {
+                let deliveryArray: any[] = [];
+                if (Array.isArray(conceptDelivery)) {
+                    deliveryArray = conceptDelivery;
+                } else {
+                    deliveryArray = [conceptDelivery];
+                }
+
+                // Verificar si el array tiene elementos
+                if (deliveryArray.length > 0) {
+                    // Obtener los documentMeico ya procesados
+                    const existingDocumentMeicos = deliveryArray
+                        .map((item: DerliveryDocument) => item.documentMeico?.toString())
+                        .filter(Boolean) as string[];
+
+
+                    // Filtrar solo los IDs que NO están en conceptDelivery
+                    filteredIds = Array.from(allIds).filter(id =>
+                        !existingDocumentMeicos.includes(id)
+                    );
+
+                }
+            }
+
+            // 3. Crear Set con los IDs filtrados
+            const selectedIdsSet = new Set(filteredIds);
+
+            // 4. Filtrar las guías que corresponden a los IDs seleccionados
+            const filteredGuidesArray = Array.from(facturaMap.values())
+                .filter(guide => {
+                    const facturaId = guide.facturas[0]?.numeroFactura;
+                    return selectedIdsSet.has(facturaId);
+                });
+
+
+            // 5. Actualizar estados
+            setSelectedInvoiceIds(selectedIdsSet);
+            setSelectedGuidesData(filteredGuidesArray);
+
+            if (onInvoicesMultiSelect) {
+                onInvoicesMultiSelect(filteredGuidesArray);
             }
         }
     };
@@ -294,17 +232,38 @@ const InvoicesOneList = ({
         );
     }
 
-    const hasAnySelected = selectedInvoiceId !== null;
-
     const renderInvoices = () => (
         <View>
+            {/* Checkbox "Seleccionar todas" */}
+            {showCheckboxes && allInvoicesWithParent.length > 1 && (
+                <TouchableOpacity
+                    style={styles.selectAllContainer}
+                    onPress={handleSelectAll}
+                >
+                    <View style={[
+                        styles.checkbox,
+                        selectedInvoiceIds.size === allInvoicesWithParent.length && styles.checkboxSelected
+                    ]}>
+                        {selectedInvoiceIds.size === allInvoicesWithParent.length && (
+                            <Text style={styles.checkboxIcon}>✓</Text>
+                        )}
+                    </View>
+                    <Text style={styles.selectAllText}>
+                        Seleccionar todas
+                    </Text>
+                </TouchableOpacity>
+            )}
+
             {/* Lista de facturas */}
             {allInvoicesWithParent.map((item, index) => (
-                <InvoiceOneItem
+                <InvoiceItem
                     key={`${item.invoice.numeroFactura}-${index}`}
                     invoice={item.invoice}
                     index={index}
-                    isSelected={selectedInvoiceId === item.invoice.numeroFactura}
+                    isSelected={showCheckboxes
+                        ? selectedInvoiceIds.has(item.invoice.numeroFactura)
+                        : selectedInvoiceId === item.invoice.numeroFactura
+                    }
                     onSelect={handleInvoiceSelect}
                     parentGuide={item.parentGuide}
                     documentMeico={documentMeico}
@@ -312,7 +271,6 @@ const InvoicesOneList = ({
                     isSelect={isSelect}
                     activeView={activeView}
                     showCheckbox={showCheckboxes}
-                    hasAnySelected={hasAnySelected} // Pasar este nuevo prop
                 />
             ))}
         </View>
@@ -427,6 +385,7 @@ const styles = StyleSheet.create({
     },
     contentContainer: {
         flex: 1,
+        marginLeft: 10,
     },
     priceRow: {
         flexDirection: 'row',
@@ -465,11 +424,6 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: 'bold',
     },
-    hiddenCheckboxSpace: {
-        width: 20,
-        height: 20,
-        marginRight: 10,
-    },
     selectAllContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -484,5 +438,5 @@ const styles = StyleSheet.create({
     },
 });
 
-export { InvoiceOneItem };
-export default InvoicesOneList;
+export { InvoiceItem };
+export default InvoicesList;

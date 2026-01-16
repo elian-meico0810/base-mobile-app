@@ -10,7 +10,7 @@ import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeDelivery } from
 import AllSelectedOrder from '@/src/features/tracking/components/checkbox/AllSelectedOrder';
 import OneSelectedOrder from '@/src/features/tracking/components/checkbox/OneSelectedOrder';
 import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
-import InvoicesList from '@/src/features/tracking/components/tabs/InvoiceItem';
+import InvoicesList from '@/src/features/tracking/components/tabs/InvoicesList';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { CreateEntregaProps, DerliveryDocument } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
@@ -490,7 +490,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     }, [showStatusDelivery, isInicilizationApi, showOptionRefused]);
 
     const validateCheckbox = conceptDelivery.length != (guide?.facturas?.length) && conceptDelivery.length != 0;
-    const conditionButton = routeStarted || conceptDelivery.length === guide?.facturas?.length && conceptDelivery.length === guide.facturas.length || !conceptDelivery;
+    const conditionButton = routeStarted || conceptDelivery.length === guide?.facturas?.length && conceptDelivery.length === guide.facturas.length;
     const validateCheckboxlength = conceptDelivery.length == guide?.facturas?.length;
 
     useEffect(() => {

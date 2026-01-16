@@ -5,7 +5,7 @@ import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
-import InvoicesList from '@/src/features/tracking/components/tabs/InvoiceItem';
+import InvoicesList from '@/src/features/tracking/components/tabs/InvoicesList';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
@@ -332,9 +332,10 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     }, 0) || 0;
 
     const totalRecauder = Math.max(0, totalFacturas - totalAproved);
-    const conditionButton = conceptDelivery.length > 0 || routeStarted || !conceptDelivery;
+    const conditionButton = conceptDelivery.length > 0 || routeStarted;
     const validateCheckboxlength = conceptDelivery.length == guide?.facturas?.length;
     const isSmallScreen = height <= 780;
+
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}

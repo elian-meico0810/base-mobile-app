@@ -1,7 +1,7 @@
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { ProductItemSkeleton } from '@/components/skeleton/ProductItemSkeleton';
-import { TypeCaculateValueEnum, TypeInvoiceEnum } from '@/src/constants/GuideStates';
-import { calculateVlueByPorducts, formatNumber } from '@/src/utils/uitls';
+import { TypeInvoiceEnum } from '@/src/constants/GuideStates';
+import { calculateNewValues, formatNumber } from '@/src/utils/uitls';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
 import {
@@ -70,6 +70,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     const [productsSold, setProductsSold] = useState<Detail[]>([]);
     const [productsPending, setProductsPending] = useState<Detail[]>([]);
     const [activeSwipeId, setActiveSwipeId] = useState<string | null>(null);
+    const { valueRealTotal, valueCalculateTotal } = calculateNewValues<Document, Detail>(allProducts, productsSold);
 
     useEffect(() => {
         if (showDirection) {
@@ -200,52 +201,6 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
 
     const totalProducts = pendingCount + validatedCount;
     const progressPercentage = totalProducts > 0 ? (validatedCount / totalProducts) * 100 : 0;
-    var totalValue = 0;
-    var totalValueDesc = 0;
-
-    // Calcular valor total a recaudar
-    totalValue = allProducts.reduce((totalSum, doc) => {
-        const docSum = doc.detalles.reduce((docSum, product) => {
-            // DEPURACIÓN: Ver qué se está procesando
-            let sumTotal = 0;
-            let novedadesConValor = 0;
-
-            if (allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CREDITO ||
-                allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CONTADO_EFECTIVO) {
-
-                const productValue = calculateVlueByPorducts(product, TypeCaculateValueEnum.ACTION_3) ?? 0;
-                return docSum + Number(productValue);
-            }
-
-            return docSum;
-        }, 0);
-
-        return totalSum + docSum;
-    }, 0);
-
-
-    totalValueDesc = allProducts.reduce((totalSum, doc) => {
-        const docSum = doc.detalles.reduce((docSum, product) => {
-            // DEPURACIÓN: Ver qué se está procesando
-            if (product?.estado?.codigo === 'EST_DET_VALIDADO') {
-
-                let sumTotalRefused = 0;
-                let novedadesConValor = 0;
-
-                if (allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CREDITO ||
-                    allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CONTADO_EFECTIVO) {
-
-                    const productValue = calculateVlueByPorducts(product, TypeCaculateValueEnum.ACTION_8, sumTotalRefused, product?.novedades) ?? 0;
-
-                    return docSum + Number(productValue);
-                }
-            }
-
-            return docSum ?? 0;
-        }, 0);
-
-        return totalSum + docSum;
-    }, 0);
 
     const isValid = pendingCount === 0;
 
@@ -433,20 +388,11 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                     </View>
                 </View>
 
-                {!hasItemsValidateSuccess ? (
-                    allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CREDITO ||
+                {(allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CREDITO ||
                         allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CONTADO_EFECTIVO ? (
                         <View style={styles.valueRow}>
                             <Text style={styles.valueLabel}>Valor a recaudar:</Text>
-                            <Text style={styles.valueAmount}>$ {formatNumber(Number(totalValue))}</Text>
-                        </View>
-                    ) : null
-                ) : (
-                    allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CREDITO ||
-                        allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CONTADO_EFECTIVO ? (
-                        <View style={styles.valueRow}>
-                            <Text style={styles.valueLabel}>Valor a recaudar:</Text>
-                            <Text style={styles.valueAmount}>$ {formatNumber(Number(totalValueDesc))}</Text>
+                            <Text style={styles.valueAmount}>$ {formatNumber(Number(valueRealTotal))}</Text>
                         </View>
                     ) : null
                 )}

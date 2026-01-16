@@ -87,6 +87,7 @@ export enum TypeCaculateValueEnum {
     ACTION_6=  "TOTAL_UNITS_ENTRY_REFUSED",
     ACTION_7 = "TOTAL_ENTRY_TAX_REFUSED",
     ACTION_8 = "TATAL_REFUSED_BY_ORDERS",
+    ACTION_9 = "TOTAL_UNIT_ENTRY"
 }
 
 export enum TyepeCausalRefusedEnum {

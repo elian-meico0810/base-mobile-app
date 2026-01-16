@@ -35,8 +35,6 @@ export default function IndexInvoiceScreen() {
     const isCountryDelivery = params.isCountryDelivery as string;
     const IsGoBack = params.IsGoBack as string;
 
-    console.log("detailsCounterDelivery: ", detailsCounterDelivery);
-
     return (
         <>
             <Stack.Screen

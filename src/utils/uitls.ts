@@ -109,6 +109,7 @@ export function calculateVlueByPorducts(data: Detail, action: string, unitRefuse
     const totalTaxes = Number(data?.totalImpuestos ?? 0);
     const unit = Number(data?.unidadesSolicitadas ?? 0);
     const unitRefused = Number(data?.unidadesRechazadas ?? 0);
+    const unitEntry = Number(data?.unidadesEntregadas ?? 0);
     const form_1 = (totalTaxes / unit) + baseValue
     let valueUnit = 0;
 
@@ -144,8 +145,10 @@ export function calculateVlueByPorducts(data: Detail, action: string, unitRefuse
                     return totalSum + valor;
                 }, 0)
             }
-            return totalNovelty > 0 ? ( form_1 * totalNovelty): 0;
+            return totalNovelty > 0 ? (form_1 * totalNovelty) : 0;
 
+        case TypeCaculateValueEnum.ACTION_9:
+            return (form_1 * unitEntry);
         default:
             return 0;
     }
@@ -162,4 +165,70 @@ export function capitalizeWords(text?: string) {
             word.charAt(0).toUpperCase() + word.slice(1)
         )
         .join(" ");
+}
+
+interface HasUnidadesEntregadas {
+    unidadesEntregadas?: number;
+}
+export function calculateNewValues<T, U  extends HasUnidadesEntregadas & Detail>(
+    oldData: T[] = [],
+    newData: U[] = []
+): {
+    valueRealTotal: number;
+    valueCalculateTotal: number;
+} {
+    try {
+        let valueRealTotal = 0;
+        let valueCalculateTotal = 0;
+
+        // Procesar datos antiguos
+        for (let i = 0; i < oldData.length; i++) {
+            const item = oldData[i];
+            const obj = item as any;
+
+
+            // Validar que detalles exista y sea un array
+            if (!Array.isArray(obj?.detalles)) {
+                console.log('Item sin detalles válidos');
+                continue;
+            }
+
+            console.log(`Detalles encontrados: ${obj.detalles.length}`);
+
+            for (let e = 0; e < obj.detalles.length; e++) {
+                const detail = obj.detalles[e];
+
+
+                valueRealTotal += calculateVlueByPorducts(
+                    detail,
+                    TypeCaculateValueEnum.ACTION_1
+                );
+
+                console.log('→ valueRealTotal:', valueRealTotal);
+            }
+        }
+
+        // Procesar datos nuevos
+        for (let a = 0; a < newData.length; a++) {
+            const newItem = newData[a];
+            
+            if (newItem?.unidadesEntregadas > 0) {
+                valueCalculateTotal += calculateVlueByPorducts(
+                    newItem as Detail,
+                    TypeCaculateValueEnum.ACTION_9
+                );
+            }
+
+        }
+
+        return {
+            valueRealTotal,
+            valueCalculateTotal
+        };
+    } catch (error) {
+        return {
+            valueRealTotal: 0,
+            valueCalculateTotal: 0
+        };
+    }
 }

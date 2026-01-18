@@ -39,6 +39,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [modalMessage, setModalMessage] = useState("");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [conceptDelivery, setConceptDelivery] = useState<DerliveryDocument[]>([]);
+    const [isValidData, setIsValidData] = useState(false);
     const [showPaymentPending, setShowPaymentPending] = useState(false);
     const [isEquals, setIsEquals] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
@@ -58,7 +59,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         const backAction = () => {
             if (!allowBack) {
                 router.push(`/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`);
-                return true; 
+                return true;
             }
         };
 
@@ -68,7 +69,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         );
 
         return () => backHandler.remove();
-    }, [allowBack, numberGuide, token]); 
+    }, [allowBack, numberGuide, token]);
 
     const handleGoBack = () => {
         // router.back();
@@ -171,7 +172,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
     const submitData = async () => {
         try {
-            if (conceptDelivery?.length != guide?.facturas?.length ) {
+            if (conceptDelivery?.length != guide?.facturas?.length) {
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");
@@ -270,6 +271,15 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 } else {
                     conceptList = [];
                 }
+                const facturaNumbers = guide?.facturas?.map(f => f.numeroFactura) ?? [];
+                const documentNumbers = conceptList.map(c => c.documentMeico);
+
+                const isValid = facturaNumbers.every(numero =>
+                    documentNumbers.includes(numero)
+                );
+                if (isValid) {
+                    setIsValidData(true);
+                }
                 setConceptDelivery(conceptList)
                 setLoading(false);
             }
@@ -335,7 +345,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const conditionButton = conceptDelivery.length != 0 || routeStarted;
     const validateCheckboxlength = conceptDelivery.length == guide?.facturas?.length
     const isSmallScreen = height <= 780;
-    
+
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}

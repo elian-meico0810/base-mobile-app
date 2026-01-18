@@ -84,6 +84,8 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
     const btnRef = useRef<any>(null);
     const router = useRouter();
 
+    const closeButton = routeStarted || buttonValue;
+
     useEffect(() => {
         const backAction = () => {
             if (!allowBack) {
@@ -332,7 +334,7 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
                 guide?.idDireccion || 0,
                 token
             );
-            
+
             if (response?.statusCode === 200) {
                 setEntryVisible(true);
                 setRouteStarted(true);
@@ -738,10 +740,10 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
                         disabled={false}
                         width={328}
                         height={43}
-                        buttonColor={conceptDelivery? undefined : validateIsBotton ? "#DDDFE8" : undefined}
-                        buttonColorEnd={conceptDelivery? undefined : validateIsBotton ? "#DDDFE8" : undefined}
-                        titleColor={conceptDelivery? undefined : routeStarted ? "#FFFFFF" : undefined}
-                        circleColor={conceptDelivery? undefined : validateIsBotton ? "#788095" : undefined}
+                        buttonColor={conceptDelivery ? undefined : closeButton || validateIsBotton ? "#DDDFE8" : undefined}
+                        buttonColorEnd={conceptDelivery ? undefined : closeButton || validateIsBotton ? "#DDDFE8" : undefined}
+                        titleColor={conceptDelivery ? undefined : closeButton || routeStarted ? "#FFFFFF" : undefined}
+                        circleColor={conceptDelivery ? undefined : closeButton || validateIsBotton ? "#788095" : undefined}
                     />
                 )
                 }

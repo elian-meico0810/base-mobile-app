@@ -83,7 +83,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         const backAction = () => {
             if (!allowBack) {
                 router.push(`/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`);
-                return true; 
+                return true;
             }
         };
 
@@ -93,7 +93,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         );
 
         return () => backHandler.remove();
-    }, [allowBack, numberGuide, token]); 
+    }, [allowBack, numberGuide, token]);
 
     const handleGoBack = () => {
         // router.back();
@@ -205,7 +205,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
     const submitData = async () => {
         try {
-            if (conceptDelivery?.length !=guide?.facturas?.length ) {
+            if (conceptDelivery?.length != guide?.facturas?.length) {
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");
@@ -548,6 +548,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         }
     }, [showCheckbox, selectedMultipleInvoices]);
     const isSmallScreen = height <= 780;
+    const closeButton = routeStarted || buttonValue;
+
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -745,10 +747,10 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                                     disabled={false}
                                     width={328}
                                     height={43}
-                                    buttonColor={conceptDelivery? undefined :  validateCheckboxlength ? undefined : conditionButton ? "#DDDFE8" : undefined}
-                                    buttonColorEnd={conceptDelivery? undefined :  validateCheckboxlength ? undefined : conditionButton ? "#DDDFE8" : undefined}
-                                    titleColor={conceptDelivery? undefined :  conditionButton ? "#FFFFFF" : undefined}
-                                    circleColor={conceptDelivery? undefined :  validateCheckboxlength ? undefined : conditionButton ? "#788095" : undefined}
+                                    buttonColor={conceptDelivery ? undefined : validateCheckboxlength ? undefined : closeButton || conditionButton ? "#DDDFE8" : undefined}
+                                    buttonColorEnd={conceptDelivery ? undefined : validateCheckboxlength ? undefined : closeButton ||conditionButton ? "#DDDFE8" : undefined}
+                                    titleColor={conceptDelivery ? undefined : closeButton || conditionButton ? "#FFFFFF" : undefined}
+                                    circleColor={conceptDelivery ? undefined : validateCheckboxlength ? undefined : closeButton || conditionButton ? "#788095" : undefined}
                                 />
                             );
                         }

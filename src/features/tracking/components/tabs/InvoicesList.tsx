@@ -213,7 +213,7 @@ const InvoicesList = ({
             </View>
         );
     }
-
+    
     const renderInvoices = () => (
         <View>
             {/* Checkbox "Seleccionar todas" */}
@@ -224,9 +224,9 @@ const InvoicesList = ({
                 >
                     <View style={[
                         styles.checkbox,
-                        selectedInvoiceIds.size === allInvoicesWithParent.length && styles.checkboxSelected
+                        selectedInvoiceIds.size >= 1 && styles.checkboxSelected
                     ]}>
-                        {selectedInvoiceIds.size === allInvoicesWithParent.length && (
+                        {selectedInvoiceIds.size === selectedGuidesData.length && (
                             <Text style={styles.checkboxIcon}>✓</Text>
                         )}
                     </View>

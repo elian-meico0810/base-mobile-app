@@ -23,6 +23,10 @@ export default function IndexInvoiceScreen() {
     const areAllInvoicesCredito = guideObj.facturas.every(
         factura => factura.tipo === TypeInvoiceEnum.CREDITO
     );
+      const areAllInvoicesAnticipeOne = guideObj.facturas.every(
+        factura => factura.tipo === TypeInvoiceEnum.ANTICIPO
+    );
+
     const areAllInvoicesConutreDlivery = guideObj.facturas.every(
         factura => factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO ||
             factura.tipo === TypeInvoiceEnum.MIXTO
@@ -83,7 +87,7 @@ export default function IndexInvoiceScreen() {
                 }
 
                 // Condición 3
-                if (areAllInvoicesCredito && guideObj.facturas.length < 2) {
+                if ((areAllInvoicesAnticipeOne || areAllInvoicesCredito )&& guideObj.facturas.length < 2) {
                     return (
                         <InfoInvoiceCreditForm
                             initialGuide={guideObj}

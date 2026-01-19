@@ -145,7 +145,7 @@ export function calculateVlueByPorducts(data: Detail, action: string, unitRefuse
                     return totalSum + valor;
                 }, 0)
             }
-            return totalNovelty > 0 ? (form_1 * totalNovelty) : 0;
+            return totalNovelty > 0 ? (form_1 * totalNovelty) : (form_1 * unit);
 
         case TypeCaculateValueEnum.ACTION_9:
             return (form_1 * unitEntry);
@@ -172,10 +172,16 @@ interface HasUnidadesEntregadas {
 }
 export function calculateNewValues<T, U extends HasUnidadesEntregadas & Detail>(
     oldData: T[] = [],
-    newData: U[] = []
+    newData: U[] = [],
+    pendingData: U[] = []
+
 ): {
     valueRealTotal: number;
     valueCalculateTotal: number;
+
+    // 200 inicial  
+    // 100 rechazo 
+    // 100 - inicial 
 } {
     try {
         let valueRealTotal = 0;
@@ -198,12 +204,12 @@ export function calculateNewValues<T, U extends HasUnidadesEntregadas & Detail>(
             for (let e = 0; e < obj.detalles.length; e++) {
                 const detail = obj.detalles[e];
 
+            
 
                 valueRealTotal += calculateVlueByPorducts(
                     detail,
                     TypeCaculateValueEnum.ACTION_1
                 );
-
                 // console.log('→ valueRealTotal:', valueRealTotal);
             }
         }

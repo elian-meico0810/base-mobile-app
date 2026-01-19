@@ -1,7 +1,7 @@
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { ProductItemSkeleton } from '@/components/skeleton/ProductItemSkeleton';
 import { TypeInvoiceEnum } from '@/src/constants/GuideStates';
-import { calculateNewValues, formatNumber } from '@/src/utils/uitls';
+import { formatNumber } from '@/src/utils/uitls';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
 import {
@@ -70,7 +70,15 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     const [productsSold, setProductsSold] = useState<Detail[]>([]);
     const [productsPending, setProductsPending] = useState<Detail[]>([]);
     const [activeSwipeId, setActiveSwipeId] = useState<string | null>(null);
-    const { valueRealTotal, valueCalculateTotal } = calculateNewValues<Document, Detail>(allProducts, productsSold);
+    // const [totalGeneral, setTotalGeneral] = useState(0);
+    // const [totalGeneralValidate, setTotalGeneralValidate] = useState(0);
+    // console.log("totalGeneral: ", totalGeneral);
+    // console.log("totalGeneralValidate: ", totalGeneralValidate);
+    // const { valueRealTotal, valueCalculateTotal } = calculateNewValues<Document, Detail>(
+    //     allProducts,
+    //     productsSold,
+    //     productsPending
+    // );
 
     useEffect(() => {
         if (showDirection) {
@@ -242,7 +250,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
 
                 const testToken = await SecureStore.getItemAsync('service_token');
                 const testUrl = await SecureStore.getItemAsync('base_url');
-                
+
                 setServiceToken(testToken || "");
                 setBaseUrl(testUrl || "");
 
@@ -259,6 +267,45 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     const hasItemsValidateSuccess = pendingDetailsFlat.some(item =>
         item.estado?.codigo === 'EST_DET_VALIDADO'
     );
+
+    const [productsByStatus, setProductsByStatus] = useState<{
+        pending: Map<number, number>;
+        validated: Map<number, number>;
+    }>({
+        pending: new Map(),
+        validated: new Map()
+    });
+
+    // 2. Calcula los totales basados en los Maps
+    const totalGeneral = Array.from(productsByStatus.pending.values())
+        .reduce((sum, value) => sum + value, 0);
+
+    const totalGeneralValidate = Array.from(productsByStatus.validated.values())
+        .reduce((sum, value) => sum + value, 0);
+
+    console.log("totalGeneral: ",totalGeneral);
+    console.log("totalGeneralValidate: ",totalGeneralValidate);
+    
+    const valueRealTotal = totalGeneral + totalGeneralValidate;
+
+    // 3. Función para actualizar el estado de un producto
+    const updateProductStatus = (id: number, totalProducts: number, status: 'pending' | 'validated') => {
+        setProductsByStatus(prev => {
+            const newState = { ...prev };
+
+            // Eliminar el ID del estado contrario
+            if (status === 'validated') {
+                newState.pending.delete(id);
+                newState.validated.set(id, totalProducts); 
+            } else {
+                newState.validated.delete(id); 
+                newState.pending.set(id, totalProducts); 
+            }
+
+            return newState;
+        });
+    };
+
     return (
         <View style={styles.mainContainer}>
             {(hasItemsToValidate && pendingDetailsFlat.length > 0) && (
@@ -306,6 +353,16 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                 onRefreshing={() => {
                                     onRefreshing?.();
                                 }}
+                                onDataProduct={(id, totalProducts) => {
+                                    updateProductStatus(id, totalProducts, 'pending');
+
+                                    console.log("========================================");
+                                    console.log("=========== LOS POR VALIDAR ====================");
+                                    console.log("id:", id, "totalProducts:", totalProducts);
+                                    console.log("TOTAL ACUMULADO:", totalGeneral);
+                                    console.log("========================================");
+                                }}
+
                             />
                         ))
                     ) : (
@@ -350,6 +407,15 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                         tatolValue={tatolValue}
                                         testToken={serviceToken}
                                         testUrl={serviceUrl}
+                                        onDataProduct={(id, totalProducts) => {
+                                            updateProductStatus(id, totalProducts, 'validated');
+
+                                            console.log("========================================");
+                                            console.log("=========== LOsS VALIDADPOS ====================");
+                                            console.log("id:", id, "totalProducts:", totalProducts);
+                                            console.log("TOTAL ACUMULADO:", totalGeneral);
+                                            console.log("========================================");
+                                        }}
                                     />
                                 ))}
                         </>
@@ -390,12 +456,12 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                 </View>
 
                 {(allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CREDITO ||
-                        allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CONTADO_EFECTIVO ? (
-                        <View style={styles.valueRow}>
-                            <Text style={styles.valueLabel}>Valor a recaudar:</Text>
-                            <Text style={styles.valueAmount}>$ {formatNumber(Number(valueRealTotal))}</Text>
-                        </View>
-                    ) : null
+                    allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CONTADO_EFECTIVO ? (
+                    <View style={styles.valueRow}>
+                        <Text style={styles.valueLabel}>Valor a recaudar:</Text>
+                        <Text style={styles.valueAmount}>$ {formatNumber(Number(valueRealTotal))}</Text>
+                    </View>
+                ) : null
                 )}
 
                 <View style={styles.buttonRow}>

@@ -21,6 +21,8 @@ interface ProductItemProps {
     tatolValue?: number | null;
     testToken?: string;
     testUrl?: string;
+    onDataProduct?: (id: number, total: number) => void; // <-- Cambia aquí
+
 }
 type ValueById = {
     idValue: number;
@@ -28,7 +30,7 @@ type ValueById = {
 };
 const { width, height } = Dimensions.get('window');
 
-export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationType, idValue, tatolValue, testToken, testUrl }: ProductItemProps) => {
+export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationType, idValue, tatolValue, testToken, testUrl, onDataProduct }: ProductItemProps) => {
     const [valuesById, setValuesById] = useState<Record<number, ValueById>>({});
     useEffect(() => {
         if (
@@ -75,7 +77,13 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
         testToken,
         item?.producto?.codigo
     );
-    
+
+    useEffect(() => {
+        if (onDataProduct) {
+            onDataProduct(item.id, calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, Number(item.unidadesSolicitadas) - Number(sumTotal)));
+        }
+    }, [item.id]);
+
     return (
         <View style={styles.productContainer}>
             <View style={styles.productRow}>

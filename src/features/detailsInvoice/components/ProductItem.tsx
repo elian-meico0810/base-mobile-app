@@ -31,6 +31,7 @@ interface ProductItemProps {
     onItemData?: (data: Detail | null) => void; // <-- Cambia aquí
     refreshing?: boolean;
     onRefreshing?: () => void;
+    onDataProduct?: (id: number, total: number) => void; // <-- Cambia aquí
 
 }
 
@@ -46,7 +47,8 @@ export const ProductItem = ({
     testUrl,
     onItemData,
     refreshing,
-    onRefreshing
+    onRefreshing,
+    onDataProduct,
 }: ProductItemProps) => {
     const swipePosition = useRef(new Animated.Value(0)).current;
     const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
@@ -71,12 +73,16 @@ export const ProductItem = ({
         code?: string
     ): string | null => {
         if (!baseUrl || !token || !code) return null;
-        // console.log("web: ",`${baseUrl}/${code}.webp${token}`);
+        console.log("web: ",`${baseUrl}/${code}.webp${token}`);
         return `${baseUrl}/${code}.webp${token}`;
     };
 
     const imagUrl = buildImageUrl(testUrl, testToken, item?.producto?.codigo);
-    
+    useEffect(() => {
+        if (onDataProduct) {
+            onDataProduct(item.id, calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_1));
+        }
+    }, [item.id]);
     // Efecto para manejar refreshing externo
     useEffect(() => {
         if (refreshing && !isRefreshing) {

@@ -63,6 +63,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [showDetailInvoiceQR, setShowDetailInvoiceQR] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [viewOrder, setIsOrder] = useState<GuideDetails | null>(null);
+    const [typePaymentView, setTypePaymentView] = useState(false);
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
@@ -79,6 +80,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [isInicilizationApi, setInicilizationApi] = useState(false);
     const [showOptionRefused, setShowOptionRefused] = useState<OptionsRefusedPorps>(null);
     const [valueOrderCalculate, setValueOrderCalculate] = useState(0);
+    const [newValue, setNewValue] = useState(0);
     const [showPorductData, setPorductData] = useState<Document[]>([]);
     const [showPaymentPending, setShowPaymentPending] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
@@ -159,6 +161,107 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         if (type) setQrType(type);
     };
 
+
+    const handleSubmitEfecty = async (value: number) => {
+        try {
+            setLoading(true);
+
+            if (value <= 0) {
+                setModalTitle("¡Alerta!");
+                setModalMessage("El campo es requerido.");
+                setModalVisible(true);
+                return;
+            }
+            const now = new Date();
+
+            const date = now.toLocaleString('sv-SE', {
+                timeZone: 'America/Bogota',
+                hour12: false
+            }).replace('T', ' ');
+
+            const response = await invoiceRepositoryImpl.createPaymentType([
+                {
+                    usuario: "jnaranjo@meico.com.co",
+                    momento: date,
+                    valorRegistrado: value,
+                    tipoPago: "TIP_PAG_EFECTIVO",
+                    descripcion: "Transferencia",
+                    pedidos: [String(guide?.pedidos?.[0]?.codigo)],
+                }
+            ], token);
+
+            if (response?.statusCode === 200) {
+                setModalTitle("¡Procesado!");
+                setModalMessage(`Registro(s) procesado exitosamente.`);
+                setModalVisible(true);
+
+            } else {
+                console.log("response: ", response);
+
+                setModalTitle("¡Alerta!");
+                setModalMessage(response?.message ?? "Ocurrió un error inesperado 3.");
+                setModalVisible(true);
+            }
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 1.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    const handleSubmitOthers = async (value: number, observation?: string) => {
+        try {
+            setLoading(true);
+
+            if (value <= 0) {
+                setModalTitle("¡Alerta!");
+                setModalMessage("El campo es requerido.");
+                setModalVisible(true);
+                return;
+            }
+            const now = new Date();
+            
+            const date = now.toLocaleString('sv-SE', {
+                timeZone: 'America/Bogota',
+                hour12: false
+            }).replace('T', ' ');
+
+            const response = await invoiceRepositoryImpl.createPaymentType([
+                {
+                    usuario: "jnaranjo@meico.com.co",
+                    momento: date,
+                    valorRegistrado: value,
+                    tipoPago: "TIP_PAG_OTRO",
+                    descripcion: String(observation),
+                    pedidos: [String(guide?.pedidos?.[0]?.codigo)],
+                }
+            ], token);
+
+            if (response?.statusCode === 200) {
+                setModalTitle("¡Procesado!");
+                setModalMessage(`Registro(s) procesado exitosamente.`);
+                setModalVisible(true);
+
+            } else {
+                console.log("response: ", response);
+
+                setModalTitle("¡Alerta!");
+                setModalMessage(response?.message ?? "Ocurrió un error inesperado 3.");
+                setModalVisible(true);
+            }
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 1.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
     const condPago = guide?.facturas[0]?.condPago == TypeConPagoEnum.TAT;
 
     const handlSendWhatsApp = async () => {
@@ -229,7 +332,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 setCheckUbication(true);
             }
         } catch (error: any) {
-        
         }
     };
 
@@ -1226,7 +1328,13 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     width={width}
                     phone={phone}
                     onGenerateQR={handleGenerateQR}
-                    onPressPayment={() => setRefreshingOnPress(true)}
+                    onPressPayment={(value) => {
+                        if (value) {
+                            setTypePaymentView(true);
+                            setNewValue(value)
+                            handleSubmitEfecty(value);
+                        }
+                    }}
                     onErrorPayment={() => setShowErrorQRP(true)}
                     statusTypeQR={typeQRSendWhatsApp}
                 />
@@ -1242,7 +1350,11 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     width={width}
                     phone={phone}
                     onGenerateQR={handleGenerateQR}
-                    onPressPayment={() => setRefreshingOnPress(true)}
+                    onPressPayment={(value, observation) => {
+                        handleSubmitOthers(Number(value), observation)
+                        
+                        
+                    }}
                     onErrorPayment={() => setShowErrorQRP(true)}
                     statusTypeQR={typeQRSendWhatsApp}
                 />

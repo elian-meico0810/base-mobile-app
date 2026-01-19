@@ -25,7 +25,7 @@ interface DetailsPaymenTypeEfectyProps {
     height?: number;
     phone?: string;
     onGenerateQR?: (qrType: string, qrBase64?: string) => void;
-    onPressPayment: () => void;
+    onPressPayment: (value:number) => void;
     onErrorPayment?: () => void;
     statusTypeQR?: boolean;
 }
@@ -44,7 +44,7 @@ export function DetailsPaymenTypeEfecty({ data, onClose, onChangePhone, disabled
     const [modalMessage, setModalMessage] = useState("");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [modalVisible, setModalVisible] = useState(false);
-    const [phoneSet, setPhone] = useState('');
+    const [valueSet, setValue] = useState('');
     const [keyboardHeight, setKeyboardHeight] = useState(0);
 
     const dataInvoice: Invoice = data?.facturas?.[0] ?? {
@@ -54,7 +54,7 @@ export function DetailsPaymenTypeEfecty({ data, onClose, onChangePhone, disabled
         valorTotal: 0,
         condPago: "",
     };
-    const isValidCashValue = Number(phoneSet) > 0;
+    const isValidCashValue = Number(valueSet) > 0;
 
     useEffect(() => {
         const keyboardDidShowListener = Keyboard.addListener(
@@ -79,6 +79,8 @@ export function DetailsPaymenTypeEfecty({ data, onClose, onChangePhone, disabled
 
     const paymentGateway = async () => {
         try {
+            console.log("valueSet: ",valueSet);
+            onPressPayment?.(Number(valueSet));
             if (isValidCashValue) {
                 onClose?.();
             }
@@ -142,10 +144,10 @@ export function DetailsPaymenTypeEfecty({ data, onClose, onChangePhone, disabled
                         <TextInput
                             style={styles.phoneInput}
                             keyboardType="number-pad"
-                            value={formatPhoneNumber(phoneSet)}
+                            value={formatPhoneNumber(valueSet)}
                             onChangeText={(text) => {
                                 const onlyNumbers = text.replace(/[^0-9]/g, '');
-                                setPhone(onlyNumbers);
+                                setValue(onlyNumbers);
                             }}
                             editable={true}
                         />

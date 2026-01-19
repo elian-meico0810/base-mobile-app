@@ -189,11 +189,11 @@ export function calculateNewValues<T, U  extends HasUnidadesEntregadas & Detail>
 
             // Validar que detalles exista y sea un array
             if (!Array.isArray(obj?.detalles)) {
-                console.log('Item sin detalles válidos');
+                // console.log('Item sin detalles válidos');
                 continue;
             }
 
-            console.log(`Detalles encontrados: ${obj.detalles.length}`);
+            // console.log(`Detalles encontrados: ${obj.detalles.length}`);
 
             for (let e = 0; e < obj.detalles.length; e++) {
                 const detail = obj.detalles[e];
@@ -204,7 +204,7 @@ export function calculateNewValues<T, U  extends HasUnidadesEntregadas & Detail>
                     TypeCaculateValueEnum.ACTION_1
                 );
 
-                console.log('→ valueRealTotal:', valueRealTotal);
+                // console.log('→ valueRealTotal:', valueRealTotal);
             }
         }
 

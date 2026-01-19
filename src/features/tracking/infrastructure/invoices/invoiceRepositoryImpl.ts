@@ -217,8 +217,9 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
     }
   },
 
-  async createPaymentType(data: CreatePaymentTypeProps, token: string) {
+  async createPaymentType(data: CreatePaymentTypeProps[], token: string) {
     try {
+      
       const response = await authApi.post(
         `${API_ROUTES.CREATE_PAYMENT_BY_TYPE}`,
         data,

@@ -1,5 +1,5 @@
 import { ApiResponse } from "@/src/features/auth/domain/ApiResponse";
-import { CreateEntregaProps, DerliveryDocument, GenerateQRPorps, OpneAddressesDeliveryProps, OpneAddressesProps, PaymentGatewayProps, ReportWhatsAppQRPorps, WhatsappProps, WhatsappTATImageProps } from "./InvoicesInterFace";
+import { CreateEntregaProps, CreatePaymentTypeProps, DerliveryDocument, GenerateQRPorps, OpneAddressesDeliveryProps, OpneAddressesProps, PaymentGatewayProps, ReportWhatsAppQRPorps, WhatsappProps, WhatsappTATImageProps } from "./InvoicesInterFace";
 
 export interface InvoicesRepository {
   sendPaymentGetway: (data: PaymentGatewayProps, token: string) => Promise<any>;
@@ -13,5 +13,5 @@ export interface InvoicesRepository {
   listDocument: ( numeroFactura: string | null, idDireccion: number, token: string) => Promise<ApiResponse<DerliveryDocument>>;
   OpneAddressesDelivery: (data: OpneAddressesDeliveryProps, addresseId: number, token: string) => Promise<any>;
   WhatsappTATImage: (data: WhatsappTATImageProps, APIKey: string) => Promise<any>;
-
+  createPaymentType: (data: CreatePaymentTypeProps, token: string) => Promise<any>;
 }

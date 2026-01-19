@@ -106,3 +106,12 @@ export interface WhatsappTATImageProps {
   cliente: string,
   numeroWhatsapp: string,
 }
+
+export interface CreatePaymentTypeProps {
+  usuario: string,
+  momento: string,
+  valorRegistrado: number,
+  tipoPago: string,
+  descripcion: string,
+  pedidos: string[],
+}

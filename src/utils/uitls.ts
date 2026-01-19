@@ -112,7 +112,7 @@ export function calculateVlueByPorducts(data: Detail, action: string, unitRefuse
     const unitEntry = Number(data?.unidadesEntregadas ?? 0);
     const form_1 = (totalTaxes / unit) + baseValue
     let valueUnit = 0;
-
+    
     switch (action) {
         case TypeCaculateValueEnum.ACTION_1:
             return (form_1 * unit);
@@ -128,7 +128,7 @@ export function calculateVlueByPorducts(data: Detail, action: string, unitRefuse
             return totalTaxes / unit;
 
         case TypeCaculateValueEnum.ACTION_5:
-            valueUnit = unitRefusedValue ? (form_1 * unitRefusedValue) : (form_1 * unitRefused);
+            valueUnit = unitRefusedValue ? (form_1 * unitRefusedValue) : (form_1 * unit);
             return valueUnit;
 
         case TypeCaculateValueEnum.ACTION_6:
@@ -170,7 +170,7 @@ export function capitalizeWords(text?: string) {
 interface HasUnidadesEntregadas {
     unidadesEntregadas?: number;
 }
-export function calculateNewValues<T, U  extends HasUnidadesEntregadas & Detail>(
+export function calculateNewValues<T, U extends HasUnidadesEntregadas & Detail>(
     oldData: T[] = [],
     newData: U[] = []
 ): {
@@ -211,7 +211,7 @@ export function calculateNewValues<T, U  extends HasUnidadesEntregadas & Detail>
         // Procesar datos nuevos
         for (let a = 0; a < newData.length; a++) {
             const newItem = newData[a];
-            
+
             if (newItem?.unidadesEntregadas > 0) {
                 valueCalculateTotal += calculateVlueByPorducts(
                     newItem as Detail,
@@ -220,6 +220,8 @@ export function calculateNewValues<T, U  extends HasUnidadesEntregadas & Detail>
             }
 
         }
+        console.log("valueRealTotal: ", valueRealTotal);
+        console.log("valueCalculateTotal: ", valueCalculateTotal);
 
         return {
             valueRealTotal,

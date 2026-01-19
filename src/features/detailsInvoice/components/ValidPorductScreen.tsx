@@ -162,7 +162,7 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
                         <View style={styles.priceRow}>
                             {(Number(sumTotal) > 0 || quantityEntry === quantity) ? (
                                 <Text style={styles.totalPrice}>
-                                    ${formatNumber(calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_3) ?? 0)}
+                                    ${formatNumber(calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, Number(item.unidadesSolicitadas) - Number(sumTotal)) ?? 0)}
                                 </Text>
                             ) : <Text style={styles.totalPrice}>
                                 ${0}

@@ -345,7 +345,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const conditionButton = conceptDelivery.length != 0 || routeStarted;
     const validateCheckboxlength = conceptDelivery.length == guide?.facturas?.length
     const isSmallScreen = height <= 780;
-
+    const conceptDeliveryValue =  conceptDelivery.length > 0
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -485,10 +485,10 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         disabled={false}
                         width={328}
                         height={43}
-                        buttonColor={validateCheckboxlength ? undefined : conditionButton ? "#DDDFE8" : undefined}
-                        buttonColorEnd={validateCheckboxlength ? undefined : conditionButton ? "#DDDFE8" : undefined}
-                        titleColor={conditionButton ? "#FFFFFF" : undefined}
-                        circleColor={validateCheckboxlength ? undefined : conditionButton ? "#788095" : undefined}
+                        buttonColor={validateCheckboxlength ? undefined : !validateCheckboxlength || conditionButton ? "#DDDFE8" : undefined}
+                        buttonColorEnd={validateCheckboxlength ? undefined :  !validateCheckboxlength || conditionButton ? "#DDDFE8" : undefined}
+                        titleColor={ !conceptDeliveryValue ||  conditionButton ? "#FFFFFF" : undefined}
+                        circleColor={validateCheckboxlength ? undefined :  !validateCheckboxlength ||  conditionButton ? "#788095" : undefined}
                     />
                 )}
             </View>

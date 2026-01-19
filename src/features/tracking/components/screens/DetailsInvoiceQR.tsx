@@ -216,7 +216,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                     <View style={styles.phoneRow}>
                         <TextInput
                             style={styles.phoneInput}
-                            value={localPhone.length > 0 ? data?.whatsapp?.replace(/\D/g, '') : ""}
+                            value={ phone ? phone?.replace(/\D/g, ''): data?.whatsapp?.replace(/\D/g, '')}
                             onChangeText={handlePhoneChange}
                             keyboardType="phone-pad"
                             maxLength={10}

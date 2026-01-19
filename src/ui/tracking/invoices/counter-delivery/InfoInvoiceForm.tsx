@@ -90,7 +90,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [allowBack, setAllowBack] = useState(false);
     const btnRef = useRef<any>(null);
     const router = useRouter();
-
+    
     useEffect(() => {
         const backAction = () => {
             if (!allowBack) {

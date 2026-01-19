@@ -1,5 +1,6 @@
 import { TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import { GuideDetails, PaymentsByInvoice } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { ViewSelectAllAnticipe } from '@/src/ui/tracking/invoices/anticipe-and-count/ViewSelectAllAnticipe';
 import { ViewSelectInvoice as AnticipateAndCountViewSelectInvoice } from '@/src/ui/tracking/invoices/anticipe-and-count/ViewSelectInvoice';
 import { InfoInvoiceForm } from '@/src/ui/tracking/invoices/counter-delivery/InfoInvoiceForm';
 import { ViewSelectInvoice } from '@/src/ui/tracking/invoices/counter-delivery/ViewSelectInvoice';
@@ -27,14 +28,18 @@ export default function IndexInvoiceScreen() {
             factura.tipo === TypeInvoiceEnum.MIXTO
     );
     const areAllInvoicesAnticipe = guideObj.facturas.every(
-        factura => factura.tipo === TypeInvoiceEnum.ANTICIPO ||   factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO
+        factura => factura.tipo === TypeInvoiceEnum.ANTICIPO || factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO
     );
-    const areAllInvoicesAnticipeOne = guideObj.facturas.every(
-        factura => factura.tipo === TypeInvoiceEnum.ANTICIPO
-    );
+    const areAllInvoicesSameStatus =
+        guideObj.facturas.length > 0 &&
+        guideObj.facturas.every(
+            factura => factura.tipo === guideObj.facturas[0].tipo
+        );
+
     const isCountryDelivery = params.isCountryDelivery as string;
     const IsGoBack = params.IsGoBack as string;
-  
+
+
     return (
         <>
             <Stack.Screen
@@ -78,7 +83,7 @@ export default function IndexInvoiceScreen() {
                 }
 
                 // Condición 3
-                if (areAllInvoicesAnticipeOne || areAllInvoicesCredito && guideObj.facturas.length < 2) {
+                if (areAllInvoicesCredito && guideObj.facturas.length < 2) {
                     return (
                         <InfoInvoiceCreditForm
                             initialGuide={guideObj}
@@ -107,9 +112,9 @@ export default function IndexInvoiceScreen() {
 
                 }
 
-                if (areAllInvoicesAnticipe) {
+                if (areAllInvoicesSameStatus && guideObj.facturas.length >= 2) {
                     return (
-                        <AnticipateAndCountViewSelectInvoice
+                        <ViewSelectAllAnticipe
                             initialGuide={guideObj}
                             token={token || ""}
                             onSubmit={async ({ guide, token }) => { }}
@@ -120,6 +125,21 @@ export default function IndexInvoiceScreen() {
                         />
                     );
 
+                } else {
+                    if (areAllInvoicesAnticipe) {
+                        return (
+                            <AnticipateAndCountViewSelectInvoice
+                                initialGuide={guideObj}
+                                token={token || ""}
+                                onSubmit={async ({ guide, token }) => { }}
+                                numberGuide={Number(numberGuide)}
+                                isSelectInvocies={isSelectInvocies}
+                                documentMeico={documentMeico}
+                                routeStartedBotton={routeStartedBotton}
+                            />
+                        );
+
+                    }
                 }
                 return null;
             })()}

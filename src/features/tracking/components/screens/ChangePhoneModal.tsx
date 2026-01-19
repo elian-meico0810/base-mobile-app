@@ -95,13 +95,16 @@ export function ChangePhoneModal({ visible, onClose, onConfirm, onAlert }: Chang
                             </Text>
 
                             <TextInput
-                                // value={phone}
-                                onChangeText={setPhone}
+                                value={phone}
+                                onChangeText={(text) => {
+                                    const onlyNumbers = text.replace(/[^0-9]/g, '');
+                                    setPhone(onlyNumbers);
+                                }}
                                 style={[
                                     styles.input,
                                     {
-                                        width: 350,      
-                                        height: 43,      
+                                        width: 350,
+                                        height: 43,
                                     }
                                 ]}
                                 placeholder="Número de teléfono"
@@ -109,6 +112,7 @@ export function ChangePhoneModal({ visible, onClose, onConfirm, onAlert }: Chang
                                 maxLength={10}
                                 autoFocus={true}
                             />
+
 
                             <PrimaryButton
                                 title="Confirmar"
@@ -119,6 +123,7 @@ export function ChangePhoneModal({ visible, onClose, onConfirm, onAlert }: Chang
                                         onConfirm(phone);
                                         onClose();
                                         onAlert();
+                                        setPhone("");
                                     }, 300);
                                 }}
                                 width={350}

@@ -75,7 +75,7 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
         testToken,
         item?.producto?.codigo
     );
-
+    
     return (
         <View style={styles.productContainer}>
             <View style={styles.productRow}>

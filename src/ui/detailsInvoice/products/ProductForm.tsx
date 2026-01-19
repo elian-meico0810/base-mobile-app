@@ -72,6 +72,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [modalVisible, setModalVisible] = useState(false);
+    const [shoyStatusAlert, setStatusAlert] = useState(false);
     const [showNovelty, setNovelty] = useState(false);
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [isExpanded, setIsExpanded] = useState(false);
@@ -177,6 +178,8 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
     const submitDataByActionsAlert = async () => {
         try {
+            if (modalVisible) return;
+
             const detalles = showPorductData?.[0]?.detalles;
             setLoading(true);
 
@@ -236,6 +239,41 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         item => item.estado?.codigo === 'EST_DET_VALIDADO'
     );
 
+    const handleValidate = (data?: ReasonData[], id?: number): boolean => {
+        try {
+            if (data && data.length > 0) {
+                // Buscar el producto en todos los documentos
+                let product: Detail | undefined;
+                for (const doc of showPorductData) {
+                    const found = doc.detalles.find(p => p.id === id);
+                    if (found) {
+                        product = found;
+                        break;
+                    }
+                }
+
+                const totalUnits = data.reduce((sum, item) => sum + item.units, 0);
+
+                if (product && Number(totalUnits) > Number(product.unidadesSolicitadas)) {
+                    setModalTitle("¡Alerta!");
+                    setModalMessage("La cantidad reportada no puede ser mayor a la despachada.");
+                    setModalVisible(true);
+                    return false; // ← Devuelve false si hay error
+
+                } else if (product && Number(totalUnits) == Number(product.unidadesSolicitadas)) {
+                    setModalTitle("¡Alerta!");
+                    setModalMessage("La cantidad reportada no puede ser igual a la despachada.");
+                    setModalVisible(true);
+                    return false; // ← Devuelve false si hay error
+                }
+            }
+            return true; // ← Devuelve true si todo está bien
+        } catch (error) {
+            return false; // ← Devuelve false si hay excepción
+        }
+    };
+
+
     const submitDataByActions = async (data?: ReasonData[]) => {
         try {
 
@@ -247,6 +285,10 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
             }
             setLoading(true);
             let novedadesArray = [];
+            const isValid = handleValidate(data, productItemData?.id);
+            if (!isValid) {
+                return; 
+            }
 
             if (modalStatusNovelty == "left" && productItemData?.id || successButton
             ) {
@@ -586,11 +628,11 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
                 }}
                 data={dataNovelty}
-                messages={(messages) => {
-                    setModalTitle("¡Alerta!");
-                    setModalMessage(messages);
-                    setModalVisible(true);
-                }}
+                // messages={(messages) => {
+                //     setModalTitle("¡Alerta!");
+                //     setModalMessage(messages);
+                //     setModalVisible(true);
+                // }}
                 dataPorduct={showPorductData}
                 onItemData={(data) => {
                     setProductItemData(data);

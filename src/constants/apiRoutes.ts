@@ -18,6 +18,7 @@ export const API_ROUTES = {
   SEND_ORRDE_ARRAY: "pedidos/detalle/validar_todos/",
   SEND_REPORT_NOLVETY_ARRAY: "entregas/reportar-novedad-pedido/",
   CREATE_PAYMENT_BY_TYPE: "reporte-pago/crear-lote/",
+  GET_TYPE_DETAILS_BY_PARAMS: "causales/tipo/",
   // Back contado anticipado
   SEND_PAYMENT_GATEWAY: "pagos/generar-link-pasarela/",
   GENERATE_QR: "pagos/generar_qr_bancolombia/",

@@ -11,6 +11,7 @@ import {
     TouchableWithoutFeedback,
     View
 } from "react-native";
+import { Cause } from "../../tracking/domain/details/DetailsGuide";
 
 // Interface basada en la estructura exacta del JSON
 interface PaymentItem {
@@ -32,6 +33,7 @@ interface ReportNoveltysProps {
     width?: number;
     height?: number;
     showViewModal?: boolean;
+    showTypeDetails?: Cause[]
 }
 
 // Interface para los datos de razón
@@ -48,7 +50,8 @@ export function ReportNoveltyScreen({
     disabled = false,
     width = 360,
     height = 500,
-    showViewModal = false
+    showViewModal = false,
+    showTypeDetails
 }: ReportNoveltysProps) {
     const [units, setUnits] = useState<string[]>(["", "", "", ""]);
     const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
@@ -91,24 +94,19 @@ export function ReportNoveltyScreen({
         setFocusedIndex(null);
     };
 
-    const reasons = [
-        "Dinero insuficiente",
-        "Producto dañado",
-        "Producto vencido",
-        "Otro"
-    ];
+    const reasons = showTypeDetails?.map(item => item.nombre);
+
 
     // Función para obtener los datos estructurados
     const getReasonValues = (): ReasonData[] => {
         const data: ReasonData[] = [];
 
-        reasons.forEach((reason, index) => {
+        reasons?.forEach((reason, index) => {
             const unitValue = units[index] ? parseInt(units[index], 10) : 0;
             data.push({
                 type: reason,
                 units: unitValue
             });
-
         });
 
         return data;
@@ -230,7 +228,7 @@ export function ReportNoveltyScreen({
 
                         {/* CONTENEDOR ÚNICO DE NOVEDADES */}
                         <View style={styles.noveltyBox}>
-                            {reasons.map((reason, index) => (
+                            {reasons?.map((reason, index) => (
                                 <View key={index} style={styles.reasonRow}>
                                     <Text style={styles.reasonText}>{reason}</Text>
                                     <TextInput

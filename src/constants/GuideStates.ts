@@ -57,7 +57,7 @@ export enum CausalDelivery {
     PRODUCTOS_DANADOS = "CS_PRODUCTO_DAÑADOS",
     TIENDA_CERRADA = "CS_TIENDA_CERRADA",
     DUENO_NO_CONTESTA = "CS_DUEÑO_NO_CONESTA",
-    DINERO_INSUFICIENTE = "CS_DINERO_INSUFICIENTE"
+    DINERO_INSUFICIENTE = "CS_DINERO_INSUFICIENTE"    
 }
 
 export enum OptionsRefusedEnum {
@@ -102,4 +102,8 @@ export enum CausalRefusedEnum {
     CS_NOV_PROD_DAÑADO = "CS_NOV_PROD_DAÑADO",
     CS_NOV_PROD_VENC = "CS_NOV_PROD_VENC",
     CS_NOV_OTRO = "CS_NOV_OTRO"
+}
+
+export enum TypeDetailsEnum {
+    CAUS_REP_NOVEDAD = "CAUS_REP_NOVEDAD"
 }

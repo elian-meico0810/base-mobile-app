@@ -173,4 +173,18 @@ export const detailsRepositoryImpl: DetailsRepository = {
       throw error;
     }
   },
+
+  async listTypeDetails(typeDetails: string, token: string) {
+    try {
+      const response = await authApi.get(`${API_ROUTES.GET_TYPE_DETAILS_BY_PARAMS}?tipo=${typeDetails}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
 };

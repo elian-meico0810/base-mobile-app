@@ -3,10 +3,10 @@ import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { ThemedView } from '@/components/themed-view';
-import { CausalRefusedEnum, TyepeCausalRefusedEnum, TypeCaculateValueEnum } from '@/src/constants/GuideStates';
+import { CausalRefusedEnum, TyepeCausalRefusedEnum, TypeCaculateValueEnum, TypeDetailsEnum } from '@/src/constants/GuideStates';
 import { ProductValidationSection } from '@/src/features/detailsInvoice/components/ProductValidationScreen';
 import { ReportNoveltyScreen } from '@/src/features/detailsInvoice/components/ReportNoveltyScreen';
-import { Detail, Document, GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { Cause, Detail, Document, GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { calculateVlueByPorducts, capitalizeFirst, cleanSpaces } from '@/src/utils/uitls';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -77,7 +77,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const [isExpanded, setIsExpanded] = useState(false);
     const [showPorductData, setPorductData] = useState<Document[]>([]);
     const [productItemData, setProductItemData] = useState<Detail | null>(null);
-
+    const [showTypeDetails, setTypeDetails] = useState<Cause[]>([]);
     const router = useRouter();
     const orderId = initialGuide?.pedidos?.[0]?.id;
 
@@ -343,6 +343,34 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         }
     };
 
+    const getRefused = async () => {
+        try {
+            const responseQuery = await detailsRepositoryImpl.listTypeDetails(TypeDetailsEnum.CAUS_REP_NOVEDAD, token);
+
+            if (responseQuery?.statusCode == 200) {
+                const data = responseQuery.data;
+
+                if (Array.isArray(data)) {
+                    setTypeDetails(data);
+                } else {
+                    setTypeDetails([]);
+                }
+            } else {
+                setModalTitle("¡Alerta!");
+                setModalMessage(responseQuery.message || "Ocurrio un error inesperado.");
+                setModalVisible(true);
+            }
+
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+
+    };
+
     const getDataProduct = async () => {
         try {
             setLoading(true);
@@ -400,6 +428,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
     useEffect(() => {
         getDataProduct();
+        getRefused();
     }, []);
 
 
@@ -622,6 +651,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                         }, 100);
                     }}
                     showViewModal={showViewModal}
+                    showTypeDetails={showTypeDetails}
                 />
             )}
 

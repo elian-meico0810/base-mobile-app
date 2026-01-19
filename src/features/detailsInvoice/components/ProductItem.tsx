@@ -71,11 +71,12 @@ export const ProductItem = ({
         code?: string
     ): string | null => {
         if (!baseUrl || !token || !code) return null;
+        // console.log("web: ",`${baseUrl}/${code}.webp${token}`);
         return `${baseUrl}/${code}.webp${token}`;
     };
 
     const imagUrl = buildImageUrl(testUrl, testToken, item?.producto?.codigo);
-
+    
     // Efecto para manejar refreshing externo
     useEffect(() => {
         if (refreshing && !isRefreshing) {

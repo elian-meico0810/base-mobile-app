@@ -242,6 +242,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
 
                 const testToken = await SecureStore.getItemAsync('service_token');
                 const testUrl = await SecureStore.getItemAsync('base_url');
+                
                 setServiceToken(testToken || "");
                 setBaseUrl(testUrl || "");
 

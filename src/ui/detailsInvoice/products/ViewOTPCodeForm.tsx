@@ -5,6 +5,7 @@ import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { ThemedView } from '@/components/themed-view';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { formatTimeByMinutes } from '@/src/utils/uitls';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from "react";
 import {
@@ -47,6 +48,8 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
     const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [showSuccess, setShowSuccess] = useState(false);
     const [showErrorQRP, setShowErrorQRP] = useState(false);
+    const [secondsLeft, setSecondsLeft] = useState<number>(0);
+    const timerRef = useRef<number | null>(null);
 
     const router = useRouter();
 
@@ -153,9 +156,9 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const redirectContinue = async () => {
         try {
-            // setShowSuccess(true);
+            setShowSuccess(true);
             // setShowErrorQRP(true);
-            
+            startOtpTimer();
             // Ocultar teclado al confirmar
             dismissKeyboard();
 
@@ -169,6 +172,26 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
         } finally {
             setLoading(false);
         }
+    };
+
+    const startOtpTimer = () => {
+        // 5 minutos = 300 segundos
+        setSecondsLeft(300);
+
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+        }
+
+        timerRef.current = setInterval(() => {
+            setSecondsLeft(prev => {
+                if (prev <= 1) {
+                    clearInterval(timerRef.current!);
+                    timerRef.current = null;
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
     };
 
     return (
@@ -260,7 +283,7 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
                     >
                         <Text style={styles.otpExpireIcon}>⟳</Text>
                         <Text style={styles.otpExpireText}>
-                            El código vencerá en 4:59 min
+                            El código vencerá en {formatTimeByMinutes(secondsLeft)} min
                         </Text>
                     </TouchableOpacity>
 

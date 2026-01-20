@@ -1,6 +1,7 @@
 "use client";
 import { AddEvidenceButton } from '@/components/inputs/AddEvidenceButton';
 import { TypeInvoiceEnum } from '@/src/constants/GuideStates';
+import { formatNumber } from '@/src/utils/uitls';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { GuideDetails } from '../../domain/details/DetailsGuide';
 import { DerliveryDocument } from '../../domain/invoices/InvoicesInterFace';
@@ -117,7 +118,7 @@ const InvoiceItem = ({
 
             <View style={styles.priceRow}>
               <Text style={styles.amountText}>
-              {value}
+                {invoice?.tipo != TypeInvoiceEnum.CONTADO_EFECTIVO ? value : `$${formatNumber(invoice.valorRecaudar)}`}
               </Text>
 
             </View>

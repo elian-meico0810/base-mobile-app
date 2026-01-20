@@ -199,12 +199,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 console.log("response: ", response);
 
                 setModalTitle("¡Alerta!");
-                setModalMessage(response?.message ?? "Ocurrió un error inesperado 3.");
+                setModalMessage(response?.message ?? "Ocurrió un error inesperado.");
                 setModalVisible(true);
             }
         } catch (error: any) {
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 1.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {
             setLoading(false);

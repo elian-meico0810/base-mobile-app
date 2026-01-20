@@ -283,9 +283,6 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     const totalGeneralValidate = Array.from(productsByStatus.validated.values())
         .reduce((sum, value) => sum + value, 0);
 
-    console.log("totalGeneral: ",totalGeneral);
-    console.log("totalGeneralValidate: ",totalGeneralValidate);
-    
     const valueRealTotal = totalGeneral + totalGeneralValidate;
 
     // 3. Función para actualizar el estado de un producto
@@ -353,12 +350,12 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                 onRefreshing={() => {
                                     onRefreshing?.();
                                 }}
-                                onDataProduct={(id, totalProducts) => {
+                                onDataProduct={(id, totalProducts, unidadesEntregadas) => {
                                     updateProductStatus(id, totalProducts, 'pending');
 
                                     console.log("========================================");
                                     console.log("=========== LOS POR VALIDAR ====================");
-                                    console.log("id:", id, "totalProducts:", totalProducts);
+                                    console.log("id:", id, "totalProducts:", totalProducts, "unidadesEntregadas: ",unidadesEntregadas);
                                     console.log("TOTAL ACUMULADO:", totalGeneral);
                                     console.log("========================================");
                                 }}
@@ -407,12 +404,12 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                         tatolValue={tatolValue}
                                         testToken={serviceToken}
                                         testUrl={serviceUrl}
-                                        onDataProduct={(id, totalProducts) => {
+                                        onDataProduct={(id, totalProducts,  unidadesEntregadas) => {
                                             updateProductStatus(id, totalProducts, 'validated');
 
                                             console.log("========================================");
                                             console.log("=========== LOsS VALIDADPOS ====================");
-                                            console.log("id:", id, "totalProducts:", totalProducts);
+                                            console.log("id:", id, "totalProducts:", totalProducts, "unidadesEntregadas: ",unidadesEntregadas);
                                             console.log("TOTAL ACUMULADO:", totalGeneral);
                                             console.log("========================================");
                                         }}

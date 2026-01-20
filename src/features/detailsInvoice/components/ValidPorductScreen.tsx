@@ -21,7 +21,7 @@ interface ProductItemProps {
     tatolValue?: number | null;
     testToken?: string;
     testUrl?: string;
-    onDataProduct?: (id: number, total: number) => void; // <-- Cambia aquí
+    onDataProduct?: (id: number, total: number, unidadesEntregadas?:number | null) => void; 
 
 }
 type ValueById = {
@@ -78,9 +78,10 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
         item?.producto?.codigo
     );
 
+    
     useEffect(() => {
         if (onDataProduct) {
-            onDataProduct(item.id, calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, Number(item.unidadesSolicitadas) - Number(sumTotal)));
+            onDataProduct(item.id, calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, Number(item.unidadesSolicitadas) - Number(sumTotal)), item?.unidadesEntregadas);
         }
     }, [item.id]);
 

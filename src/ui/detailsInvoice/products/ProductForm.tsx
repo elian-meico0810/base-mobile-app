@@ -342,7 +342,6 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
                                 }
 
-
                                 const noveltyData = {
                                     pedidoDetalleId: Number(productItemData?.id),
                                     causalCodigo: novelty_value,

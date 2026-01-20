@@ -31,7 +31,7 @@ interface ProductItemProps {
     onItemData?: (data: Detail | null) => void; // <-- Cambia aquí
     refreshing?: boolean;
     onRefreshing?: () => void;
-    onDataProduct?: (id: number, total: number) => void; // <-- Cambia aquí
+    onDataProduct?: (id: number, total: number, unidadesEntregadas?: number | null) => void; // <-- Cambia aquí
 
 }
 
@@ -80,7 +80,7 @@ export const ProductItem = ({
     const imagUrl = buildImageUrl(testUrl, testToken, item?.producto?.codigo);
     useEffect(() => {
         if (onDataProduct) {
-            onDataProduct(item.id, calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_1));
+            onDataProduct(item.id, calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_1), item?.unidadesEntregadas);
         }
     }, [item.id]);
     // Efecto para manejar refreshing externo

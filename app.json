@@ -14,7 +14,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/meitruck/meitruck_adaptive_fore.png",
-        // "backgroundColor": "#00000000",
+        "backgroundColor": "#164194",
         "monochromeImage": "./assets/meitruck/meitruck_adaptive_fore.png"
       },
       "permissions": [

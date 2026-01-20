@@ -1,3 +1,5 @@
+import { TopErrorAlert } from '@/components/alerts/TopErrorAlert';
+import { TopSuccessAlert } from '@/components/alerts/TopSuccessAlert';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
@@ -43,6 +45,9 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
     const [currentFocusIndex, setCurrentFocusIndex] = useState<number>(0);
     const [keyboardVisible, setKeyboardVisible] = useState(false);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [showErrorQRP, setShowErrorQRP] = useState(false);
+
     const router = useRouter();
 
     const inputRefs = useRef<TextInput[]>([]);
@@ -148,6 +153,9 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const redirectContinue = async () => {
         try {
+            // setShowSuccess(true);
+            // setShowErrorQRP(true);
+            
             // Ocultar teclado al confirmar
             dismissKeyboard();
 
@@ -295,6 +303,22 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
                 message={modalMessage}
                 buttonLabel={modalButtonLabel}
             />
+
+            {showSuccess && (
+                <TopSuccessAlert
+                    visible={showSuccess}
+                    message="Código OTP enviado"
+                    onHide={() => setShowSuccess(false)}
+                />
+            )}
+
+            {showErrorQRP && (
+                <TopErrorAlert
+                    visible={showErrorQRP}
+                    message="Código OTP incorrecto"
+                    onHide={() => setShowErrorQRP(false)}
+                />
+            )}
 
             {loading && <LoadingBlue />}
         </ThemedView>

@@ -223,7 +223,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 return;
             }
             const now = new Date();
-            
+
             const date = now.toLocaleString('sv-SE', {
                 timeZone: 'America/Bogota',
                 hour12: false
@@ -466,6 +466,15 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const handleSubmitConfirmation = async () => {
         try {
+            router.push({
+                pathname: '/views/IndexDetailsInvoice',
+                params: {
+                    guide: JSON.stringify(guide),
+                    numberGuide: numberGuide,
+                    token: token ?? "",
+                    confirmationStatus: 'true'
+                }
+            });
             console.log("handleSubmitConfirmation");
 
         } catch (error: any) {
@@ -1352,8 +1361,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     onGenerateQR={handleGenerateQR}
                     onPressPayment={(value, observation) => {
                         handleSubmitOthers(Number(value), observation)
-                        
-                        
+
+
                     }}
                     onErrorPayment={() => setShowErrorQRP(true)}
                     statusTypeQR={typeQRSendWhatsApp}

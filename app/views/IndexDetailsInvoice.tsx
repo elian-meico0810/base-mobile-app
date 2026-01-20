@@ -1,5 +1,6 @@
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { ProductForm } from '@/src/ui/detailsInvoice/products/ProductForm';
+import { ViewOTPCodeForm } from '@/src/ui/detailsInvoice/products/ViewOTPCodeForm';
 import { Stack, useLocalSearchParams } from 'expo-router';
 
 export default function IndexDetailsInvoiceScreen() {
@@ -14,7 +15,8 @@ export default function IndexDetailsInvoiceScreen() {
     const documentMeico = params.documentMeico as string;
     const viewOrder = params.viewOrder as string;
     const shouldShowViewSelectInvoice = guideObj.facturas.length >= 2 || documentMeico;
-    
+    const confirmationStatus = params.confirmationStatus as string;
+
     return (
         <>
             <Stack.Screen
@@ -26,17 +28,34 @@ export default function IndexDetailsInvoiceScreen() {
 
             {/* listado de detalle de facturas */}
             {(() => {
-                return (
-                    <ProductForm
-                        initialGuide={guideObj}
-                        token={token || ""}
-                        onSubmit={async ({ guide, token }) => { }}
-                        numberGuide={Number(numberGuide)}
-                        isSelectInvocies={isSelectInvocies}
-                        documentMeico={documentMeico}
-                        routeStartedBotton={routeStartedBotton}
-                    />
-                );
+                if (!confirmationStatus) {
+
+                    return (
+                        <ProductForm
+                            initialGuide={guideObj}
+                            token={token || ""}
+                            onSubmit={async ({ guide, token }) => { }}
+                            numberGuide={Number(numberGuide)}
+                            isSelectInvocies={isSelectInvocies}
+                            documentMeico={documentMeico}
+                            routeStartedBotton={routeStartedBotton}
+                        />
+                    );
+                }
+                
+                if (confirmationStatus) {
+                     return (
+                        <ViewOTPCodeForm
+                            initialGuide={guideObj}
+                            token={token || ""}
+                            onSubmit={async ({ guide, token }) => { }}
+                            numberGuide={Number(numberGuide)}
+                            isSelectInvocies={isSelectInvocies}
+                            documentMeico={documentMeico}
+                            routeStartedBotton={routeStartedBotton}
+                        />
+                    );
+                }
             })()}
 
         </>

@@ -265,7 +265,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
                 } else if (product && Number(totalUnits) == 0) {
                     setModalTitle("¡Alerta!");
-                    setModalMessage("La cantidad reportada no puede 0");
+                    setModalMessage("La cantidad reportada no puede ser 0");
                     setModalVisible(true);
                     return false; // ← Devuelve false si hay error
                 }
@@ -365,7 +365,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                             pedidoDetalleId: Number(productItemData?.id),
                             unidadesRechazadas: Number(totalUnits),
                             unidadesEntregadas: Number(productItemData?.unidadesSolicitadas) - Number(totalUnits),
-                            totalEntregado: calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_5, totalUnits),
+                            totalEntregado: 1,
                             totalImpuestoEntrega: calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_7, totalUnits),
                             novedades: novedadesArray
                         };

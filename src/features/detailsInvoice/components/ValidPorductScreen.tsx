@@ -100,7 +100,7 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
                                 <View style={styles.statusDot}>
                                     <MaterialIcons name="check" size={9} color="#FFFFFF" />
                                 </View>
-                            ) : (validationType === "error" || quantity === 0 && Number(sumTotal) == 0) ? (
+                            ) : (validationType === "error" || quantity === 0) ? (
                                 <View style={styles.errorDot}>
                                     <MaterialIcons name="close" size={9} color="#FFFFFF" />
                                 </View>
@@ -117,7 +117,7 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
                                 <View style={styles.statusDot}>
                                     <MaterialIcons name="check" size={9} color="#FFFFFF" />
                                 </View>
-                            ) : (validationType === "error" || quantity === 0 && Number(sumTotal) == 0) ? (
+                            ) : (validationType === "error" || quantity === 0) ? (
                                 <View style={styles.errorDot}>
                                     <MaterialIcons name="close" size={9} color="#FFFFFF" />
                                 </View>
@@ -141,9 +141,13 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
                                     <Text style={styles.quantityText}>
                                         {Number(item.unidadesSolicitadas) - Number(sumTotal)}
                                     </Text>
-                                ) : (Number(sumTotal) == 0 && quantityEntry != quantity) ? (
+                                ) : (Number(sumTotal) == 0 && quantityEntry != quantity && quantity!= 0) ? (
                                     <Text style={styles.quantityText}>
                                         {Number(sumTotal)}
+                                    </Text>
+                                ) : (quantity == 0) ? (
+                                    <Text style={styles.quantityText}>
+                                        {item.unidadesEntregadas}
                                     </Text>
                                 ) : (
                                     <Text style={styles.quantityText}>
@@ -151,7 +155,7 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
                                     </Text>
                                 )}
 
-                                {(quantityEntry != quantity && (Number(sumTotal) > 0 || Number(sumTotal) == 0)) && (
+                                {(quantityEntry != quantity   &&(Number(sumTotal) > 0 || Number(sumTotal) == 0)) && (
                                     <Text style={styles.quantityTextValue}>
                                         {item.unidadesSolicitadas}
                                     </Text>
@@ -169,7 +173,7 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
                         </View>
 
                         <View style={styles.priceRow}>
-                            {(Number(sumTotal) > 0 || quantityEntry === quantity) ? (
+                            {(Number(sumTotal) > 0 && quantity != 0 || quantityEntry === quantity && quantity != 0) ? (
                                 <Text style={styles.totalPrice}>
                                     ${formatNumber(calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, Number(item.unidadesSolicitadas) - Number(sumTotal)) ?? 0)}
                                 </Text>
@@ -177,9 +181,6 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
                                 ${0}
                             </Text>
                             }
-
-
-
                             <Text style={styles.unitPrice}>$ {formatNumber(calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_2) ?? 0)} c/u</Text>
                         </View>
                     </View>

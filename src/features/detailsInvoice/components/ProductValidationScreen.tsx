@@ -70,15 +70,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     const [productsSold, setProductsSold] = useState<Detail[]>([]);
     const [productsPending, setProductsPending] = useState<Detail[]>([]);
     const [activeSwipeId, setActiveSwipeId] = useState<string | null>(null);
-    // const [totalGeneral, setTotalGeneral] = useState(0);
-    // const [totalGeneralValidate, setTotalGeneralValidate] = useState(0);
-    // console.log("totalGeneral: ", totalGeneral);
-    // console.log("totalGeneralValidate: ", totalGeneralValidate);
-    // const { valueRealTotal, valueCalculateTotal } = calculateNewValues<Document, Detail>(
-    //     allProducts,
-    //     productsSold,
-    //     productsPending
-    // );
+
 
     useEffect(() => {
         if (showDirection) {
@@ -272,10 +264,14 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     const [productsByStatus, setProductsByStatus] = useState<{
         pending: Map<number, number>;
         validated: Map<number, number>;
+        unidadesEntregadas: Map<number, number>;
     }>({
         pending: new Map(),
-        validated: new Map()
+        validated: new Map(),
+        unidadesEntregadas: new Map(),
     });
+
+    // console.log("productsByStatus: ",productsByStatus);
 
     // 2. Calcula los totales basados en los Maps
     const totalGeneral = Array.from(productsByStatus.pending.values())
@@ -287,22 +283,41 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     const valueRealTotal = totalGeneral + totalGeneralValidate;
 
     // 3. Función para actualizar el estado de un producto
-    const updateProductStatus = (id: number, totalProducts: number, status: 'pending' | 'validated') => {
+    const updateProductStatus = (
+        id: number,
+        totalProducts: number,
+        status: 'pending' | 'validated',
+        unidadesEntregadas?: number | null
+    ) => {
         setProductsByStatus(prev => {
-            const newState = { ...prev };
+            const newState = {
+                pending: new Map(prev.pending),
+                validated: new Map(prev.validated),
+                unidadesEntregadas: new Map(prev.unidadesEntregadas),
+            };
 
-            // Eliminar el ID del estado contrario
+            const delivered = unidadesEntregadas ?? 0;
+
             if (status === 'validated') {
                 newState.pending.delete(id);
-                newState.validated.set(id, totalProducts);
+
+                if (delivered > 0) {
+                    newState.validated.set(id, totalProducts);
+                    newState.unidadesEntregadas.set(id, delivered);
+                } else {
+                    newState.validated.delete(id);
+                    newState.unidadesEntregadas.delete(id);
+                }
             } else {
                 newState.validated.delete(id);
+                newState.unidadesEntregadas.delete(id);
                 newState.pending.set(id, totalProducts);
             }
 
             return newState;
         });
     };
+
 
     return (
         <View style={styles.mainContainer}>
@@ -406,7 +421,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                         testToken={serviceToken}
                                         testUrl={serviceUrl}
                                         onDataProduct={(id, totalProducts, unidadesEntregadas) => {
-                                            updateProductStatus(id, totalProducts, 'validated');
+                                            updateProductStatus(id, totalProducts, 'validated', unidadesEntregadas);
 
                                             console.log("========================================");
                                             console.log("=========== LOsS VALIDADPOS ====================");

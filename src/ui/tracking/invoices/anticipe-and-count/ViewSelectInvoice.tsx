@@ -76,6 +76,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [activateSelect, setActivateSelect] = useState(false);
     const prevSelectedCountRef = useRef<number>(0);
     const [allowBack, setAllowBack] = useState(false);
+    const [isValidData, setIsValidData] = useState(false);
+
     const btnRef = useRef<any>(null);
     const router = useRouter();
 
@@ -305,6 +307,15 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                     conceptList = [responseQuery.data];
                 } else {
                     conceptList = [];
+                }
+                const facturaNumbers = guide?.facturas?.map(f => f.numeroFactura) ?? [];
+                const documentNumbers = conceptList.map(c => c.documentMeico);
+
+                const isValid = facturaNumbers.every(numero =>
+                    documentNumbers.includes(numero)
+                );
+                if (isValid) {
+                    setIsValidData(true);
                 }
                 setConceptDelivery(conceptList)
                 setLoading(false);
@@ -674,8 +685,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                             isSelectInvocies={isSelectInvocies}
                             token={token}
                             conceptDelivery={conceptDelivery}
-                            activeView={validateCheckbox ? true : activeView}
-                            showCheckboxes={validateCheckbox ? true : showCheckboxes}
+                            activeView={validateCheckbox ? true : buttonValue ? true : activeView}
+                            showCheckboxes={validateCheckbox ? true : buttonValue ? true : showCheckboxes}
                         />
                     </View>
                 )}
@@ -747,10 +758,10 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                                     disabled={false}
                                     width={328}
                                     height={43}
-                                    buttonColor={conceptDelivery ? undefined : validateCheckboxlength ? undefined : closeButton || conditionButton ? "#DDDFE8" : undefined}
-                                    buttonColorEnd={conceptDelivery ? undefined : validateCheckboxlength ? undefined : closeButton ||conditionButton ? "#DDDFE8" : undefined}
-                                    titleColor={conceptDelivery ? undefined : closeButton || conditionButton ? "#FFFFFF" : undefined}
-                                    circleColor={conceptDelivery ? undefined : validateCheckboxlength ? undefined : closeButton || conditionButton ? "#788095" : undefined}
+                                    buttonColor={isValidData ? undefined : closeButton || conditionButton ? "#DDDFE8" : validateCheckboxlength ? undefined : undefined}
+                                    buttonColorEnd={isValidData ? undefined : closeButton || conditionButton ? "#DDDFE8" : validateCheckboxlength ? undefined : undefined}
+                                    titleColor={isValidData ? undefined : closeButton || conditionButton ? "#FFFFFF" : undefined}
+                                    circleColor={isValidData ? undefined : closeButton || conditionButton ? "#788095" : validateCheckboxlength ? undefined : undefined}
                                 />
                             );
                         }

@@ -128,7 +128,7 @@ export function calculateVlueByPorducts(data: Detail, action: string, unitRefuse
             return totalTaxes / unit;
 
         case TypeCaculateValueEnum.ACTION_5:
-            valueUnit = unitRefusedValue ? (form_1 * unitRefusedValue) : (form_1 * unit);
+            valueUnit = unitRefusedValue ? (form_1 * unitRefusedValue) : (form_1 * unitRefused);
             return valueUnit;
 
         case TypeCaculateValueEnum.ACTION_6:

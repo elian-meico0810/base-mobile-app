@@ -6,7 +6,7 @@ import { ThemedView } from '@/components/themed-view';
 import { CausalRefusedEnum, TyepeCausalRefusedEnum, TypeCaculateValueEnum, TypeDetailsEnum } from '@/src/constants/GuideStates';
 import { ProductValidationSection } from '@/src/features/detailsInvoice/components/ProductValidationScreen';
 import { ReportNoveltyScreen } from '@/src/features/detailsInvoice/components/ReportNoveltyScreen';
-import { Cause, Detail, Document, GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { causalValuePorps, Cause, Detail, Document, GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { calculateVlueByPorducts, capitalizeFirst, cleanSpaces } from '@/src/utils/uitls';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -205,15 +205,18 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     setModalVisible(true);
                 }
             } else if (alertButton) {
-                const payload = detalles.map((productItemData: any) => ({
-                    pedidoDetalleId: Number(productItemData?.id),
+                const novedades = detalles.map((productItemData: any) => ({
                     causalCodigo: CausalRefusedEnum.CS_NOV_OTRO,
-                    valor: "0",
-                    unidadesRechazadas: Number(productItemData?.unidadesSolicitadas),
-                    unidadesEntregadas: 0,
+                    valor: String(productItemData?.unidadesSolicitadas ?? "0"),
+                }));
+                const payload = {
+                    pedidoDetalleId: Number(detalles[0]?.id),
                     totalEntregado: 0,
                     totalImpuestoEntrega: 0,
-                }));
+                    unidadesEntregadas: 0,
+                    unidadesRechazadas: Number(detalles[0]?.unidadesSolicitadas),
+                    novedades,
+                };
 
                 const response = await detailsRepositoryImpl.noveltyOrder(
                     payload
@@ -260,9 +263,9 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     setModalVisible(true);
                     return false; // ← Devuelve false si hay error
 
-                } else if (product && Number(totalUnits) == Number(product.unidadesSolicitadas)) {
+                } else if (product && Number(totalUnits) == 0) {
                     setModalTitle("¡Alerta!");
-                    setModalMessage("La cantidad reportada no puede ser igual a la despachada.");
+                    setModalMessage("La cantidad reportada no puede 0");
                     setModalVisible(true);
                     return false; // ← Devuelve false si hay error
                 }
@@ -287,7 +290,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
             let novedadesArray = [];
             const isValid = handleValidate(data, productItemData?.id);
             if (!isValid) {
-                return; 
+                return;
             }
 
             if (modalStatusNovelty == "left" && productItemData?.id || successButton
@@ -320,53 +323,65 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     // console.log("productItemData?.id: ", productItemData?.id);
                     // console.log("alertButton: ", alertButton);
 
+                    let totalUnits = 0;
                     // Array para acumular todas las nove   dades
                     if (data && data.length > 0) {
                         for (const novelty of data) {
+
                             // Solo agregar si tiene unidades
-                            if (novelty.units >= 0 && Number(productItemData?.unidadesSolicitadas) - Number(novelty.units) >= 0) {
+                            if (novelty.units != 0 && novelty.units >= 0 && Number(productItemData?.unidadesSolicitadas) - Number(novelty.units) >= 0) {
                                 let novelty_value = "";
+                                totalUnits += Number(novelty.units);
 
                                 switch (novelty.type) {
                                     case TyepeCausalRefusedEnum.DINERO_INSUFICIENTE:
-                                        novelty_value = CausalRefusedEnum.CS_NOV_DIN_INSUF
+                                        novelty_value = CausalRefusedEnum.CS_NOV_DIN_INSUF;
+                                        break;
 
                                     case TyepeCausalRefusedEnum.PRODUCTOS_DANADOS:
-                                        novelty_value = CausalRefusedEnum.CS_NOV_PROD_DAÑADO
+                                        novelty_value = CausalRefusedEnum.CS_NOV_PROD_DAÑADO;
+                                        break;
 
                                     case TyepeCausalRefusedEnum.PRODUCTOS_VENCIDOS:
-                                        novelty_value = CausalRefusedEnum.CS_NOV_PROD_VENC
+                                        novelty_value = CausalRefusedEnum.CS_NOV_PROD_VENC;
+                                        break;
 
                                     default:
-                                        novelty_value = CausalRefusedEnum.CS_NOV_OTRO
+                                        novelty_value = CausalRefusedEnum.CS_NOV_OTRO;
+
 
                                 }
 
-                                const noveltyData = {
-                                    pedidoDetalleId: Number(productItemData?.id),
+                                const noveltyData: causalValuePorps = {
                                     causalCodigo: novelty_value,
-                                    valor: Number(novelty.units) == 0 ? '0' : novelty.units.toString(),
-                                    unidadesRechazadas: Number(novelty.units) == 0 ? 0 : Number(productItemData?.unidadesSolicitadas) - Number(novelty.units),
-                                    unidadesEntregadas: Number(novelty.units) == 0 ? 0 : calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_6, novelty.units),
-                                    totalEntregado: Number(novelty.units) == 0 ? 0 : calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_5, novelty.units),
-                                    totalImpuestoEntrega: Number(novelty.units) == 0 ? 0 : calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_7, novelty.units),
+                                    valor: novelty.units.toString(),
                                 };
 
                                 novedadesArray.push(noveltyData);
                             }
                         }
 
+                        const payload = {
+                            pedidoDetalleId: Number(productItemData?.id),
+                            unidadesRechazadas: Number(totalUnits),
+                            unidadesEntregadas: Number(productItemData?.unidadesSolicitadas) - Number(totalUnits),
+                            totalEntregado: calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_5, totalUnits),
+                            totalImpuestoEntrega: calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_7, totalUnits),
+                            novedades: novedadesArray
+                        };
+
                         // Verificar si hay novedades para enviar
                         const response = await detailsRepositoryImpl.noveltyOrder(
-                            novedadesArray
+                            payload
                             , token);
 
                         novedadesArray = [];
-
+                        
                         if (response?.statusCode != 200) {
                             setModalTitle("¡Alerta!");
                             setModalMessage(response.message || "Ocurrio un error al actualizar el producto.");
                             setModalVisible(true);
+                            return;
                         }
                     }
                 }
@@ -376,6 +391,8 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
             setProductItemData(null);
         } catch (error) {
+            console.log("error: ",error);
+            
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
             setModalVisible(true);
@@ -580,7 +597,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                                 }}
                             >
                                 <MaterialIcons name="close" size={16} color="#C62828" />
-                                <Text style={styles.rejectButtonText}> Rechazar todo</Text>
+                                <Text style={styles.rejectButtonText}> Rechazo masivo</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
@@ -593,7 +610,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                                 }}
                             >
                                 <MaterialIcons name="check" size={16} color="#1F9144" />
-                                <Text style={styles.acceptButtonText}> Aceptar todo</Text>
+                                <Text style={styles.acceptButtonText}> Validacion masiva</Text>
                             </TouchableOpacity>
 
                         </View>

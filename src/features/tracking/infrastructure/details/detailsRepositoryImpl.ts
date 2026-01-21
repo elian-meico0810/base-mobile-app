@@ -118,7 +118,7 @@ export const detailsRepositoryImpl: DetailsRepository = {
     }
   },
 
-  async noveltyOrder(data: NoveltyRefusedProps[], token: string) {
+  async noveltyOrder(data: NoveltyRefusedProps, token: string) {
     try {
       const response = await authApi.post(`${API_ROUTES.SEND_NOVELTY_ORDER}`, data, {
         headers: {

@@ -134,14 +134,17 @@ export interface SendOrderProps {
 
 export interface NoveltyRefusedProps {
   pedidoDetalleId: number;
-  causalCodigo: string;
-  valor: string;
+  novedades: causalValuePorps[];
   unidadesRechazadas: number;
   unidadesEntregadas: number;
   totalEntregado: number;
   totalImpuestoEntrega: number;
 }
 
+export interface causalValuePorps {
+  causalCodigo: string;
+  valor: string;
+}
 export interface SendOrderArrayProps {
   totalEntregado: string;
   totalImpuestoEntrega: string;
@@ -150,7 +153,7 @@ export interface SendOrderArrayProps {
 
 export interface ReportNoveltyFileArrayProps {
   id_pedido: number;
-  files: string[]; 
+  files: string[];
 }
 
 export interface NovletyOrder {

@@ -176,16 +176,17 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
 
             const totalUnits = data.reduce((sum, item) => sum + item.units, 0);
             setTotalUnits(totalUnits);
-            if (product && totalUnits > Number(product.unidadesSolicitadas)) {
-                messages?.("La cantidad reportada no puede ser mayor a la despachada.");
-                return;
-            } else if (product && totalUnits == Number(product.unidadesSolicitadas)) {
-                messages?.("La cantidad reportada no puede ser igual a la despachada.");
-                return;
-            } else {
-                setTotal(Number(totalUnits));
+            setTotal(Number(totalUnits));
 
-            }
+            // if (product && totalUnits > Number(product.unidadesSolicitadas)) {
+            //     messages?.("La cantidad reportada no puede ser mayor a la despachada.");
+            //     return;
+            // } else if (product && totalUnits == Number(product.unidadesSolicitadas)) {
+            //     messages?.("La cantidad reportada no puede ser igual a la despachada.");
+            //     return;
+            // } else {
+
+            // }
 
         }
 
@@ -293,10 +294,10 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
             // Eliminar el ID del estado contrario
             if (status === 'validated') {
                 newState.pending.delete(id);
-                newState.validated.set(id, totalProducts); 
+                newState.validated.set(id, totalProducts);
             } else {
-                newState.validated.delete(id); 
-                newState.pending.set(id, totalProducts); 
+                newState.validated.delete(id);
+                newState.pending.set(id, totalProducts);
             }
 
             return newState;
@@ -355,7 +356,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
 
                                     console.log("========================================");
                                     console.log("=========== LOS POR VALIDAR ====================");
-                                    console.log("id:", id, "totalProducts:", totalProducts, "unidadesEntregadas: ",unidadesEntregadas);
+                                    console.log("id:", id, "totalProducts:", totalProducts, "unidadesEntregadas: ", unidadesEntregadas);
                                     console.log("TOTAL ACUMULADO:", totalGeneral);
                                     console.log("========================================");
                                 }}
@@ -404,12 +405,12 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                         tatolValue={tatolValue}
                                         testToken={serviceToken}
                                         testUrl={serviceUrl}
-                                        onDataProduct={(id, totalProducts,  unidadesEntregadas) => {
+                                        onDataProduct={(id, totalProducts, unidadesEntregadas) => {
                                             updateProductStatus(id, totalProducts, 'validated');
 
                                             console.log("========================================");
                                             console.log("=========== LOsS VALIDADPOS ====================");
-                                            console.log("id:", id, "totalProducts:", totalProducts, "unidadesEntregadas: ",unidadesEntregadas);
+                                            console.log("id:", id, "totalProducts:", totalProducts, "unidadesEntregadas: ", unidadesEntregadas);
                                             console.log("TOTAL ACUMULADO:", totalGeneral);
                                             console.log("========================================");
                                         }}

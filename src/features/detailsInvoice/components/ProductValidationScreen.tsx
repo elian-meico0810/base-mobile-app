@@ -369,11 +369,11 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                 onDataProduct={(id, totalProducts, unidadesEntregadas) => {
                                     updateProductStatus(id, totalProducts, 'pending');
 
-                                    console.log("========================================");
-                                    console.log("=========== LOS POR VALIDAR ====================");
-                                    console.log("id:", id, "totalProducts:", totalProducts, "unidadesEntregadas: ", unidadesEntregadas);
-                                    console.log("TOTAL ACUMULADO:", totalGeneral);
-                                    console.log("========================================");
+                                    // console.log("========================================");
+                                    // console.log("=========== LOS POR VALIDAR ====================");
+                                    // console.log("id:", id, "totalProducts:", totalProducts, "unidadesEntregadas: ", unidadesEntregadas);
+                                    // console.log("TOTAL ACUMULADO:", totalGeneral);
+                                    // console.log("========================================");
                                 }}
 
                             />
@@ -423,11 +423,11 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                         onDataProduct={(id, totalProducts, unidadesEntregadas) => {
                                             updateProductStatus(id, totalProducts, 'validated', unidadesEntregadas);
 
-                                            console.log("========================================");
-                                            console.log("=========== LOsS VALIDADPOS ====================");
-                                            console.log("id:", id, "totalProducts:", totalProducts, "unidadesEntregadas: ", unidadesEntregadas);
-                                            console.log("TOTAL ACUMULADO:", totalGeneral);
-                                            console.log("========================================");
+                                            // console.log("========================================");
+                                            // console.log("=========== LOsS VALIDADPOS ====================");
+                                            // console.log("id:", id, "totalProducts:", totalProducts, "unidadesEntregadas: ", unidadesEntregadas);
+                                            // console.log("TOTAL ACUMULADO:", totalGeneral);
+                                            // console.log("========================================");
                                         }}
                                     />
                                 ))}

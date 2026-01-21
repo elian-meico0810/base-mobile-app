@@ -205,18 +205,19 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     setModalVisible(true);
                 }
             } else if (alertButton) {
-                const novedades = detalles.map((productItemData: any) => ({
-                    causalCodigo: CausalRefusedEnum.CS_NOV_OTRO,
-                    valor: String(productItemData?.unidadesSolicitadas ?? "0"),
-                }));
-                const payload = {
-                    pedidoDetalleId: Number(detalles[0]?.id),
+                const payload = detalles.map((pedido: any) => ({
+                    pedidoDetalleId: Number(pedido.id),
                     totalEntregado: 0,
                     totalImpuestoEntrega: 0,
                     unidadesEntregadas: 0,
-                    unidadesRechazadas: Number(detalles[0]?.unidadesSolicitadas),
-                    novedades,
-                };
+                    unidadesRechazadas: Number(pedido.unidadesSolicitadas),
+                    novedades: [
+                        {
+                            causalCodigo: CausalRefusedEnum.CS_NOV_OTRO,
+                            valor: String(pedido.unidadesSolicitadas),
+                        }
+                    ],
+                }));
 
                 const response = await detailsRepositoryImpl.noveltyOrder(
                     payload
@@ -276,7 +277,6 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         }
     };
 
-
     const submitDataByActions = async (data?: ReasonData[]) => {
         try {
 
@@ -293,7 +293,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 return;
             }
 
-            if (modalStatusNovelty == "left" && productItemData?.id || successButton
+            if (modalStatusNovelty == "left" && productItemData?.id
             ) {
                 // console.log("=====================================");
                 // console.log("Entro al if");
@@ -315,8 +315,9 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
             } else {
                 if (modalStatusNovelty == "right" &&
-                    productItemData?.id || alertButton
+                    productItemData?.id
                 ) {
+
                     // console.log("=====================================");
                     // console.log("Entro al else if");
                     // console.log("modalStatusNovelty: ", modalStatusNovelty);
@@ -365,18 +366,18 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                             pedidoDetalleId: Number(productItemData?.id),
                             unidadesRechazadas: Number(totalUnits),
                             unidadesEntregadas: Number(productItemData?.unidadesSolicitadas) - Number(totalUnits),
-                            totalEntregado: 1,
+                            totalEntregado: calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_5, totalUnits),
                             totalImpuestoEntrega: calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_7, totalUnits),
                             novedades: novedadesArray
                         };
 
                         // Verificar si hay novedades para enviar
                         const response = await detailsRepositoryImpl.noveltyOrder(
-                            payload
+                            [payload]
                             , token);
 
                         novedadesArray = [];
-                        
+
                         if (response?.statusCode != 200) {
                             setModalTitle("¡Alerta!");
                             setModalMessage(response.message || "Ocurrio un error al actualizar el producto.");
@@ -391,8 +392,6 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
             setProductItemData(null);
         } catch (error) {
-            console.log("error: ",error);
-            
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
             setModalVisible(true);
@@ -491,7 +490,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
 
     useEffect(() => {
-        if (modalStatusNovelty == "left" && productItemData?.id || successButton) {
+        if (modalStatusNovelty == "left" && productItemData?.id) {
             submitDataByActions();
         }
     }, [modalStatusNovelty, productItemData?.id, successButton]);

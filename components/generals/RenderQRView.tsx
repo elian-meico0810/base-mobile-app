@@ -121,7 +121,7 @@ export default function RenderQRView({
 
     const renderQRContent = () => {
         const type = getQRType();
-        
+
         if (isQRGenerating) {
             return (
                 <View style={styles.qrPlaceholder}>
@@ -222,44 +222,44 @@ export default function RenderQRView({
             </View >
 
             <Text style={styles.title}>QR {qrType}</Text>
-
+            {/* 
             {
-                phone ? (
-                    <>
-                        <View style={styles.qrContainer}>
-                            {renderQRContent()}
-                        </View>
+                phone ? ( */}
+            {/* <> */}
+            <View style={styles.qrContainer}>
+                {renderQRContent()}
+            </View>
 
-                        {/* Botones */}
-                        <View style={styles.qrButtonsContainer}>
-                            <PrimaryButton
-                                title="Enviar por Whatsapp"
-                                onPress={handleSendWhatsApp}
-                                disabled={disabled || !localQRData || isQRGenerating}
-                                width={350}
-                                height={43}
-                            />
+            {/* Botones */}
+            <View style={styles.qrButtonsContainer}>
+                <PrimaryButton
+                    title="Enviar por Whatsapp"
+                    onPress={handleSendWhatsApp}
+                    disabled={disabled || !localQRData || isQRGenerating || phone ? false : true}
+                    width={350}
+                    height={43}
+                />
 
-                            {!condPago && (
-                                <SecondaryButton
-                                    title="Cambiar tipo de QR"
-                                    onPress={handleChangeTypeWithClean}
-                                    disabled={disabled || isQRGenerating}
-                                    width={350}
-                                    height={43}
-                                />
-                            )}
-                        </View>
-                    </>
-                ) : (
-                    <Text style={styles.bottomCenterText}>
-                        Por favor, ingrese un número de teléfono.
-                    </Text>
-                )
-            }
-
-
-
+                {!condPago && (
+                    <SecondaryButton
+                        title="Cambiar tipo de QR"
+                        onPress={handleChangeTypeWithClean}
+                        disabled={disabled || isQRGenerating}
+                        width={350}
+                        height={43}
+                    />
+                )}
+            </View>
         </>
+        //     ) : (
+        //         <Text style={styles.bottomCenterText}>
+        //             Por favor, ingrese un número de teléfono.
+        //         </Text>
+        //     )
+        // }
+
+
+
+        // </>
     );
 }

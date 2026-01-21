@@ -10,6 +10,7 @@ import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from "react";
 import {
     Dimensions,
+    Image,
     Keyboard,
     NativeSyntheticEvent,
     Platform,
@@ -48,7 +49,13 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
     const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [showSuccess, setShowSuccess] = useState(false);
     const [showErrorQRP, setShowErrorQRP] = useState(false);
+    const [showErrorQRPMessage, setShowErrorQRPMessage] = useState("Código OTP incorrecto");
+    const [showErrorQRPMessageView, setShowErrorQRPMessageView] = useState("Código OTP incorrecto");
+    const [showViewError, setViewError] = useState(false);
     const [secondsLeft, setSecondsLeft] = useState<number>(0);
+    const [resendDisabled, setResendDisabled] = useState(false);
+    const [resendSecondsLeft, setResendSecondsLeft] = useState(0);
+    const resendTimerRef = useRef<number | null>(null);
     const timerRef = useRef<number | null>(null);
 
     const router = useRouter();
@@ -194,6 +201,54 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
         }, 1000);
     };
 
+    const validateOTP = () => {
+        try {
+            let value = 2;
+
+            if (value === 2) {
+                setShowErrorQRPMessage("Has alcanzado el límite máximo de reenvíos del código OTP");
+                setShowErrorQRP(true);
+                return false;
+            }
+
+            return true;
+        } catch (error) {
+            throw error;
+        }
+    };
+
+
+
+    const resendOtp = async () => {
+        try {
+            if (resendDisabled) return;
+            const isValid = validateOTP();
+            // if (!isValid) return;
+
+            setResendDisabled(true);
+            setResendSecondsLeft(30);
+
+            if (resendTimerRef.current) {
+                clearInterval(resendTimerRef.current);
+            }
+
+            resendTimerRef.current = setInterval(() => {
+                setResendSecondsLeft(prev => {
+                    if (prev <= 1) {
+                        clearInterval(resendTimerRef.current!);
+                        resendTimerRef.current = null;
+                        setResendDisabled(false);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        } catch (error) {
+
+        }
+
+    };
+
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -272,29 +327,54 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
                             </TouchableOpacity>
                         ))}
                     </View>
+
                     {/* Código vencerá */}
-                    <TouchableOpacity
+                    <View
                         style={styles.otpExpireContainer}
-                        activeOpacity={0.7}
-                        onPress={() => {
-                            // acción futura (mostrar info, refrescar, etc.)
-                            console.log('Presionó código vencerá');
-                        }}
                     >
-                        <Text style={styles.otpExpireIcon}>⟳</Text>
+                        {secondsLeft != 0 ? (
+                            <Image
+                                source={require("@/assets/icons/RelojIcon.png")}
+                                style={styles.icon}
+                            />
+                        ) : (
+                            <Image
+                                source={require("@/assets/icons/RevertCode.png")}
+                                style={styles.icon}
+                            />
+                        )
+                        }
+
                         <Text style={styles.otpExpireText}>
                             El código vencerá en {formatTimeByMinutes(secondsLeft)} min
                         </Text>
-                    </TouchableOpacity>
+                    </View>
+
+                    {showViewError && (
+                        <View
+                            style={styles.otpExpireContainerAlert}
+                        >
+                            <Image
+                                source={require("@/assets/icons/ExistIcon.png")}
+                                style={styles.icon}
+                            />
+
+                            <Text style={styles.otpExpireAlert}>
+                                {showErrorQRPMessageView}
+                            </Text>
+                        </View>
+                    )}
 
 
                     {/* Reenviar código */}
                     <TouchableOpacity
-                        style={styles.resendContainer}
+                        style={[
+                            styles.resendContainer,
+                            resendDisabled && styles.resendDisabled
+                        ]}
                         activeOpacity={0.6}
-                        onPress={() => {
-                            console.log('Reenviar código OTP');
-                        }}
+                        disabled={resendDisabled}
+                        onPress={resendOtp}
                     >
                         <Text style={styles.otpExpireIconText}>⟳</Text>
                         <Text style={styles.resendText}>Reenviar código OTP </Text>
@@ -338,7 +418,7 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
             {showErrorQRP && (
                 <TopErrorAlert
                     visible={showErrorQRP}
-                    message="Código OTP incorrecto"
+                    message={showErrorQRPMessage}
                     onHide={() => setShowErrorQRP(false)}
                 />
             )}
@@ -354,6 +434,14 @@ const styles = StyleSheet.create({
         width: width,
         height: height,
         alignItems: 'center',
+    },
+    icon: {
+        width: 12,
+        height: 12,
+        marginRight: 4,
+    },
+    resendDisabled: {
+        opacity: 0.5,
     },
     background: {
         position: 'absolute',
@@ -484,9 +572,20 @@ const styles = StyleSheet.create({
         gap: 4,
         width: 202,
         height: 24,
-        borderRadius: 40,
+        borderRadius: 100,
         paddingHorizontal: 8,
         backgroundColor: '#CCD0DA',
+        marginTop: 16,
+    },
+    otpExpireContainerAlert: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        width: 202,
+        height: 24,
+        borderRadius: 100,
+        paddingHorizontal: 30,
+        backgroundColor: '#FDEAEA',
         marginTop: 16,
     },
     otpExpireIcon: {
@@ -495,9 +594,10 @@ const styles = StyleSheet.create({
         color: '#141D32',
     },
     otpExpireIconText: {
-        fontSize: 18,
+        fontSize: 20,
         lineHeight: 16,
         color: '#164194',
+        fontWeight: '700',
     },
     otpExpireText: {
         fontFamily: 'Rubik',
@@ -516,5 +616,12 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         textAlign: 'center',
         color: '#164194',
+    },
+    otpExpireAlert: {
+        fontFamily: 'Rubik',
+        fontWeight: '400',
+        fontSize: 12,
+        lineHeight: 16,
+        color: '#C62828',
     },
 });

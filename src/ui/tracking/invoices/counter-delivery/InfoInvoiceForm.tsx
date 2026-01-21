@@ -80,6 +80,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [isInicilizationApi, setInicilizationApi] = useState(false);
     const [showOptionRefused, setShowOptionRefused] = useState<OptionsRefusedPorps>(null);
     const [valueOrderCalculate, setValueOrderCalculate] = useState(0);
+    const [valueOrderPaymentByType, setValuePaymentByType] = useState(0);
     const [newValue, setNewValue] = useState(0);
     const [showPorductData, setPorductData] = useState<Document[]>([]);
     const [showPaymentPending, setShowPaymentPending] = useState(false);
@@ -150,6 +151,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             }
         };
         getDataProduct();
+        getSuccessOrderPayment();
         fetchGuide();
     }, [Number(initialGuide?.facturas[0]?.numeroFactura), token]);
 
@@ -585,6 +587,28 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         }
     };
 
+    const getSuccessOrderPayment = async () => {
+        try {
+            const responseQueryData = await invoiceRepositoryImpl.successOrderPayment(
+                Number(initialGuide?.pedidos?.[0]?.id),
+                token
+            );
+            if (responseQueryData?.statusCode === 200 && Array.isArray(responseQueryData.data)) {
+                const total = responseQueryData.data
+                    .map(item => Number(item.valorRegistrado ?? 0))
+                    .reduce((a, b) => a + b, 0);
+
+                setValuePaymentByType(total);
+            }
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const onRefresh = async () => {
         setRefreshing(true);
 
@@ -643,6 +667,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
                 }
 
+                getSuccessOrderPayment();
                 setRefreshing(false);
             }, 2000);
         } catch (error) {
@@ -838,8 +863,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const totalAproved = paymentSuccessful?.pagos
         ?.filter(pago => pago.estado === "APPROVED")
         .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0);
+
+    const totalOrderPayment = Number(totalAproved) + Number(valueOrderPaymentByType);
     const totalValue = (Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.dfr)) - Number(valueOrderCalculate);
-    const totalRecauder = (Number(totalValue) - Number(totalAproved) - Number(valueOrderCalculate)) || null;
+    const totalRecauder = (Number(totalValue) - Number(totalOrderPayment) - Number(valueOrderCalculate)) || null;
 
     var value = '';
     switch (guide?.facturas[0]?.tipo) {
@@ -1031,7 +1058,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         {/* Información del pedido */}
                         <View style={styles.row}>
                             <Text style={styles.label}>Valor recaudado</Text>
-                            <Text style={styles.value}>{'$ ' + Number(totalAproved || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
+                            <Text style={styles.value}>{'$ ' + Number(totalOrderPayment || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
                         </View>
 
                         <View style={styles.row}>

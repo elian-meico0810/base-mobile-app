@@ -219,7 +219,7 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
 
   async createPaymentType(data: CreatePaymentTypeProps[], token: string) {
     try {
-      
+
       const response = await authApi.post(
         `${API_ROUTES.CREATE_PAYMENT_BY_TYPE}`,
         data,
@@ -236,4 +236,20 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
       throw error;
     }
   },
+
+  async successOrderPayment(idPedido: number, token: string) {
+    try {
+
+      const response = await authApi.get(`${API_ROUTES.GET_REPORT_PAYMENT_IN_APP}${idPedido}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
 };

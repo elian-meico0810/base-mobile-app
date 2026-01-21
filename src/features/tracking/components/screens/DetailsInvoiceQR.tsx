@@ -146,8 +146,6 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
         }
     };
 
-    console.log("statusTypeQR: ",statusTypeQR);
-    
     useEffect(() => {
         if (statusTypeQR || data?.facturas?.[0]?.condPago == TypeConPagoEnum.TAT) {
             generateQR();

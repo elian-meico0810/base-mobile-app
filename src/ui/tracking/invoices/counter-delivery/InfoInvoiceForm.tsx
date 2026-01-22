@@ -562,7 +562,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         }
     };
 
-    const validateButton = async () => {
+    const validateButton = () => {
         try {
             setShowDetailInvoiceQR(false);
             setShowPayment(false);
@@ -570,7 +570,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 setModalTitle("¡Alerta!");
                 setModalMessage("Debe indicar que ya llegó al lugar de la dirección para poder ejecutar esta acción.");
                 setModalVisible(true);
-                return;
+                return false;
             }
 
             if (condPago) {
@@ -578,6 +578,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 setModalgenerateQR(true);
                 setShowDetailInvoiceQR(true);
             }
+
+            return true;
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
@@ -1079,7 +1081,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             <TouchableOpacity
                                 style={styles.qrButton}
                                 onPress={() => {
-                                    // validateButton();
+                                    const isValidButton = validateButton();
+                                    if(!isValidButton) return;
                                     // setShowDetailInvoiceQR(true);
                                     setTypePayment(true);
                                 }}

@@ -168,7 +168,7 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
             startOtpTimer();
             // Ocultar teclado al confirmar
             dismissKeyboard();
-
+            // setViewError(true);
             console.log("Llego a la funcion redirectContinue");
             console.log("OTP completo:", otpValues.join(""));
 
@@ -328,57 +328,79 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
                         ))}
                     </View>
 
-                    {/* Código vencerá */}
-                    <View
-                        style={styles.otpExpireContainer}
-                    >
-                        {secondsLeft != 0 ? (
-                            <Image
-                                source={require("@/assets/icons/RelojIcon.png")}
-                                style={styles.icon}
-                            />
-                        ) : (
-                            <Image
-                                source={require("@/assets/icons/RevertCode.png")}
-                                style={styles.icon}
-                            />
-                        )
-                        }
 
-                        <Text style={styles.otpExpireText}>
-                            El código vencerá en {formatTimeByMinutes(secondsLeft)} min
-                        </Text>
-                    </View>
+                    {showViewError ? (
+                        <>
+                            <View
+                                style={styles.otpExpireContainerAlert}
+                            >
+                                <Image
+                                    source={require("@/assets/icons/ExistIcon.png")}
+                                    style={styles.icon}
+                                />
 
-                    {showViewError && (
-                        <View
-                            style={styles.otpExpireContainerAlert}
-                        >
-                            <Image
-                                source={require("@/assets/icons/ExistIcon.png")}
-                                style={styles.icon}
-                            />
+                                <Text style={styles.otpExpireAlert}>
+                                    {showErrorQRPMessageView}
+                                </Text>
+                            </View>
 
-                            <Text style={styles.otpExpireAlert}>
-                                {showErrorQRPMessageView}
-                            </Text>
-                        </View>
-                    )}
+                            <View
+                                style={styles.resendContainerCamera}
+                            >
+                                <Image
+                                    source={require("@/assets/icons/CameraIcon.png")}
+                                    style={styles.iconCamera}
+                                />
+
+                                <Text style={styles.resendText}>
+                                    {"Validar con captura de imagen"}
+                                </Text>
+                            </View>
+                        </>
+
+                    ) :
+                        <>
+                            {/* Código vencerá */}
+                            <View
+                                style={styles.otpExpireContainer}
+                            >
+                                {secondsLeft != 0 ? (
+                                    <Image
+                                        source={require("@/assets/icons/RelojIcon.png")}
+                                        style={styles.icon}
+                                    />
+                                ) : (
+                                    <Image
+                                        source={require("@/assets/icons/RevertCode.png")}
+                                        style={styles.icon}
+                                    />
+                                )
+                                }
+
+                                <Text style={styles.otpExpireText}>
+                                    El código vencerá en {formatTimeByMinutes(secondsLeft)} min
+                                </Text>
+                            </View>
+
+                            {/* Reenviar código */}
+                            <TouchableOpacity
+                                style={[
+                                    styles.resendContainer,
+                                    resendDisabled && styles.resendDisabled
+                                ]}
+                                activeOpacity={0.6}
+                                disabled={resendDisabled}
+                                onPress={resendOtp}
+                            >
+                                <Text style={styles.otpExpireIconText}>⟳</Text>
+                                <Text style={styles.resendText}>Reenviar código OTP </Text>
+                            </TouchableOpacity>
+
+                        </>
+
+                    }
 
 
-                    {/* Reenviar código */}
-                    <TouchableOpacity
-                        style={[
-                            styles.resendContainer,
-                            resendDisabled && styles.resendDisabled
-                        ]}
-                        activeOpacity={0.6}
-                        disabled={resendDisabled}
-                        onPress={resendOtp}
-                    >
-                        <Text style={styles.otpExpireIconText}>⟳</Text>
-                        <Text style={styles.resendText}>Reenviar código OTP </Text>
-                    </TouchableOpacity>
 
                 </View>
 
@@ -439,6 +461,12 @@ const styles = StyleSheet.create({
         width: 12,
         height: 12,
         marginRight: 4,
+    },
+    iconCamera: {
+        width: 14,
+        height: 14,
+        marginRight: 4,
+        resizeMode: 'contain',
     },
     resendDisabled: {
         opacity: 0.5,
@@ -609,6 +637,13 @@ const styles = StyleSheet.create({
     resendContainer: {
         marginTop: 24,
         flexDirection: 'row',
+        gap: 6,
+    },
+    resendContainerCamera: {
+        marginTop: 24,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
         gap: 6,
     },
     resendText: {

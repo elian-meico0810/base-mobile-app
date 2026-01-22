@@ -59,7 +59,6 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
     const timerRef = useRef<number | null>(null);
 
     const router = useRouter();
-
     const inputRefs = useRef<TextInput[]>([]);
 
     // Verificar si todos los campos OTP están llenos
@@ -161,15 +160,34 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
         setCurrentFocusIndex(-1);
     };
 
-    const redirectContinue = async () => {
+    const validateCodeOTP = async () => {
         try {
             setShowSuccess(true);
-            // setShowErrorQRP(true);
+            setShowErrorQRP(true);
             startOtpTimer();
             // Ocultar teclado al confirmar
             dismissKeyboard();
-            // setViewError(true);
+            setViewError(true);
             console.log("Llego a la funcion redirectContinue");
+            console.log("OTP completo:", otpValues.join(""));
+
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const reentryCodeOTP = async () => {
+        try {
+            resendOtp();
+            startOtpTimer();
+            // Ocultar teclado al confirmar
+            dismissKeyboard();
+            setViewError(true);
+            console.log("Llego a la funcion reentryCodeOTP");
             console.log("OTP completo:", otpValues.join(""));
 
         } catch (error) {
@@ -216,8 +234,6 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
             throw error;
         }
     };
-
-
 
     const resendOtp = async () => {
         try {
@@ -390,7 +406,7 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
                                 ]}
                                 activeOpacity={0.6}
                                 disabled={resendDisabled}
-                                onPress={resendOtp}
+                                onPress={reentryCodeOTP}
                             >
                                 <Text style={styles.otpExpireIconText}>⟳</Text>
                                 <Text style={styles.resendText}>Reenviar código OTP </Text>
@@ -400,13 +416,10 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
 
                     }
 
-
-
                 </View>
 
                 <View style={styles.spacer} />
             </View>
-
 
             <View style={[
                 styles.buttonWrapper,
@@ -414,7 +427,7 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
             ]}>
                 <PrimaryButton
                     title="Confirmar"
-                    onPress={redirectContinue}
+                    onPress={validateCodeOTP}
                     disabled={!isOtpComplete}
                     width={328}
                     height={43}

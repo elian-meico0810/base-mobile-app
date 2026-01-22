@@ -1,5 +1,5 @@
 import NetInfo from "@react-native-community/netinfo";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     Animated,
     Dimensions,
@@ -84,6 +84,7 @@ export function NetworkStatus() {
 
 
     if (!visible) return null;
+    const isSmallScreen = height <= 780;
 
     return (
         <View style={styles.overlay}>
@@ -109,14 +110,21 @@ export function NetworkStatus() {
                     <Text style={styles.subtitle}>
                         Verifica tu conexión e inténtalo nuevamente.
                     </Text>
+                    <View style={{
+                        alignItems: 'center',
+                        position: 'absolute',
+                        bottom: 50,
+                        alignSelf: 'center'
+                    }}>
+                        <PrimaryButton
+                            title="Reintentar"
+                            onPress={retryConnection}
+                            disabled={checking}
+                            width={328}
+                            height={50}
+                        />
+                    </View>
 
-                    <PrimaryButton
-                        title="Reintentar"
-                        onPress={retryConnection}
-                        disabled={checking} 
-                        width={328}
-                        height={50}
-                    />
                 </View>
             </Animated.View>
 

@@ -90,6 +90,12 @@ cd android
 .\gradlew assembleRelease
 ```
 
+### 📱 PASO 2 — Generar AAB release
+
+```powershell
+.\gradlew bundleRelease
+```
+
 ---
 
 ## ✅ Resultado esperado
@@ -108,6 +114,13 @@ android\app\build\outputs\apk\release\app-release.apk
 
 Este archivo puede instalarse directamente en dispositivos Android.
 
+
+📦 Dónde queda el AAB
+
+Después de correr el comando, el archivo se genera aquí:
+```text
+android/app/build/outputs/bundle/release/app-release.aab
+```
 ---
 
 ## 📝 Notas importantes

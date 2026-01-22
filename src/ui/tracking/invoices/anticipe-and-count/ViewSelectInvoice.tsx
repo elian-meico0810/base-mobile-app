@@ -4,10 +4,10 @@ import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails'
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
+import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeDelivery, TypeInvoiceEnum } from '@/src/constants/GuideStates';
-import AllSelectedOrder from '@/src/features/tracking/components/checkbox/AllSelectedOrder';
 import OneSelectedOrder from '@/src/features/tracking/components/checkbox/OneSelectedOrder';
 import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
 import InvoicesOneList from '@/src/features/tracking/components/tabs/InvoiceIOnetem';
@@ -211,7 +211,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");
-                setModalMessage("Debe especificar un estado de entrega.");
+                setModalMessage("Debe especificar un estado de entrega1111.");
                 setModalVisible(true);
                 return;
             }
@@ -253,6 +253,22 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const handleSubmitData = async () => {
 
         try {
+            const numeroFactura =
+                selectedMultipleInvoices?.[0]?.facturas?.[0]?.numeroFactura;
+
+            const exitDocument = conceptDelivery?.some(
+                (item: any) => String(item.documentMeico) === String(numeroFactura)
+            );
+
+            if (!exitDocument && showCheckbox) {
+                setValidateException(true);
+                btnRef.current?.reset();
+                setModalTitle("¡Alerta!");
+                setModalMessage("Debe especificar un estado de entrega.");
+                setModalVisible(true);
+                return;
+            }
+
             if (selectedMultipleInvoices.length === 0) {
                 setValidateException(true);
                 btnRef.current?.reset();
@@ -563,7 +579,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
     return (
         <ThemedView style={styles.container}>
-            {/* <NetworkStatus /> */}
+            <NetworkStatus />
 
             {/* Fondo gris */}
             <View style={styles.background} />
@@ -694,22 +710,6 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 {(showCheckbox && selectedMultipleInvoices.length <= 1 && selectedMultipleInvoices[0]?.facturas[0]?.tipo != TypeInvoiceEnum.CONTADO_EFECTIVO) && (
                     <OneSelectedOrder
                         data={selectedMultipleInvoices[0] ? [selectedMultipleInvoices[0]] : undefined}
-                        conceptDelivery={conceptDelivery}
-                        onSelectionChange={(isSelected, selectedData) => {
-                            if (!isSelected) setShowCheckbox(false);
-                        }}
-                        uploadPhoto={() => setUploadPhoto(true)}
-                        onOpenRefusedModal={() => setShowModalRefused(true)}
-                        onStatusChange={(status) => { }}
-                        selectedStatus={showStatusDelivery}
-                        setShowStatusDelivery={setShowStatusDelivery}
-                    />
-                )}
-
-
-                {(conditionData) && (
-                    <AllSelectedOrder
-                        data={selectedMultipleInvoices ? selectedMultipleInvoices : undefined}
                         conceptDelivery={conceptDelivery}
                         onSelectionChange={(isSelected, selectedData) => {
                             if (!isSelected) setShowCheckbox(false);

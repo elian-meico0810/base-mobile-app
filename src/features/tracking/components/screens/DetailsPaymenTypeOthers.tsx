@@ -28,6 +28,7 @@ interface DetailsPaymenTypeOthersProps {
     onPressPayment: (value: number, observation: string) => void;
     onErrorPayment?: () => void;
     statusTypeQR?: boolean;
+    totalRecauder?: number;
 }
 
 interface Invoice {
@@ -38,7 +39,7 @@ interface Invoice {
     valorTotal: number;
 }
 
-export function DetailsPaymenTypeOthers({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone, onGenerateQR, onPressPayment, onErrorPayment, statusTypeQR }: DetailsPaymenTypeOthersProps) {
+export function DetailsPaymenTypeOthers({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone, onGenerateQR, onPressPayment, onErrorPayment, statusTypeQR, totalRecauder}: DetailsPaymenTypeOthersProps) {
     const [loading, setLoading] = useState(false);
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
@@ -102,6 +103,20 @@ export function DetailsPaymenTypeOthers({ data, onClose, onChangePhone, disabled
         return num.toLocaleString('es-ES');
     };
 
+    const formatCOP = (value: string | number) => {
+        if (!value) return '';
+
+        const number = Number(value);
+        if (isNaN(number)) return '';
+
+        return number.toLocaleString('es-CO', {
+            style: 'currency',
+            currency: 'COP',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2,
+        });
+    };
+
     return (
         <View style={styles.overlay} pointerEvents="box-none">
             {/* FONDO — SOLO CAPTURA TOQUES FUERA */}
@@ -133,10 +148,10 @@ export function DetailsPaymenTypeOthers({ data, onClose, onChangePhone, disabled
                 <Text style={styles.phoneDescription}>
                     Ingresa la cantidad a justificar en este pedido..
                 </Text>
-                
+
                 <View style={styles.box}>
                     <Row label="N° de factura" value={dataInvoice.numeroFactura} />
-                    <Row bold label="Valor a pagar" value={`$${formatNumber(dataInvoice.valorRecaudar)}`} />
+                    <Row bold label="Valor a pagar" value={`$${formatNumber(Number(totalRecauder))}`} />
                 </View>
 
                 {/* Primer input - Cantidad recibida */}
@@ -145,14 +160,14 @@ export function DetailsPaymenTypeOthers({ data, onClose, onChangePhone, disabled
                         <TextInput
                             style={styles.phoneInput}
                             keyboardType="number-pad"
-                            value={formatPhoneNumber(valueSet)}
+                            value={formatCOP(valueSet)}
                             onChangeText={(text) => {
                                 const onlyNumbers = text.replace(/[^0-9]/g, '');
                                 setValue(onlyNumbers);
                             }}
                             editable={true}
-                            placeholderTextColor="#788095"
                         />
+
                     </View>
                 </View>
 
@@ -307,7 +322,7 @@ const styles = StyleSheet.create({
         borderColor: "#E0E0E0",
         paddingHorizontal: 16,
         paddingVertical: 12,
-        height: 100, 
+        height: 100,
         position: 'relative',
     },
     phoneInputTwo: {
@@ -319,7 +334,7 @@ const styles = StyleSheet.create({
         textAlignVertical: 'top',
         lineHeight: 20,
         paddingTop: 0,
-        paddingBottom: 20, 
+        paddingBottom: 20,
     },
     charCount: {
         position: 'absolute',

@@ -167,7 +167,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const handleSubmitEfecty = async (value: number) => {
         try {
             setLoading(true);
-
+            setRefreshingOnPress(true);
             if (value <= 0) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("El campo es requerido.");
@@ -191,15 +191,13 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     pedidos: [String(guide?.pedidos?.[0]?.codigo)],
                 }
             ], token);
-
+            
             if (response?.statusCode === 200) {
                 setModalTitle("¡Procesado!");
                 setModalMessage(`Registro(s) procesado exitosamente.`);
                 setModalVisible(true);
 
             } else {
-                console.log("response: ", response);
-
                 setModalTitle("¡Alerta!");
                 setModalMessage(response?.message ?? "Ocurrió un error inesperado.");
                 setModalVisible(true);
@@ -217,7 +215,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const handleSubmitOthers = async (value: number, observation?: string) => {
         try {
             setLoading(true);
-
+            setRefreshingOnPress(true);
             if (value <= 0) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("El campo es requerido.");
@@ -248,8 +246,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 setModalVisible(true);
 
             } else {
-                console.log("response: ", response);
-
                 setModalTitle("¡Alerta!");
                 setModalMessage(response?.message ?? "Ocurrió un error inesperado 3.");
                 setModalVisible(true);
@@ -477,7 +473,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     confirmationStatus: 'true'
                 }
             });
-            console.log("handleSubmitConfirmation");
 
         } catch (error: any) {
             setValidateException(true);
@@ -590,6 +585,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const getSuccessOrderPayment = async () => {
         try {
+            
             const responseQueryData = await invoiceRepositoryImpl.successOrderPayment(
                 Number(initialGuide?.pedidos?.[0]?.id),
                 token
@@ -864,10 +860,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const totalAproved = paymentSuccessful?.pagos
         ?.filter(pago => pago.estado === "APPROVED")
         .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0);
-
+        
     const totalOrderPayment = Number(totalAproved) + Number(valueOrderPaymentByType);
     const totalValue = (Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.dfr)) - Number(valueOrderCalculate);
-    const totalRecauder = (Number(totalValue) - Number(totalOrderPayment) - Number(valueOrderCalculate)) || null;
+    const totalRecauder = Math.max(0, Number(totalValue) - Number(totalOrderPayment));
 
     var value = '';
     switch (guide?.facturas[0]?.tipo) {
@@ -1081,7 +1077,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                 style={styles.qrButton}
                                 onPress={() => {
                                     const isValidButton = validateButton();
-                                    if(!isValidButton) return;
+                                    if (!isValidButton) return;
                                     // setShowDetailInvoiceQR(true);
                                     setTypePayment(true);
                                 }}
@@ -1375,6 +1371,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     }}
                     onErrorPayment={() => setShowErrorQRP(true)}
                     statusTypeQR={typeQRSendWhatsApp}
+                    totalRecauder={totalRecauder}
+
                 />
             )}
             {typePaymentTypeOthers && (
@@ -1390,11 +1388,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     onGenerateQR={handleGenerateQR}
                     onPressPayment={(value, observation) => {
                         handleSubmitOthers(Number(value), observation)
-
-
                     }}
                     onErrorPayment={() => setShowErrorQRP(true)}
                     statusTypeQR={typeQRSendWhatsApp}
+                    totalRecauder={totalRecauder}
                 />
             )}
             {loading && <LoadingBlue />}

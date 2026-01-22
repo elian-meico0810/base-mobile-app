@@ -564,21 +564,20 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const validateButton = () => {
         try {
-            setShowDetailInvoiceQR(false);
-            setShowPayment(false);
-            if (!routeStarted && !isSelectInvocies) {
+            // setShowDetailInvoiceQR(false);
+            // setShowPayment(false);
+            if (!routeStarted && !isSelectInvocies && !detailsCounterDelivery) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Debe indicar que ya llegó al lugar de la dirección para poder ejecutar esta acción.");
                 setModalVisible(true);
                 return false;
             }
 
-            if (condPago) {
-                setTypeQRSendWhatsApp(true);
-                setModalgenerateQR(true);
-                setShowDetailInvoiceQR(true);
-            }
-
+            // if (condPago) {
+            //     setTypeQRSendWhatsApp(true);
+            //     setModalgenerateQR(true);
+            //     setShowDetailInvoiceQR(true);
+            // }
             return true;
         } catch (error) {
             setModalTitle("¡Error!");

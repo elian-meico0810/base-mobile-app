@@ -70,7 +70,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     const [productsSold, setProductsSold] = useState<Detail[]>([]);
     const [productsPending, setProductsPending] = useState<Detail[]>([]);
     const [activeSwipeId, setActiveSwipeId] = useState<string | null>(null);
-
+    
 
     useEffect(() => {
         if (showDirection) {
@@ -238,7 +238,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     };
 
     useEffect(() => {
-        if (serviceUrl == "" || serviceToken == "") {
+        // if (serviceUrl == "" || serviceToken == "") {
             const loadSecureData = async () => {
 
                 const testToken = await SecureStore.getItemAsync('service_token');
@@ -250,7 +250,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
             };
             loadSecureData();
 
-        }
+        // }
     }, []);
 
     const hasItemsToValidate = pendingDetailsFlat.some(item =>

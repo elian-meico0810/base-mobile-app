@@ -449,9 +449,11 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     };
 
     useEffect(() => {
-        if (Array.isArray(showPorductData) && showPorductData.length > 0) {
+        if (token) {
             const checkDateToken = async () => {
                 const dateToken = await SecureStore.getItemAsync('date_token');
+                console.log("dateToken: ",dateToken);
+                
                 if (dateToken) {
                     // Parsear la fecha guardada
                     const parts = dateToken.split(/[- :]/);
@@ -475,12 +477,14 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     if (now > midnightOfSavedDay) {
                         tokenData();
                     }
+                }else{
+                    tokenData();
                 }
             };
             checkDateToken();
 
         }
-    }, [showPorductData]);
+    }, [token]);
 
 
     useEffect(() => {
@@ -497,6 +501,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
     const tokenData = async () => {
         try {
+            
             const responseData = await detailsRepositoryImpl.tokenPorducts(token);
             if (responseData?.statusCode == 200 && responseData?.data &&
                 !Array.isArray(responseData.data) &&

@@ -73,11 +73,16 @@ export const ProductItem = ({
         code?: string
     ): string | null => {
         if (!baseUrl || !token || !code) return null;
-        console.log("web: ",`${baseUrl}/${code}.webp${token}`);
+        // console.log("web: ", `${baseUrl}/${code}.webp${token}`);
         return `${baseUrl}/${code}.webp${token}`;
     };
 
+
     const imagUrl = buildImageUrl(testUrl, testToken, item?.producto?.codigo);
+    const formattedImagUrl = imagUrl
+        ? imagUrl.replace(/\s+/g, '')
+        : null;
+
     useEffect(() => {
         if (onDataProduct) {
             onDataProduct(item.id, calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_1), item?.unidadesEntregadas);
@@ -307,7 +312,7 @@ export const ProductItem = ({
 
                 } else if (isLeftSwipe) {
                     onItemData?.(item);
-                    
+
                     // Para swipe izquierdo: no afecta a otros elementos
                     setSwipeDirection('left');
                     setIsSwiped(true);
@@ -410,9 +415,9 @@ export const ProductItem = ({
             >
                 <View style={styles.productRow}>
                     <View style={styles.imageContainer}>
-                        {imagUrl ? (
+                        {formattedImagUrl ? (
                             <Image
-                                source={{ uri: imagUrl }}
+                                source={{ uri: formattedImagUrl }}
                                 style={styles.productImage}
                                 resizeMode="cover"
                             />

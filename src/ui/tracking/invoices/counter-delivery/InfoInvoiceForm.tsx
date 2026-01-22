@@ -188,10 +188,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     valorRegistrado: value,
                     tipoPago: "TIP_PAG_EFECTIVO",
                     descripcion: "Transferencia",
-                    pedidos: [String(guide?.pedidos?.[0]?.codigo)],
+                    pedidos: [String(initialGuide?.pedidos?.[0]?.codigo)],
                 }
             ], token);
-            
+
             if (response?.statusCode === 200) {
                 setModalTitle("¡Procesado!");
                 setModalMessage(`Registro(s) procesado exitosamente.`);
@@ -236,7 +236,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     valorRegistrado: value,
                     tipoPago: "TIP_PAG_OTRO",
                     descripcion: String(observation),
-                    pedidos: [String(guide?.pedidos?.[0]?.codigo)],
+                    pedidos: [String(initialGuide?.pedidos?.[0]?.codigo)],
                 }
             ], token);
 
@@ -585,7 +585,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const getSuccessOrderPayment = async () => {
         try {
-            
+
             const responseQueryData = await invoiceRepositoryImpl.successOrderPayment(
                 Number(initialGuide?.pedidos?.[0]?.id),
                 token
@@ -860,7 +860,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const totalAproved = paymentSuccessful?.pagos
         ?.filter(pago => pago.estado === "APPROVED")
         .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0);
-        
+
     const totalOrderPayment = Number(totalAproved) + Number(valueOrderPaymentByType);
     const totalValue = (Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.dfr)) - Number(valueOrderCalculate);
     const totalRecauder = Math.max(0, Number(totalValue) - Number(totalOrderPayment));
@@ -1213,6 +1213,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     onPressPayment={() => setRefreshingOnPress(true)}
                     onErrorPayment={() => setShowErrorQRP(true)}
                     statusTypeQR={typeQRSendWhatsApp}
+                    totalRecauder={totalRecauder}
+
                 />
             )}
 
@@ -1236,6 +1238,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         setModalgenerateQR(false);
                     }}
                     onSendWhatsApp={handlSendWhatsApp}
+                    totalRecauder={totalRecauder}
+
                 />
             )}
 

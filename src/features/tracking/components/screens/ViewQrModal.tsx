@@ -4,7 +4,7 @@ import RenderQRView from "@/components/generals/RenderQRView";
 import { Row } from "@/components/generals/Row";
 import { TypeConPagoEnum } from "@/src/constants/GuideStates";
 import { formatNumber } from "@/src/utils/uitls";
-import React, { useState } from "react";
+import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface ViewQrModalQRProps {
@@ -21,6 +21,7 @@ interface ViewQrModalQRProps {
     qrType?: string;
     onSendWhatsApp?: () => void;
     onChangeQRType?: () => void;
+    totalRecauder?: number;
 }
 
 interface Invoice {
@@ -44,7 +45,8 @@ export function ViewQrModal({
     qrData,
     qrType = 'Aplicación Bancaria',
     onSendWhatsApp,
-    onChangeQRType
+    onChangeQRType,
+    totalRecauder
 }: ViewQrModalQRProps) {
     const [loading, setLoading] = useState(false);
     const [currentView, setCurrentView] = useState<ViewType>('main');
@@ -61,7 +63,7 @@ export function ViewQrModal({
         condPago: "",
     };
     const condPago = dataInvoice?.condPago == TypeConPagoEnum.TAT;
-    
+
     const handleSendWhatsApp = () => {
         try {
             if (!phone || !/^\d{10}$/.test(phone)) {
@@ -121,6 +123,8 @@ export function ViewQrModal({
                     styles={styles}
                     formatNumber={formatNumber}
                     Row={Row}
+                    totalRecauder={totalRecauder}
+
                 />
             </View>
 

@@ -22,7 +22,7 @@ interface DetailsInvoiceQRProps {
     onPressPayment: () => void;
     onErrorPayment?: () => void;
     statusTypeQR?: boolean;
-
+    totalRecauder?: number;
 }
 
 interface Invoice {
@@ -33,20 +33,20 @@ interface Invoice {
     valorTotal: number;
 }
 
-export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone, onGenerateQR, onPressPayment, onErrorPayment, statusTypeQR }: DetailsInvoiceQRProps) {
+export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone, onGenerateQR, onPressPayment, onErrorPayment, statusTypeQR, totalRecauder }: DetailsInvoiceQRProps) {
     const [loading, setLoading] = useState(false);
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [modalVisible, setModalVisible] = useState(false);
-    
+
     const dataInvoice: Invoice = data?.facturas?.[0] ?? {
         dfr: 0,
         numeroFactura: "",
         valorRecaudar: 0,
         valorTotal: 0,
         condPago: "",
-    };  
+    };
 
 
     const paymentGateway = async () => {
@@ -169,7 +169,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                 <View style={styles.box}>
                     <Row label="N° de factura" value={dataInvoice.numeroFactura} />
                     <Row label="Valor total" value={`$${formatNumber(dataInvoice.valorTotal)}`} />
-                    <Row bold label="Valor a pagar" value={`$${formatNumber(dataInvoice.valorRecaudar)}`} />
+                    <Row bold label="Valor a pagar" value={`$${formatNumber(Number(totalRecauder))}`} />
                 </View>
 
                 <View style={styles.phoneContainer}>

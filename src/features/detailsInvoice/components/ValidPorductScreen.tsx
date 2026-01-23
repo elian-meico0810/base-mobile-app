@@ -72,13 +72,11 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
         return `${baseUrl}/${code}.webp${token}`;
     };
 
-    const imagUrl = buildImageUrl(
-        testUrl,
-        testToken,
-        item?.producto?.codigo
-    );
+    const imagUrl = buildImageUrl(testUrl, testToken, item?.producto?.codigo);
+    const formattedImagUrl = imagUrl
+        ? imagUrl.replace(/\s+/g, '')
+        : null;
 
-    
     useEffect(() => {
         if (onDataProduct) {
             onDataProduct(item.id, calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, Number(item.unidadesSolicitadas) - Number(sumTotal)), item?.unidadesEntregadas);
@@ -89,10 +87,10 @@ export const ValidPorductScreen = ({ item, isLastItem, onValidate, validationTyp
         <View style={styles.productContainer}>
             <View style={styles.productRow}>
                 <View style={styles.imageContainer}>
-                    {imagUrl ? (
+                    {formattedImagUrl ? (
                         <View style={styles.imageWrapper}>
                             <Image
-                                source={{ uri: imagUrl }}
+                                source={{ uri: formattedImagUrl }}
                                 style={styles.productImage}
                                 resizeMode="cover"
                             />

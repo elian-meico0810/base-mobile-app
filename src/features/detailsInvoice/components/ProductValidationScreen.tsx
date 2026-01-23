@@ -51,10 +51,10 @@ interface ProductValidationSectionProps {
     onItemData?: (data: Detail) => void;
     refreshing?: boolean;
     onRefreshing?: () => void;
-
+    onItemProductsPending?: (data: Detail[]) => void;
 }
 
-export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAlet, onStatusNovelty, shouldAutoValidate, modalStatusNovelty, onCloseReportPorduct, data, messages, dataPorduct, token, onItemData, refreshing, onRefreshing }: ProductValidationSectionProps) => {
+export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAlet, onStatusNovelty, shouldAutoValidate, modalStatusNovelty, onCloseReportPorduct, data, messages, dataPorduct, token, onItemData, refreshing, onRefreshing, onItemProductsPending }: ProductValidationSectionProps) => {
     const [allProducts, setAllProducts] = useState<Document[]>(dataPorduct || []);
     const [validatedProducts, setValidatedProducts] = useState<Document[]>([]);
     const [showValidatedModal, setShowValidatedModal] = useState(false);
@@ -70,13 +70,18 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     const [productsSold, setProductsSold] = useState<Detail[]>([]);
     const [productsPending, setProductsPending] = useState<Detail[]>([]);
     const [activeSwipeId, setActiveSwipeId] = useState<string | null>(null);
-    
 
     useEffect(() => {
         if (showDirection) {
             onStatusNovelty?.(showDirection);
         }
     }, [showDirection]);
+
+    useEffect(() => {
+        if (productsPending.length > 0) {
+            onItemProductsPending?.(productsPending);
+        }
+    }, [productsPending]);
 
     useEffect(() => {
         if (dataPorduct && dataPorduct.length > 0) {
@@ -193,6 +198,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
         return total + detallesNoValidados.length;
     }, 0);
 
+
     const validatedCount = allProducts.reduce((total, doc) => {
         const detallesValidados = doc.detalles.filter(detalle =>
             detalle?.estado?.codigo === 'EST_DET_VALIDADO'
@@ -239,16 +245,16 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
 
     useEffect(() => {
         // if (serviceUrl == "" || serviceToken == "") {
-            const loadSecureData = async () => {
+        const loadSecureData = async () => {
 
-                const testToken = await SecureStore.getItemAsync('service_token');
-                const testUrl = await SecureStore.getItemAsync('base_url');
+            const testToken = await SecureStore.getItemAsync('service_token');
+            const testUrl = await SecureStore.getItemAsync('base_url');
 
-                setServiceToken(testToken || "");
-                setBaseUrl(testUrl || "");
+            setServiceToken(testToken || "");
+            setBaseUrl(testUrl || "");
 
-            };
-            loadSecureData();
+        };
+        loadSecureData();
 
         // }
     }, []);
@@ -515,8 +521,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#F9F9FA',
     },
     container: {
-        minHeight: '100%',
-        paddingBottom: 10,
+        flex: 1,
+        paddingBottom: 0,
     },
     emptyList: {
         flex: 1,

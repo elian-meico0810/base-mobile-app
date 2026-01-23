@@ -72,13 +72,14 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [modalVisible, setModalVisible] = useState(false);
-    const [shoyStatusAlert, setStatusAlert] = useState(false);
     const [showNovelty, setNovelty] = useState(false);
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
-    const [isExpanded, setIsExpanded] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(true);
     const [showPorductData, setPorductData] = useState<Document[]>([]);
     const [productItemData, setProductItemData] = useState<Detail | null>(null);
+    const [productItemDataPending, setProductItemDataPending] = useState<Detail[]>([]);
     const [showTypeDetails, setTypeDetails] = useState<Cause[]>([]);
+    const [shoyStatusAlert, setStatusAlert] = useState(false);
     const router = useRouter();
     const orderId = initialGuide?.pedidos?.[0]?.id;
 
@@ -180,7 +181,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         try {
             if (modalVisible) return;
 
-            const detalles = showPorductData?.[0]?.detalles;
+            const detalles = productItemDataPending;
             setLoading(true);
 
             if (successButton) {
@@ -239,7 +240,16 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         }
     };
 
-    const hasItemsValidateSuccess = !!showPorductData?.[0]?.detalles?.some(
+
+    const validateStatus =
+        !!showPorductData?.[0]?.detalles?.length &&
+        showPorductData[0].detalles.every(
+            item => item.estado?.codigo === 'EST_DET_VALIDADO'
+        );
+
+    console.log("validateStatus: ", validateStatus);
+
+    const hasItemsValidateSuccess = productItemDataPending.some(
         item => item.estado?.codigo === 'EST_DET_VALIDADO'
     );
 
@@ -452,8 +462,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         if (token) {
             const checkDateToken = async () => {
                 const dateToken = await SecureStore.getItemAsync('date_token');
-                console.log("dateToken: ",dateToken);
-                
+
                 if (dateToken) {
                     // Parsear la fecha guardada
                     const parts = dateToken.split(/[- :]/);
@@ -477,7 +486,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     if (now > midnightOfSavedDay) {
                         tokenData();
                     }
-                }else{
+                } else {
                     tokenData();
                 }
             };
@@ -501,7 +510,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
     const tokenData = async () => {
         try {
-            
+
             const responseData = await detailsRepositoryImpl.tokenPorducts(token);
             if (responseData?.statusCode == 200 && responseData?.data &&
                 !Array.isArray(responseData.data) &&
@@ -568,7 +577,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     <TouchableOpacity
                         style={styles.expandButton}
                         onPress={isExpanded ? handleCollapse : handleExpand}
-                        disabled={hasItemsValidateSuccess}
+                        disabled={validateStatus}
 
                     >
                         <View style={styles.arrowsContainer}>
@@ -585,7 +594,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 </View>
 
                 {/* Contenido expandido */}
-                {(isExpanded && !hasItemsValidateSuccess) && (
+                {(isExpanded && !validateStatus) && (
                     <View style={styles.expandedContent}>
                         <Text style={styles.address}>{cleanSpaces(guide?.direccion)}, {cleanSpaces(guide?.poblacion)}</Text>
 
@@ -661,6 +670,11 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 refreshing={refreshing}
                 onRefreshing={() => {
                     setRefreshingOnPress(false);
+                }}
+                onItemProductsPending={(data) => {
+                    if (data.length > 0) {
+                        setProductItemDataPending(data);
+                    }
                 }}
             />
 

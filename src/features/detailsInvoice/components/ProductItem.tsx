@@ -50,6 +50,10 @@ export const ProductItem = ({
     onRefreshing,
     onDataProduct,
 }: ProductItemProps) => {
+    const isValidated = item?.estado?.codigo === 'EST_DET_VALIDADO';
+    const deliveredUnits = Number(item?.unidadesEntregadas ?? 0);
+    const rejectedUnits = Number(item?.unidadesRechazadas ?? 0);
+    const requestedUnits = Number(item?.unidadesSolicitadas ?? 0);
     const swipePosition = useRef(new Animated.Value(0)).current;
     const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
     const [isSwiped, setIsSwiped] = useState(false);
@@ -432,7 +436,14 @@ export const ProductItem = ({
                         <View style={styles.row}>
                             <View style={styles.leftInfo}>
                                 <View style={styles.productHeader}>
-                                    <Text style={styles.quantityText}>{item.unidadesSolicitadas}</Text>
+                                    <Text style={styles.quantityText}>
+                                        {isValidated ? deliveredUnits : requestedUnits}
+                                    </Text>
+                                    {isValidated && requestedUnits !== deliveredUnits && (
+                                        <Text style={styles.quantityTextValue}>
+                                            {requestedUnits}
+                                        </Text>
+                                    )}
                                 </View>
 
                                 <Text style={styles.productName} numberOfLines={2}>
@@ -442,11 +453,21 @@ export const ProductItem = ({
                                 <Text style={styles.productSku}>
                                     {item.producto.codigo.trim()}
                                 </Text>
+                                {isValidated && rejectedUnits > 0 && (
+                                    <Text style={styles.productSku}>
+                                        Rechazadas: {rejectedUnits}
+                                    </Text>
+                                )}
                             </View>
 
                             <View style={styles.priceRow}>
                                 <Text style={styles.totalPrice}>
-                                    ${formatNumber(calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_1) ?? 0)}
+                                    ${formatNumber(
+                                        (isValidated
+                                            ? calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, deliveredUnits)
+                                            : calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_1)
+                                        ) ?? 0
+                                    )}
                                 </Text>
                                 <Text style={styles.unitPrice}>$ {formatNumber(calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_2) ?? 0)} c/u</Text>
                             </View>
@@ -603,15 +624,25 @@ const styles = StyleSheet.create({
     },
     productHeader: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-start',
         alignItems: 'center',
         marginBottom: 8,
+        gap: 6,
     },
     quantityText: {
         fontFamily: 'Rubik',
         fontWeight: '800',
         fontSize: 14,
         color: '#141D32',
+    },
+    quantityTextValue: {
+        fontFamily: 'Rubik',
+        fontWeight: '600',
+        fontSize: 12,
+        lineHeight: 12,
+        textDecorationLine: 'line-through',
+        color: '#788095',
+        marginLeft: 6,
     },
     productName: {
         fontFamily: 'Rubik',

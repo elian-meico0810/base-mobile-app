@@ -14,7 +14,7 @@ import InvoicesOneList from '@/src/features/tracking/components/tabs/InvoiceIOne
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { CreateEntregaProps, DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
-import { cleanSpaces, getDeviceDateTime, getDistanceInMeters } from '@/src/utils/uitls';
+import { cleanSpaces, getDeviceDateTime, getDistanceInMeters, heightCaldulate } from '@/src/utils/uitls';
 import * as Location from "expo-location";
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from "react";
@@ -80,6 +80,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
     const btnRef = useRef<any>(null);
     const router = useRouter();
+    const heightValue = heightCaldulate();
 
     useEffect(() => {
         const backAction = () => {
@@ -725,12 +726,12 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
             </ScrollView>
             {guide?.estado === 'Pendiente' && (
-                <View style={[styles.redBackground, { height: isSmallScreen ? 60 : 90 }]} />
+                <View style={[styles.redBackground, { height:  heightValue ? 100: 90 }]} />
             )}
 
             <View style={[styles.footer, {
-                marginBottom: isSmallScreen ? 0 : 10,
-                bottom: isSmallScreen ? 10 : 40
+              marginBottom: isSmallScreen ? 0 : heightValue ? 0 : 20,
+                bottom: isSmallScreen ? 12 : heightValue ? 60 : 30
             }]}>
 
                 {(() => {
@@ -832,7 +833,6 @@ const styles = StyleSheet.create({
         width: width,
         height: height,
         alignItems: 'center',
-        position: 'absolute',
     },
     background: {
         position: 'absolute',

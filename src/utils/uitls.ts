@@ -1,3 +1,5 @@
+import { Dimensions } from "react-native";
+
 export function cleanSpaces(text: string = "") {
   return text.replace(/\s+/g, " ").trim();
 }
@@ -88,4 +90,10 @@ export function capitalizeFirst(text?: string) {
   return text
     ? text.charAt(0).toUpperCase() + text.slice(1).toLowerCase()
     : "";
+}
+
+
+export function heightCaldulate(heightValue = 853.3333333333334) {
+    const { width, height } = Dimensions.get('window');
+    return  height < heightValue;
 }

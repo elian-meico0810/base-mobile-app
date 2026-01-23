@@ -15,7 +15,7 @@ import InvoicesList from '@/src/features/tracking/components/tabs/InvoicesList';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { CreateEntregaProps, DerliveryDocument } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
-import { cleanSpaces, getDeviceDateTime, getDistanceInMeters } from '@/src/utils/uitls';
+import { cleanSpaces, getDeviceDateTime, getDistanceInMeters, heightCaldulate } from '@/src/utils/uitls';
 import * as Location from "expo-location";
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from "react";
@@ -251,6 +251,21 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const handleSubmitData = async () => {
 
         try {
+            const numeroFactura =
+                selectedMultipleInvoices?.[0]?.facturas?.[0]?.numeroFactura;
+
+            const exitDocument = conceptDelivery?.some(
+                (item: any) => String(item.documentMeico) === String(numeroFactura)
+            );
+
+            if (!exitDocument && showCheckbox) {
+                setValidateException(true);
+                btnRef.current?.reset();
+                setModalTitle("¡Alerta!");
+                setModalMessage("Debe especificar un estado de entrega.");
+                setModalVisible(true);
+                return;
+            }
             if (selectedMultipleInvoices.length === 0) {
                 setValidateException(true);
                 btnRef.current?.reset();
@@ -277,6 +292,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
     const handleNextPage = async () => {
         try {
+
             router.push(
                 `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&token=${encodeURIComponent(token ?? "")}&numberGuide=${numberGuide}`
             );
@@ -506,7 +522,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const validateCheckboxlength = conceptDelivery.length == guide?.facturas?.length;
     const closeButton = routeStarted || buttonValue;
 
-    console.log("closeButton : ", closeButton);
+    const heightValue = heightCaldulate();
 
     useEffect(() => {
         if (selectedMultipleInvoices.length > 1) {
@@ -651,13 +667,13 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
             </ScrollView>
             {guide?.estado === 'Pendiente' && (
-                <View style={[styles.redBackground, { height: isSmallScreen ? 60 : 90 }]} />
+                <View style={[styles.redBackground, { height: heightValue ? 100 : 90 }]} />
             )}
 
             <View style={[styles.footer, {
 
-                marginBottom: isSmallScreen ? 0 : 0,
-                bottom: isSmallScreen ? 10 : 50
+                marginBottom: isSmallScreen ? 0 : heightValue ? 0 : 20,
+                bottom: isSmallScreen ? 12 : heightValue ? 60 : 30
             }]}>
 
                 {(() => {
@@ -759,7 +775,6 @@ const styles = StyleSheet.create({
         width: width,
         height: height,
         alignItems: 'center',
-        position: 'absolute',
     },
     background: {
         position: 'absolute',

@@ -1,5 +1,4 @@
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LogoText } from '@/components/generals/LogoText';
 import { TokenExpiredModal } from '@/components/generals/TokenExpiredModal';
@@ -7,12 +6,12 @@ import { PrimaryInput } from '@/components/inputs/PrimaryInput';
 import { ThemedView } from '@/components/themed-view';
 import { authRepositoryImpl } from '@/src/features/auth/infrastructure/login/authRepositoryImpl';
 import { decodeJWT } from '@/src/utils/jwt';
+import { heightCaldulate } from '@/src/utils/uitls';
 import NetInfo from '@react-native-community/netinfo';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  BackHandler,
   Dimensions,
   Image, Keyboard,
   StyleSheet,
@@ -30,13 +29,11 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
   const [tokenEncode, setTokeEncode] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalTitle, setModalTitle] = useState("");
-  const [modalMessage, setModalMessage] = useState("");
-  const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
-  const [modalButtonLabelClose, setModalButtonLabelClose] = useState("Cerrar");
   const isValid = guide.length >= 5;
   const router = useRouter();
+
+  const heightValue = heightCaldulate();
+
 
   useEffect(() => {
     const show = Keyboard.addListener("keyboardDidShow", (e) => {
@@ -53,32 +50,6 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
     };
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      const onBackPress = () => {
-        setModalVisible(true);
-        setModalTitle("Salir de la aplicación");
-        setModalMessage("¿Deseas salir de la aplicación?");
-        setModalButtonLabel("Salir");
-        setModalButtonLabelClose("Cerrar");
-
-        // Bloquea navegación atrás
-        return true;
-      };
-
-      const subscription = BackHandler.addEventListener(
-        "hardwareBackPress",
-        onBackPress
-      );
-
-      return () => subscription.remove();
-    }, [])
-  );
-
-  const handleExitApp = () => {
-    setModalVisible(false);
-    BackHandler.exitApp();
-  };
 
   useEffect(() => {
     const fetchToken = async () => {
@@ -157,7 +128,6 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
           }
 
         });
-        setGuide("");
       } else {
         setErrorMessage(response?.message || "La guía no existe o es incorrecta.");
       }
@@ -167,168 +137,136 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
       setIsLoading(false);
     }
   };
-  const isSmallScreen = height <= 757.3333333333334;
 
- 
-    return (
-      <ThemedView style={styles.container}>
-        <TokenExpiredModal visible={showModal} onClose={() => setShowModal(false)} />
+  return (
+    <ThemedView style={styles.container}>
+      <TokenExpiredModal visible={showModal} onClose={() => setShowModal(false)} />
 
-        {/* Fondo e imágenes */}
-        <View style={[styles.backgroundFill, { width, height }]} pointerEvents="none">
-          <Image
-            source={require('@/assets/icons/Welcome.png')}
-            style={[styles.backgroundImage, { width, height }]}
-            resizeMode="cover"
-          />
-        </View>
+      {/* <NetworkStatus /> */}
 
-        {[...Array(4)].map((_, i) => (
-          <View key={i} style={[styles.separator, { top: (i + 1) * (height / 5) - 1 }]} />
-        ))}
+      <View style={[styles.backgroundFill, { width, height }]} pointerEvents="none">
+        <Image
+          source={require('@/assets/icons/Welcome.png')}
+          style={[styles.backgroundImage, { width, height }]}
+          resizeMode="cover"
+        />
+      </View>
 
-        <LogoText style={styles.logo} />
+      {[...Array(4)].map((_, i) => (
+        <View key={i} style={[styles.separator, { top: (i + 1) * (height / 5) - 1 }]} />
+      ))}
 
-        {/* Panel blanco modificado */}
-        <View style={[
-          styles.whitePanel,
-          {
-            height: height - 200,
-            // Agregar paddingBottom dinámico cuando el teclado está visible
-            paddingBottom: keyboardHeight > 0 ? keyboardHeight : 0
-          }
-        ]}>
+      <LogoText style={styles.logo} />
+
+      {/* Panel blanco con altura fija */}
+      <View style={[
+        styles.whitePanel,
+        { height: height - (heightValue ? 150 : 210) }
+      ]}>
+        <View style={styles.content}>
+          <View style={styles.topContent}>
+            <Text style={styles.title}>¡Bienvenido!</Text>
+            <Text style={styles.subtitle}>
+              Ingresa el número de guía para comenzar tu ruta
+            </Text>
+
+            <PrimaryInput
+              placeholder="Número de guía"
+              value={guide}
+              onChangeText={(text) => {
+                setGuide(text);
+                setErrorMessage("");
+              }}
+              error={errorMessage !== ""}
+            />
+
+            {errorMessage !== "" && (
+              <Text style={styles.errorText}>{errorMessage}</Text>
+            )}
+          </View>
+
           <View style={[
-            styles.content,
-            // Reducir el espacio entre elementos cuando hay teclado
-            keyboardHeight > 0 && styles.contentWithKeyboard
+            styles.buttonContainer,
+            { marginBottom: keyboardHeight > 0 ? keyboardHeight + 40 : 25 }
           ]}>
-            <View style={styles.topContent}>
-              <Text style={styles.title}>¡Bienvenido!</Text>
-              <Text style={styles.subtitle}>
-                Ingresa el número de guía para comenzar tu ruta
-              </Text>
-
-              <PrimaryInput
-                placeholder="Número de guía"
-                value={guide}
-                onChangeText={(text) => {
-                  setGuide(text);
-                  setErrorMessage("");
-                }}
-                error={errorMessage !== ""}
-              />
-
-              {errorMessage !== "" && (
-                <Text style={styles.errorText}>{errorMessage}</Text>
-              )}
-            </View>
-
-            {/* Botón con margen ajustado */}
-            <View style={[
-              styles.buttonContainer,
-              {
-                marginBottom: isSmallScreen ? 0: 60,
-                // Subir el botón cuando el teclado está visible
-                marginTop: keyboardHeight > 0 ? 40 : 'auto'
-              }
-            ]}>
-              <PrimaryButton
-                title="Ingresar"
-                onPress={handleSubmit}
-                disabled={!isValid}
-                width={328}
-                height={43}
-              />
-            </View>
+            <PrimaryButton
+              title="Ingresar"
+              onPress={handleSubmit}
+              disabled={!isValid}
+              width={328}
+              height={43}
+            />
           </View>
         </View>
+      </View>
+      {isLoading && <LoadingBlue />}
+    </ThemedView>
+  );
+}
 
-        {/* Modal de excepción */}
-        <ExceptionModal
-          visible={modalVisible}
-          onClose={() => setModalVisible(false)}
-          title={modalTitle}
-          message={modalMessage}
-          buttonLabel={modalButtonLabel}
-          close={modalButtonLabelClose}
-          isButtonsClosed={true}
-          onExit={() => {
-            handleExitApp();
-          }}
-        />
-
-        {isLoading && <LoadingBlue />}
-      </ThemedView>
-    );
-  }
-
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      position: 'relative',
-      alignItems: 'center',
-    },
-    backgroundFill: {
-      backgroundColor: '#143881ff',
-    },
-    backgroundImage: {
-      zIndex: 1,
-    },
-    separator: {
-      position: 'absolute',
-      height: 5,
-      transform: [{ rotate: '-15deg' }],
-      zIndex: 2,
-    },
-    logo: {
-      zIndex: 10,
-      position: 'absolute',
-      top: 100,
-    },
-    whitePanel: {
-      position: 'absolute',
-      top: 200,
-      left: 0,
-      right: 0,
-      backgroundColor: '#FFFFFF',
-      borderTopLeftRadius: 16,
-      borderTopRightRadius: 16,
-      padding: 27,
-      zIndex: 3,
-    },
-    content: {
-      flex: 1,
-      justifyContent: 'space-between',
-    },
-    topContent: {
-      flex: 1,
-    },
-    title: {
-      fontFamily: "Rubik",
-      fontWeight: "700",
-      fontSize: 24,
-      textAlign: "center",
-      marginBottom: 8,
-    },
-    subtitle: {
-      fontFamily: "Rubik",
-      fontWeight: "400",
-      fontSize: 14,
-      textAlign: "center",
-      marginBottom: 24,
-    },
-    errorText: {
-      color: "red",
-      fontSize: 12,
-      marginTop: 4,
-      textAlign: "center",
-    },
-    buttonContainer: {
-      width: "100%",
-      alignItems: 'center',
-    },
-    contentWithKeyboard: {
-      justifyContent: 'flex-start',
-    },
-  });
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    position: 'relative',
+    alignItems: 'center',
+  },
+  backgroundFill: {
+    backgroundColor: '#143881ff',
+  },
+  backgroundImage: {
+    zIndex: 1,
+  },
+  separator: {
+    position: 'absolute',
+    height: 5,
+    transform: [{ rotate: '-15deg' }],
+    zIndex: 2,
+  },
+  logo: {
+    zIndex: 10,
+    position: 'absolute',
+    top: 100,
+  },
+  whitePanel: {
+    position: 'absolute',
+    top: 200,
+    left: 0,
+    right: 0,
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    padding: 27,
+    zIndex: 3,
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  topContent: {
+    flex: 1,
+  },
+  title: {
+    fontFamily: "Rubik",
+    fontWeight: "700",
+    fontSize: 24,
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontFamily: "Rubik",
+    fontWeight: "400",
+    fontSize: 14,
+    textAlign: "center",
+    marginBottom: 24,
+  },
+  errorText: {
+    color: "red",
+    fontSize: 12,
+    marginTop: 4,
+    textAlign: "center",
+  },
+  buttonContainer: {
+    width: "100%",
+    alignItems: 'center',
+  },
+});

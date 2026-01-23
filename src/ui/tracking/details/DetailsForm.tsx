@@ -12,7 +12,7 @@ import { ENV_DEV } from '@/src/constants/apiRoutes';
 import { StatusInvoice, StatusInvoiceID } from '@/src/constants/GuideStates';
 import { GuideDetails, PaymentsByInvoice } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
-import { getDeviceDateTime } from '@/src/utils/uitls';
+import { getDeviceDateTime, heightCaldulate } from '@/src/utils/uitls';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -54,6 +54,8 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
 
     const isValid = guide.length >= 5;
     const isSmallScreen = height <= 780;
+
+    const heightValue = heightCaldulate();
 
     useEffect(() => {
         const fetchToken = async () => {
@@ -286,7 +288,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
         <ThemedView style={styles.container}>
             <NetworkStatus />
 
-            <View style={[styles.backgroundFill, { width, height }]} pointerEvents="none">
+            <View style={[styles.backgroundFill, ]} >
                 <Image
                     source={require('@/assets/icons/Welcome.png')}
                     style={[styles.backgroundImage, { width, height }]}
@@ -305,7 +307,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
 
             <View style={[
                 styles.whitePanel,
-                { height: isSmallScreen ? height - 170 : height - 200 }
+                { height: height - (heightValue ? 150 : 200) }
             ]}>
                 <View style={styles.content}>
 
@@ -358,7 +360,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                     </View>
 
                     {(!routeStarted && (statusValue == StatusInvoice.PENDING)) && (
-                        <View style={{ alignItems: 'center', marginBottom: isSmallScreen ? 0 : 25 }}>
+                        <View style={{ alignItems: 'center', marginBottom: isSmallScreen ? 0 : 30 }}>
                             <PrimaryButtonDetails
                                 ref={btnRef}
                                 title="Comenzar ruta"

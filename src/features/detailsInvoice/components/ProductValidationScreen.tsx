@@ -285,7 +285,8 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     const totalGeneralValidate = Array.from(productsByStatus.validated.values())
         .reduce((sum, value) => sum + value, 0);
 
-    const valueRealTotal = totalGeneral + totalGeneralValidate;
+    // Valor a recaudar estimado: validados + por validar
+    const valueRealTotal = totalGeneralValidate + totalGeneral;
 
     // 3. Función para actualizar el estado de un producto
     const updateProductStatus = (

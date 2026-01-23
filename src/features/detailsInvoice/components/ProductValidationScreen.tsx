@@ -1,7 +1,7 @@
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { ProductItemSkeleton } from '@/components/skeleton/ProductItemSkeleton';
-import { TypeInvoiceEnum } from '@/src/constants/GuideStates';
-import { formatNumber } from '@/src/utils/uitls';
+import { TypeCaculateValueEnum, TypeInvoiceEnum } from '@/src/constants/GuideStates';
+import { calculateVlueByPorducts, formatNumber } from '@/src/utils/uitls';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
 import {
@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import { Detail, Document } from '../../tracking/domain/details/DetailsGuide';
 import { ProductItem } from './ProductItem';
-import { ValidPorductScreen } from './ValidPorductScreen';
 const { width, height } = Dimensions.get('window');
 
 
@@ -286,7 +285,8 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     const totalGeneralValidate = Array.from(productsByStatus.validated.values())
         .reduce((sum, value) => sum + value, 0);
 
-    const valueRealTotal = totalGeneral + totalGeneralValidate;
+    // Valor a recaudar estimado: validados + por validar
+    const valueRealTotal = totalGeneralValidate + totalGeneral;
 
     // 3. Función para actualizar el estado de un producto
     const updateProductStatus = (
@@ -401,39 +401,35 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                             )}
 
                             {pendingDetailsFlat
-                                .filter(item => {
-                                    // Aquí aplicas tu condición de filtro
-                                    // Ejemplo: excluir elementos con código específico
-                                    return item.estado?.codigo === 'EST_DET_VALIDADO';
-
-                                })
+                                .filter(item => item.estado?.codigo === 'EST_DET_VALIDADO')
                                 .map((item, index, filteredArray) => (
-                                    <ValidPorductScreen
+                                    <ProductItem
                                         key={item.id}
                                         item={item}
                                         isLastItem={index === filteredArray.length - 1}
-                                        onValidate={() => {
-                                            setValidatedProducts(prev => {
-                                                return prev.map(document => ({
-                                                    ...document,
-                                                    detalles: document.detalles.filter(
-                                                        detalle => detalle?.id !== item.id
-                                                    )
-                                                })).filter(document => document.detalles.length > 0);
-                                            });
+                                        onValidate={handleValidate}
+                                        onPresssNovlety={(direction) => {
+                                            setDirection(direction);
                                         }}
-                                        idValue={idValue}
-                                        tatolValue={tatolValue}
+                                        activeSwipeId={activeSwipeId}
+                                        setActiveSwipeId={setActiveSwipeId}
+                                        shouldAutoValidate={shouldAutoValidate}
+                                        onCloseReport={(value) => onCloseReportPorduct?.(value)}
                                         testToken={serviceToken}
                                         testUrl={serviceUrl}
-                                        onDataProduct={(id, totalProducts, unidadesEntregadas) => {
-                                            updateProductStatus(id, totalProducts, 'validated', unidadesEntregadas);
-
-                                            // console.log("========================================");
-                                            // console.log("=========== LOsS VALIDADPOS ====================");
-                                            // console.log("id:", id, "totalProducts:", totalProducts, "unidadesEntregadas: ", unidadesEntregadas);
-                                            // console.log("TOTAL ACUMULADO:", totalGeneral);
-                                            // console.log("========================================");
+                                        onItemData={(data) => {
+                                            if (data?.estado) {
+                                                onItemData?.(data);
+                                            }
+                                        }}
+                                        refreshing={refreshing}
+                                        onRefreshing={() => {
+                                            onRefreshing?.();
+                                        }}
+                                        onDataProduct={(id, _totalProducts, unidadesEntregadas) => {
+                                            const deliveredUnits = unidadesEntregadas ?? item?.unidadesEntregadas ?? 0;
+                                            const deliveredValue = calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, Number(deliveredUnits));
+                                            updateProductStatus(id, Number(deliveredValue), 'validated', unidadesEntregadas);
                                         }}
                                     />
                                 ))}

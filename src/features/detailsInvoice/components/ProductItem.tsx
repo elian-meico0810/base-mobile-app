@@ -50,6 +50,35 @@ export const ProductItem = ({
     onRefreshing,
     onDataProduct,
 }: ProductItemProps) => {
+    const isValidated = item?.estado?.codigo === 'EST_DET_VALIDADO';
+    const deliveredUnits = Number(item?.unidadesEntregadas ?? 0);
+    const rejectedUnits = Number(item?.unidadesRechazadas ?? 0);
+    const requestedUnits = Number(item?.unidadesSolicitadas ?? 0);
+    let noveltySum = 0;
+    if (Array.isArray(item?.novedades)) {
+        for (const nov of item.novedades) {
+            const val = parseFloat(nov?.valor ?? '0');
+            if (!isNaN(val)) {
+                noveltySum += val;
+            }
+        }
+    }
+    const deliveredEstimateCalc = Math.max(requestedUnits - noveltySum, 0);
+    let statusIcon: 'success' | 'error' | 'warning' | null = null;
+    if (requestedUnits === deliveredUnits && requestedUnits > 0) {
+        statusIcon = 'success';
+    } else if (deliveredUnits === 0) {
+        statusIcon = 'error';
+    } else if (requestedUnits > 0 && deliveredUnits > 0 && deliveredUnits !== requestedUnits) {
+        statusIcon = 'warning';
+    }
+    const totalValueDisplay = isValidated
+        ? (deliveredUnits > 0
+            ? calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, deliveredUnits)
+            : 0)
+        : (deliveredEstimateCalc > 0
+            ? calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, deliveredEstimateCalc)
+            : 0);
     const swipePosition = useRef(new Animated.Value(0)).current;
     const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
     const [isSwiped, setIsSwiped] = useState(false);
@@ -85,9 +114,25 @@ export const ProductItem = ({
 
     useEffect(() => {
         if (onDataProduct) {
-            onDataProduct(item.id, calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_1), item?.unidadesEntregadas);
+            const deliveredEstimate = Math.max(Number(item.unidadesSolicitadas) - noveltySum, 0);
+            const totalValue = isValidated
+                ? (deliveredUnits > 0
+                    ? calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, deliveredUnits)
+                    : 0)
+                : (deliveredEstimate > 0
+                    ? calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, deliveredEstimate)
+                    : 0);
+            onDataProduct(item.id, totalValue, item?.unidadesEntregadas);
         }
-    }, [item.id]);
+    }, [
+        item.id,
+        item.unidadesEntregadas,
+        item.unidadesRechazadas,
+        item.unidadesSolicitadas,
+        item.totalImpuestos,
+        item.valorBaseProducto,
+        item.estado?.codigo
+    ]);
     // Efecto para manejar refreshing externo
     useEffect(() => {
         if (refreshing && !isRefreshing) {
@@ -416,13 +461,41 @@ export const ProductItem = ({
                 <View style={styles.productRow}>
                     <View style={styles.imageContainer}>
                         {formattedImagUrl ? (
-                            <Image
-                                source={{ uri: formattedImagUrl }}
-                                style={styles.productImage}
-                                resizeMode="cover"
-                            />
+                            <View style={styles.imageWrapper}>
+                                <Image
+                                    source={{ uri: formattedImagUrl }}
+                                    style={styles.productImage}
+                                    resizeMode="cover"
+                                />
+                                {statusIcon === 'success' ? (
+                                    <View style={styles.statusDot}>
+                                        <MaterialIcons name="check" size={9} color="#FFFFFF" />
+                                    </View>
+                                ) : statusIcon === 'error' ? (
+                                    <View style={styles.errorDot}>
+                                        <MaterialIcons name="close" size={9} color="#FFFFFF" />
+                                    </View>
+                                ) : statusIcon === 'warning' ? (
+                                    <View style={styles.warningDot}>
+                                        <MaterialIcons name="warning" size={12} color="#FFA400" />
+                                    </View>
+                                ) : null}
+                            </View>
                         ) : (
                             <View style={styles.imagePlaceholder}>
+                                {statusIcon === 'success' ? (
+                                    <View style={styles.statusDot}>
+                                        <MaterialIcons name="check" size={9} color="#FFFFFF" />
+                                    </View>
+                                ) : statusIcon === 'error' ? (
+                                    <View style={styles.errorDot}>
+                                        <MaterialIcons name="close" size={9} color="#FFFFFF" />
+                                    </View>
+                                ) : statusIcon === 'warning' ? (
+                                    <View style={styles.warningDot}>
+                                        <MaterialIcons name="warning" size={12} color="#FFA400" />
+                                    </View>
+                                ) : null}
                                 <MaterialIcons name="photo" size={32} color="#D1D3D8" />
                             </View>
                         )}
@@ -432,7 +505,14 @@ export const ProductItem = ({
                         <View style={styles.row}>
                             <View style={styles.leftInfo}>
                                 <View style={styles.productHeader}>
-                                    <Text style={styles.quantityText}>{item.unidadesSolicitadas}</Text>
+                                    <Text style={styles.quantityText}>
+                                        {isValidated ? deliveredUnits : requestedUnits}
+                                    </Text>
+                                    {isValidated && requestedUnits !== deliveredUnits && (
+                                        <Text style={styles.quantityTextValue}>
+                                            {requestedUnits}
+                                        </Text>
+                                    )}
                                 </View>
 
                                 <Text style={styles.productName} numberOfLines={2}>
@@ -442,11 +522,12 @@ export const ProductItem = ({
                                 <Text style={styles.productSku}>
                                     {item.producto.codigo.trim()}
                                 </Text>
+                                
                             </View>
 
                             <View style={styles.priceRow}>
                                 <Text style={styles.totalPrice}>
-                                    ${formatNumber(calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_1) ?? 0)}
+                                    ${formatNumber(totalValueDisplay ?? 0)}
                                 </Text>
                                 <Text style={styles.unitPrice}>$ {formatNumber(calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_2) ?? 0)} c/u</Text>
                             </View>
@@ -581,6 +662,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#F0F1F5',
         resizeMode: 'cover',
     },
+    imageWrapper: {
+        position: 'relative',
+    },
     imagePlaceholder: {
         width: 85,
         height: 85,
@@ -603,15 +687,60 @@ const styles = StyleSheet.create({
     },
     productHeader: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-start',
         alignItems: 'center',
         marginBottom: 8,
+        gap: 6,
     },
     quantityText: {
         fontFamily: 'Rubik',
         fontWeight: '800',
         fontSize: 14,
         color: '#141D32',
+    },
+    quantityTextValue: {
+        fontFamily: 'Rubik',
+        fontWeight: '600',
+        fontSize: 12,
+        lineHeight: 12,
+        textDecorationLine: 'line-through',
+        color: '#788095',
+        marginLeft: 6,
+    },
+    statusDot: {
+        position: 'absolute',
+        top: 1.5,
+        left: 1.5,
+        borderRadius: 6.5,
+        backgroundColor: '#1F9144',
+        borderWidth: 2,
+        borderColor: '#1F9144',
+    },
+    errorDot: {
+        position: 'absolute',
+        top: 1.5,
+        left: 1.5,
+        width: 13,
+        height: 13,
+        borderRadius: 6.5,
+        backgroundColor: '#FF3B30',
+        borderWidth: 2,
+        borderColor: '#FF3B30',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    warningDot: {
+        position: 'absolute',
+        top: 1.5,
+        left: 1.5,
+        width: 20,
+        height: 20,
+        borderRadius: 6.5,
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        borderColor: 'transparent',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     productName: {
         fontFamily: 'Rubik',

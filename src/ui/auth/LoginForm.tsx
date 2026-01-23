@@ -31,6 +31,10 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
   const isValid = guide.length >= 5;
   const router = useRouter();
 
+  const heightValue = height < 853.3333333333334;
+  
+  console.log("heightValue: ",heightValue);
+  
   useEffect(() => {
     const show = Keyboard.addListener("keyboardDidShow", (e) => {
       setKeyboardHeight(e.endCoordinates.height);
@@ -157,7 +161,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
       {/* Panel blanco con altura fija */}
       <View style={[
         styles.whitePanel,
-        { height: height - 200 }
+        { height: height - (heightValue ? 130 : 200) }
       ]}>
         <View style={styles.content}>
           <View style={styles.topContent}>

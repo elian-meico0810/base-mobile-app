@@ -19,6 +19,7 @@ export default function IndexInvoiceScreen() {
     const isSelectInvocies = params.isSelectInvocies as string;
     const routeStartedBotton = params.routeStarted as string;
     const documentMeico = params.documentMeico as string;
+    const detailsCounterDelivery = params.detailsCounterDelivery as string;
     const shouldShowViewSelectInvoice = guideObj.facturas.length >= 2 || documentMeico;
     const areAllInvoicesCredito = guideObj.facturas.every(
         factura => factura.tipo === TypeInvoiceEnum.CREDITO
@@ -82,6 +83,8 @@ export default function IndexInvoiceScreen() {
                             isCountryDelivery={isCountryDelivery ? true : false}
                             IsGoBack={IsGoBack ? true : false}
                             routeStartedBotton={routeStartedBotton}
+                            detailsCounterDelivery={detailsCounterDelivery ? true : false}
+
                         />
                     );
                 }
@@ -145,6 +148,8 @@ export default function IndexInvoiceScreen() {
 
                     }
                 }
+
+
                 return null;
             })()}
 

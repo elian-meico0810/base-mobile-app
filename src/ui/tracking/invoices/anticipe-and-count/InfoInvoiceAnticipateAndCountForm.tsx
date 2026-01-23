@@ -6,7 +6,6 @@ import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails'
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
-import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
@@ -85,6 +84,7 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
     const [phone, setPhone] = useState("");
     const [validateIsBotton, setvalidateIsBotton] = useState(false);
     const [buttonValue, setButtonValue] = useState(false);
+    const [checkUbication, setCheckUbication] = useState(false);
     const btnRef = useRef<any>(null);
     const router = useRouter();
     const heightValue = heightCaldulate();
@@ -199,6 +199,37 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
         }
     }
 
+    const checkUnicationPermissions = async () => {
+        try {
+            // 2. Obtener ubicación
+            const location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Highest,
+            });
+            if (!location?.coords) {
+                setModalTitle('Permiso denegado ¡Alerta!');
+                setModalMessage('Debe activar el permiso de ubicación del dispositivo');
+                setModalButtonLabel("Cerrar");
+                setModalVisible(true);
+                return;
+            } else {
+                setCheckUbication(true);
+            }
+        } catch (error: any) {
+     
+        }
+    };
+
+    useEffect(() => {
+        if (checkUbication) return; 
+
+        const interval = setInterval(() => {
+            checkUnicationPermissions();
+        }, 10); 
+
+        return () => clearInterval(interval); 
+    }, [checkUbication]);
+
+    
     const handleSubmitData = async () => {
         try {
 
@@ -591,7 +622,7 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
 
     return (
         <ThemedView style={styles.container}>
-            <NetworkStatus />
+            {/* <NetworkStatus /> */}
 
             {/* Fondo gris */}
             <View style={styles.background} />
@@ -867,13 +898,13 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
                     }}
                     onPermisionsPhoto={() => {
                         setUploadPhoto(false);
-                        setModalTitle("Permiso denegado ¡Alerta!");
+                        setModalTitle(" denegado ¡Alerta!");
                         setModalMessage("No podemos acceder a la cámara. Activa el permiso en la configuración del dispositivo para continuar.");
                         setModalVisible(true);
                     }}
                     onPermisionsGallery={() => {
                         setUploadPhoto(false);
-                        setModalTitle("Permiso denegado ¡Alerta!");
+                        setModalTitle(" denegado ¡Alerta!");
                         setModalMessage("No podemos acceder a la galería. Activa el permiso en la configuración del dispositivo para continuar.");
                         setModalVisible(true);
                     }}

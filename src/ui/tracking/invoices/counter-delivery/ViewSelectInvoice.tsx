@@ -3,7 +3,6 @@ import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails'
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
-import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
 import InvoicesList from '@/src/features/tracking/components/tabs/InvoicesList';
@@ -15,7 +14,7 @@ import { cleanSpaces, getDeviceDateTime, getDistanceInMeters, heightCaldulate } 
 import * as Location from "expo-location";
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from "react";
-import { BackHandler, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 const { width, height } = Dimensions.get('window');
 
 interface ViewSelectInvoiceProps {
@@ -55,23 +54,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [allowBack, setAllowBack] = useState(false);
     const btnRef = useRef<any>(null);
     const router = useRouter();
+    const [checkUbication, setCheckUbication] = useState(false);
     const heightValue = heightCaldulate();
-
-    useEffect(() => {
-        const backAction = () => {
-            if (!allowBack) {
-                router.push(`/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`);
-                return true;
-            }
-        };
-
-        const backHandler = BackHandler.addEventListener(
-            'hardwareBackPress',
-            backAction
-        );
-
-        return () => backHandler.remove();
-    }, [allowBack, numberGuide, token]);
 
     const handleGoBack = () => {
         // router.back();
@@ -171,6 +155,36 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             setLoading(false);
         }
     };
+
+    const checkUnicationPermissions = async () => {
+        try {
+            // 2. Obtener ubicación
+            const location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Highest,
+            });
+            if (!location?.coords) {
+                setModalTitle('Permiso denegado ¡Alerta!');
+                setModalMessage('Debe activar el permiso de ubicación del dispositivo');
+                setModalButtonLabel("Cerrar");
+                setModalVisible(true);
+                return;
+            } else {
+                setCheckUbication(true);
+            }
+        } catch (error: any) {
+        
+        }
+    };
+
+    useEffect(() => {
+        if (checkUbication) return;
+
+        const interval = setInterval(() => {
+            checkUnicationPermissions();
+        }, 10);
+
+        return () => clearInterval(interval);
+    }, [checkUbication]);
 
     const submitData = async () => {
         try {
@@ -350,7 +364,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const conceptDeliveryValue = conceptDelivery.length > 0
     return (
         <ThemedView style={styles.container}>
-            <NetworkStatus />
+            {/* <NetworkStatus /> */}
 
             {/* Fondo gris */}
             <View style={styles.background} />

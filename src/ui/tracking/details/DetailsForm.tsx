@@ -3,7 +3,6 @@ import { DetailsGudes } from '@/components/generals/DetailsGudes';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { GuideCard } from '@/components/generals/GuideCard';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
-import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { TodayDeliveries } from '@/components/generals/TodayDeliveries';
 import { SearchInput } from '@/components/inputs/SearchInput';
 import { GuideCardSkeleton } from '@/components/skeleton/GuideCardSkeleton';
@@ -18,6 +17,8 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useRef, useState } from "react";
 import {
+    AppState,
+    AppStateStatus,
     Dimensions,
     Image, ScrollView, StyleSheet,
     Text,
@@ -41,7 +42,9 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
+    const [modalVisibleTwo, setModalVisibleTwo] = useState(false);
     const [validateException, setValidateException] = useState(false);
+    const [checkUbication, setCheckUbication] = useState(false);
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [statusValue, setStatusValue] = useState("");
@@ -65,39 +68,113 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
         fetchToken();
     }, []);
 
+    // Listener de AppState mejorado
     useEffect(() => {
-        const fetchPermissions = async () => {
+        let isMounted = true;
+        let checkTimeout: ReturnType<typeof setTimeout> | null = null;
+
+        const appStateRef = { current: AppState.currentState };
+
+        const handleAppStateChange = (nextAppState: AppStateStatus) => {
+            if (appStateRef.current.match(/background|inactive/) &&
+                nextAppState === 'active') {
+
+                if (checkTimeout) {
+                    clearTimeout(checkTimeout);
+                    checkTimeout = null;
+                }
+
+                checkTimeout = setTimeout(async () => {
+                    if (!isMounted || !waitingForPermission) return;
+
+                    const { status } = await Location.requestForegroundPermissionsAsync();
+
+                    if (status === 'granted') {
+                        setModalVisible(false);
+                        setWaitingForPermission(false);
+                    }
+                }, 500);
+            }
+
+            appStateRef.current = nextAppState;
+        };
+
+        const subscription = AppState.addEventListener('change', handleAppStateChange);
+
+        return () => {
+            isMounted = false;
+            if (checkTimeout) {
+                clearTimeout(checkTimeout);
+            }
+            subscription.remove();
+        };
+    }, [waitingForPermission]);
+
+    // Función para verificar permisos
+    const checkLocationPermissions = async () => {
+        try {
             const { status } = await Location.requestForegroundPermissionsAsync();
+
             if (status !== 'granted') {
+                // Permiso denegado
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("Permiso denegado ¡Alerta!");
                 setModalMessage("Se requiere acceso a la ubicación.");
                 setLoading(false);
-                setModalVisible(true);
+                setModalVisibleTwo(true);
                 setWaitingForPermission(true);
-                return;
             } else {
                 setWaitingForPermission(false);
+                setModalVisibleTwo(false);
+                setLoading(false);
             }
-        };
-        fetchPermissions();
-    }, []);
+        } catch (error) {
+            setWaitingForPermission(false);
+        }
+    };
 
     useEffect(() => {
-        if (!modalVisible && waitingForPermission) {
-            const recheckPermissions = async () => {
-                const { status } = await Location.requestForegroundPermissionsAsync();
-                if (status !== 'granted') {
-                    setModalVisible(true);
-                } else {
-                    setWaitingForPermission(false);
-                    setValidateException(false);
-                }
-            };
-            recheckPermissions();
+        const fetchPermissions = async () => {
+            await checkLocationPermissions();
+        };
+
+        if (token && !waitingForPermission) {
+            fetchPermissions();
         }
-    }, [modalVisible, waitingForPermission]);
+    }, [token, !waitingForPermission]);
+
+
+    const checkUnicationPermissions = async () => {
+        try {
+            // 2. Obtener ubicación
+            const location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Highest,
+            });
+            if (!location?.coords) {
+                setModalTitle('Permiso denegado ¡Alerta!');
+                setModalMessage('Debe activar el permiso de ubicación del dispositivo');
+                setModalButtonLabel("Cerrar");
+                setModalVisible(true);
+                return;
+            } else {
+                setCheckUbication(true);
+            }
+        } catch (error: any) {
+           
+        }
+    };
+
+    useEffect(() => {
+        if (checkUbication) return; 
+
+        const interval = setInterval(() => {
+            checkUnicationPermissions();
+        }, 10); 
+
+        return () => clearInterval(interval); 
+    }, [checkUbication]);
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -286,7 +363,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
 
     return (
         <ThemedView style={styles.container}>
-            <NetworkStatus />
+            {/* <NetworkStatus /> */}
 
             <View style={[styles.backgroundFill, ]} >
                 <Image
@@ -317,7 +394,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                             <TodayDeliveries
                                 data={data}
                                 routeStarted={routeStarted}
-                                waitingForPermission={waitingForPermission}
+                                waitingForPermission={waitingForPermission || !checkUbication}
                                 dataResult={dataResult}
                             />
                         </View>
@@ -332,7 +409,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                             style={styles.guidesScroll}
                             contentContainerStyle={{ paddingBottom: 20 }}
                         >
-                            {((data.length === 0) || (waitingForPermission)) ? (
+                            {((data.length === 0) || (waitingForPermission || !checkUbication)) ? (
                                 Array.from({ length: 3 }).map((_, i) => (
                                     <GuideCardSkeleton key={i} />
                                 ))
@@ -374,10 +451,25 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                     )}
                     <ExceptionModal
                         visible={modalVisible}
-                        onClose={() => setModalVisible(false)}
+                        onClose={() => {
+                            setModalVisible(false);
+                        }}
                         title={modalTitle}
                         message={modalMessage}
                         buttonLabel={modalButtonLabel}
+                    />
+
+                    <ExceptionModal
+                        visible={modalVisibleTwo}
+                        onClose={() => {
+                            setModalVisibleTwo(false);
+                            setWaitingForPermission(false);
+                        }}
+                        title={modalTitle}
+                        message={modalMessage}
+                        buttonLabel={modalButtonLabel}
+                        showSettingsButton={true}
+                        settingsButtonLabel="Abrir Ajustes"
                     />
                 </View>
             </View>

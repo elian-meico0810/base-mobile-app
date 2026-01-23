@@ -4,7 +4,6 @@ import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails'
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
-import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeDelivery } from '@/src/constants/GuideStates';
@@ -77,6 +76,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const btnRef = useRef<any>(null);
     const [buttonValue, setButtonValue] = useState(false);
     const [allowBack, setAllowBack] = useState(false);
+    const [checkUbication, setCheckUbication] = useState(false);
     const router = useRouter();
 
 
@@ -202,6 +202,36 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             setLoading(false);
         }
     };
+
+    const checkUnicationPermissions = async () => {
+        try {
+            // 2. Obtener ubicación
+            const location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Highest,
+            });
+            if (!location?.coords) {
+                setModalTitle('Permiso denegado ¡Alerta!');
+                setModalMessage('Debe activar el permiso de ubicación del dispositivo');
+                setModalButtonLabel("Cerrar");
+                setModalVisible(true);
+                return;
+            } else {
+                setCheckUbication(true);
+            }
+        } catch (error: any) {
+            
+        }
+    };
+
+    useEffect(() => {
+        if (checkUbication) return;
+
+        const interval = setInterval(() => {
+            checkUnicationPermissions();
+        }, 10);
+
+        return () => clearInterval(interval);
+    }, [checkUbication]);
 
     const submitData = async () => {
         try {
@@ -539,7 +569,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
     return (
         <ThemedView style={styles.container}>
-            <NetworkStatus />
+            {/* <NetworkStatus /> */}
 
             {/* Fondo gris */}
             <View style={styles.background} />
@@ -701,10 +731,10 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                                     disabled={false}
                                     width={328}
                                     height={43}
-                                    buttonColor={isValidData ? undefined : closeButton || conditionButton ? "#DDDFE8" : validateCheckboxlength ? undefined : undefined}
-                                    buttonColorEnd={isValidData ? undefined : closeButton || conditionButton ? "#DDDFE8" : validateCheckboxlength ? undefined : undefined}
-                                    titleColor={isValidData ? undefined : closeButton || conditionButton ? "#FFFFFF" : undefined}
-                                    circleColor={isValidData ? undefined : closeButton || conditionButton ? "#788095" : validateCheckboxlength ? undefined : undefined}
+                                    buttonColor={validateCheckboxlength ? undefined : conditionButton ? "#DDDFE8" : undefined}
+                                    buttonColorEnd={validateCheckboxlength ? undefined : conditionButton ? "#DDDFE8" : undefined}
+                                    titleColor={conditionButton ? "#FFFFFF" : undefined}
+                                    circleColor={validateCheckboxlength ? undefined : conditionButton ? "#788095" : undefined}
                                 />
                             );
                         }

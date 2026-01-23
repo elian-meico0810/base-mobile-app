@@ -22,7 +22,7 @@ interface DetailsInvoiceQRProps {
     onPressPayment: () => void;
     onErrorPayment?: () => void;
     statusTypeQR?: boolean;
-
+    totalRecauder?: number;
 }
 
 interface Invoice {
@@ -34,7 +34,7 @@ interface Invoice {
     nombreCliente?: string;
 }
 
-export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone, onGenerateQR, onPressPayment, onErrorPayment, statusTypeQR }: DetailsInvoiceQRProps) {
+export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone, onGenerateQR, onPressPayment, onErrorPayment, statusTypeQR, totalRecauder }: DetailsInvoiceQRProps) {
     const [loading, setLoading] = useState(false);
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
@@ -167,17 +167,17 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
     // Función para verificar si es válido
     const isValidPhone = localPhone.length === 10;
 
-    const condPago = dataInvoice?.condPago == TypeConPagoEnum.TAT;
+    // const condPago = dataInvoice?.condPago == TypeConPagoEnum.TAT;
 
-    if (condPago) return (
-        <ExceptionModal
-            visible={modalVisible}
-            onClose={() => setModalVisible(false)}
-            title={modalTitle}
-            message={modalMessage}
-            buttonLabel={modalButtonLabel}
-        />
-    );
+    // if (condPago) return (
+    //     <ExceptionModal
+    //         visible={modalVisible}
+    //         onClose={() => setModalVisible(false)}
+    //         title={modalTitle}
+    //         message={modalMessage}
+    //         buttonLabel={modalButtonLabel}
+    //     />
+    // );
 
     return (
 
@@ -203,7 +203,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
                 <View style={styles.box}>
                     <Row label="N° de factura" value={dataInvoice.numeroFactura} />
                     <Row label="Valor total" value={`$${formatNumber(dataInvoice.valorTotal)}`} />
-                    <Row bold label="Valor a pagar" value={`$${formatNumber(dataInvoice.valorRecaudar)}`} />
+                    <Row bold label="Valor a pagar" value={`$${formatNumber(Number(totalRecauder))}`} />
                 </View>
 
                 <View style={styles.phoneContainer}>

@@ -34,7 +34,6 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
 
   const heightValue = heightCaldulate();
 
-
   useEffect(() => {
     const show = Keyboard.addListener("keyboardDidShow", (e) => {
       setKeyboardHeight(e.endCoordinates.height);

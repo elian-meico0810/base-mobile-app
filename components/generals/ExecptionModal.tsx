@@ -54,8 +54,8 @@ export const ExceptionModal: React.FC<Props> = ({
       </View>
     </Modal>
   );
-};
 
+};
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
@@ -85,6 +85,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 30,
     borderRadius: 8,
+  },
+  settingsButton: {
+    backgroundColor: '#164194',
   },
   buttonText: {
     color: '#fff',

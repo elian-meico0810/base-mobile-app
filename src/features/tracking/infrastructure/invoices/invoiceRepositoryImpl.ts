@@ -1,7 +1,9 @@
 import { API_ROUTES } from "@/src/constants/apiRoutes";
 import { authApi, authDevApi } from "@/src/features/auth/infrastructure/authApi";
 import {
-  CreateEntregaProps, GenerateQRPorps,
+  CreateEntregaProps,
+  CreatePaymentTypeProps,
+  GenerateQRPorps,
   OpneAddressesDeliveryProps, OpneAddressesProps,
   PaymentGatewayProps, ReportWhatsAppQRPorps,
   WhatsappProps, WhatsappTATImageProps
@@ -204,4 +206,40 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
       throw error;
     }
   },
+
+  async createPaymentType(data: CreatePaymentTypeProps[], token: string) {
+    try {
+
+      const response = await authApi.post(
+        `${API_ROUTES.CREATE_PAYMENT_BY_TYPE}`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      // Aquí devuelves solo el JSON que envió el servidor
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async successOrderPayment(idPedido: number, token: string) {
+    try {
+
+      const response = await authApi.get(`${API_ROUTES.GET_REPORT_PAYMENT_IN_APP}${idPedido}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
 };

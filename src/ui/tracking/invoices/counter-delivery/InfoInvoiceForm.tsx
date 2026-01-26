@@ -122,7 +122,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
         return () => backHandler.remove();
     }, [allowBack, numberGuide, token]);
-    
+
     const orderId = initialGuide?.pedidos?.[0]?.id;
     const [checkUbication, setCheckUbication] = useState(false);
 
@@ -1024,7 +1024,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                 resizeMode="contain"
                             />
                             <View style={styles.storeText}>
-                                <Text style={styles.labelTwo}>ID de tienda</Text>
+                                <Text style={styles.labelTwo}>Código del cliente</Text>
                                 <Text style={styles.value}>
                                     {guide?.codigoCliente ?? '0'}
                                 </Text>
@@ -1065,26 +1065,27 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     </View>
                 </View>
 
-                <View style={styles.cardTwo}>
+                <View style={[styles.cardTwo, { minHeight: !closeButton ? undefined : 229 }]}>
                     {/* Encabezado */}
-                    <View style={styles.cardHeader}>
-                        <View
-                            style={[
-                                styles.statusContainer,
-                                totalRecauder == 0 && { backgroundColor: '#DFF5E1' },
-                            ]}
-                        >
-                            <Text
+                    {closeButton && (
+                        <View style={styles.cardHeader}>
+                            <View
                                 style={[
-                                    styles.status,
-                                    totalRecauder == 0 && { color: '#1F9144' },
+                                    styles.statusContainer,
+                                    totalRecauder == 0 && { backgroundColor: '#DFF5E1' },
                                 ]}
                             >
-                                {totalRecauder == 0 ? 'Pago realizado' : 'Pendiente'}
-                            </Text>
+                                <Text
+                                    style={[
+                                        styles.status,
+                                        totalRecauder == 0 && { color: '#1F9144' },
+                                    ]}
+                                >
+                                    {totalRecauder == 0 ? 'Pago realizado' : 'Pendiente'}
+                                </Text>
+                            </View>
                         </View>
-                    </View>
-
+                    )}
                     {/* Línea divisoria */}
                     <View style={styles.orderInfo}>
 
@@ -1131,29 +1132,55 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             </Text>
                         </View>
 
-                        {totalRecauder != 0 ? (
-                            <TouchableOpacity
-                                style={styles.qrButton}
-                                onPress={() => {
-                                    const isValidButton = validateButton();
-                                    if (!isValidButton) return;
-                                    // setShowDetailInvoiceQR(true);
-                                    setTypePayment(true);
-                                }}
-                            >
-                                <View style={styles.qrButtonContent}>
-                                    <Text style={styles.qrButtonText}>Registrar pago</Text>
-                                </View>
-                            </TouchableOpacity>
-                        ) : (
-                            <TouchableOpacity style={styles.qrButtonDetail} onPress={() => { setShowPayment(true) }}>
-                                <Text style={styles.qrButtonText}>Detalle de pagos</Text>
-                            </TouchableOpacity>
+                        {closeButton && (
+                            totalRecauder != 0 ? (
+                                <TouchableOpacity
+                                    style={styles.qrButton}
+                                    onPress={() => {
+                                        const isValidButton = validateButton();
+                                        if (!isValidButton) return;
+                                        setTypePayment(true);
+                                    }}
+                                >
+                                    <View style={styles.qrButtonContent}>
+                                        <Text style={styles.qrButtonText}>Registrar pago</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            ) : (
+                                <TouchableOpacity
+                                    style={styles.qrButtonDetail}
+                                    onPress={() => { setShowPayment(true) }}
+                                >
+                                    <Text style={styles.qrButtonText}>Detalle de pagos</Text>
+                                </TouchableOpacity>
+                            )
                         )}
 
-
                     </View>
+
                 </View>
+
+                {!closeButton && (
+                    <TouchableOpacity
+                        style={styles.qrButtonDetailTwo}
+                        onPress={() => {
+                            console.log('HOLA SI SE PRESIONO');
+                        }}
+                    >
+                        <View >
+                            <Image
+                                source={require('@/assets/icons/CloseRed.png')}
+                                style={styles.icon}
+                            />
+                        </View>
+
+                        <Text style={styles.qrButtonTexRed}>
+                            No pude entregar el pedido
+                        </Text>
+                    </TouchableOpacity>
+
+
+                )}
 
                 <View>
                     <DeliveryStatusAction
@@ -1177,9 +1204,9 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     />
                 </View>
             </ScrollView>
-            
+
             {guide?.estado === 'Pendiente' && (
-                <View style={[styles.redBackground, { height:  heightValue ? 100: 90 }]} />
+                <View style={[styles.redBackground, { height: heightValue ? 100 : 90 }]} />
             )}
 
             <View style={[styles.footer, { marginBottom: 10 }]}>
@@ -1476,6 +1503,14 @@ const styles = StyleSheet.create({
         height: height,
         backgroundColor: '#F9F9FA',
     },
+    icon: {
+        width: 20, 
+        height: 20, 
+        borderRadius: 10, 
+        justifyContent: 'center', 
+        alignItems: 'center',
+        marginRight: 8,
+    },
     headerContainer: {
         width: '100%',
         flexDirection: 'row',
@@ -1527,7 +1562,6 @@ const styles = StyleSheet.create({
     },
     cardTwo: {
         width: 360,
-        minHeight: 229,
         backgroundColor: '#FFFFFF',
         borderColor: '#F0F1F5',
         borderWidth: 1,
@@ -1637,6 +1671,13 @@ const styles = StyleSheet.create({
         color: '#164194',
         textAlign: 'center',
     },
+    qrButtonTexRed: {
+        fontFamily: 'Rubik',
+        fontWeight: '700',
+        fontSize: 12,
+        color: '#C62828',
+        textAlign: 'center',
+    },
     qrButtonDetail: {
         height: 32,
         backgroundColor: '#fffffffc',
@@ -1645,6 +1686,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 12,
     },
+    qrButtonDetailTwo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        height: 32,
+        borderRadius: 16,
+        marginTop: 12,
+    },
+
     footer: {
         position: 'absolute',
         bottom: 45,

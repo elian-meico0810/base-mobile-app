@@ -1,5 +1,5 @@
 import { AntDesign } from "@expo/vector-icons";
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 
 interface Props {
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
         height: 40,
     },
     contentWithSubtitle: {
-        height: 56, 
+        height: 60, 
         paddingVertical: 8,
     },
     iconCircle: {

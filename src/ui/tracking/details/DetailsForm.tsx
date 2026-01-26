@@ -1,3 +1,4 @@
+import { TopSuccessAlert } from '@/components/alerts/TopSuccessAlert';
 import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails';
 import { DetailsGudes } from '@/components/generals/DetailsGudes';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
@@ -65,9 +66,11 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const [runApiFinish, setRunApiFinish] = useState(false);
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [waitingForPermission, setWaitingForPermission] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
     const [date, setDate] = useState<string | null>(null);
     const btnRef = useRef<any>(null);
     const router = useRouter();
+    console.log("valueInput: ", valueInput);
 
     const isValid = guide.length >= 5;
     const isSmallScreen = height <= 780;
@@ -385,7 +388,11 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
 
     const consignmentSubmit = async () => {
         try {
-
+            setShowSuccess(true);
+            setViewConsignment(false);
+            setUploadPhoto(false);
+            // setValueInput("");
+            // setMultiplePhotos([]);
             console.log("multiplePhotos: ", multiplePhotos);
             console.log("valueInput: ", valueInput);
 
@@ -419,11 +426,21 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                 routeStarted={routeStarted}
                 statusName={statusValue}
             />
+            
+            {showSuccess && (
+                <TopSuccessAlert
+                    visible={showSuccess}
+                    message="Consignación registrada"
+                    onHide={() => setShowSuccess(false)}
+                    subtitle={`Se registró una consignación por el valor de $${valueInput}.`}
+                />
+            )}
 
             <View style={[
                 styles.whitePanel,
                 { height: height - (heightValue ? 150 : 200) }
             ]}>
+
                 <View style={styles.content}>
 
                     <View style={styles.topContent}>
@@ -564,6 +581,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                             visible={uploadPhoto}
                         />
                     )}
+
 
 
                     <ExceptionModal

@@ -269,6 +269,8 @@ export function ConsignmentData({
                                 title={"Confirmar"}
                                 onPress={() => {
                                     onConfirmation?.();
+                                    onValue?.(displayAmount);
+
                                 }}
                                 disabled={!isValid}
                                 width={328}

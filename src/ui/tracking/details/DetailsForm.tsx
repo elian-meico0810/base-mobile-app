@@ -8,7 +8,7 @@ import { SearchInput } from '@/components/inputs/SearchInput';
 import { GuideCardSkeleton } from '@/components/skeleton/GuideCardSkeleton';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
-import { StatusInvoice, StatusInvoiceID } from '@/src/constants/GuideStates';
+import { StatusInvoice, StatusInvoiceID, TypeConPagoEnum, TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import { GuideDetails, PaymentsByInvoice } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { getDeviceDateTime, heightCaldulate } from '@/src/utils/uitls';
@@ -22,6 +22,7 @@ import {
     Dimensions,
     Image, ScrollView, StyleSheet,
     Text,
+    TouchableOpacity,
     View
 } from 'react-native';
 
@@ -161,18 +162,18 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                 setCheckUbication(true);
             }
         } catch (error: any) {
-           
+
         }
     };
 
     useEffect(() => {
-        if (checkUbication) return; 
+        if (checkUbication) return;
 
         const interval = setInterval(() => {
             checkUnicationPermissions();
-        }, 10); 
+        }, 10);
 
-        return () => clearInterval(interval); 
+        return () => clearInterval(interval);
     }, [checkUbication]);
 
 
@@ -361,11 +362,19 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
         }
     };
 
+    const hasValidInvoice = data.some((direccion) =>
+        direccion.facturas?.some(
+            (factura) =>
+                factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO ||
+                factura.tipoCliente === TypeConPagoEnum.TAT
+        )
+    );
+
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
 
-            <View style={[styles.backgroundFill, ]} >
+            <View style={[styles.backgroundFill,]} >
                 <Image
                     source={require('@/assets/icons/Welcome.png')}
                     style={[styles.backgroundImage, { width, height }]}
@@ -398,6 +407,26 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                                 dataResult={dataResult}
                             />
                         </View>
+                        {((data.length != 0 && hasValidInvoice)) && (
+                            <TouchableOpacity style={styles.cardConsignment} onPress={() => {
+                                if(statusValue == StatusInvoice.PENDING) return;
+                                console.log('Consignaciones');
+                            }}>
+                                <View style={styles.leftContent}>
+                                    <Image
+                                        source={require('@/assets/icons/ConsignmentIcons.png')}
+                                        style={styles.icon}
+                                    />
+                                    <Text style={styles.titleConsignment}>Consignaciones</Text>
+                                </View>
+
+                                <Image
+                                    source={require('@/assets/icons/ChevronRight.png')}
+                                    style={styles.chevron}
+                                />
+                            </TouchableOpacity>
+                        )}
+
                         <Text style={styles.title}>Tu ruta</Text>
                         <SearchInput
                             data={data}
@@ -423,7 +452,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                                 ) : (
                                     filteredGuides.map((item) => (
                                         <GuideCard
-                                            key={item.codigoCliente}
+                                            key={item.idDireccion}
                                             guide={item}
                                             onPress={() => console.log('Ir a dirección')}
                                             routeStarted={statusValue != StatusInvoice.PENDING ? true : routeStarted}
@@ -482,6 +511,42 @@ const styles = StyleSheet.create({
     container: {
         position: 'relative',
         alignItems: 'center',
+    },
+    cardConsignment: {
+        width: width * 0.9,
+        height: 48,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: '#FFFFFF',
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+        paddingVertical: 12,
+        paddingHorizontal: 8,
+        alignSelf: 'center',
+        marginBottom: 16,
+    },
+    leftContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    icon: {
+        width: 16,
+        height: 16,
+        tintColor: '#141D32',
+        marginRight: 8,
+    },
+    titleConsignment: {
+        fontFamily: 'Rubik',
+        fontWeight: '400',
+        fontSize: 16,
+        color: '#141D32',
+    },
+    chevron: {
+        width: 16,
+        height: 16,
+        tintColor: '#141D32',
     },
     backgroundFill: {
         backgroundColor: '#164194',

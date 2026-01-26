@@ -467,15 +467,15 @@ export const ProductItem = ({
                                     style={styles.productImage}
                                     resizeMode="cover"
                                 />
-                                {statusIcon === 'success' ? (
+                                {(statusIcon === 'success' && item.estado?.codigo === 'EST_DET_VALIDADO')? (
                                     <View style={styles.statusDot}>
                                         <MaterialIcons name="check" size={9} color="#FFFFFF" />
                                     </View>
-                                ) : statusIcon === 'error' ? (
+                                ) :( statusIcon === 'error'&& item.estado?.codigo === 'EST_DET_VALIDADO') ? (
                                     <View style={styles.errorDot}>
                                         <MaterialIcons name="close" size={9} color="#FFFFFF" />
                                     </View>
-                                ) : statusIcon === 'warning' ? (
+                                ) : (statusIcon === 'warning' && item.estado?.codigo === 'EST_DET_VALIDADO') ? (
                                     <View style={styles.warningDot}>
                                         <MaterialIcons name="warning" size={12} color="#FFA400" />
                                     </View>
@@ -483,15 +483,15 @@ export const ProductItem = ({
                             </View>
                         ) : (
                             <View style={styles.imagePlaceholder}>
-                                {statusIcon === 'success' ? (
+                                   {(statusIcon === 'success' && item.estado?.codigo === 'EST_DET_VALIDADO')? (
                                     <View style={styles.statusDot}>
                                         <MaterialIcons name="check" size={9} color="#FFFFFF" />
                                     </View>
-                                ) : statusIcon === 'error' ? (
+                                ) :( statusIcon === 'error'&& item.estado?.codigo === 'EST_DET_VALIDADO') ? (
                                     <View style={styles.errorDot}>
                                         <MaterialIcons name="close" size={9} color="#FFFFFF" />
                                     </View>
-                                ) : statusIcon === 'warning' ? (
+                                ) : (statusIcon === 'warning' && item.estado?.codigo === 'EST_DET_VALIDADO') ? (
                                     <View style={styles.warningDot}>
                                         <MaterialIcons name="warning" size={12} color="#FFA400" />
                                     </View>

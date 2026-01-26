@@ -24,10 +24,6 @@ export const processProductData = (
   item: ProductItem
 ): Array<{id: number, tatolValue: number}> => {
   
-  console.log("idValue: ", idValue);
-  console.log("tatolValue: ", tatolValue);
-  console.log("item: ", item);
-
   // Validar que los arrays tengan la misma longitud
   if (idValue.length !== tatolValue.length) {
     return dataArray;

@@ -5,10 +5,12 @@ import { GuideCard } from '@/components/generals/GuideCard';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { TodayDeliveries } from '@/components/generals/TodayDeliveries';
 import { SearchInput } from '@/components/inputs/SearchInput';
+import { UploadPhotoItem } from '@/components/photo/uploadPhotoItem';
 import { GuideCardSkeleton } from '@/components/skeleton/GuideCardSkeleton';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
 import { StatusInvoice, StatusInvoiceID, TypeConPagoEnum, TypeInvoiceEnum } from '@/src/constants/GuideStates';
+import { ConsignmentData } from '@/src/features/detailsInvoice/components/ConsignmentData';
 import { GuideDetails, PaymentsByInvoice } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { getDeviceDateTime, heightCaldulate } from '@/src/utils/uitls';
@@ -34,6 +36,12 @@ interface DetailsFormProps {
     onSubmit: (params: { guide: string; token: string }) => void | Promise<void>;
 }
 
+interface EvidencePhoto {
+    id: string;
+    uri: string;
+    base64?: string;
+}
+
 export function DetailsForm({ initialGuide = "", token = "", onSubmit }: DetailsFormProps) {
     const [guide, setGuide] = useState(initialGuide);
     const [tokenUser, setToken] = useState<string | null>(null);
@@ -42,6 +50,10 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const [filteredGuides, setFilteredGuides] = useState(data);
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(false);
+    const [showViewConsignment, setViewConsignment] = useState(false);
+    const [multiplePhotos, setMultiplePhotos] = useState<EvidencePhoto[]>([]);
+    const [uploadPhoto, setUploadPhoto] = useState(false);
+    const [uploadPhotoFile, setUploadPhotoFile] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [modalVisibleTwo, setModalVisibleTwo] = useState(false);
     const [validateException, setValidateException] = useState(false);
@@ -49,6 +61,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [statusValue, setStatusValue] = useState("");
+    const [valueInput, setValueInput] = useState("");
     const [runApiFinish, setRunApiFinish] = useState(false);
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [waitingForPermission, setWaitingForPermission] = useState(false);
@@ -370,6 +383,22 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
         )
     );
 
+    const consignmentSubmit = async () => {
+        try {
+
+            console.log("multiplePhotos: ", multiplePhotos);
+            console.log("valueInput: ", valueInput);
+
+
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -409,8 +438,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                         </View>
                         {((data.length != 0 && hasValidInvoice)) && (
                             <TouchableOpacity style={styles.cardConsignment} onPress={() => {
-                                if(statusValue == StatusInvoice.PENDING) return;
-                                console.log('Consignaciones');
+                                setViewConsignment(true);
                             }}>
                                 <View style={styles.leftContent}>
                                     <Image
@@ -478,6 +506,66 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                             />
                         </View>
                     )}
+
+                    {(showViewConsignment) && (
+                        <ConsignmentData
+                            title="Registrar consignación"
+                            subTitle="Ingresa el valor y adjunta una foto del comprobante."
+                            onClose={() => {
+                                setViewConsignment(false);
+                                setUploadPhoto(false);
+                                setValueInput("");
+                                setMultiplePhotos([]);
+                            }}
+                            width={width}
+                            visible={showViewConsignment}
+                            titleTwo="Comprobante de la consignación"
+                            onUploadFile={() => {
+                                setViewConsignment(false);
+                                setUploadPhoto(true);
+                            }}
+                            evidencePhotos={multiplePhotos}
+                            onValue={(value) => {
+                                setValueInput(value);
+                            }}
+                            value={valueInput}
+                            onConfirmation={consignmentSubmit}
+                        />
+                    )}
+
+                    {(uploadPhoto) && (
+                        <UploadPhotoItem
+                            title="Cargar evidencia"
+                            subTitle="Toma fotos de la mercancía ubicada en el cliente. Podrás asociar un máximo de 3 imágenes por entrega."
+                            onClose={() => {
+                                setUploadPhoto(false);
+                                setViewConsignment(true);
+                            }}
+                            width={width}
+
+                            onEvidenceComplete={(evidences) => {
+                                setUploadPhoto(false);
+                                setMultiplePhotos(evidences);
+                                setUploadPhotoFile(true);
+                            }}
+                            onPermisionsPhoto={() => {
+                                setUploadPhoto(false);
+                                setModalTitle("Permiso denegado ¡Alerta!");
+                                setModalMessage("No podemos acceder a la cámara. Activa el permiso en la configuración del dispositivo para continuar.");
+                                setModalVisible(true);
+                            }}
+                            onPermisionsGallery={() => {
+                                setUploadPhoto(false);
+                                setModalTitle("Permiso denegado ¡Alerta!");
+                                setModalMessage("No podemos acceder a la galería. Activa el permiso en la configuración del dispositivo para continuar.");
+                                setModalVisible(true);
+                            }}
+
+                            visible={uploadPhoto}
+                        />
+                    )}
+
+
                     <ExceptionModal
                         visible={modalVisible}
                         onClose={() => {
@@ -500,6 +588,8 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                         showSettingsButton={true}
                         settingsButtonLabel="Abrir Ajustes"
                     />
+
+
                 </View>
             </View>
             {loading && <LoadingBlue />}

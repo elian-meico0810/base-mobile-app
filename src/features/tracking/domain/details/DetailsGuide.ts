@@ -164,3 +164,12 @@ export interface NovletyOrder {
   ruta_novedad: string;
   momento_reporte: string;
 }
+
+
+export interface SerndOTOPProps {
+  idDireccion: number;
+  numeroFactura: string;
+  numeroDestino: string;
+  valorOriginal: string;
+  valorPagado: string;
+}

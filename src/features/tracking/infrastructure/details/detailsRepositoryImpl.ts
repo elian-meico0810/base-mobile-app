@@ -1,6 +1,6 @@
 import { API_ROUTES } from "@/src/constants/apiRoutes";
 import { authApi, authDevApi } from "@/src/features/auth/infrastructure/authApi";
-import { NoveltyRefusedProps, PaymentsByInvoicePorps, ReportNoveltyFileArrayProps, RuteInitPorps, SendOrderArrayProps, SendOrderProps } from "../../domain/details/DetailsGuide";
+import { NoveltyRefusedProps, PaymentsByInvoicePorps, ReportNoveltyFileArrayProps, RuteInitPorps, SendOrderArrayProps, SendOrderProps, SerndOTOPProps } from "../../domain/details/DetailsGuide";
 import { DetailsRepository } from "../../domain/details/DetailsRepository";
 
 export const detailsRepositoryImpl: DetailsRepository = {
@@ -187,4 +187,20 @@ export const detailsRepositoryImpl: DetailsRepository = {
     }
   },
 
+  async serndOTOPProps(data: SerndOTOPProps, token: string) {
+    try {
+      console.log("data: ",data);
+      console.log("route: ",API_ROUTES.CREATE_OTP);
+      
+      const response = await authApi.post(`${API_ROUTES.CREATE_OTP}`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
 };

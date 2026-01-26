@@ -107,6 +107,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const router = useRouter();
     const heightValue = heightCaldulate();
 
+    console.log("detailsCounterDelivery: ", detailsCounterDelivery);
+
     useEffect(() => {
         const backAction = () => {
             if (!allowBack) {
@@ -496,28 +498,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         }
     };
 
-    const handleSubmitConfirmation = async () => {
-        try {
-            router.push({
-                pathname: '/views/IndexDetailsInvoice',
-                params: {
-                    guide: JSON.stringify(guide),
-                    numberGuide: numberGuide,
-                    token: token ?? "",
-                    confirmationStatus: 'true'
-                }
-            });
-
-        } catch (error: any) {
-            setValidateException(true);
-            btnRef.current?.reset();
-            setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
-            setModalVisible(true);
-        } finally {
-            setLoading(false);
-        }
-    };
+    
 
     const getDataProduct = async () => {
         try {
@@ -541,20 +522,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     };
 
 
-    useEffect(() => {
-        // Calcular el valor cuando showPorductData cambie
-        if (detailsCounterDelivery) {
-            const calcularTotal = () => {
-                const total = showPorductData?.[0]?.detalles?.reduce((suma, detalle) => {
-                    return suma + calculateVlueByPorducts(detalle as Detail, TypeCaculateValueEnum.ACTION_5);
-                }, 0) || 0;
-
-                setValueOrderCalculate(total);
-            };
-            calcularTotal();
-        }
-
-    }, [showPorductData]);
 
     const submitData = async () => {
         try {
@@ -920,11 +887,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         ?.filter(pago => pago.estado === "APPROVED")
         .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0);
 
-    console.log("valueOrderCalculate: ", valueOrderCalculate);
-
-    const totalOrderPayment = Number(totalAproved) + Number(valueOrderPaymentByType);
-    const totalValue = (Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.dfr)) - Number(valueOrderCalculate);
-    const totalRecauder = Math.max(0, Number(totalValue) - Number(totalOrderPayment));
 
     var value = '';
     switch (guide?.facturas[0]?.tipo) {
@@ -942,6 +904,77 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     }
 
     const closeButton = routeStarted || buttonValue;
+
+    useEffect(() => {
+        if (detailsCounterDelivery || closeButton) {
+            const total =
+                showPorductData?.[0]?.detalles?.reduce((suma, detalle) => {
+                    return (
+                        suma +
+                        calculateVlueByPorducts(
+                            detalle as Detail,
+                            TypeCaculateValueEnum.ACTION_5
+                        )
+                    );
+                }, 0) || 0;
+
+            setValueOrderCalculate(total);
+        }
+    }, [
+        token,
+        closeButton,
+        detailsCounterDelivery,
+        showPorductData,
+    ]);
+
+
+    const totalOrderPayment = Number(totalAproved) + Number(valueOrderPaymentByType);
+    const totalValue = (Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.dfr)) - Number(valueOrderCalculate);
+    const totalRecauder = Math.max(0, Number(totalValue) - Number(totalOrderPayment));
+    
+    const handleSubmitConfirmation = async () => {
+        try {
+            setLoading(true);
+            const responseData = await detailsRepositoryImpl.serndOTOPProps(
+                {
+                    idDireccion: Number(guide?.idDireccion),
+                    numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
+                    numeroDestino: "+57"+String(guide?.whatsapp),
+                    valorOriginal: String(totalValue),
+                    valorPagado: String(totalRecauder), 
+                },
+                token
+            );
+            if (responseData?.statusCode === 200) {
+                btnRef.current?.reset();
+                router.push({
+                    pathname: '/views/IndexDetailsInvoice',
+                    params: {
+                        guide: JSON.stringify(guide),
+                        numberGuide: numberGuide,
+                        token: token ?? "",
+                        confirmationStatus: 'true'
+                    }
+                });
+            } else {
+                setValidateException(true);
+                btnRef.current?.reset();
+                setModalTitle("¡Alerta!");
+                setModalMessage(responseData?.message || "No se pudo iniciar la ruta. Intente nuevamente.");
+                setModalVisible(true);
+            }
+        } catch (error: any) {
+            console.log("error: ",error);
+            
+            setValidateException(true);
+            btnRef.current?.reset();
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <ThemedView style={styles.container}>
@@ -1071,7 +1104,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
                 <View style={[styles.cardTwo, { minHeight: !closeButton ? undefined : 229 }]}>
                     {/* Encabezado */}
-                    {detailsCounterDelivery && (
+                    {(detailsCounterDelivery || closeButton) && (
                         <View style={styles.cardHeader}>
                             <View
                                 style={[
@@ -1090,6 +1123,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             </View>
                         </View>
                     )}
+
                     {/* Línea divisoria */}
                     <View style={styles.orderInfo}>
 
@@ -1103,7 +1137,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                 {'$ - ' + Number(guide?.facturas[0]?.dfr).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                             </Text>
                         </View>
-                        {detailsCounterDelivery && (
+                        {(detailsCounterDelivery || closeButton) && (
                             <View style={styles.row}>
                                 <Text style={styles.label}>Productos rechazados</Text>
                                 <Text style={styles.value}>{'$ ' + Number(valueOrderCalculate).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
@@ -1138,7 +1172,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             </Text>
                         </View>
 
-                        {detailsCounterDelivery && (
+                        {(detailsCounterDelivery || closeButton) && (
                             totalRecauder != 0 ? (
                                 <TouchableOpacity
                                     style={styles.qrButton}
@@ -1166,7 +1200,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
                 </View>
 
-                {!detailsCounterDelivery && (
+                {(!detailsCounterDelivery && !closeButton) && (
                     <TouchableOpacity
                         style={styles.qrButtonDetailTwo}
                         onPress={() => {
@@ -1187,8 +1221,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
 
                 )}
-                
-                {detailsCounterDelivery && (
+
+                {(detailsCounterDelivery) && (
                     <View>
                         <DeliveryStatusAction
                             onStatusChange={(status) => {

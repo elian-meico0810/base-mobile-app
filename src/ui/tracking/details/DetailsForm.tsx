@@ -70,7 +70,6 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const [date, setDate] = useState<string | null>(null);
     const btnRef = useRef<any>(null);
     const router = useRouter();
-    console.log("valueInput: ", valueInput);
 
     const isValid = guide.length >= 5;
     const isSmallScreen = height <= 780;

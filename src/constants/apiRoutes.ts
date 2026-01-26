@@ -20,6 +20,7 @@ export const API_ROUTES = {
   CREATE_PAYMENT_BY_TYPE: "reporte-pago/crear-lote/",
   GET_TYPE_DETAILS_BY_PARAMS: "causales/tipo/",
   GET_REPORT_PAYMENT_IN_APP: "reporte-pago/por-pedido/",
+  CREATE_OTP: "otp/direccion/crear/",
   // Back contado anticipado
   SEND_PAYMENT_GATEWAY: "pagos/generar-link-pasarela/",
   GENERATE_QR: "pagos/generar_qr_bancolombia/",

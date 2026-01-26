@@ -543,15 +543,17 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     useEffect(() => {
         // Calcular el valor cuando showPorductData cambie
-        const calcularTotal = () => {
-            const total = showPorductData?.[0]?.detalles?.reduce((suma, detalle) => {
-                return suma + calculateVlueByPorducts(detalle as Detail, TypeCaculateValueEnum.ACTION_5);
-            }, 0) || 0;
+        if (detailsCounterDelivery) {
+            const calcularTotal = () => {
+                const total = showPorductData?.[0]?.detalles?.reduce((suma, detalle) => {
+                    return suma + calculateVlueByPorducts(detalle as Detail, TypeCaculateValueEnum.ACTION_5);
+                }, 0) || 0;
 
-            setValueOrderCalculate(total);
-        };
+                setValueOrderCalculate(total);
+            };
+            calcularTotal();
+        }
 
-        calcularTotal();
     }, [showPorductData]);
 
     const submitData = async () => {
@@ -918,6 +920,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         ?.filter(pago => pago.estado === "APPROVED")
         .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0);
 
+    console.log("valueOrderCalculate: ", valueOrderCalculate);
+
     const totalOrderPayment = Number(totalAproved) + Number(valueOrderPaymentByType);
     const totalValue = (Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.dfr)) - Number(valueOrderCalculate);
     const totalRecauder = Math.max(0, Number(totalValue) - Number(totalOrderPayment));
@@ -1067,7 +1071,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
                 <View style={[styles.cardTwo, { minHeight: !closeButton ? undefined : 229 }]}>
                     {/* Encabezado */}
-                    {closeButton && (
+                    {detailsCounterDelivery && (
                         <View style={styles.cardHeader}>
                             <View
                                 style={[
@@ -1099,12 +1103,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                 {'$ - ' + Number(guide?.facturas[0]?.dfr).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                             </Text>
                         </View>
-                        {/* {closeButton && ( */}
+                        {detailsCounterDelivery && (
                             <View style={styles.row}>
                                 <Text style={styles.label}>Productos rechazados</Text>
                                 <Text style={styles.value}>{'$ ' + Number(valueOrderCalculate).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
                             </View>
-                        {/* )} */}
+                        )}
                         <View style={styles.row}>
                             <Text style={styles.labelTotal}>Valor total</Text>
                             <Text style={[styles.value, { color: '#141D32', fontWeight: '800' }]}>
@@ -1134,7 +1138,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             </Text>
                         </View>
 
-                        {closeButton && (
+                        {detailsCounterDelivery && (
                             totalRecauder != 0 ? (
                                 <TouchableOpacity
                                     style={styles.qrButton}
@@ -1162,7 +1166,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
                 </View>
 
-                {!closeButton && (
+                {!detailsCounterDelivery && (
                     <TouchableOpacity
                         style={styles.qrButtonDetailTwo}
                         onPress={() => {
@@ -1183,28 +1187,31 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
 
                 )}
+                
+                {detailsCounterDelivery && (
+                    <View>
+                        <DeliveryStatusAction
+                            onStatusChange={(status) => {
+                                setShowStatusDelivery(status);
+                                // Resetear completado si cambia el estado
+                                if (status !== showStatusDelivery) {
+                                    setIsDeliveryCompleted(false);
+                                    setMultiplePhotos([]);
+                                }
+                            }}
+                            EntryVisible={isCountryDelivery ? true : isSelectInvocies ? true : buttonValue ? true : EntryVisible}
+                            onOpenRefusedModal={() => setShowModalRefused(true)}
+                            onUploadPhoto={() => {
+                                setUploadPhoto(true);
+                            }}
+                            isCompleted={isDeliveryCompleted}
+                            selectedStatus={showStatusDelivery}
+                            typeDerlivery={statusDOcument ?? undefined}
+                            conceptDelivery={conceptDelivery}
+                        />
+                    </View>
+                )}
 
-                <View>
-                    <DeliveryStatusAction
-                        onStatusChange={(status) => {
-                            setShowStatusDelivery(status);
-                            // Resetear completado si cambia el estado
-                            if (status !== showStatusDelivery) {
-                                setIsDeliveryCompleted(false);
-                                setMultiplePhotos([]);
-                            }
-                        }}
-                        EntryVisible={isCountryDelivery ? true : isSelectInvocies ? true : buttonValue ? true : EntryVisible}
-                        onOpenRefusedModal={() => setShowModalRefused(true)}
-                        onUploadPhoto={() => {
-                            setUploadPhoto(true);
-                        }}
-                        isCompleted={isDeliveryCompleted}
-                        selectedStatus={showStatusDelivery}
-                        typeDerlivery={statusDOcument ?? undefined}
-                        conceptDelivery={conceptDelivery}
-                    />
-                </View>
             </ScrollView>
 
             {guide?.estado === 'Pendiente' && (

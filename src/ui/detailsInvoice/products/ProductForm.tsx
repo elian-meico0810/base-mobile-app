@@ -247,8 +247,6 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
             item => item.estado?.codigo === 'EST_DET_VALIDADO'
         );
 
-    console.log("validateStatus: ", validateStatus);
-
     const hasItemsValidateSuccess = productItemDataPending.some(
         item => item.estado?.codigo === 'EST_DET_VALIDADO'
     );
@@ -272,18 +270,17 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     setModalTitle("¡Alerta!");
                     setModalMessage("La cantidad reportada no puede ser mayor a la despachada.");
                     setModalVisible(true);
-                    return false; // ← Devuelve false si hay error
-
+                    return false; 
                 } else if (product && Number(totalUnits) == 0) {
                     setModalTitle("¡Alerta!");
                     setModalMessage("La cantidad reportada no puede ser 0");
                     setModalVisible(true);
-                    return false; // ← Devuelve false si hay error
+                    return false; 
                 }
             }
-            return true; // ← Devuelve true si todo está bien
+            return true;
         } catch (error) {
-            return false; // ← Devuelve false si hay excepción
+            return false; 
         }
     };
 
@@ -305,11 +302,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
             if (modalStatusNovelty == "left" && productItemData?.id
             ) {
-                // console.log("=====================================");
-                // console.log("Entro al if");
-                // console.log("modalStatusNovelty: ", modalStatusNovelty);
-                // console.log("productItemData?.id: ", productItemData?.id);
-                // console.log("successButton: ", successButton);
+
                 const response = await detailsRepositoryImpl.sendOrder(
                     {
                         totalEntregado: String(Number(productItemData.unidadesSolicitadas) * Number(productItemData.valorBaseProducto)),
@@ -327,13 +320,6 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 if (modalStatusNovelty == "right" &&
                     productItemData?.id
                 ) {
-
-                    // console.log("=====================================");
-                    // console.log("Entro al else if");
-                    // console.log("modalStatusNovelty: ", modalStatusNovelty);
-                    // console.log("productItemData?.id: ", productItemData?.id);
-                    // console.log("alertButton: ", alertButton);
-
                     let totalUnits = 0;
                     // Array para acumular todas las nove   dades
                     if (data && data.length > 0) {

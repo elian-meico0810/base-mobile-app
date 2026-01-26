@@ -1099,10 +1099,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                 {'$ - ' + Number(guide?.facturas[0]?.dfr).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                             </Text>
                         </View>
-                        <View style={styles.row}>
-                            <Text style={styles.label}>Productos rechazados</Text>
-                            <Text style={styles.value}>{'$ ' + Number(valueOrderCalculate).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
-                        </View>
+                        {/* {closeButton && ( */}
+                            <View style={styles.row}>
+                                <Text style={styles.label}>Productos rechazados</Text>
+                                <Text style={styles.value}>{'$ ' + Number(valueOrderCalculate).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
+                            </View>
+                        {/* )} */}
                         <View style={styles.row}>
                             <Text style={styles.labelTotal}>Valor total</Text>
                             <Text style={[styles.value, { color: '#141D32', fontWeight: '800' }]}>
@@ -1504,10 +1506,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#F9F9FA',
     },
     icon: {
-        width: 20, 
-        height: 20, 
-        borderRadius: 10, 
-        justifyContent: 'center', 
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        justifyContent: 'center',
         alignItems: 'center',
         marginRight: 8,
     },

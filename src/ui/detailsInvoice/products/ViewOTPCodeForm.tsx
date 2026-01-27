@@ -180,12 +180,25 @@ export function ViewOTPCodeForm({
 
     const validateCodeOTP = async () => {
         try {
-            setShowSuccess(true);
-            setShowErrorQRP(true);
+            setLoading(true);
+            const isOtpComplete = otpValues.every(value => value.trim() !== "");
 
-            // Ocultar teclado al confirmar
-            dismissKeyboard();
-            setViewError(true);
+            if (!isOtpComplete) {
+                return;
+            }
+            const responseData = await detailsRepositoryImpl.validateCodeOTP(
+                {
+                    idDireccion: Number(guide?.idDireccion),
+                    codigoOtp: otpValues.join(""),
+                },
+                token
+            );
+            if (responseData?.statusCode === 200) {
+                setShowSuccess(true);
+            } else {
+                setShowErrorQRPMessage(responseData?.message || "Código OTP incorrecto");
+                setShowErrorQRP(true);
+            }
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
@@ -200,9 +213,8 @@ export function ViewOTPCodeForm({
             setLoading(true);
 
             // if (!guide?.whatsapp || guide?.whatsapp != "") {
-            //     btnRef.current?.reset();
             //     setModalTitle("¡Alerta!");
-            //     setModalMessage("El numero de telefono es requerido."); 
+            //     setModalMessage("El numero de telefono es requerido.");
             //     setModalVisible(true);
             //     return;
             // }
@@ -218,7 +230,7 @@ export function ViewOTPCodeForm({
                 {
                     idDireccion: Number(guide?.idDireccion),
                     numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
-                    // numeroDestino: "+57"+String(guide?.whatsapp),
+                    // numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
                     numeroDestino: "+573112187956",
                     valorOriginal: String(totalValue),
                     valorPagado: String(totalRecauder),
@@ -320,21 +332,6 @@ export function ViewOTPCodeForm({
         }, 1000);
     };
 
-    const validateOTP = () => {
-        try {
-            let value = 2;
-
-            if (value === 2) {
-                setShowErrorQRPMessage("Has alcanzado el límite máximo de reenvíos del código OTP");
-                setShowErrorQRP(true);
-                return false;
-            }
-
-            return true;
-        } catch (error) {
-            throw error;
-        }
-    };
 
     const resendOtp = async () => {
         try {
@@ -366,7 +363,13 @@ export function ViewOTPCodeForm({
 
     };
 
-    const validateCodeStatus = (reentryPermission == 0 || !isExpired);
+    useEffect(() => {
+        if (
+            isExpired
+        ) {
+            setOtpValues(["", "", "", "", "", ""]);
+        }
+    }, [guideOTP]);
 
     return (
         <ThemedView style={styles.container}>

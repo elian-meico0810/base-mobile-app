@@ -930,29 +930,17 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const totalValue = (Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.dfr)) - Number(valueOrderCalculate);
     const totalRecauder = Math.max(0, Number(totalValue) - Number(totalOrderPayment));
     
-    //     const {
-    //     totalOrderPayment,
-    //     totalValue,
-    //     totalRecauder,
-    //     isValid,
-    // } = calculateTotals({
-    //     totalAproved,
-    //     valueOrderPaymentByType,
-    //     valueOrderCalculate,
-    //     factura: guide?.facturas?.[0],
-    // });
-
     const handleSubmitConfirmation = async () => {
         try {
             setLoading(true);
 
-            // if (!guide?.whatsapp || guide?.whatsapp != "") {
-            //     btnRef.current?.reset();
-            //     setModalTitle("¡Alerta!");
-            //     setModalMessage("El numero de telefono es requerido."); 
-            //     setModalVisible(true);
-            //     return;
-            // }
+            if (!guide?.whatsapp || guide?.whatsapp != "") {
+                btnRef.current?.reset();
+                setModalTitle("¡Alerta!");
+                setModalMessage("El numero de telefono es requerido."); 
+                setModalVisible(true);
+                return;
+            }
 
             if (!Number.isFinite(totalValue) || !Number.isFinite(totalRecauder)) {
                 btnRef.current?.reset();
@@ -967,8 +955,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 {
                     idDireccion: Number(guide?.idDireccion),
                     numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
-                    // numeroDestino: "+57"+String(guide?.whatsapp),
-                    numeroDestino: "+573112187956",
+                    numeroDestino: "+57"+String(guide?.whatsapp).replace(/\D/g, ''),
+                    // numeroDestino: "+573112187956",
                     valorOriginal: String(totalValue),
                     valorPagado: String(totalRecauder),
                 },

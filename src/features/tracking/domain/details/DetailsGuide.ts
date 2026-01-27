@@ -195,3 +195,8 @@ export interface ReentryOTPProps {
   valorOriginal: string;
   valorPagado: string;
 }
+
+export interface ValidateCodeOTPProps {
+  idDireccion: number;
+  codigoOtp: string;
+}

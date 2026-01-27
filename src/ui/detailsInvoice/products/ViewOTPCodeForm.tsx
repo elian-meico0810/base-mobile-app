@@ -248,6 +248,7 @@ export function ViewOTPCodeForm({
                     setShowErrorQRPMessageView("OTP vencido o sin intentos.");
                     setViewAlert(true);
                 }
+
                 const expira = new Date(responseData.data.expiraEn).getTime();
                 const send = new Date(responseData.data.momentoEnvio).getTime();
                 const time = Date.now();
@@ -315,6 +316,10 @@ export function ViewOTPCodeForm({
 
     const startOtpTimer = (initialSeconds: number) => {
         setSecondsLeft(initialSeconds);
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+        }
 
         if (initialSeconds <= 0) {
             return;
@@ -364,12 +369,11 @@ export function ViewOTPCodeForm({
     };
 
     useEffect(() => {
-        if (
-            isExpired
-        ) {
+        if (isExpired) {
             setOtpValues(["", "", "", "", "", ""]);
         }
-    }, [guideOTP]);
+    }, [isExpired]);
+
 
     return (
         <ThemedView style={styles.container}>

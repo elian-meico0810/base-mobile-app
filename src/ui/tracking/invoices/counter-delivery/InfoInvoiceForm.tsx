@@ -107,8 +107,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const router = useRouter();
     const heightValue = heightCaldulate();
 
-    console.log("detailsCounterDelivery: ", detailsCounterDelivery);
-
     useEffect(() => {
         const backAction = () => {
             if (!allowBack) {
@@ -472,7 +470,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     params: {
                         guide: JSON.stringify(guide),
                         numberGuide: numberGuide,
-                        token: token ?? ""
+                        token: token ?? "",
                     }
                 });
 
@@ -498,7 +496,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         }
     };
 
-    
+
 
     const getDataProduct = async () => {
         try {
@@ -887,7 +885,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         ?.filter(pago => pago.estado === "APPROVED")
         .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0);
 
-
+        
     var value = '';
     switch (guide?.facturas[0]?.tipo) {
         case TypeInvoiceEnum.CONTADO_EFECTIVO:
@@ -932,19 +930,51 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const totalValue = (Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.dfr)) - Number(valueOrderCalculate);
     const totalRecauder = Math.max(0, Number(totalValue) - Number(totalOrderPayment));
     
+    //     const {
+    //     totalOrderPayment,
+    //     totalValue,
+    //     totalRecauder,
+    //     isValid,
+    // } = calculateTotals({
+    //     totalAproved,
+    //     valueOrderPaymentByType,
+    //     valueOrderCalculate,
+    //     factura: guide?.facturas?.[0],
+    // });
+
     const handleSubmitConfirmation = async () => {
         try {
             setLoading(true);
-            const responseData = await detailsRepositoryImpl.serndOTOPProps(
+
+            // if (!guide?.whatsapp || guide?.whatsapp != "") {
+            //     btnRef.current?.reset();
+            //     setModalTitle("¡Alerta!");
+            //     setModalMessage("El numero de telefono es requerido."); 
+            //     setModalVisible(true);
+            //     return;
+            // }
+
+            if (!Number.isFinite(totalValue) || !Number.isFinite(totalRecauder)) {
+                btnRef.current?.reset();
+                setModalTitle("¡Alerta!");
+                setModalMessage("Los valores aún no están listos. Intenta nuevamente.");
+                setModalVisible(true);
+                return;
+            }
+
+
+            const responseData = await detailsRepositoryImpl.sendOTP(
                 {
                     idDireccion: Number(guide?.idDireccion),
                     numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
-                    numeroDestino: "+57"+String(guide?.whatsapp),
+                    // numeroDestino: "+57"+String(guide?.whatsapp),
+                    numeroDestino: "+573112187956",
                     valorOriginal: String(totalValue),
-                    valorPagado: String(totalRecauder), 
+                    valorPagado: String(totalRecauder),
                 },
                 token
             );
+
             if (responseData?.statusCode === 200) {
                 btnRef.current?.reset();
                 router.push({
@@ -953,8 +983,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         guide: JSON.stringify(guide),
                         numberGuide: numberGuide,
                         token: token ?? "",
-                        confirmationStatus: 'true'
+                        confirmationStatus: 'true',
+                        responseOTPInit: JSON.stringify(responseData.data),
+                        totalValue: String(totalValue) ?? 0,
+                        totalRecauder: String(totalRecauder)?? 0,
                     }
+
                 });
             } else {
                 setValidateException(true);
@@ -964,8 +998,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 setModalVisible(true);
             }
         } catch (error: any) {
-            console.log("error: ",error);
-            
+            console.log("error: ", error);
+
             setValidateException(true);
             btnRef.current?.reset();
             setModalTitle("¡Error!");

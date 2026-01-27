@@ -4,7 +4,8 @@ import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { ThemedView } from '@/components/themed-view';
-import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { GuideDetails, ResponseOTPInitPorps } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { formatTimeByMinutes } from '@/src/utils/uitls';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from "react";
@@ -33,10 +34,28 @@ interface ViewOTPCodeFormProps {
     isCountryDelivery?: boolean;
     IsGoBack?: boolean;
     routeStartedBotton?: string;
+    responseOTPInit?: ResponseOTPInitPorps;
+    totalRecauder?: number;
+    totalValue?: number;
+
 }
 
-export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton }: ViewOTPCodeFormProps) {
+export function ViewOTPCodeForm({
+    initialGuide,
+    token = "",
+    onSubmit,
+    numberGuide,
+    isSelectInvocies,
+    documentMeico,
+    isCountryDelivery = false,
+    IsGoBack = false,
+    routeStartedBotton,
+    responseOTPInit,
+    totalRecauder,
+    totalValue
+}: ViewOTPCodeFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
+    const [guideOTP, setGuideOTP] = useState<ResponseOTPInitPorps | undefined>(responseOTPInit);
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
     const [modalTitle, setModalTitle] = useState("");
@@ -48,18 +67,21 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
     const [keyboardVisible, setKeyboardVisible] = useState(false);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [dataBack, setDataBack] = useState(false);
     const [showErrorQRP, setShowErrorQRP] = useState(false);
     const [showErrorQRPMessage, setShowErrorQRPMessage] = useState("Código OTP incorrecto");
-    const [showErrorQRPMessageView, setShowErrorQRPMessageView] = useState("Código OTP incorrecto");
+    const [showErrorQRPMessageView, setShowErrorQRPMessageView] = useState("Código vencido");
     const [showViewError, setViewError] = useState(false);
     const [secondsLeft, setSecondsLeft] = useState<number>(0);
     const [resendDisabled, setResendDisabled] = useState(false);
+    const [showViewAlert, setViewAlert] = useState(false);
     const [resendSecondsLeft, setResendSecondsLeft] = useState(0);
+    const [reentryPermission, setReentryPermission] = useState(2);
     const resendTimerRef = useRef<number | null>(null);
     const timerRef = useRef<number | null>(null);
-
     const router = useRouter();
     const inputRefs = useRef<TextInput[]>([]);
+
 
     // Verificar si todos los campos OTP están llenos
     const isOtpComplete = otpValues.every(value => value !== "");
@@ -93,6 +115,7 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
         );
     };
 
+
     // Función para manejar el clic en una caja
     const handleBoxPress = (index: number) => {
         // Buscar la primera caja vacía
@@ -122,16 +145,11 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
         newOtpValues[index] = newValue;
         setOtpValues(newOtpValues);
 
-        // Imprimir en consola
-        console.log("OTP actual:", newOtpValues.join(""));
-
-        // Si se escribió un número y no es el último input, mover al siguiente
         if (newValue !== "" && index < 5) {
             setCurrentFocusIndex(index + 1);
             inputRefs.current[index + 1]?.focus();
         }
 
-        // Si se borró (texto vacío) y no es el primer input, retroceder
         if (newValue === "" && text === "" && index > 0) {
             setCurrentFocusIndex(index - 1);
             inputRefs.current[index - 1]?.focus();
@@ -164,13 +182,10 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
         try {
             setShowSuccess(true);
             setShowErrorQRP(true);
-            startOtpTimer();
+
             // Ocultar teclado al confirmar
             dismissKeyboard();
             setViewError(true);
-            console.log("Llego a la funcion redirectContinue");
-            console.log("OTP completo:", otpValues.join(""));
-
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
@@ -182,14 +197,74 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const reentryCodeOTP = async () => {
         try {
-            resendOtp();
-            startOtpTimer();
-            // Ocultar teclado al confirmar
-            dismissKeyboard();
-            setViewError(true);
-            console.log("Llego a la funcion reentryCodeOTP");
-            console.log("OTP completo:", otpValues.join(""));
+            setLoading(true);
 
+            // if (!guide?.whatsapp || guide?.whatsapp != "") {
+            //     btnRef.current?.reset();
+            //     setModalTitle("¡Alerta!");
+            //     setModalMessage("El numero de telefono es requerido."); 
+            //     setModalVisible(true);
+            //     return;
+            // }
+
+            if (!Number.isFinite(totalValue) || !Number.isFinite(totalRecauder)) {
+                setModalTitle("¡Alerta!");
+                setModalMessage("Los valores aún no están listos. Intenta nuevamente.");
+                setModalVisible(true);
+                return;
+            }
+
+            const responseData = await detailsRepositoryImpl.reentryOTP(
+                {
+                    idDireccion: Number(guide?.idDireccion),
+                    numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
+                    // numeroDestino: "+57"+String(guide?.whatsapp),
+                    numeroDestino: "+573112187956",
+                    valorOriginal: String(totalValue),
+                    valorPagado: String(totalRecauder),
+                },
+                token
+            );
+
+            if (responseData?.statusCode === 200) {
+                setDataBack(true);
+                resendOtp();
+                setReentryPermission(2 - responseData?.data?.numeroReenvio)
+
+                if (reentryPermission == 0) {
+                    setResendDisabled(true);
+                    setShowErrorQRPMessageView("OTP vencido o sin intentos.");
+                    setViewAlert(true);
+                }
+                const expira = new Date(responseData.data.expiraEn).getTime();
+                const send = new Date(responseData.data.momentoEnvio).getTime();
+                const time = Date.now();
+
+                // Tiempo total del OTP
+                const totalSeconds = Math.floor((expira - send) / 1000);
+
+                // Tiempo restante real
+                const remainingSeconds = Math.max(
+                    totalSeconds - Math.floor((time - send) / 1000),
+                    0
+                );
+
+                startOtpTimer(remainingSeconds);
+                // Ocultar teclado al confirmar
+                dismissKeyboard();
+            } else {
+                if (reentryPermission == 0) {
+                    setResendDisabled(true);
+                    setShowErrorQRPMessageView("OTP vencido o sin intentos.");
+                    setViewAlert(true);
+                }
+                setShowErrorQRPMessage(responseData?.message || "No se pudo iniciar la ruta. Intente nuevamente.");
+                setShowErrorQRP(true);
+                if (reentryPermission == 0 && isExpired) {
+                    setResendDisabled(true);
+                }
+                return;
+            }
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
@@ -199,12 +274,38 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
         }
     };
 
-    const startOtpTimer = () => {
-        // 5 minutos = 300 segundos
-        setSecondsLeft(300);
+    useEffect(() => {
+        if (
+            guideOTP?.expiraEn &&
+            guideOTP?.momentoEnvio &&
+            !timerRef.current && !dataBack
+        ) {
+            const expira = new Date(guideOTP.expiraEn).getTime();
+            const send = new Date(guideOTP.momentoEnvio).getTime();
+            const time = Date.now();
 
-        if (timerRef.current) {
-            clearInterval(timerRef.current);
+            // Tiempo total del OTP
+            const totalSeconds = Math.floor((expira - send) / 1000);
+
+            // Tiempo restante real
+            const remainingSeconds = Math.max(
+                totalSeconds - Math.floor((time - send) / 1000),
+                0
+            );
+
+            startOtpTimer(remainingSeconds);
+            resendOtp();
+
+        }
+    }, [guideOTP]);
+
+    const isExpired = secondsLeft <= 0;
+
+    const startOtpTimer = (initialSeconds: number) => {
+        setSecondsLeft(initialSeconds);
+
+        if (initialSeconds <= 0) {
+            return;
         }
 
         timerRef.current = setInterval(() => {
@@ -238,7 +339,7 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
     const resendOtp = async () => {
         try {
             if (resendDisabled) return;
-            const isValid = validateOTP();
+            // const isValid = validateOTP();
             // if (!isValid) return;
 
             setResendDisabled(true);
@@ -265,6 +366,8 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
 
     };
 
+    const validateCodeStatus = (reentryPermission == 0 || !isExpired);
+
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -288,9 +391,15 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
                         Ingresa el código OTP del cliente
                     </Text>
 
-                    <Text style={styles.otpSubtitle}>
-                        Te quedan 2 reenvíos
-                    </Text>
+                    {reentryPermission > 0 ? (
+                        <Text style={styles.otpSubtitle}>
+                            Te quedan {reentryPermission} reenvíos
+                        </Text>
+                    ) : (
+                        <Text style={styles.otpSubtitle}>
+                            No te quedan reenvios.
+                        </Text>
+                    )}
                 </View>
 
                 <View style={styles.otpContainer}>
@@ -302,7 +411,9 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
                                 style={[
                                     styles.otpInputBox,
                                     otpValues[index] ? styles.otpInputBoxFilled : {},
-                                    index === currentFocusIndex ? styles.otpInputBoxActive : {}
+                                    index === currentFocusIndex ? styles.otpInputBoxActive : {},
+                                    isExpired ? styles.otpInputBoxDisabled : {},
+
                                 ]}
                                 onPress={() => handleBoxPress(index)}
                                 activeOpacity={0.7}
@@ -314,7 +425,10 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
                                             inputRefs.current[index] = ref;
                                         }
                                     }}
-                                    style={styles.hiddenInput}
+                                    style={[styles.hiddenInput,
+                                    isExpired ? styles.otpInputTextDisabled : {},
+
+                                    ]}
                                     value={otpValues[index]}
                                     onChangeText={(text) => handleTextChange(text, index)}
                                     onKeyPress={(e) => handleKeyPress(e, index)}
@@ -329,6 +443,8 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
                                             setCurrentFocusIndex(-1);
                                         }
                                     }}
+                                    editable={isExpired ? false : true}
+
                                 />
 
                                 {/* Texto visible */}
@@ -345,42 +461,14 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
                     </View>
 
 
-                    {showViewError ? (
+                    {!isExpired && (
                         <>
-                            <View
-                                style={styles.otpExpireContainerAlert}
-                            >
-                                <Image
-                                    source={require("@/assets/icons/ExistIcon.png")}
-                                    style={styles.icon}
-                                />
 
-                                <Text style={styles.otpExpireAlert}>
-                                    {showErrorQRPMessageView}
-                                </Text>
-                            </View>
-
-                            <View
-                                style={styles.resendContainerCamera}
-                            >
-                                <Image
-                                    source={require("@/assets/icons/CameraIcon.png")}
-                                    style={styles.iconCamera}
-                                />
-
-                                <Text style={styles.resendText}>
-                                    {"Validar con captura de imagen"}
-                                </Text>
-                            </View>
-                        </>
-
-                    ) :
-                        <>
                             {/* Código vencerá */}
                             <View
                                 style={styles.otpExpireContainer}
                             >
-                                {secondsLeft != 0 ? (
+                                {!isExpired ? (
                                     <Image
                                         source={require("@/assets/icons/RelojIcon.png")}
                                         style={styles.icon}
@@ -398,24 +486,56 @@ export function ViewOTPCodeForm({ initialGuide, token = "", onSubmit, numberGuid
                                 </Text>
                             </View>
 
-                            {/* Reenviar código */}
-                            <TouchableOpacity
-                                style={[
-                                    styles.resendContainer,
-                                    resendDisabled && styles.resendDisabled
-                                ]}
-                                activeOpacity={0.6}
-                                disabled={resendDisabled}
-                                onPress={reentryCodeOTP}
-                            >
-                                <Text style={styles.otpExpireIconText}>⟳</Text>
-                                <Text style={styles.resendText}>Reenviar código OTP </Text>
-                            </TouchableOpacity>
-
                         </>
 
-                    }
+                    )}
 
+                    {showViewAlert && (
+                        <View
+                            style={styles.otpExpireContainerAlert}
+                        >
+                            <Image
+                                source={require("@/assets/icons/ExistIcon.png")}
+                                style={styles.icon}
+                            />
+
+                            <Text style={styles.otpExpireAlert}>
+                                {showErrorQRPMessageView}
+                            </Text>
+                        </View>
+                    )}
+
+                    {/* Reenviar código */}
+                    <TouchableOpacity
+                        style={[
+                            styles.resendContainer,
+                            resendDisabled && styles.resendDisabled
+                        ]}
+                        activeOpacity={0.6}
+                        disabled={resendDisabled}
+                        onPress={reentryCodeOTP}
+                    >
+                        <Text style={styles.otpExpireIconText}>⟳</Text>
+                        <Text style={styles.resendText}>Reenviar código OTP </Text>
+                    </TouchableOpacity>
+
+
+                    {/* {reentryPermission == 0 && (
+                        <>
+                            <View
+                                style={styles.resendContainerCamera}
+                            >
+                                <Image
+                                    source={require("@/assets/icons/CameraIcon.png")}
+                                    style={styles.iconCamera}
+                                />
+
+                                <Text style={styles.resendText}>
+                                    {"Validar con captura de imagen"}
+                                </Text>
+                            </View>
+                        </>
+                    )} */}
                 </View>
 
                 <View style={styles.spacer} />
@@ -469,6 +589,13 @@ const styles = StyleSheet.create({
         width: width,
         height: height,
         alignItems: 'center',
+    },
+    otpInputBoxDisabled: {
+        borderColor: '#F9F9FA',
+        backgroundColor: '#F2F4F7',
+    },
+    otpInputTextDisabled: {
+        color: '#788095',
     },
     icon: {
         width: 12,
@@ -622,7 +749,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 4,
-        width: 202,
         height: 24,
         borderRadius: 100,
         paddingHorizontal: 30,

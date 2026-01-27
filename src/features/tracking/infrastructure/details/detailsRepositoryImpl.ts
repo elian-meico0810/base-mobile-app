@@ -1,6 +1,6 @@
 import { API_ROUTES } from "@/src/constants/apiRoutes";
 import { authApi, authDevApi } from "@/src/features/auth/infrastructure/authApi";
-import { NoveltyRefusedProps, PaymentsByInvoicePorps, ReportNoveltyFileArrayProps, RuteInitPorps, SendOrderArrayProps, SendOrderProps, SerndOTOPProps } from "../../domain/details/DetailsGuide";
+import { NoveltyRefusedProps, PaymentsByInvoicePorps, ReentryOTPProps, ReportNoveltyFileArrayProps, RuteInitPorps, SendOrderArrayProps, SendOrderProps, SendOTOPProps } from "../../domain/details/DetailsGuide";
 import { DetailsRepository } from "../../domain/details/DetailsRepository";
 
 export const detailsRepositoryImpl: DetailsRepository = {
@@ -187,11 +187,8 @@ export const detailsRepositoryImpl: DetailsRepository = {
     }
   },
 
-  async serndOTOPProps(data: SerndOTOPProps, token: string) {
+  async sendOTP(data: SendOTOPProps, token: string) {
     try {
-      console.log("data: ",data);
-      console.log("route: ",API_ROUTES.CREATE_OTP);
-      
       const response = await authApi.post(`${API_ROUTES.CREATE_OTP}`, data, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -201,6 +198,27 @@ export const detailsRepositoryImpl: DetailsRepository = {
       return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {
       throw error;
+    }
+  },
+
+  async reentryOTP(data: ReentryOTPProps, token: string) {
+    try {
+      const response = await authApi.post(`${API_ROUTES.REENTRY_OTP}`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error: any) {
+      return {
+        statusCode: error.response?.status ?? 500,
+        message:
+          error.response?.data?.message ??
+          "Ocurrió un error inesperado",
+        success: false,
+        data: null,
+      };
     }
   },
 };

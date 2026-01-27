@@ -166,7 +166,29 @@ export interface NovletyOrder {
 }
 
 
-export interface SerndOTOPProps {
+export interface SendOTOPProps {
+  idDireccion: number;
+  numeroFactura: string;
+  numeroDestino: string;
+  valorOriginal: string;
+  valorPagado: string;
+}
+
+export interface ResponseOTPInitPorps {
+  id?: number,
+  direccionId?: number,
+  momentoEnvio?: string,
+  numeroDestino?: string,
+  canal?: string,
+  estadoEnvioId?: number,
+  numeroReenvio?: number,
+  numeroValidacionConductor?: number,
+  transportador?: string,
+  expiraEn?: string,
+  ultimoIntentoVerificacion?: string,
+}
+
+export interface ReentryOTPProps {
   idDireccion: number;
   numeroFactura: string;
   numeroDestino: string;

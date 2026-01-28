@@ -36,6 +36,7 @@ interface ConsignmentDataProps {
     onValue?: (value: string) => void;
     value?: string;
     onConfirmation?: () => void;
+    isLoading?: boolean;
 }
 
 export function ConsignmentData({
@@ -49,9 +50,11 @@ export function ConsignmentData({
     evidencePhotos = [],
     onValue,
     value,
-    onConfirmation
+    onConfirmation,
+    isLoading: externalLoading = false
 }: ConsignmentDataProps) {
-    const [isLoading, setIsLoading] = useState(false);
+    const [internalLoading, setInternalLoading] = useState(false);
+    const isLoading = internalLoading || externalLoading;
     const [amount, setAmount] = useState("");
     const [displayAmount, setDisplayAmount] = useState(value ?? "");
     const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -60,7 +63,13 @@ export function ConsignmentData({
     const [currentEvidenceIndex, setCurrentEvidenceIndex] = useState(0);
 
     useEffect(() => {
-        setDisplayAmount(value ?? "");
+        if (value) {
+            const numericValue = value.replace(/\D/g, "");
+            const formatted = Number(numericValue).toLocaleString("es-CO");
+            setDisplayAmount(formatted);
+        } else {
+            setDisplayAmount("");
+        }
     }, [value]);
 
 
@@ -99,6 +108,9 @@ export function ConsignmentData({
 
 
         setDisplayAmount(formatNumberWithCommas(numericValue));
+        if (onValue) {
+            onValue(numericValue);
+        }
     };
 
     const getNumericValue = (): number => {
@@ -117,7 +129,9 @@ export function ConsignmentData({
         const updatedEvidences = evidences.filter((_, i) => i !== index);
         setEvidences(updatedEvidences);
 
-        if (currentEvidenceIndex >= updatedEvidences.length && updatedEvidences.length > 0) {
+        if (index < currentEvidenceIndex) {
+            setCurrentEvidenceIndex(currentEvidenceIndex - 1);
+        } else if (currentEvidenceIndex >= updatedEvidences.length && updatedEvidences.length > 0) {
             setCurrentEvidenceIndex(updatedEvidences.length - 1);
         }
     };
@@ -265,27 +279,32 @@ export function ConsignmentData({
 
                         {/* Botones principales */}
                         <View style={styles.buttonsWrapper}>
-                            <PrimaryButton
-                                title={"Confirmar"}
-                                onPress={() => {
-                                    onConfirmation?.();
-                                    onValue?.(displayAmount);
+                            {isLoading ? (
+                                <ActivityIndicator size="large" color="#164194" style={{ marginVertical: 20 }} />
+                            ) : (
+                                <>
+                                    <PrimaryButton
+                                        title={"Confirmar"}
+                                        onPress={() => {
+                                            onConfirmation?.();
+                                            onValue?.(displayAmount);
+                                        }}
+                                        disabled={!isValid}
+                                        width={328}
+                                        height={43}
+                                    />
 
-                                }}
-                                disabled={!isValid}
-                                width={328}
-                                height={43}
-                            />
-
-                            <View style={styles.cancelButtonWrapper}>
-                                <SecondaryButtonCancel
-                                    title="Cancelar"
-                                    onPress={() => { onClose?.() }}
-                                    disabled={false}
-                                    width={328}
-                                    height={43}
-                                />
-                            </View>
+                                    <View style={styles.cancelButtonWrapper}>
+                                        <SecondaryButtonCancel
+                                            title="Cancelar"
+                                            onPress={() => { onClose?.() }}
+                                            disabled={false}
+                                            width={328}
+                                            height={43}
+                                        />
+                                    </View>
+                                </>
+                            )}
                         </View>
                     </ScrollView>
                 </View>

@@ -5,7 +5,8 @@ import { ThemedView } from '@/components/themed-view';
 import { ConsignmentData } from '@/src/features/detailsInvoice/components/ConsignmentData';
 import { Consignment, ConsignmentSummary } from '@/src/features/tracking/domain/consignments/Consignment';
 import { consignmentRepositoryImpl } from '@/src/features/tracking/infrastructure/consignments/ConsignmentRepositoryImpl';
-import { formatNumber } from '@/src/utils/uitls';
+import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
+import { createDataUri, formatNumber, formatStringToNumber, getDeviceDateTime } from '@/src/utils/uitls';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -26,6 +27,7 @@ export default function ConsignacionesScreen() {
   const { codigoGuia } = useLocalSearchParams();
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<ConsignmentSummary | null>(null);
+  const [rutaId, setRutaId] = useState<number | null>(null);
 
   // Modal states
   const [showViewConsignment, setViewConsignment] = useState(false);
@@ -36,6 +38,7 @@ export default function ConsignacionesScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalMessage, setModalMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleUploadFile = () => {
     setViewConsignment(false);
@@ -50,13 +53,84 @@ export default function ConsignacionesScreen() {
 
   const consignmentSubmit = async () => {
     try {
-      // TODO: Integrate with backend to submit consignment
+      if (!rutaId) {
+        setModalTitle("¡Alerta!");
+        setModalMessage("No se ha podido identificar la ruta. Por favor, intente nuevamente.");
+        setModalVisible(true);
+        return;
+      }
+
+      if (!valueInput) {
+        setModalTitle("¡Alerta!");
+        setModalMessage("Debe ingresar un valor para la consignación.");
+        setModalVisible(true);
+        return;
+      }
+
+      if (multiplePhotos.length === 0) {
+        setModalTitle("¡Alerta!");
+        setModalMessage("Debe adjuntar al menos una evidencia.");
+        setModalVisible(true);
+        return;
+      }
+
+      setIsSubmitting(true);
+      const token = await SecureStore.getItemAsync('user_token');
+      if (!token) {
+        setIsSubmitting(false);
+        setModalTitle("¡Error!");
+        setModalMessage("No se encontró el token de autenticación.");
+        setModalVisible(true);
+        return;
+      }
+
+      // Prepare evidences with data URI
+      const evidences = multiplePhotos.map(p => {
+        // If base64 is already present, use it. Otherwise assume uri is local and we might need to read it?
+        // ConsignmentData seems to just store uri. 
+        // We need to ensure we have base64 or can create it.
+        // Assuming the photo component provides base64 or we handle it.
+        // If p.base64 is present, create data URI.
+        if (p.base64) {
+          return createDataUri(p.base64, p.uri);
+        }
+        // If no base64, we might have a problem if the API expects base64 data URI.
+        // The UploadPhotoItem component usually provides base64.
+        return ""; 
+      }).filter(e => e !== "");
+
+      if (evidences.length === 0) {
+        setIsSubmitting(false);
+        setModalTitle("¡Alerta!");
+        setModalMessage("Error al procesar las evidencias. Asegúrese de que las fotos se hayan cargado correctamente.");
+        setModalVisible(true);
+        return;
+      }
+
+      const valorConsignado = formatStringToNumber(valueInput);
+
+      await consignmentRepositoryImpl.registerConsignment({
+        rutaId: rutaId,
+        valorConsignado: valorConsignado,
+        fechaHoraDispositivo: getDeviceDateTime(),
+        evidencias: evidences
+      }, token);
+
+      setIsSubmitting(false);
       setShowSuccess(true);
       setViewConsignment(false);
       setUploadPhoto(false);
+      setValueInput("");
+      setMultiplePhotos([]);
+      
+      // Refresh summary
+      fetchSummary();
+
     } catch (error: any) {
+      setIsSubmitting(false);
       setModalTitle("¡Error!");
-      setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+      const errorMessage = error?.response?.data?.message ?? "Ocurrio un error inesperado al registrar la consignación.";
+      setModalMessage(errorMessage);
       setModalVisible(true);
     }
   };
@@ -69,20 +143,31 @@ export default function ConsignacionesScreen() {
     try {
       setLoading(true);
       const token = await SecureStore.getItemAsync('user_token');
-      if (!token) {
-        Alert.alert("Error", "No se encontró el token de autenticación.");
-        router.back();
+      if (!token || !codigoGuia) {
+        setLoading(false);
         return;
       }
-
-      const guideCode = Array.isArray(codigoGuia) ? codigoGuia[0] : codigoGuia;
-      if (guideCode) {
-        const data = await consignmentRepositoryImpl.getSummary(guideCode, token);
-        setSummary(data);
+      
+      // Fetch Route ID if not set
+      if (!rutaId) {
+        try {
+          const routeResponse = await detailsRepositoryImpl.listRouteByCodeGuide(Number(codigoGuia), token);
+          if (routeResponse && routeResponse.success && routeResponse.data) {
+             const routeData = routeResponse.data as any;
+             if (routeData.id) {
+               setRutaId(Number(routeData.id));
+             }
+          }
+        } catch (e) {
+          console.error("Error fetching route ID", e);
+        }
       }
+
+      const data = await consignmentRepositoryImpl.getSummary(String(codigoGuia), token);
+      setSummary(data);
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", "No se pudo cargar la información de consignaciones.");
+      Alert.alert('Error', 'No se pudo cargar el resumen de consignaciones');
     } finally {
       setLoading(false);
     }
@@ -175,10 +260,12 @@ export default function ConsignacionesScreen() {
             title="Registrar consignación"
             subTitle="Ingresa el valor y adjunta una foto del comprobante."
             onClose={() => {
-              setViewConsignment(false);
-              setUploadPhoto(false);
-              setValueInput("");
-              setMultiplePhotos([]);
+              if (!isSubmitting) {
+                setViewConsignment(false);
+                setUploadPhoto(false);
+                setValueInput("");
+                setMultiplePhotos([]);
+              }
             }}
             width={width}
             visible={showViewConsignment}
@@ -188,6 +275,7 @@ export default function ConsignacionesScreen() {
             onValue={(value) => setValueInput(value)}
             value={valueInput}
             onConfirmation={consignmentSubmit}
+            isLoading={isSubmitting}
           />
         )}
 

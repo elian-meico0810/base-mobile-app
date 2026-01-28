@@ -22,3 +22,10 @@ export interface ConsignmentSummary {
     porConsignar: number;
     consignaciones: Consignment[];
 }
+
+export interface RegisterConsignmentRequest {
+    rutaId: number;
+    valorConsignado: number;
+    fechaHoraDispositivo: string;
+    evidencias: string[];
+}

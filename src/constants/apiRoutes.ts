@@ -31,6 +31,7 @@ export const API_ROUTES = {
   PAYMENT_SUCCESS_FUL_BY_GUIDE: "transportista/obtener-pagos-por-guia/",
   // Consignaciones
   CONSIGNACIONES_RESUMEN: "consignaciones/resumen/",
+  CONSIGNACIONES_REGISTRAR: "consignaciones/registrar/",
 };
 
 

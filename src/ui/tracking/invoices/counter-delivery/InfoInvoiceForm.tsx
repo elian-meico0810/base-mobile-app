@@ -162,7 +162,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             try {
                 const respones = await invoiceRepositoryImpl.successfulBillPayment(
                     Number(initialGuide?.facturas[0]?.numeroFactura),
-                    ENV_DEV.KEY_APP
+                    token,
+                    Number(initialGuide?.pedidos?.[0]?.id),
                 );
                 if (respones?.statusCode === 200) {
                     setPaymentSuccessful(respones.data as Invoice);
@@ -564,7 +565,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setShowPayment(false);
             // setShowDetailInvoiceQR(false);
             // setShowPayment(false);
-            if (!routeStarted && !isSelectInvocies && !detailsCounterDelivery) {
+            if (!routeStarted && !isSelectInvocies && !detailsCounterDelivery && !closeButton) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Debe indicar que ya llegó al lugar de la dirección para poder ejecutar esta acción.");
                 setModalVisible(true);
@@ -653,7 +654,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
                 const responeData = await invoiceRepositoryImpl.successfulBillPayment(
                     Number(initialGuide?.facturas[0]?.numeroFactura),
-                    ENV_DEV.KEY_APP
+                    token,
+                    Number(initialGuide?.pedidos?.[0]?.id),
                 );
                 if (responeData?.statusCode === 200) {
                     const invoice = responeData.data as Invoice;

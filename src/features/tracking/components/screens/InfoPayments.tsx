@@ -1,24 +1,13 @@
 import { PaymentStatus } from "@/src/constants/GuideStates";
-import React from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Payment } from "../../domain/invoices/InvoicesInterFace";
 
-// Interface basada en la estructura exacta del JSON
-interface PaymentItem {
-    id: number;
-    numeroDeposito: string;
-    fechaDeposito: string;
-    valorPagado: string;
-    canal: string;
-    numeroDocumento: string;
-    estado: string;
-    referencia: string;
-}
 
 interface InfoPaymentsProps {
     title: string;
     subTitle: string;
     description?: string;
-    payments?: PaymentItem[];
+    payments?: Payment[];
     onPress?: () => void;
     onClose?: () => void;
     disabled?: boolean;
@@ -87,7 +76,7 @@ export function InfoPayments({
 
     const cardHeight = 180;
     const dynamicHeight = Math.min(726, Math.max(250, payments.length * cardHeight + 120));
-
+    
     return (
         <View style={styles.overlay}>
             {/* Fondo gris semi-transparente */}
@@ -128,14 +117,14 @@ export function InfoPayments({
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={styles.scrollContent}
                     >
-                        {payments.map((item) => (
-                            <View key={item.id} style={styles.card}>
+                        {payments.map((item, index) => (
+                            <View key={index} style={styles.card}>
 
                                 {/* Estado */}
                                 <View style={styles.row}>
                                     <Text style={styles.cardLabel}>Estado</Text>
-                                    <View style={[styles.badge, getBadgeStyle(item.estado)]}>
-                                        <Text style={styles.badgeText}>{getEstadoTexto(item.estado)}</Text>
+                                    <View style={[styles.badge, getBadgeStyle(item.estado as string)]}>
+                                        <Text style={styles.badgeText}>{getEstadoTexto(item.estado as string)}</Text>
                                     </View>
                                 </View>
 
@@ -145,19 +134,30 @@ export function InfoPayments({
                                     <Text style={styles.cardValue}>{item.id}</Text>
                                 </View>
 
+                                {/* ID del pago */}
+                                <View style={styles.row}>
+                                    <Text style={styles.cardLabel}>Método de pago</Text>
+                                    <Text style={styles.cardValue}>{item.canal}</Text>
+                                </View>
 
                                 {/* Valor pagado */}
                                 <View style={styles.row}>
                                     <Text style={styles.cardLabel}>Valor pagado</Text>
-                                    <Text style={styles.cardValue}>${parseFloat(item.valorPagado).toLocaleString('es-ES')}</Text>
+                                    <Text style={styles.cardValue}>${parseFloat(item.valorPagado as string).toLocaleString('es-ES')}</Text>
                                 </View>
 
                                 {/* Fecha de depósito */}
                                 <View style={styles.row}>
                                     <Text style={styles.cardLabel}>Fecha de depósito</Text>
-                                    <Text style={styles.cardValue}>{formatFecha(item.fechaDeposito)}</Text>
+                                    <Text style={styles.cardValue}>{formatFecha(item.fechaDeposito as string)}</Text>
                                 </View>
 
+                                {(item?.descripcion && item.canal == "Otro")&& (
+                                    <View style={styles.row}>
+                                        <Text style={styles.cardLabel}>Descripción</Text>   
+                                        <Text style={styles.cardValue}>{item.descripcion}</Text>
+                                    </View>
+                                )}
                             </View>
                         ))}
                     </ScrollView>

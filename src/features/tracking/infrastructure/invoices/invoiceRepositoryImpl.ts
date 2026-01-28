@@ -59,14 +59,19 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
     }
   },
 
-  async successfulBillPayment(invoiceNumber: number, key: string) {
+  async successfulBillPayment(numeroFactura: number, token: string, pedidoId: number) {
     try {
+      console.log(`${API_ROUTES.WS_ALL_PAYMENT_SUCCESS_FUL}?pedido_id=${pedidoId}&numero_factura=${numeroFactura}`);
 
-      const response = await authDevApi.get(`${API_ROUTES.PAYMENT_SUCCESS_FUL}${invoiceNumber}/`, {
-        headers: {
-          "api-key": key
-        },
-      });
+      const response = await authApi.get(`${API_ROUTES.WS_ALL_PAYMENT_SUCCESS_FUL}?pedido_id=${pedidoId}&numero_factura=${numeroFactura}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+      console.log("response: ", response);
+
       return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {
       throw error;

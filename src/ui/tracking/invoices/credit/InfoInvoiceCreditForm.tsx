@@ -137,7 +137,8 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
             try {
                 const respones = await invoiceRepositoryImpl.successfulBillPayment(
                     Number(initialGuide?.facturas[0]?.numeroFactura),
-                    ENV_DEV.KEY_APP
+                    token,
+                    Number(initialGuide?.pedidos?.[0]?.id),
                 );
                 if (respones?.statusCode === 200) {
                     setPaymentSuccessful(respones.data as Invoice);
@@ -442,7 +443,8 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
 
                 const responeData = await invoiceRepositoryImpl.successfulBillPayment(
                     Number(initialGuide?.facturas[0]?.numeroFactura),
-                    ENV_DEV.KEY_APP
+                    token,
+                    Number(initialGuide?.pedidos?.[0]?.id),
                 );
                 if (responeData?.statusCode === 200) {
                     const invoice = responeData.data as Invoice;

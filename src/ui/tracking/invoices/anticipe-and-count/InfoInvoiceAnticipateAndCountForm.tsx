@@ -123,7 +123,8 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
             try {
                 const respones = await invoiceRepositoryImpl.successfulBillPayment(
                     Number(initialGuide?.facturas[0]?.numeroFactura),
-                    ENV_DEV.KEY_APP
+                    token,
+                    Number(initialGuide?.pedidos?.[0]?.id),
                 );
                 if (respones?.statusCode === 200) {
                     setPaymentSuccessful(respones.data as Invoice);
@@ -215,21 +216,21 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
                 setCheckUbication(true);
             }
         } catch (error: any) {
-     
+
         }
     };
 
     useEffect(() => {
-        if (checkUbication) return; 
+        if (checkUbication) return;
 
         const interval = setInterval(() => {
             checkUnicationPermissions();
-        }, 10); 
+        }, 10);
 
-        return () => clearInterval(interval); 
+        return () => clearInterval(interval);
     }, [checkUbication]);
 
-    
+
     const handleSubmitData = async () => {
         try {
 
@@ -433,7 +434,8 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
 
                 const responeData = await invoiceRepositoryImpl.successfulBillPayment(
                     Number(initialGuide?.facturas[0]?.numeroFactura),
-                    ENV_DEV.KEY_APP
+                    token,
+                    Number(initialGuide?.pedidos?.[0]?.id),
                 );
                 if (responeData?.statusCode === 200) {
                     const invoice = responeData.data as Invoice;

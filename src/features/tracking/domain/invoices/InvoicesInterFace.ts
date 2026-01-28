@@ -31,22 +31,23 @@ export interface ReportWhatsAppQRPorps {
 }
 
 export interface Payment {
-  id: number;
-  numeroDeposito: string;
-  fechaDeposito: string;
-  valorPagado: string;
-  canal: string;
-  numeroDocumento: string;
-  estado: string;
-  referencia: string;
+  id?: number | null  | undefined;
+  numeroDeposito?: string | null  | undefined;
+  fechaDeposito?: string | null  | undefined;
+  valorPagado?: string | null  | undefined;
+  canal?: string | null  | undefined;
+  numeroDocumento?: string | null  | undefined;
+  estado?: string | null  | undefined;
+  referencia?: string | null  | undefined;
+  descripcion?: string | null  | undefined;
 }
 
 export interface Invoice {
-  numeroFactura: number;
-  nombreEstablecimiento: string;
-  totalFactura: number;
-  saldoPendiente: number;
-  numeroContacto: string;
+  numeroFactura?: number | null  | undefined;
+  nombreEstablecimiento?: string | null  | undefined;
+  totalFactura?: number | null  | undefined;
+  saldoPendiente?: number | null  | undefined;
+  numeroContacto?: string | null  | undefined;
   pagos: Payment[];
 }
 

@@ -4,7 +4,6 @@ import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { ThemedView } from '@/components/themed-view';
-import { ENV_DEV } from '@/src/constants/apiRoutes';
 import InvoicesList from '@/src/features/tracking/components/tabs/InvoicesList';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
@@ -172,7 +171,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 setCheckUbication(true);
             }
         } catch (error: any) {
-        
+
         }
     };
 
@@ -328,7 +327,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             try {
                 const respones = await invoiceRepositoryImpl.successfulBillPayment(
                     Number(initialGuide?.facturas[0]?.numeroFactura),
-                    ENV_DEV.KEY_APP
+                    token,
+                    Number(initialGuide?.pedidos?.[0]?.id),
                 );
                 if (respones?.statusCode === 200) {
                     setPaymentSuccessful(respones.data as Invoice);

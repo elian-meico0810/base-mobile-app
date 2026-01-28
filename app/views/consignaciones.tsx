@@ -3,6 +3,7 @@ import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { UploadPhotoItem } from '@/components/photo/uploadPhotoItem';
 import { ThemedView } from '@/components/themed-view';
 import { ConsignmentData } from '@/src/features/detailsInvoice/components/ConsignmentData';
+import { ConsignmentOptionsModal } from '@/src/features/detailsInvoice/components/ConsignmentOptionsModal';
 import { Consignment, ConsignmentSummary } from '@/src/features/tracking/domain/consignments/Consignment';
 import { consignmentRepositoryImpl } from '@/src/features/tracking/infrastructure/consignments/ConsignmentRepositoryImpl';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
@@ -22,6 +23,7 @@ interface EvidencePhoto {
 
 const { width } = Dimensions.get('window');
 
+
 export default function ConsignacionesScreen() {
   const router = useRouter();
   const { codigoGuia } = useLocalSearchParams();
@@ -31,6 +33,8 @@ export default function ConsignacionesScreen() {
 
   // Modal states
   const [showViewConsignment, setViewConsignment] = useState(false);
+  const [showOptionsModal, setShowOptionsModal] = useState(false);
+  const [selectedConsignment, setSelectedConsignment] = useState<Consignment | null>(null);
   const [uploadPhoto, setUploadPhoto] = useState(false);
   const [multiplePhotos, setMultiplePhotos] = useState<EvidencePhoto[]>([]);
   const [valueInput, setValueInput] = useState("");
@@ -49,6 +53,11 @@ export default function ConsignacionesScreen() {
     setUploadPhoto(false);
     setMultiplePhotos(evidences);
     setViewConsignment(true);
+  };
+
+  const handleOptionsPress = (item: Consignment) => {
+    setSelectedConsignment(item);
+    setShowOptionsModal(true);
   };
 
   const consignmentSubmit = async () => {
@@ -249,6 +258,7 @@ export default function ConsignacionesScreen() {
                 <HistoryCard
                   key={item.id}
                   item={item}
+                  onPressOptions={handleOptionsPress}
                 />
               ))}
             </View>
@@ -276,6 +286,26 @@ export default function ConsignacionesScreen() {
             value={valueInput}
             onConfirmation={consignmentSubmit}
             isLoading={isSubmitting}
+          />
+        )}
+
+        {showOptionsModal && (
+          <ConsignmentOptionsModal
+            visible={showOptionsModal}
+            onClose={() => setShowOptionsModal(false)}
+            consignment={selectedConsignment}
+            onEdit={(item) => {
+               // Implementar logica de editar
+               console.log("Edit", item);
+            }}
+            onViewReceipt={(item) => {
+               // Implementar logica de ver comprobante
+               console.log("View receipt", item);
+            }}
+            onDelete={(item) => {
+               // Implementar logica de eliminar
+               console.log("Delete", item);
+            }}
           />
         )}
 
@@ -390,11 +420,12 @@ function StatsCard({ summary }: { summary: ConsignmentSummary }) {
   );
 }
 
-function HistoryCard({ item }: { item: Consignment }) {
+function HistoryCard({ item, onPressOptions }: { item: Consignment; onPressOptions: (item: Consignment) => void }) {
   return (
     <View style={styles.historyCard}>
       <View style={styles.historyHeader}>
         <Text style={styles.historyTitle}>Consignación #{item.id}</Text>
+        <TouchableOpacity onPress={() => onPressOptions(item)} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
         <Svg width="18" 
             height="18" 
             viewBox="0 0 512 512"
@@ -405,6 +436,7 @@ function HistoryCard({ item }: { item: Consignment }) {
           <Circle cx="256" cy="416" r="32" fill="#141D32" />
           <Circle cx="256" cy="96" r="32" fill="#141D32" />
         </Svg>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.historyRow}>

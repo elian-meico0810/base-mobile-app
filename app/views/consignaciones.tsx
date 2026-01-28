@@ -1,27 +1,63 @@
 import { ThemedView } from '@/components/themed-view';
+import { Consignment, ConsignmentSummary } from '@/src/features/tracking/domain/consignments/Consignment';
+import { consignmentRepositoryImpl } from '@/src/features/tracking/infrastructure/consignments/ConsignmentRepositoryImpl';
 import { formatNumber } from '@/src/utils/uitls';
 import { Ionicons } from '@expo/vector-icons';
-import { Stack, useRouter } from 'expo-router';
-import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-const { width, height } = Dimensions.get('window');
-
-type HistoryItem = {
-  id: string;
-  value: number;
-  dateLabel: string;
-};
-
-const MOCK_HISTORY: HistoryItem[] = [
-  { id: '0005', value: 250000, dateLabel: 'Nov 19, 2025 - 08:32 am' },
-  { id: '0004', value: 250000, dateLabel: 'Nov 19, 2025 - 08:32 am' },
-  { id: '0003', value: 250000, dateLabel: 'Nov 19, 2025 - 08:32 am' },
-  { id: '0002', value: 250000, dateLabel: 'Nov 19, 2025 - 08:32 am' },
-];
+const { width } = Dimensions.get('window');
 
 export default function ConsignacionesScreen() {
   const router = useRouter();
+  const { codigoGuia } = useLocalSearchParams();
+  const [loading, setLoading] = useState(true);
+  const [summary, setSummary] = useState<ConsignmentSummary | null>(null);
+
+  useEffect(() => {
+    fetchSummary();
+  }, [codigoGuia]);
+
+  const fetchSummary = async () => {
+    try {
+      setLoading(true);
+      const token = await SecureStore.getItemAsync('user_token');
+      if (!token) {
+        Alert.alert("Error", "No se encontró el token de autenticación.");
+        router.back();
+        return;
+      }
+      
+      const guideCode = Array.isArray(codigoGuia) ? codigoGuia[0] : codigoGuia;
+      if (!guideCode) {
+         // Fallback or handle missing guide code if necessary
+         // For now assuming it's passed or handled
+      }
+
+      if (guideCode) {
+          const data = await consignmentRepositoryImpl.getSummary(guideCode, token);
+          setSummary(data);
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "No se pudo cargar la información de consignaciones.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <ThemedView style={[styles.container, styles.loadingContainer]}>
+         <Stack.Screen options={{ title: 'Consignaciones', headerShown: true, headerShadowVisible: false, headerBackVisible: false, headerTitle: () => <Text style={{ fontFamily: 'Rubik', fontWeight: '700', fontSize: 18, color: '#141D32' }}>Consignaciones</Text> }} />
+        <ActivityIndicator size="large" color="#164194" />
+      </ThemedView>
+    );
+  }
+
   return (
     <>
       <Stack.Screen
@@ -58,7 +94,7 @@ export default function ConsignacionesScreen() {
       />
       <ThemedView style={styles.container}>
         <View style={styles.fixedContent}>
-          <StatsCard />
+          {summary && <StatsCard summary={summary} />}
 
           <TouchableOpacity style={styles.registerButton} activeOpacity={0.8}>
             <Image
@@ -76,30 +112,34 @@ export default function ConsignacionesScreen() {
           contentContainerStyle={styles.historyScrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.historyList}>
-            {MOCK_HISTORY.map((item) => (
-              <HistoryCard
-                key={item.id}
-                item={item}
-              />
-            ))}
-          </View>
+          {(!summary || !summary.consignaciones || summary.consignaciones.length === 0) ? (
+             <EmptyState />
+          ) : (
+             <View style={styles.historyList}>
+               {summary.consignaciones.map((item) => (
+                 <HistoryCard
+                   key={item.id}
+                   item={item}
+                 />
+               ))}
+             </View>
+          )}
         </ScrollView>
       </ThemedView>
     </>
   );
 }
 
-function StatsCard() {
+function StatsCard({ summary }: { summary: ConsignmentSummary }) {
   return (
     <View style={styles.statsCard}>
       <View style={styles.statsLeft}>
         <View style={styles.amountRow}>
-          <Text style={styles.amountValue}>${formatNumber(100000000)}</Text>
+          <Text style={styles.amountValue}>${formatNumber(summary.totalEfectivo)}</Text>
           <Text style={styles.amountLabel}>Total efectivo recaudado</Text>
         </View>
         <View style={styles.amountRow}>
-          <Text style={styles.amountValue}>${formatNumber(89000000)}</Text>
+          <Text style={styles.amountValue}>${formatNumber(summary.totalConsignado)}</Text>
           <Text style={styles.amountLabel}>Total consignado en ruta</Text>
         </View>
       </View>
@@ -107,7 +147,14 @@ function StatsCard() {
       <View style={styles.donutContainer}>
         <View style={styles.donutRing} />
         <View style={styles.donutCenter}>
-          <Text style={styles.donutValue}>$1.000.000</Text>
+          <Text 
+            style={styles.donutValue}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
+          >
+            ${(summary.porConsignar <= 0 ? "0" : formatNumber(summary.porConsignar))}
+          </Text>
           <Text style={styles.donutLabel}>Por consignar</Text>
         </View>
       </View>
@@ -115,7 +162,7 @@ function StatsCard() {
   );
 }
 
-function HistoryCard({ item }: { item: HistoryItem }) {
+function HistoryCard({ item }: { item: Consignment }) {
   return (
     <View style={styles.historyCard}>
       <View style={styles.historyHeader}>
@@ -127,15 +174,41 @@ function HistoryCard({ item }: { item: HistoryItem }) {
         <View style={styles.historyCol}>
           <Text style={styles.historyLabel}>Valor consignado</Text>
         </View>
-        <Text style={styles.historyValue}>${formatNumber(item.value)}</Text>
+        <Text style={styles.historyValue}>${formatNumber(item.valorConsignado)}</Text>
       </View>
 
       <View style={styles.historyRow}>
         <View style={styles.historyCol}>
           <Text style={styles.historyLabel}>Fecha</Text>
         </View>
-        <Text style={styles.historyDate}>{item.dateLabel}</Text>
+        <Text style={styles.historyDate}>{formatDate(item.fechaHoraDispositivo)}</Text>
       </View>
+    </View>
+  );
+}
+
+function formatDate(isoString: string) {
+  const d = new Date(isoString);
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const month = months[d.getMonth()];
+  const day = d.getDate();
+  const year = d.getFullYear();
+  let hour = d.getHours();
+  const min = d.getMinutes().toString().padStart(2, '0');
+  const ampm = hour >= 12 ? 'pm' : 'am';
+  hour = hour % 12;
+  hour = hour ? hour : 12;
+  return `${month} ${day}, ${year} - ${hour}:${min} ${ampm}`;
+}
+
+function EmptyState() {
+  return (
+    <View style={styles.emptyStateContainer}>
+      <View style={styles.emptyIconContainer}>
+        <Ionicons name="documents-outline" size={48} color="#C4C4C4" />
+      </View>
+      <Text style={styles.emptyStateTitle}>No hay información</Text>
+      <Text style={styles.emptyStateText}>No se encontraron consignaciones registradas.</Text>
     </View>
   );
 }
@@ -145,6 +218,10 @@ const styles = StyleSheet.create({
     fontFamily: 'Rubik',
     flex: 1,
     paddingTop: 16,
+  },
+  loadingContainer: {
+    justifyContent: 'center', 
+    alignItems: 'center'
   },
   fixedContent: {
     alignItems: 'center',
@@ -208,12 +285,13 @@ const styles = StyleSheet.create({
   },
   donutCenter: {
     position: 'absolute',
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 76,
+    height: 76,
+    borderRadius: 38,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 4,
   },
   donutValue: {
     fontFamily: 'Rubik',
@@ -309,4 +387,33 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#141D32',
   },
+  emptyStateContainer: {
+    paddingVertical: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  emptyIconContainer: {
+    marginBottom: 16,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#F5F6F8',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyStateTitle: {
+    fontFamily: 'Rubik',
+    fontWeight: '700',
+    fontSize: 18,
+    color: '#141D32',
+    marginBottom: 8,
+  },
+  emptyStateText: {
+    fontFamily: 'Rubik',
+    fontWeight: '400',
+    fontSize: 14,
+    color: '#788095',
+    textAlign: 'center',
+  }
 });

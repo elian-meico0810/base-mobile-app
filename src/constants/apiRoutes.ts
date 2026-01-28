@@ -29,6 +29,8 @@ export const API_ROUTES = {
   REPORT_NOTIFICTION_WHATSAPP: "pagos/transportista_enviar_linkpago_whatsapp/",
   PAYMENT_SUCCESS_FUL: "facturas/pagos/",
   PAYMENT_SUCCESS_FUL_BY_GUIDE: "transportista/obtener-pagos-por-guia/",
+  // Consignaciones
+  CONSIGNACIONES_RESUMEN: "consignaciones/resumen/",
 };
 
 

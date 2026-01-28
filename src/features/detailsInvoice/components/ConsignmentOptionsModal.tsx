@@ -73,7 +73,7 @@ export function ConsignmentOptionsModal({
                                 </View>
                                 <Text style={styles.optionText}>Editar</Text>
                             </View>
-                            <Ionicons name="chevron-forward" size={20} color="#C4C4C4" />
+                            <Ionicons name="chevron-forward" size={20} color="#141D32" />
                         </TouchableOpacity>
 
                         <View style={styles.separator} />
@@ -95,7 +95,7 @@ export function ConsignmentOptionsModal({
                                 </View>
                                 <Text style={styles.optionText}>Ver comprobante</Text>
                             </View>
-                            <Ionicons name="chevron-forward" size={20} color="#C4C4C4" />
+                            <Ionicons name="chevron-forward" size={20} color="#141D32" />
                         </TouchableOpacity>
 
                         <View style={styles.separator} />
@@ -144,10 +144,10 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     container: {
-        backgroundColor: "#FFFFFF",
+        backgroundColor: "#F9F9FA",
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
-        paddingBottom: 40,
+        paddingBottom: 55,
     },
     dragHandle: {
         alignSelf: "center",
@@ -164,12 +164,10 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 24,
         paddingVertical: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F0F1F5',
     },
     title: {
         fontFamily: "Rubik",
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: "700",
         color: "#141D32",
     },
@@ -178,13 +176,19 @@ const styles = StyleSheet.create({
     },
     content: {
         paddingVertical: 8,
+        paddingHorizontal: 16,
+        gap: 12
     },
     optionRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingVertical: 16,
-        paddingHorizontal: 24,
+        paddingHorizontal: 16,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#F0F1F5',
     },
     optionLeft: {
         flexDirection: 'row',
@@ -204,7 +208,7 @@ const styles = StyleSheet.create({
     },
     optionText: {
         fontFamily: "Rubik",
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: "400",
         color: "#141D32",
     },
@@ -212,10 +216,7 @@ const styles = StyleSheet.create({
         color: "#D32F2F",
     },
     separator: {
-        height: 1,
-        backgroundColor: '#F0F1F5',
-        marginLeft: 68, // Align with text
-        marginRight: 24,
+        display: 'none',
     },
     iconImage: {
         width: 20,

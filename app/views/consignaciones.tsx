@@ -30,16 +30,11 @@ export default function ConsignacionesScreen() {
         router.back();
         return;
       }
-      
-      const guideCode = Array.isArray(codigoGuia) ? codigoGuia[0] : codigoGuia;
-      if (!guideCode) {
-         // Fallback or handle missing guide code if necessary
-         // For now assuming it's passed or handled
-      }
 
+      const guideCode = Array.isArray(codigoGuia) ? codigoGuia[0] : codigoGuia;
       if (guideCode) {
-          const data = await consignmentRepositoryImpl.getSummary(guideCode, token);
-          setSummary(data);
+        const data = await consignmentRepositoryImpl.getSummary(guideCode, token);
+        setSummary(data);
       }
     } catch (error) {
       console.error(error);
@@ -52,7 +47,7 @@ export default function ConsignacionesScreen() {
   if (loading) {
     return (
       <ThemedView style={[styles.container, styles.loadingContainer]}>
-         <Stack.Screen options={{ title: 'Consignaciones', headerShown: true, headerShadowVisible: false, headerBackVisible: false, headerTitle: () => <Text style={{ fontFamily: 'Rubik', fontWeight: '700', fontSize: 18, color: '#141D32' }}>Consignaciones</Text> }} />
+        <Stack.Screen options={{ title: 'Consignaciones', headerShown: true, headerShadowVisible: false, headerBackVisible: false, headerTitle: () => <Text style={{ fontFamily: 'Rubik', fontWeight: '700', fontSize: 18, color: '#141D32' }}>Consignaciones</Text> }} />
         <ActivityIndicator size="large" color="#164194" />
       </ThemedView>
     );
@@ -66,6 +61,7 @@ export default function ConsignacionesScreen() {
           headerShown: true,
           headerShadowVisible: false,
           headerBackVisible: false,
+          headerStyle: { backgroundColor: '#F9F9FA' },
           headerTitleAlign: 'left',
           headerLeft: () => (
             <TouchableOpacity
@@ -107,22 +103,22 @@ export default function ConsignacionesScreen() {
           <Text style={styles.sectionTitle}>Historial</Text>
         </View>
 
-        <ScrollView 
+        <ScrollView
           style={styles.historyScroll}
           contentContainerStyle={styles.historyScrollContent}
           showsVerticalScrollIndicator={false}
         >
           {(!summary || !summary.consignaciones || summary.consignaciones.length === 0) ? (
-             <EmptyState />
+            <EmptyState />
           ) : (
-             <View style={styles.historyList}>
-               {summary.consignaciones.map((item) => (
-                 <HistoryCard
-                   key={item.id}
-                   item={item}
-                 />
-               ))}
-             </View>
+            <View style={styles.historyList}>
+              {summary.consignaciones.map((item) => (
+                <HistoryCard
+                  key={item.id}
+                  item={item}
+                />
+              ))}
+            </View>
           )}
         </ScrollView>
       </ThemedView>
@@ -156,30 +152,30 @@ function StatsCard({ summary }: { summary: ConsignmentSummary }) {
 
       <View style={styles.donutContainer}>
         <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-            <G rotation="-90" origin={`${size / 2}, ${size / 2}`}>
-                <Circle
-                    cx={size / 2}
-                    cy={size / 2}
-                    r={radius}
-                    stroke="#F9F9FA"
-                    strokeWidth={strokeWidth}
-                    fill="transparent"
-                />
-                <Circle
-                    cx={size / 2}
-                    cy={size / 2}
-                    r={radius}
-                    stroke="#164194"
-                    strokeWidth={strokeWidth}
-                    fill="transparent"
-                    strokeDasharray={circumference}
-                    strokeDashoffset={strokeDashoffset}
-                    strokeLinecap="round"
-                />
-            </G>
+          <G rotation="-90" origin={`${size / 2}, ${size / 2}`}>
+            <Circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              stroke="#F9F9FA"
+              strokeWidth={strokeWidth}
+              fill="transparent"
+            />
+            <Circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              stroke="#164194"
+              strokeWidth={strokeWidth}
+              fill="transparent"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              strokeLinecap="round"
+            />
+          </G>
         </Svg>
         <View style={styles.donutCenter}>
-          <Text 
+          <Text
             style={styles.donutValue}
             numberOfLines={1}
             adjustsFontSizeToFit
@@ -199,7 +195,16 @@ function HistoryCard({ item }: { item: Consignment }) {
     <View style={styles.historyCard}>
       <View style={styles.historyHeader}>
         <Text style={styles.historyTitle}>Consignación #{item.id}</Text>
-        <Ionicons name="ellipsis-vertical" size={18} color="#788095" />
+        <Svg width="18" 
+            height="18" 
+            viewBox="0 0 512 512"
+            stroke="#141D32"
+            strokeWidth={1}
+            style={{ marginBottom: 4 }}>
+          <Circle cx="256" cy="256" r="32" fill="#141D32" />
+          <Circle cx="256" cy="416" r="32" fill="#141D32" />
+          <Circle cx="256" cy="96" r="32" fill="#141D32" />
+        </Svg>
       </View>
 
       <View style={styles.historyRow}>
@@ -250,9 +255,10 @@ const styles = StyleSheet.create({
     fontFamily: 'Rubik',
     flex: 1,
     paddingTop: 16,
+    backgroundColor: '#F9F9FA',
   },
   loadingContainer: {
-    justifyContent: 'center', 
+    justifyContent: 'center',
     alignItems: 'center'
   },
   fixedContent: {
@@ -272,7 +278,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: '#F0F1F5',
     padding: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -366,7 +372,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: '#F0F1F5',
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
@@ -379,7 +385,7 @@ const styles = StyleSheet.create({
   historyTitle: {
     fontFamily: 'Rubik',
     fontWeight: '600',
-    fontSize: 16,
+    fontSize: 14,
     color: '#141D32',
   },
   historyRow: {
@@ -399,8 +405,8 @@ const styles = StyleSheet.create({
   },
   historyValue: {
     fontFamily: 'Rubik',
-    fontWeight: '600',
-    fontSize: 14,
+    fontWeight: '400',
+    fontSize: 12,
     color: '#141D32',
   },
   historyDate: {

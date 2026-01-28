@@ -7,7 +7,7 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Circle, G, Path } from 'react-native-svg';
 
 const { width } = Dimensions.get('window');
 
@@ -131,6 +131,16 @@ export default function ConsignacionesScreen() {
 }
 
 function StatsCard({ summary }: { summary: ConsignmentSummary }) {
+  const total = summary.totalEfectivo > 0 ? summary.totalEfectivo : 1;
+  const current = summary.totalConsignado;
+  const percentage = Math.min(1, Math.max(0, current / total));
+
+  const size = 92;
+  const strokeWidth = 6;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference * (1 - percentage);
+
   return (
     <View style={styles.statsCard}>
       <View style={styles.statsLeft}>
@@ -145,7 +155,29 @@ function StatsCard({ summary }: { summary: ConsignmentSummary }) {
       </View>
 
       <View style={styles.donutContainer}>
-        <View style={styles.donutRing} />
+        <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+            <G rotation="-90" origin={`${size / 2}, ${size / 2}`}>
+                <Circle
+                    cx={size / 2}
+                    cy={size / 2}
+                    r={radius}
+                    stroke="#F9F9FA"
+                    strokeWidth={strokeWidth}
+                    fill="transparent"
+                />
+                <Circle
+                    cx={size / 2}
+                    cy={size / 2}
+                    r={radius}
+                    stroke="#164194"
+                    strokeWidth={strokeWidth}
+                    fill="transparent"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={strokeDashoffset}
+                    strokeLinecap="round"
+                />
+            </G>
+        </Svg>
         <View style={styles.donutCenter}>
           <Text 
             style={styles.donutValue}
@@ -189,7 +221,7 @@ function HistoryCard({ item }: { item: Consignment }) {
 
 function formatDate(isoString: string) {
   const d = new Date(isoString);
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
   const month = months[d.getMonth()];
   const day = d.getDate();
   const year = d.getFullYear();
@@ -198,7 +230,7 @@ function formatDate(isoString: string) {
   const ampm = hour >= 12 ? 'pm' : 'am';
   hour = hour % 12;
   hour = hour ? hour : 12;
-  return `${month} ${day}, ${year} - ${hour}:${min} ${ampm}`;
+  return `${day} ${month}, ${year} - ${hour}:${min} ${ampm}`;
 }
 
 function EmptyState() {
@@ -272,16 +304,6 @@ const styles = StyleSheet.create({
     height: 110,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  donutRing: {
-    width: 92,
-    height: 92,
-    borderRadius: 46,
-    borderWidth: 6,
-    borderTopColor: '#164194',
-    borderRightColor: '#164194',
-    borderBottomColor: '#F9F9FA',
-    borderLeftColor: '#F9F9FA',
   },
   donutCenter: {
     position: 'absolute',

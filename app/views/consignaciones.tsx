@@ -1,4 +1,8 @@
+import { TopSuccessAlert } from '@/components/alerts/TopSuccessAlert';
+import { ExceptionModal } from '@/components/generals/ExecptionModal';
+import { UploadPhotoItem } from '@/components/photo/uploadPhotoItem';
 import { ThemedView } from '@/components/themed-view';
+import { ConsignmentData } from '@/src/features/detailsInvoice/components/ConsignmentData';
 import { Consignment, ConsignmentSummary } from '@/src/features/tracking/domain/consignments/Consignment';
 import { consignmentRepositoryImpl } from '@/src/features/tracking/infrastructure/consignments/ConsignmentRepositoryImpl';
 import { formatNumber } from '@/src/utils/uitls';
@@ -9,6 +13,12 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Circle, G, Path } from 'react-native-svg';
 
+interface EvidencePhoto {
+    id: string;
+    uri: string;
+    base64?: string;
+}
+
 const { width } = Dimensions.get('window');
 
 export default function ConsignacionesScreen() {
@@ -16,6 +26,40 @@ export default function ConsignacionesScreen() {
   const { codigoGuia } = useLocalSearchParams();
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<ConsignmentSummary | null>(null);
+
+  // Modal states
+  const [showViewConsignment, setViewConsignment] = useState(false);
+  const [uploadPhoto, setUploadPhoto] = useState(false);
+  const [multiplePhotos, setMultiplePhotos] = useState<EvidencePhoto[]>([]);
+  const [valueInput, setValueInput] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalMessage, setModalMessage] = useState("");
+
+  const handleUploadFile = () => {
+    setViewConsignment(false);
+    setUploadPhoto(true);
+  };
+
+  const handleEvidenceComplete = (evidences: EvidencePhoto[]) => {
+    setUploadPhoto(false);
+    setMultiplePhotos(evidences);
+    setViewConsignment(true);
+  };
+
+  const consignmentSubmit = async () => {
+    try {
+      // TODO: Integrate with backend to submit consignment
+      setShowSuccess(true);
+      setViewConsignment(false);
+      setUploadPhoto(false);
+    } catch (error: any) {
+      setModalTitle("¡Error!");
+      setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+      setModalVisible(true);
+    }
+  };
 
   useEffect(() => {
     fetchSummary();
@@ -92,7 +136,11 @@ export default function ConsignacionesScreen() {
         <View style={styles.fixedContent}>
           {summary && <StatsCard summary={summary} />}
 
-          <TouchableOpacity style={styles.registerButton} activeOpacity={0.8}>
+          <TouchableOpacity 
+            style={styles.registerButton} 
+            activeOpacity={0.8}
+            onPress={() => setViewConsignment(true)}
+          >
             <Image
               source={require('@/assets/icons/ConsignmentIcons.png')}
               style={styles.registerIcon}
@@ -121,6 +169,70 @@ export default function ConsignacionesScreen() {
             </View>
           )}
         </ScrollView>
+
+        {showViewConsignment && (
+          <ConsignmentData
+            title="Registrar consignación"
+            subTitle="Ingresa el valor y adjunta una foto del comprobante."
+            onClose={() => {
+              setViewConsignment(false);
+              setUploadPhoto(false);
+              setValueInput("");
+              setMultiplePhotos([]);
+            }}
+            width={width}
+            visible={showViewConsignment}
+            titleTwo="Comprobante de la consignación"
+            onUploadFile={handleUploadFile}
+            evidencePhotos={multiplePhotos}
+            onValue={(value) => setValueInput(value)}
+            value={valueInput}
+            onConfirmation={consignmentSubmit}
+          />
+        )}
+
+        {uploadPhoto && (
+          <UploadPhotoItem
+            title="Cargar evidencia"
+            subTitle="Toma fotos de la mercancía ubicada en el cliente. Podrás asociar un máximo de 3 imágenes por entrega."
+            onClose={() => {
+              setUploadPhoto(false);
+              setViewConsignment(true);
+            }}
+            width={width}
+            onEvidenceComplete={handleEvidenceComplete}
+            onPermisionsPhoto={() => {
+              setUploadPhoto(false);
+              setModalTitle("Permiso denegado ¡Alerta!");
+              setModalMessage("No podemos acceder a la cámara. Activa el permiso en la configuración del dispositivo para continuar.");
+              setModalVisible(true);
+            }}
+            onPermisionsGallery={() => {
+              setUploadPhoto(false);
+              setModalTitle("Permiso denegado ¡Alerta!");
+              setModalMessage("No podemos acceder a la galería. Activa el permiso en la configuración del dispositivo para continuar.");
+              setModalVisible(true);
+            }}
+            visible={uploadPhoto}
+          />
+        )}
+
+        {showSuccess && (
+          <TopSuccessAlert
+            visible={showSuccess}
+            message="Consignación registrada"
+            onHide={() => setShowSuccess(false)}
+            subtitle={`Se registró una consignación por el valor de $${valueInput}.`}
+          />
+        )}
+
+        <ExceptionModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          title={modalTitle}
+          message={modalMessage}
+          buttonLabel="Entendido"
+        />
       </ThemedView>
     </>
   );

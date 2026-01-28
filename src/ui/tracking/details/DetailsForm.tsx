@@ -454,7 +454,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                         </View>
                         {((data.length != 0 && hasValidInvoice)) && (
                             <TouchableOpacity style={styles.cardConsignment} onPress={() => {
-                                setViewConsignment(true);
+                                router.push('/views/consignaciones');
                             }}>
                                 <View style={styles.leftContent}>
                                     <Image

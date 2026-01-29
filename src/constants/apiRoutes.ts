@@ -12,6 +12,7 @@ export const API_ROUTES = {
   REPORT_NOTIFICTION_WHATSAPP_TAT: "entregas/QR-bancolombia-whatsapp/",
   GET_ORDER: "pedidos/",
   GET_TOKEN_PRODUCTS: "productos/sas-token/",
+  GET_MEICOTRACK_TOKEN_PRODUCTS: "productos/meicotrack-token/",
   SENT_ORRDE_ORDER: "pedidos/detalle/",
   SEND_NOVELTY_ORDER: "novedades/registrar/",
   GET_NOVELTY_ORDER_BY_PARAMS: "novedades/novedad-pedido/",

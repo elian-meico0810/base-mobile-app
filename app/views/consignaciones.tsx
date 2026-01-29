@@ -3,6 +3,7 @@ import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { UploadPhotoItem } from '@/components/photo/uploadPhotoItem';
 import { ThemedView } from '@/components/themed-view';
 import { ConsignmentData } from '@/src/features/detailsInvoice/components/ConsignmentData';
+import { ConsignmentEditModal } from '@/src/features/detailsInvoice/components/ConsignmentEditModal';
 import { ConsignmentOptionsModal } from '@/src/features/detailsInvoice/components/ConsignmentOptionsModal';
 import { Consignment, ConsignmentSummary } from '@/src/features/tracking/domain/consignments/Consignment';
 import { consignmentRepositoryImpl } from '@/src/features/tracking/infrastructure/consignments/ConsignmentRepositoryImpl';
@@ -35,6 +36,7 @@ export default function ConsignacionesScreen() {
   const [showViewConsignment, setViewConsignment] = useState(false);
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [selectedConsignment, setSelectedConsignment] = useState<Consignment | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [uploadPhoto, setUploadPhoto] = useState(false);
   const [multiplePhotos, setMultiplePhotos] = useState<EvidencePhoto[]>([]);
   const [valueInput, setValueInput] = useState("");
@@ -53,6 +55,13 @@ export default function ConsignacionesScreen() {
     setUploadPhoto(false);
     setMultiplePhotos(evidences);
     setViewConsignment(true);
+  };
+
+  const handleEditSave = (amount: string, evidences: EvidencePhoto[]) => {
+    setShowEditModal(false);
+    setModalTitle("Información");
+    setModalMessage("Funcionalidad de edición pendiente de integración.");
+    setModalVisible(true);
   };
 
   const handleOptionsPress = (item: Consignment) => {
@@ -295,8 +304,8 @@ export default function ConsignacionesScreen() {
             onClose={() => setShowOptionsModal(false)}
             consignment={selectedConsignment}
             onEdit={(item) => {
-               // Implementar logica de editar
-               console.log("Edit", item);
+               setShowOptionsModal(false);
+               setShowEditModal(true);
             }}
             onViewReceipt={(item) => {
                // Implementar logica de ver comprobante
@@ -306,6 +315,18 @@ export default function ConsignacionesScreen() {
                // Implementar logica de eliminar
                console.log("Delete", item);
             }}
+          />
+        )}
+
+        {showEditModal && (
+          <ConsignmentEditModal
+            visible={showEditModal}
+            onClose={() => {
+              setShowEditModal(false);
+            }}
+            consignment={selectedConsignment}
+            onSave={handleEditSave}
+            width={width}
           />
         )}
 

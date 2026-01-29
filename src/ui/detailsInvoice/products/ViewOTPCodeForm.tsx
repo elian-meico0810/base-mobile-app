@@ -37,7 +37,7 @@ interface ViewOTPCodeFormProps {
     responseOTPInit?: ResponseOTPInitPorps;
     totalRecauder?: number;
     totalValue?: number;
-
+    totalOrderPayment?: number;
 }
 
 export function ViewOTPCodeForm({
@@ -52,7 +52,8 @@ export function ViewOTPCodeForm({
     routeStartedBotton,
     responseOTPInit,
     totalRecauder,
-    totalValue
+    totalValue,
+    totalOrderPayment
 }: ViewOTPCodeFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [guideOTP, setGuideOTP] = useState<ResponseOTPInitPorps | undefined>(responseOTPInit);
@@ -233,7 +234,7 @@ export function ViewOTPCodeForm({
                     // numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
                     numeroDestino: "+573112187956",
                     valorOriginal: String(totalValue),
-                    valorPagado: String(totalRecauder),
+                    valorPagado: String(totalOrderPayment),
                 },
                 token
             );

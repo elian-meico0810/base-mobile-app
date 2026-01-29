@@ -20,9 +20,10 @@ export default function IndexDetailsInvoiceScreen() {
     const responseOTPInit: ResponseOTPInitPorps = responseOTPInitParam ? JSON.parse(responseOTPInitParam) : null;
     const totalRecauder = params.totalRecauder ? Number(params.totalRecauder) : 0;
     const totalValue = params.totalValue ? Number(params.totalValue) : 0;
+    const totalOrderPayment = params.totalOrderPayment ? Number(params.totalOrderPayment) : 0;
     
     const validateConditionRender =
-        Number.isFinite(Number(totalRecauder)) &&
+        Number.isFinite(Number(totalRecauder)) && Number.isFinite(Number(totalOrderPayment))
         Number.isFinite(Number(totalValue));
 
     return (
@@ -64,6 +65,7 @@ export default function IndexDetailsInvoiceScreen() {
                             responseOTPInit={responseOTPInit}
                             totalRecauder={totalRecauder}
                             totalValue={totalValue}
+                            totalOrderPayment={totalOrderPayment}
                         />
                     );
                 }

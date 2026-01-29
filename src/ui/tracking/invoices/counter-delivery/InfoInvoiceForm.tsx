@@ -960,7 +960,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     // numeroDestino: "+57"+String(guide?.whatsapp).replace(/\D/g, ''),
                     numeroDestino: "+573112187956",
                     valorOriginal: String(totalValue),
-                    valorPagado: String(totalRecauder),
+                    valorPagado: String(totalOrderPayment),
                 },
                 token
             );
@@ -977,6 +977,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         responseOTPInit: JSON.stringify(responseData.data),
                         totalValue: String(totalValue) ?? 0,
                         totalRecauder: String(totalRecauder)?? 0,
+                        totalOrderPayment: String(totalOrderPayment)?? 0,
                     }
 
                 });

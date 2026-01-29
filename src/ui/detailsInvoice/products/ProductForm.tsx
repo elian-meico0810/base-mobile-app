@@ -13,7 +13,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from "react";
-import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View, Pressable } from 'react-native';
 const { width, height } = Dimensions.get('window');
 
 interface ProductFormFormProps {
@@ -39,6 +39,7 @@ interface ReasonData {
     type: string;
     units: number;
     description?: string;
+    codigo?: string;
 }
 
 interface FinalizedData {
@@ -329,7 +330,6 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                             if (novelty.units != 0 && novelty.units >= 0 && Number(productItemData?.unidadesSolicitadas) - Number(novelty.units) >= 0) {
                                 let novelty_value = "";
                                 totalUnits += Number(novelty.units);
-
                                 switch (novelty.type) {
                                     case TyepeCausalRefusedEnum.DINERO_INSUFICIENTE:
                                         novelty_value = CausalRefusedEnum.CS_NOV_DIN_INSUF;
@@ -344,7 +344,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                                         break;
 
                                     default:
-                                        novelty_value = CausalRefusedEnum.CS_NOV_OTRO;
+                                        novelty_value = novelty.codigo || CausalRefusedEnum.CS_NOV_OTRO;
 
 
                                 }
@@ -552,70 +552,63 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 <Text style={styles.headerTitle}>Entrega de pedido</Text>
                 <View style={styles.placeholder} />
             </View>
-            {/* Card blanco centrado */}
-            <View style={[
-                styles.card,
-                !isExpanded && styles.cardCollapsed
-            ]}>
-                <View style={styles.headerRow}>
-                    <Text style={styles.merchantName}>{capitalizeFirst(guide?.nombreCliente) ?? ''}</Text>
-
-                    <TouchableOpacity
-                        style={styles.expandButton}
-                        onPress={isExpanded ? handleCollapse : handleExpand}
-                        disabled={validateStatus}
-
-                    >
-                        <View style={styles.arrowsContainer}>
-                            {/* Icono superior */}
-                            <Image
-                                source={require('@/assets/icons/ReboackPage.png')}
-                                style={[
-                                    styles.reboackIcon,
-                                ]}
-                                resizeMode="contain"
-                            />
-                        </View>
-                    </TouchableOpacity>
-                </View>
-
-                {/* Contenido expandido */}
-                {(isExpanded && !validateStatus) && (
-                    <View style={styles.expandedContent}>
-                        <Text style={styles.address}>{cleanSpaces(guide?.direccion)}, {cleanSpaces(guide?.poblacion)}</Text>
-
-                        {/* Botones de Rechazar todo y Aceptar todo */}
-                        <View style={styles.actionButtonsRow}>
-                            <TouchableOpacity
-                                style={styles.rejectButton}
-                                onPress={() => {
-                                    setViewModalActionRefused(true);
-                                    // setSuccessButton(false);
-                                    // setUploadPhoto(true);
-                                    // setAlertButton(true);
-                                }}
-                            >
-                                <MaterialIcons name="close" size={16} color="#C62828" />
-                                <Text style={styles.rejectButtonText}> Rechazo masivo</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                                style={styles.acceptButton}
-                                onPress={() => {
-                                    setViewModalActionSuccess(true);
-                                    // setAlertButton(false);
-                                    // setUploadPhoto(true);
-                                    // setSuccessButton(true);
-                                }}
-                            >
-                                <MaterialIcons name="check" size={16} color="#1F9144" />
-                                <Text style={styles.acceptButtonText}> Validacion masiva</Text>
-                            </TouchableOpacity>
-
+            <Pressable
+                onPress={isExpanded ? handleCollapse : handleExpand}
+                disabled={validateStatus}
+            >
+                {/* Card blanco centrado */}
+                <View
+                    style={[
+                        styles.card,
+                        !isExpanded && styles.cardCollapsed
+                    ]}
+                >
+                    <View style={styles.headerRow}>
+                        <Text style={styles.merchantName}>
+                            {capitalizeFirst(guide?.nombreCliente) ?? ''}
+                        </Text>
+                
+                        {/* Icono solo visual (opcional) */}
+                        <View style={styles.expandButton}>
+                            <View style={styles.arrowsContainer}>
+                                <Image
+                                    source={require('@/assets/icons/ReboackPage.png')}
+                                    style={styles.reboackIcon}
+                                    resizeMode="contain"
+                                />
+                            </View>
                         </View>
                     </View>
-                )}
-            </View>
+                
+                    {/* Contenido expandido */}
+                    {(isExpanded && !validateStatus) && (
+                        <View style={styles.expandedContent}>
+                            <Text style={styles.address}>
+                                {cleanSpaces(guide?.direccion)}, {cleanSpaces(guide?.poblacion)}
+                            </Text>
+                    
+                            <View style={styles.actionButtonsRow}>
+                                <TouchableOpacity
+                                    style={styles.rejectButton}
+                                    onPress={() => setViewModalActionRefused(true)}
+                                >
+                                    <MaterialIcons name="close" size={16} color="#C62828" />
+                                    <Text style={styles.rejectButtonText}> Rechazo masivo</Text>
+                                </TouchableOpacity>
+                    
+                                <TouchableOpacity
+                                    style={styles.acceptButton}
+                                    onPress={() => setViewModalActionSuccess(true)}
+                                >
+                                    <MaterialIcons name="check" size={16} color="#1F9144" />
+                                    <Text style={styles.acceptButtonText}> Validacion masiva</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    )}
+                </View>
+            </Pressable>
+
 
             <ExceptionModal
                 visible={modalVisible}

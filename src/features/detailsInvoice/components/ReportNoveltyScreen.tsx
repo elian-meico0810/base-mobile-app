@@ -96,7 +96,7 @@ export function ReportNoveltyScreen({
 
     const reasons = showTypeDetails?.map(item => item.nombre);
 
-
+    
     // Función para obtener los datos estructurados
     const getReasonValues = (): ReasonData[] => {
         const data: ReasonData[] = [];
@@ -105,7 +105,8 @@ export function ReportNoveltyScreen({
             const unitValue = units[index] ? parseInt(units[index], 10) : 0;
             data.push({
                 type: reason,
-                units: unitValue
+                units: unitValue,
+                codigo: showTypeDetails[index]?.codigo    
             });
         });
 

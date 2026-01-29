@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Dimensions, Image, Linking, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Circle, G, Path } from 'react-native-svg';
 
 interface EvidencePhoto {
@@ -49,6 +49,17 @@ export default function ConsignacionesScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadContext, setUploadContext] = useState<"register" | "edit" | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [receiptEvidenceUrl, setReceiptEvidenceUrl] = useState<string | null>(null);
+  const [sasToken, setSasToken] = useState("");
+
+  useEffect(() => {
+    const loadToken = async () => {
+      const token = await SecureStore.getItemAsync("service_token");
+      setSasToken(token || "");
+    };
+    loadToken();
+  }, []);
 
   const handleUploadFile = () => {
     setUploadContext("register");
@@ -382,8 +393,16 @@ export default function ConsignacionesScreen() {
                setShowEditModal(true);
             }}
             onViewReceipt={(item) => {
-               // Implementar logica de ver comprobante
-               console.log("View receipt", item);
+               if (item.evidencias && item.evidencias.length > 0) {
+                 const baseUrl = item.evidencias[0].url;
+                 const fullUrl = sasToken ? `${baseUrl}${sasToken}` : baseUrl;
+                 setReceiptEvidenceUrl(fullUrl);
+                 setShowReceiptModal(true);
+               } else {
+                 setModalTitle("¡Alerta!");
+                 setModalMessage("Esta consignación no tiene comprobantes disponibles.");
+                 setModalVisible(true);
+               }
             }}
             onDelete={(item) => {
                // Implementar logica de eliminar
@@ -406,6 +425,53 @@ export default function ConsignacionesScreen() {
             evidencePhotos={editPhotos}
             isLoading={isEditing}
           />
+        )}
+
+        {showReceiptModal && selectedConsignment && (
+          <Modal
+            transparent
+            visible={showReceiptModal}
+            animationType="slide"
+            onRequestClose={() => setShowReceiptModal(false)}
+          >
+            <View style={styles.receiptOverlay}>
+              <View style={styles.receiptContainer}>
+                <View style={styles.receiptHeader}>
+                  <Text style={styles.receiptTitle}>
+                    {`Consignación #${selectedConsignment.id.toString().padStart(4, "0")}`}
+                  </Text>
+                  <TouchableOpacity onPress={() => setShowReceiptModal(false)}>
+                    <Ionicons name="close" size={24} color="#788095" />
+                  </TouchableOpacity>
+                </View>
+
+                {receiptEvidenceUrl && (
+                  <Image
+                    source={{ uri: receiptEvidenceUrl }}
+                    style={styles.receiptImage}
+                    resizeMode="cover"
+                  />
+                )}
+
+                <TouchableOpacity
+                  style={styles.downloadButton}
+                  onPress={() => {
+                    if (receiptEvidenceUrl) {
+                      Linking.openURL(receiptEvidenceUrl);
+                    }
+                  }}
+                >
+                  <Ionicons
+                    name="download-outline"
+                    size={18}
+                    color="#164194"
+                    style={{ marginRight: 8 }}
+                  />
+                  <Text style={styles.downloadButtonText}>Descargar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
         )}
 
         {uploadPhoto && (
@@ -785,5 +851,57 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#788095',
     textAlign: 'center',
+  },
+  receiptOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  receiptContainer: {
+    width: width,
+    backgroundColor: '#F9F9FA',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 16,
+    paddingTop: 24,
+    paddingBottom: 55,
+  },
+  receiptHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  receiptTitle: {
+    fontFamily: 'Rubik',
+    fontWeight: '700',
+    fontSize: 20,
+    color: '#141D32',
+  },
+  receiptImage: {
+    width: '100%',
+    aspectRatio: 572 / 768,
+    borderRadius: 8,
+    marginBottom: 24,
+  },
+  downloadButton: {
+    height: 44,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#164194',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  downloadButtonText: {
+    fontFamily: 'Rubik',
+    fontWeight: '700',
+    fontSize: 16,
+    color: '#164194',
   }
 });

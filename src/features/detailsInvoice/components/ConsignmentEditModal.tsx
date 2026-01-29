@@ -1,3 +1,4 @@
+import { OutlineButton } from "@/components/buttons/OutlineButton";
 import { PrimaryButton } from "@/components/buttons/PrimaryButton";
 import { SecondaryButtonCancel } from "@/components/buttons/SecondaryButtonCancel";
 import { Consignment } from "@/src/features/tracking/domain/consignments/Consignment";
@@ -31,6 +32,8 @@ interface ConsignmentEditModalProps {
     onSave: (amount: string, evidences: EvidencePhoto[]) => void;
     isLoading?: boolean;
     width?: number;
+    onUploadFile?: () => void;
+    evidencePhotos?: EvidencePhoto[];
 }
 
 export function ConsignmentEditModal({
@@ -39,7 +42,9 @@ export function ConsignmentEditModal({
     consignment,
     onSave,
     isLoading = false,
-    width = 360
+    width = 360,
+    onUploadFile,
+    evidencePhotos = []
 }: ConsignmentEditModalProps) {
     const [amount, setAmount] = useState("");
     const [displayAmount, setDisplayAmount] = useState("");
@@ -62,15 +67,22 @@ export function ConsignmentEditModal({
             setAmount(val);
             setDisplayAmount(Number(val).toLocaleString("es-CO"));
 
-            const existingEvidences: EvidencePhoto[] = consignment.evidencias.map(e => ({
-                id: e.id.toString(),
-                uri: sasToken ? `${e.url}${sasToken}` : e.url
-            }));
-            console.log(existingEvidences);
-            
-            setEvidences(existingEvidences);
+            if (!evidencePhotos || evidencePhotos.length === 0) {
+                const existingEvidences: EvidencePhoto[] = consignment.evidencias.map(e => ({
+                    id: e.id.toString(),
+                    uri: sasToken ? `${e.url}${sasToken}` : e.url
+                }));
+
+                setEvidences(existingEvidences);
+            }
         }
-    }, [visible, consignment, sasToken]);
+    }, [visible, consignment, sasToken, evidencePhotos]);
+
+    useEffect(() => {
+        if (visible && evidencePhotos && evidencePhotos.length > 0) {
+            setEvidences(evidencePhotos);
+        }
+    }, [visible, evidencePhotos]);
 
 
     const getFormattedTime = () => {
@@ -187,7 +199,7 @@ export function ConsignmentEditModal({
 
                         <Text style={styles.titleTwo}>Comprobante de la consignación</Text>
 
-                        {evidences.length > 0 && (
+                        {evidences.length > 0 ? (
                             <View style={styles.evidenceThumbnailsContainer}>
                                 <View style={styles.thumbnailsColumn}>
                                     {evidences.map((evidence, index) => (
@@ -220,6 +232,17 @@ export function ConsignmentEditModal({
                                         </View>
                                     ))}
                                 </View>
+                            </View>
+                        ) : (
+                            <View style={styles.outlineButtonWrapper}>
+                                <OutlineButton
+                                    title="Agregar evidencia"
+                                    onPress={() => {
+                                        onUploadFile?.();
+                                    }}
+                                    width={328}
+                                    height={34}
+                                />
                             </View>
                         )}
 
@@ -382,6 +405,9 @@ const styles = StyleSheet.create({
         marginTop: 12,
         width: '100%',
         alignItems: 'center',
+    },
+    outlineButtonWrapper: {
+        marginBottom: 24,
     },
     thumbnailContainer: {
         width: 48,

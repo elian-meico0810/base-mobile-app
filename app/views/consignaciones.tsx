@@ -39,22 +39,31 @@ export default function ConsignacionesScreen() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [uploadPhoto, setUploadPhoto] = useState(false);
   const [multiplePhotos, setMultiplePhotos] = useState<EvidencePhoto[]>([]);
+  const [editPhotos, setEditPhotos] = useState<EvidencePhoto[]>([]);
   const [valueInput, setValueInput] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalMessage, setModalMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadContext, setUploadContext] = useState<"register" | "edit" | null>(null);
 
   const handleUploadFile = () => {
+    setUploadContext("register");
     setViewConsignment(false);
     setUploadPhoto(true);
   };
 
   const handleEvidenceComplete = (evidences: EvidencePhoto[]) => {
     setUploadPhoto(false);
-    setMultiplePhotos(evidences);
-    setViewConsignment(true);
+    if (uploadContext === "register") {
+      setMultiplePhotos(evidences);
+      setViewConsignment(true);
+    } else if (uploadContext === "edit") {
+      setEditPhotos(evidences);
+      setShowEditModal(true);
+    }
+    setUploadContext(null);
   };
 
   const handleEditSave = (amount: string, evidences: EvidencePhoto[]) => {
@@ -62,6 +71,12 @@ export default function ConsignacionesScreen() {
     setModalTitle("Información");
     setModalMessage("Funcionalidad de edición pendiente de integración.");
     setModalVisible(true);
+  };
+
+  const handleEditUploadFile = () => {
+    setUploadContext("edit");
+    setShowEditModal(false);
+    setUploadPhoto(true);
   };
 
   const handleOptionsPress = (item: Consignment) => {
@@ -323,10 +338,13 @@ export default function ConsignacionesScreen() {
             visible={showEditModal}
             onClose={() => {
               setShowEditModal(false);
+              setEditPhotos([]);
             }}
             consignment={selectedConsignment}
             onSave={handleEditSave}
             width={width}
+            onUploadFile={handleEditUploadFile}
+            evidencePhotos={editPhotos}
           />
         )}
 
@@ -336,7 +354,9 @@ export default function ConsignacionesScreen() {
             subTitle="Toma fotos de la mercancía ubicada en el cliente. Podrás asociar un máximo de 3 imágenes por entrega."
             onClose={() => {
               setUploadPhoto(false);
-              setViewConsignment(true);
+              if (uploadContext === "register") {
+                setViewConsignment(true);
+              }
             }}
             width={width}
             onEvidenceComplete={handleEvidenceComplete}

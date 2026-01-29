@@ -29,3 +29,10 @@ export interface RegisterConsignmentRequest {
     fechaHoraDispositivo: string;
     evidencias: string[];
 }
+
+export interface EditConsignmentRequest {
+    rutaId?: number;
+    valorConsignado?: number;
+    fechaHoraDispositivo?: string;
+    evidencias?: string[];
+}

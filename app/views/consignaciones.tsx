@@ -5,7 +5,7 @@ import { ThemedView } from '@/components/themed-view';
 import { ConsignmentData } from '@/src/features/detailsInvoice/components/ConsignmentData';
 import { ConsignmentEditModal } from '@/src/features/detailsInvoice/components/ConsignmentEditModal';
 import { ConsignmentOptionsModal } from '@/src/features/detailsInvoice/components/ConsignmentOptionsModal';
-import { Consignment, ConsignmentSummary } from '@/src/features/tracking/domain/consignments/Consignment';
+import { Consignment, ConsignmentSummary, EditConsignmentRequest } from '@/src/features/tracking/domain/consignments/Consignment';
 import { consignmentRepositoryImpl } from '@/src/features/tracking/infrastructure/consignments/ConsignmentRepositoryImpl';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { createDataUri, formatNumber, formatStringToNumber, getDeviceDateTime } from '@/src/utils/uitls';
@@ -42,11 +42,13 @@ export default function ConsignacionesScreen() {
   const [editPhotos, setEditPhotos] = useState<EvidencePhoto[]>([]);
   const [valueInput, setValueInput] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showEditSuccess, setShowEditSuccess] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalMessage, setModalMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadContext, setUploadContext] = useState<"register" | "edit" | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleUploadFile = () => {
     setUploadContext("register");
@@ -66,11 +68,68 @@ export default function ConsignacionesScreen() {
     setUploadContext(null);
   };
 
-  const handleEditSave = (amount: string, evidences: EvidencePhoto[]) => {
-    setShowEditModal(false);
-    setModalTitle("Información");
-    setModalMessage("Funcionalidad de edición pendiente de integración.");
-    setModalVisible(true);
+  const handleEditSave = async (amount: string, evidences: EvidencePhoto[]) => {
+    try {
+      if (!selectedConsignment) {
+        setShowEditModal(false);
+        setModalTitle("¡Error!");
+        setModalMessage("No se encontró la consignación seleccionada.");
+        setModalVisible(true);
+        return;
+      }
+
+      if (!amount) {
+        setModalTitle("¡Alerta!");
+        setModalMessage("Debe ingresar un valor para la consignación.");
+        setModalVisible(true);
+        return;
+      }
+
+      setIsEditing(true);
+      const token = await SecureStore.getItemAsync('user_token');
+      if (!token) {
+        setIsEditing(false);
+        setModalTitle("¡Error!");
+        setModalMessage("No se encontró el token de autenticación.");
+        setModalVisible(true);
+        return;
+      }
+
+      const evidencesData = evidences
+        .map(p => {
+          if (p.base64) {
+            return createDataUri(p.base64, p.uri);
+          }
+          return "";
+        })
+        .filter(e => e !== "");
+
+      const valorConsignado = formatStringToNumber(amount);
+
+      const payload: EditConsignmentRequest = {
+        rutaId: selectedConsignment.rutaId,
+        valorConsignado: valorConsignado,
+        fechaHoraDispositivo: getDeviceDateTime(),
+      };
+
+      if (evidencesData.length > 0) {
+        payload.evidencias = evidencesData;
+      }
+
+      await consignmentRepositoryImpl.editConsignment(selectedConsignment.id, payload, token);
+
+      setIsEditing(false);
+      setShowEditModal(false);
+      setEditPhotos([]);
+      setShowEditSuccess(true);
+      fetchSummary();
+    } catch (error: any) {
+      setIsEditing(false);
+      setModalTitle("¡Error!");
+      const errorMessage = error?.response?.data?.message ?? "Ocurrió un error inesperado al actualizar la consignación.";
+      setModalMessage(errorMessage);
+      setModalVisible(true);
+    }
   };
 
   const handleEditUploadFile = () => {
@@ -345,6 +404,7 @@ export default function ConsignacionesScreen() {
             width={width}
             onUploadFile={handleEditUploadFile}
             evidencePhotos={editPhotos}
+            isLoading={isEditing}
           />
         )}
 
@@ -382,6 +442,15 @@ export default function ConsignacionesScreen() {
             message="Consignación registrada"
             onHide={() => setShowSuccess(false)}
             subtitle={`Se registró una consignación por el valor de $${valueInput}.`}
+          />
+        )}
+
+        {showEditSuccess && (
+          <TopSuccessAlert
+            visible={showEditSuccess}
+            message="Consignación actualizada"
+            onHide={() => setShowEditSuccess(false)}
+            subtitle="La consignación se actualizó correctamente."
           />
         )}
 

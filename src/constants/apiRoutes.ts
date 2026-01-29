@@ -33,6 +33,7 @@ export const API_ROUTES = {
   // Consignaciones
   CONSIGNACIONES_RESUMEN: "consignaciones/resumen/",
   CONSIGNACIONES_REGISTRAR: "consignaciones/registrar/",
+  CONSIGNACIONES_EDITAR: "consignaciones/editar/",
 };
 
 

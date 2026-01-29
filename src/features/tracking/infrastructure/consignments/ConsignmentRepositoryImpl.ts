@@ -1,6 +1,6 @@
 import { API_ROUTES } from "@/src/constants/apiRoutes";
 import { authApi } from "@/src/features/auth/infrastructure/authApi";
-import { Consignment, ConsignmentSummary, RegisterConsignmentRequest } from "../../domain/consignments/Consignment";
+import { Consignment, ConsignmentSummary, EditConsignmentRequest, RegisterConsignmentRequest } from "../../domain/consignments/Consignment";
 import { ConsignmentRepository } from "../../domain/consignments/ConsignmentRepository";
 
 export const consignmentRepositoryImpl: ConsignmentRepository = {
@@ -21,6 +21,19 @@ export const consignmentRepositoryImpl: ConsignmentRepository = {
     async registerConsignment(requestData: RegisterConsignmentRequest, token: string): Promise<Consignment> {
         try {
             const { data } = await authApi.post(API_ROUTES.CONSIGNACIONES_REGISTRAR, requestData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            return data;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    async editConsignment(consignmentId: number, requestData: EditConsignmentRequest, token: string): Promise<Consignment> {
+        try {
+            const { data } = await authApi.put(`${API_ROUTES.CONSIGNACIONES_EDITAR}${consignmentId}/`, requestData, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },

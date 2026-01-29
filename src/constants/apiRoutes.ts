@@ -34,6 +34,7 @@ export const API_ROUTES = {
   CONSIGNACIONES_RESUMEN: "consignaciones/resumen/",
   CONSIGNACIONES_REGISTRAR: "consignaciones/registrar/",
   CONSIGNACIONES_EDITAR: "consignaciones/editar/",
+  CONSIGNACIONES_ELIMINAR: "consignaciones/eliminar/",
 };
 
 

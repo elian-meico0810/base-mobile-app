@@ -42,5 +42,17 @@ export const consignmentRepositoryImpl: ConsignmentRepository = {
         } catch (error) {
             throw error;
         }
+    },
+
+    async deleteConsignment(consignmentId: number, token: string): Promise<void> {
+        try {
+            await authApi.delete(`${API_ROUTES.CONSIGNACIONES_ELIMINAR}${consignmentId}/`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+        } catch (error) {
+            throw error;
+        }
     }
 };

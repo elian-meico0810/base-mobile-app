@@ -1,4 +1,5 @@
 import { TopSuccessAlert } from '@/components/alerts/TopSuccessAlert';
+import { ActionAllData } from '@/components/generals/ActionAllData';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { UploadPhotoItem } from '@/components/photo/uploadPhotoItem';
 import { ThemedView } from '@/components/themed-view';
@@ -43,6 +44,7 @@ export default function ConsignacionesScreen() {
   const [valueInput, setValueInput] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [showEditSuccess, setShowEditSuccess] = useState(false);
+  const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalMessage, setModalMessage] = useState("");
@@ -52,6 +54,8 @@ export default function ConsignacionesScreen() {
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [receiptEvidenceUrl, setReceiptEvidenceUrl] = useState<string | null>(null);
   const [sasToken, setSasToken] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const loadToken = async () => {
@@ -152,6 +156,44 @@ export default function ConsignacionesScreen() {
   const handleOptionsPress = (item: Consignment) => {
     setSelectedConsignment(item);
     setShowOptionsModal(true);
+  };
+
+  const handleDeleteConsignment = async () => {
+    try {
+      if (!selectedConsignment) {
+        setShowDeleteModal(false);
+        setModalTitle("¡Error!");
+        setModalMessage("No se encontró la consignación seleccionada.");
+        setModalVisible(true);
+        return;
+      }
+
+      setIsDeleting(true);
+      const token = await SecureStore.getItemAsync('user_token');
+      if (!token) {
+        setIsDeleting(false);
+        setShowDeleteModal(false);
+        setModalTitle("¡Error!");
+        setModalMessage("No se encontró el token de autenticación.");
+        setModalVisible(true);
+        return;
+      }
+
+      await consignmentRepositoryImpl.deleteConsignment(selectedConsignment.id, token);
+
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+      setSelectedConsignment(null);
+      setShowDeleteSuccess(true);
+      fetchSummary();
+    } catch (error: any) {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+      setModalTitle("¡Error!");
+      const errorMessage = error?.response?.data?.message ?? "Ocurrió un error inesperado al eliminar la consignación.";
+      setModalMessage(errorMessage);
+      setModalVisible(true);
+    }
   };
 
   const consignmentSubmit = async () => {
@@ -405,8 +447,9 @@ export default function ConsignacionesScreen() {
                }
             }}
             onDelete={(item) => {
-               // Implementar logica de eliminar
-               console.log("Delete", item);
+               setSelectedConsignment(item);
+               setShowOptionsModal(false);
+               setShowDeleteModal(true);
             }}
           />
         )}
@@ -438,7 +481,7 @@ export default function ConsignacionesScreen() {
               <View style={styles.receiptContainer}>
                 <View style={styles.receiptHeader}>
                   <Text style={styles.receiptTitle}>
-                    {`Consignación #${selectedConsignment.id.toString().padStart(4, "0")}`}
+                    {`Consignación #${selectedConsignment.id.toString()}`}
                   </Text>
                   <TouchableOpacity onPress={() => setShowReceiptModal(false)}>
                     <Ionicons name="close" size={24} color="#788095" />
@@ -472,6 +515,19 @@ export default function ConsignacionesScreen() {
               </View>
             </View>
           </Modal>
+        )}
+
+        {showDeleteModal && selectedConsignment && (
+          <ActionAllData
+            title="¿Estás seguro de que deseas eliminar la consignación?"
+            onClose={() => {
+              if (!isDeleting) {
+                setShowDeleteModal(false);
+              }
+            }}
+            width={width}
+            onConfirmation={handleDeleteConsignment}
+          />
         )}
 
         {uploadPhoto && (
@@ -517,6 +573,15 @@ export default function ConsignacionesScreen() {
             message="Consignación actualizada"
             onHide={() => setShowEditSuccess(false)}
             subtitle="La consignación se actualizó correctamente."
+          />
+        )}
+
+        {showDeleteSuccess && (
+          <TopSuccessAlert
+            visible={showDeleteSuccess}
+            message="Consignación eliminada"
+            onHide={() => setShowDeleteSuccess(false)}
+            subtitle="La consignación se eliminó correctamente."
           />
         )}
 

@@ -1,8 +1,8 @@
 import { TypeConPagoEnum, TypeQr } from "@/src/constants/GuideStates";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Image, Linking, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Dimensions, Image, Linking, Text, TextInput, TouchableOpacity, View } from "react-native";
 import QRCode from 'react-native-qrcode-svg';
-import { SvgXml } from "react-native-svg";
+import { WebView } from 'react-native-webview';
 import { PrimaryButton } from "../buttons/PrimaryButton";
 import { SecondaryButton } from "../buttons/SecondaryButton";
 
@@ -48,6 +48,10 @@ export default function RenderQRView({
     const [localQRData, setLocalQRData] = useState<string | undefined>(qrData);
     const [changingTypeLoading, setChangingTypeLoading] = useState(false);
     const [localPhone, setLocalPhone] = useState(phone ?? '');
+    const [pngBase64, setPngBase64] = useState<string | null>(null);
+    const [svgBase64, setSvgBase64] = useState<string | null>(null);
+
+    const size = Dimensions.get('window').width * 0.7;
 
     useEffect(() => {
         setLocalQRData(qrData);
@@ -118,6 +122,30 @@ export default function RenderQRView({
     };
 
     const condPago = dataInvoice?.condPago == TypeConPagoEnum.TAT;
+    useEffect(() => {
+        const processSVG = async () => {
+            if (!localQRData) return;
+
+            const type = getQRType();
+
+            if (type === "svg-base64") {
+                try {
+                    const decoded = decodeBase64(localQRData);
+                    const svgNormalized = normalizeSvgSize(decoded);
+
+                    // Guardar SVG para renderizar
+                    setSvgBase64(svgNormalized);
+                } catch (error) {
+                    console.error("Error processing SVG:", error);
+                }
+            } else {
+                setSvgBase64(null);
+                setPngBase64(null);
+            }
+        };
+
+        processSVG();
+    }, [localQRData]);
 
     const renderQRContent = () => {
         const type = getQRType();
@@ -162,11 +190,69 @@ export default function RenderQRView({
 
             case "svg-base64": {
                 let svgDecoded = decodeBase64(localQRData!);
-                const svgNormalized = normalizeSvgSize(svgDecoded);
+                const svgDataUrl = `data:image/svg+xml;base64,${btoa(svgDecoded)}`;
+
                 return (
-                    <View style={styles.svgContainer}>
-                        <SvgXml xml={svgNormalized} width={200} height={300} />
-                    </View>
+                    <WebView
+                        originWhitelist={['*']}
+                        source={{
+                            html: `
+                                <!DOCTYPE html>
+                                <html>
+                                <head>
+                                    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+                                    <style>
+                                        * {
+                                            margin: 0;
+                                            padding: 0;
+                                            box-sizing: border-box;
+                                        }
+                                        body {
+                                            display: flex;
+                                            justify-content: center;
+                                            align-items: center;
+                                            height: 100vh;
+                                            background: white;
+                                        }
+                                        .qr-container {
+                                            width: 100%;
+                                            height: 100%;
+                                            display: flex;
+                                            justify-content: center;
+                                            align-items: center;
+                                        }
+                                        img {
+                                            max-width: 100%;
+                                            max-height: 100%;
+                                            object-fit: contain;
+                                            -webkit-user-select: none;
+                                            user-select: none;
+                                            -webkit-user-drag: none;
+                                        }
+                                    </style>
+                                </head>
+                                <body>
+                                    <div class="qr-container">
+                                        <img src="${svgDataUrl}" alt="QR Code" />
+                                    </div>
+                                </body>
+                                </html>`
+                        }}
+                        style={{
+                            width: size,
+                            height: size,
+                            backgroundColor: 'white'
+                        }}
+                        scalesPageToFit={true}
+                        javaScriptEnabled={true}
+                        domStorageEnabled={true}
+                        startInLoadingState={true}
+                        renderLoading={() => (
+                            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                                <ActivityIndicator size="large" color="#0000ff" />
+                            </View>
+                        )}
+                    />
                 );
             }
 

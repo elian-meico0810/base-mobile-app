@@ -50,3 +50,16 @@ export interface PaymentsByInvoice {
   facturas_entregables: number,
   puede_entregar_todo: boolean,
 }
+
+export interface ConciliationRouteResponse {
+  valor_total: number;
+  valor_recaudado: number;
+  total_rechazado: number;
+  recaudo_completo: boolean;
+  concepto: {
+    efectivo: number;
+    qr_link: number;
+    consignaciones: number;
+    otros: number;
+  };
+}

@@ -57,7 +57,7 @@ export enum CausalDelivery {
     PRODUCTOS_DANADOS = "CS_PRODUCTO_DAÑADOS",
     TIENDA_CERRADA = "CS_TIENDA_CERRADA",
     DUENO_NO_CONTESTA = "CS_DUEÑO_NO_CONESTA",
-    DINERO_INSUFICIENTE = "CS_DINERO_INSUFICIENTE"
+    DINERO_INSUFICIENTE = "CS_DINERO_INSUFICIENTE"    
 }
 
 export enum OptionsRefusedEnum {
@@ -67,7 +67,6 @@ export enum OptionsRefusedEnum {
     PRODUCTOS = "Productos"
 }
 
-
 export enum TypeInvoiceEnum {
     CREDITO = "CREDITO",
     CONTADO_EFECTIVO = "CONTADO EFECTIVO",
@@ -75,8 +74,37 @@ export enum TypeInvoiceEnum {
     MIXTO = "MIXTO"
 }
 
-
 export enum TypeConPagoEnum {
     TAT = "TAT",
     MIXTO = "MIXTO"
+}
+
+export enum TypeCaculateValueEnum {
+    ACTION_1 = "TOTAL_VALUE_BY_PRODUCTS",
+    ACTION_2 = "TOTAL_UNIT_VALUE_BY_PRODUCTS",
+    ACTION_3 = "TOTAL_VALUE_BY_PRODUCTS_REFUSED",
+    ACTION_4 = "TOTAL_TAXES_BY_ORDER",
+    ACTION_5 = "TOTAL_ENTRY_REFUSED",
+    ACTION_6=  "TOTAL_UNITS_ENTRY_REFUSED",
+    ACTION_7 = "TOTAL_ENTRY_TAX_REFUSED",
+    ACTION_8 = "TATAL_REFUSED_BY_ORDERS",
+    ACTION_9 = "TOTAL_UNIT_ENTRY"
+}
+
+export enum TyepeCausalRefusedEnum {
+    DINERO_INSUFICIENTE = "Dinero insuficiente",
+    PRODUCTOS_DANADOS = "Producto dañado",
+    PRODUCTOS_VENCIDOS = "Producto vencido",
+    OTROS = "Otro"
+}
+
+export enum CausalRefusedEnum {
+    CS_NOV_DIN_INSUF = "CS_NOV_DIN_INSUF",
+    CS_NOV_PROD_DAÑADO = "CS_NOV_PROD_DAÑADO",
+    CS_NOV_PROD_VENC = "CS_NOV_PROD_VENC",
+    CS_NOV_OTRO = "CS_NOV_OTRO"
+}
+
+export enum TypeDetailsEnum {
+    CAUS_REP_NOVEDAD = "CAUS_REP_NOVEDAD"
 }

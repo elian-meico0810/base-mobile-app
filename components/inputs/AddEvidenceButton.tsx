@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface AddEvidenceButtonProps {
@@ -14,6 +13,8 @@ interface AddEvidenceButtonProps {
     showEndIcon?: boolean;
     spaced?: boolean;
     disabled?: boolean;
+    height?: number;
+    width?: number;
 }
 
 export const AddEvidenceButton = ({
@@ -28,6 +29,8 @@ export const AddEvidenceButton = ({
     showEndIcon = false,
     spaced = false,
     disabled = false,
+    height = undefined,
+    width = undefined,
 }: AddEvidenceButtonProps) => {
     return (
         <TouchableOpacity
@@ -35,7 +38,9 @@ export const AddEvidenceButton = ({
             style={[
                 styles.container,
                 { backgroundColor },
-                spaced && { justifyContent: "space-between" }
+                spaced && {
+                    justifyContent: "space-between", height: height ? height: null, width: width ?width: null
+                }
             ]}
             onPress={onPress}
         >

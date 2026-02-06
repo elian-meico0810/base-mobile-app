@@ -6,27 +6,29 @@ import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails'
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
-import { NetworkStatus } from '@/components/generals/NetworkStatus';
+import { TypePayment } from '@/components/generals/TypePayment';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
-import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeConPagoEnum, TypeDelivery, TypeInvoiceEnum, TypeQr } from '@/src/constants/GuideStates';
+import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeCaculateValueEnum, TypeConPagoEnum, TypeDelivery, TypeInvoiceEnum, TypeQr } from '@/src/constants/GuideStates';
 import { DeliveryStatus } from '@/src/features/tracking/components/checkbox/DeliveryStatus';
+import { DeliveryStatusAction } from '@/src/features/tracking/components/checkbox/DeliveryStatusAction';
 import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
 import { ChangePhoneModal } from '@/src/features/tracking/components/screens/ChangePhoneModal';
 import { DetailsInvoiceQR } from '@/src/features/tracking/components/screens/DetailsInvoiceQR';
+import { DetailsPaymenTypeEfecty } from '@/src/features/tracking/components/screens/DetailsPaymenTypeEfecty';
+import { DetailsPaymenTypeOthers } from '@/src/features/tracking/components/screens/DetailsPaymenTypeOthers';
 import { InfoPayments } from '@/src/features/tracking/components/screens/InfoPayments';
 import { ViewQrModal } from '@/src/features/tracking/components/screens/ViewQrModal';
-import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { Detail, Document, GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { CreateEntregaProps, DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
-import { capitalizeFirst, cleanSpaces, getDeviceDateTime, getDistanceInMeters, heightCaldulate } from '@/src/utils/uitls';
-import { Image } from 'expo-image';
+import { calculateVlueByPorducts, capitalizeFirst, cleanSpaces, getDeviceDateTime, getDistanceInMeters, heightCaldulate, toUpperCase } from '@/src/utils/uitls';
 import * as Location from "expo-location";
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from "react";
-import { BackHandler, Dimensions, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BackHandler, Dimensions, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 const { width, height } = Dimensions.get('window');
 
 interface InfoInvoiceFormProps {
@@ -39,6 +41,7 @@ interface InfoInvoiceFormProps {
     isCountryDelivery?: boolean;
     IsGoBack?: boolean;
     routeStartedBotton?: string;
+    detailsCounterDelivery?: boolean;
 }
 
 interface EvidencePhoto {
@@ -50,14 +53,17 @@ interface EvidencePhoto {
 type DeliveryStatus = "total" | "parcial" | "rechazo" | null;
 type OptionsRefusedPorps = 'Dinero' | 'Dueño' | 'Tienda' | 'Productos' | null;
 
-export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton }: InfoInvoiceFormProps) {
+export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton, detailsCounterDelivery }: InfoInvoiceFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [guideAny, setGuideAny] = useState<GuideDetails[]>([]);
+    const [guideByProduct, setGuideByPorduct] = useState<GuideDetails[]>([]);
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
     const [showPayment, setShowPayment] = useState(false);
     const [showDetailInvoiceQR, setShowDetailInvoiceQR] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
+    const [viewOrder, setIsOrder] = useState<GuideDetails | null>(null);
+    const [typePaymentView, setTypePaymentView] = useState(false);
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
@@ -73,6 +79,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [showStatusDelivery, setShowStatusDelivery] = useState<"total" | "parcial" | "rechazo" | null>(null);
     const [isInicilizationApi, setInicilizationApi] = useState(false);
     const [showOptionRefused, setShowOptionRefused] = useState<OptionsRefusedPorps>(null);
+    const [valueOrderCalculate, setValueOrderCalculate] = useState(0);
+    const [valueOrderPaymentByType, setValuePaymentByType] = useState(0);
+    const [newValue, setNewValue] = useState(0);
+    const [showPorductData, setPorductData] = useState<Document[]>([]);
     const [showPaymentPending, setShowPaymentPending] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [RefreshingOnPress, setRefreshingOnPress] = useState(false);
@@ -80,6 +90,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [deliveryStatus, setDeliveryStatus] = useState(false);
     const [modalRefused, setShowModalRefused] = useState(false);
     const [uploadPhoto, setUploadPhoto] = useState(false);
+    const [typePayment, setTypePayment] = useState(false);
+    const [typePaymentTypeEfecty, setTypePaymenTypeEfecty] = useState(false);
+    const [typePaymentTypeOthers, setTypePaymenTypeOthers] = useState(false);
+    const [statusDOcument, setStatusDOcument] = useState(false);
     const [conceptDelivery, setConceptDelivery] = useState<DerliveryDocument | null>(null);
     const [validateException, setValidateException] = useState(false);
     const [paymentSuccessful, setPaymentSuccessful] = useState<Invoice | undefined>();
@@ -108,6 +122,9 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
         return () => backHandler.remove();
     }, [allowBack, numberGuide, token]);
+
+    const orderId = initialGuide?.pedidos?.[0]?.id;
+    const [checkUbication, setCheckUbication] = useState(false);
 
     const handleGoBack = () => {
         // router.back();
@@ -145,7 +162,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             try {
                 const respones = await invoiceRepositoryImpl.successfulBillPayment(
                     Number(initialGuide?.facturas[0]?.numeroFactura),
-                    ENV_DEV.KEY_APP
+                    token,
+                    Number(initialGuide?.pedidos?.[0]?.id),
                 );
                 if (respones?.statusCode === 200) {
                     setPaymentSuccessful(respones.data as Invoice);
@@ -154,11 +172,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 setModalTitle("¡Error!");
                 setModalMessage("Ocurrio un error inesperado.");
                 setModalVisible(true);
-            } finally {
-                setLoading(false);
             }
         };
-
+        getDataProduct();
+        getSuccessOrderPayment();
         fetchGuide();
     }, [Number(initialGuide?.facturas[0]?.numeroFactura), token]);
 
@@ -180,6 +197,103 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         if (qr) setQrBase64(qr);
         if (type) setQrType(type);
     };
+
+
+    const handleSubmitEfecty = async (value: number) => {
+        try {
+            setLoading(true);
+            setRefreshingOnPress(true);
+            if (value <= 0) {
+                setModalTitle("¡Alerta!");
+                setModalMessage("El campo es requerido.");
+                setModalVisible(true);
+                return;
+            }
+            const now = new Date();
+
+            const date = now.toLocaleString('sv-SE', {
+                timeZone: 'America/Bogota',
+                hour12: false
+            }).replace('T', ' ');
+
+            const response = await invoiceRepositoryImpl.createPaymentType([
+                {
+                    usuario: "jnaranjo@meico.com.co",
+                    momento: date,
+                    valorRegistrado: value,
+                    tipoPago: "TIP_PAG_EFECTIVO",
+                    descripcion: "Transferencia",
+                    pedidos: [String(initialGuide?.pedidos?.[0]?.codigo)],
+                }
+            ], token);
+
+            if (response?.statusCode === 200) {
+                setModalTitle("¡Procesado!");
+                setModalMessage(`Registro(s) procesado exitosamente.`);
+                setModalVisible(true);
+
+            } else {
+                setModalTitle("¡Alerta!");
+                setModalMessage(response?.message ?? "Ocurrió un error inesperado.");
+                setModalVisible(true);
+            }
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    const handleSubmitOthers = async (value: number, observation?: string) => {
+        try {
+            setLoading(true);
+            setRefreshingOnPress(true);
+            if (value <= 0) {
+                setModalTitle("¡Alerta!");
+                setModalMessage("El campo es requerido.");
+                setModalVisible(true);
+                return;
+            }
+            const now = new Date();
+
+            const date = now.toLocaleString('sv-SE', {
+                timeZone: 'America/Bogota',
+                hour12: false
+            }).replace('T', ' ');
+
+            const response = await invoiceRepositoryImpl.createPaymentType([
+                {
+                    usuario: "jnaranjo@meico.com.co",
+                    momento: date,
+                    valorRegistrado: value,
+                    tipoPago: "TIP_PAG_OTRO",
+                    descripcion: String(observation),
+                    pedidos: [String(initialGuide?.pedidos?.[0]?.codigo)],
+                }
+            ], token);
+
+            if (response?.statusCode === 200) {
+                setModalTitle("¡Procesado!");
+                setModalMessage(`Registro(s) procesado exitosamente.`);
+                setModalVisible(true);
+
+            } else {
+                setModalTitle("¡Alerta!");
+                setModalMessage(response?.message ?? "Ocurrió un error inesperado 3.");
+                setModalVisible(true);
+            }
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 1.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     const condPago = guide?.facturas[0]?.condPago == TypeConPagoEnum.TAT;
 
@@ -235,6 +349,36 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         }
     }
 
+    const checkUnicationPermissions = async () => {
+        try {
+            // 2. Obtener ubicación
+            const location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Highest,
+            });
+            if (!location?.coords) {
+                setModalTitle('Permiso denegado ¡Alerta!');
+                setModalMessage('Debe activar el permiso de ubicación del dispositivo');
+                setModalButtonLabel("Cerrar");
+                setModalVisible(true);
+                return;
+            } else {
+                setCheckUbication(true);
+            }
+        } catch (error: any) {
+        }
+    };
+
+    useEffect(() => {
+        if (checkUbication) return;
+
+        const interval = setInterval(() => {
+            checkUnicationPermissions();
+        }, 10);
+
+        return () => clearInterval(interval);
+    }, [checkUbication]);
+
+
     const handleSubmitData = async () => {
         try {
 
@@ -289,11 +433,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const handleSubmit = async () => {
         try {
+            setLoading(true);
             setvalidateIsBotton(true);
             setEntryVisible(true);
-            setLoading(true);
             setShowDetailInvoiceQR(false);
             setShowPayment(false);
+
             const location = await Location.getCurrentPositionAsync({
                 accuracy: Location.Accuracy.Highest,
             });
@@ -306,6 +451,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     setModalTitle("¡Alerta!");
                     setModalMessage("Estás fuera del rango permitido de 100 metros.");
                     setModalVisible(true);
+                    return;
                 }
 
             }
@@ -320,6 +466,15 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 token
             );
             if (response?.statusCode === 200) {
+                router.push({
+                    pathname: '/views/IndexDetailsInvoice',
+                    params: {
+                        guide: JSON.stringify(guide),
+                        numberGuide: numberGuide,
+                        token: token ?? "",
+                    }
+                });
+
                 setvalidateIsBotton(true);
                 setEntryVisible(true);
                 setRouteStarted(true);
@@ -341,6 +496,31 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setLoading(false);
         }
     };
+
+
+
+    const getDataProduct = async () => {
+        try {
+            setLoading(true);
+            if (token && Number(orderId)) {
+                const responseQuery = await detailsRepositoryImpl.listPorductData(token, Number(orderId));
+                if (responseQuery?.statusCode == 200) {
+                    setLoading(false);
+                    if (typeof responseQuery.data === "object" && !Array.isArray(responseQuery.data)) {
+                        setPorductData(responseQuery.data ? [responseQuery.data] : []);
+                    }
+
+                }
+            }
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+        }
+    };
+
+
 
     const submitData = async () => {
         try {
@@ -379,15 +559,17 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         }
     };
 
-    const validateButton = async () => {
+    const validateButton = () => {
         try {
             setShowDetailInvoiceQR(false);
             setShowPayment(false);
-            if (!routeStarted && !isSelectInvocies && !buttonValue) {
+            // setShowDetailInvoiceQR(false);
+            // setShowPayment(false);
+            if (!routeStarted && !isSelectInvocies && !detailsCounterDelivery && !closeButton) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Debe indicar que ya llegó al lugar de la dirección para poder ejecutar esta acción.");
                 setModalVisible(true);
-                return;
+                return false;
             }
 
             if (condPago || buttonValue && condPago) {
@@ -399,7 +581,35 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 setRouteStarted(true);
                 setTypeQRSendWhatsApp(false);
                 setShowDetailInvoiceQR(false);
+            }
+            // if (condPago) {
+            //     setTypeQRSendWhatsApp(true);
+            //     setModalgenerateQR(true);
+            //     setShowDetailInvoiceQR(true);
+            // }
+            return true;
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    }
 
+    const getSuccessOrderPayment = async () => {
+        try {
+
+            const responseQueryData = await invoiceRepositoryImpl.successOrderPayment(
+                Number(initialGuide?.pedidos?.[0]?.id),
+                token
+            );
+            if (responseQueryData?.statusCode === 200 && Array.isArray(responseQueryData.data)) {
+                const total = responseQueryData.data
+                    .map(item => Number(item.valorRegistrado ?? 0))
+                    .reduce((a, b) => a + b, 0);
+
+                setValuePaymentByType(total);
             }
         } catch (error) {
             setModalTitle("¡Error!");
@@ -444,7 +654,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
                 const responeData = await invoiceRepositoryImpl.successfulBillPayment(
                     Number(initialGuide?.facturas[0]?.numeroFactura),
-                    ENV_DEV.KEY_APP
+                    token,
+                    Number(initialGuide?.pedidos?.[0]?.id),
                 );
                 if (responeData?.statusCode === 200) {
                     const invoice = responeData.data as Invoice;
@@ -468,6 +679,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
                 }
 
+                getSuccessOrderPayment();
                 setRefreshing(false);
             }, 2000);
         } catch (error) {
@@ -542,7 +754,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     );
                     if (success) {
                         listDocumentQuery();
-                        setLoading(false);
                         setModalTitle("¡Procesado!");
                         setModalMessage(`Soporte(s) procesados exitosamente.`);
                         setModalVisible(true);
@@ -589,23 +800,15 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const listDocumentQuery = async () => {
         try {
             setLoading(true);
-
-            const responseQuery = await invoiceRepositoryImpl.listDocument(
-                String(guide?.facturas[0]?.numeroFactura),
-                Number(guide?.idDireccion),
+            const response = await detailsRepositoryImpl.novletyOrderByParams(
+                Number(orderId),
                 token
-            );
-            let concept: DerliveryDocument | null = null;
-            if (responseQuery?.statusCode == 200) {
-                if (Array.isArray(responseQuery.data)) {
-                    concept = responseQuery.data[0] ?? null;
-                } else if (responseQuery.data && typeof responseQuery.data === "object") {
-                    concept = responseQuery.data;
-                }
-                setConceptDelivery(concept);
-                setLoading(false);
-            }
+            )
 
+            if (response && response.data && Array.isArray(response.data) && response.data.length > 0) {
+                setStatusDOcument(true);
+
+            }
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
@@ -640,16 +843,15 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     };
 
     useEffect(() => {
-        if (isSelectInvocies) {
+        if (token) {
             listDocumentQuery();
         }
-    }, [isSelectInvocies]);
+    }, [token]);
 
     useEffect(() => {
         const fetchGuideList = async () => {
             try {
                 if (routeStarted && isCountryDelivery) {
-
                     const response = await detailsRepositoryImpl.listGuide(
                         Number(numberGuide),
                         token
@@ -662,7 +864,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         const result = data.find(item =>
                             item.facturas.some(f => f.numeroFactura === numeroFactura)
                         );
-                        setResultData(result ?? null)
+                        setResultData(result ?? null);
                     }
                 }
 
@@ -684,12 +886,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const totalAproved = paymentSuccessful?.pagos
         ?.filter(pago => pago.estado === "APPROVED")
         .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0);
-    const totalValue = Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.dfr);
-    const totalRecauder = Math.max(0, Number(totalValue) - Number(totalAproved));
 
-    // const isSmallScreen = height <= 757.3333333333334;
-    const isSmallScreen = height <= 780;
-
+        
     var value = '';
     switch (guide?.facturas[0]?.tipo) {
         case TypeInvoiceEnum.CONTADO_EFECTIVO:
@@ -707,9 +905,105 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const closeButton = routeStarted || buttonValue;
 
+    useEffect(() => {
+        if (detailsCounterDelivery || closeButton) {
+            const total =
+                showPorductData?.[0]?.detalles?.reduce((suma, detalle) => {
+                    return (
+                        suma +
+                        calculateVlueByPorducts(
+                            detalle as Detail,
+                            TypeCaculateValueEnum.ACTION_5
+                        )
+                    );
+                }, 0) || 0;
+
+            setValueOrderCalculate(total);
+        }
+    }, [
+        token,
+        closeButton,
+        detailsCounterDelivery,
+        showPorductData,
+    ]);
+
+
+    const totalOrderPayment = Number(totalAproved) + Number(valueOrderPaymentByType);
+    const totalValue = (Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.dfr)) - Number(valueOrderCalculate);
+    const totalRecauder = Math.max(0, Number(totalValue) - Number(totalOrderPayment));
+    
+    const handleSubmitConfirmation = async () => {
+        try {
+            setLoading(true);
+
+            // if (!guide?.whatsapp || guide?.whatsapp != "") {
+            //     btnRef.current?.reset();
+            //     setModalTitle("¡Alerta!");
+            //     setModalMessage("El numero de telefono es requerido."); 
+            //     setModalVisible(true);
+            //     return;
+            // }
+
+            if (!Number.isFinite(totalValue) || !Number.isFinite(totalRecauder)) {
+                btnRef.current?.reset();
+                setModalTitle("¡Alerta!");
+                setModalMessage("Los valores aún no están listos. Intenta nuevamente.");
+                setModalVisible(true);
+                return;
+            }
+
+
+            const responseData = await detailsRepositoryImpl.sendOTP(
+                {
+                    idDireccion: Number(guide?.idDireccion),
+                    numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
+                    // numeroDestino: "+57"+String(guide?.whatsapp).replace(/\D/g, ''),
+                    numeroDestino: "+573112187956",
+                    valorOriginal: String(totalValue),
+                    valorPagado: String(totalOrderPayment),
+                },
+                token
+            );
+
+            if (responseData?.statusCode === 200) {
+                btnRef.current?.reset();
+                router.push({
+                    pathname: '/views/IndexDetailsInvoice',
+                    params: {
+                        guide: JSON.stringify(guide),
+                        numberGuide: numberGuide,
+                        token: token ?? "",
+                        confirmationStatus: 'true',
+                        responseOTPInit: JSON.stringify(responseData.data),
+                        totalValue: String(totalValue) ?? 0,
+                        totalRecauder: String(totalRecauder)?? 0,
+                        totalOrderPayment: String(totalOrderPayment)?? 0,
+                    }
+
+                });
+            } else {
+                setValidateException(true);
+                btnRef.current?.reset();
+                setModalTitle("¡Alerta!");
+                setModalMessage(responseData?.message || "No se pudo iniciar la ruta. Intente nuevamente.");
+                setModalVisible(true);
+            }
+        } catch (error: any) {
+            console.log("error: ", error);
+
+            setValidateException(true);
+            btnRef.current?.reset();
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <ThemedView style={styles.container}>
-            <NetworkStatus />
+            {/* <NetworkStatus /> */}
 
             {/* Fondo gris */}
             <View style={styles.background} />
@@ -751,46 +1045,113 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
                 {/* Card blanco centrado */}
                 <View style={styles.card}>
-                    {/* Encabezado */}
-                    <View style={styles.cardHeader}>
-                        <View
-                            style={[
-                                styles.statusContainer,
-                                totalRecauder == 0 && { backgroundColor: '#DFF5E1' },
-                            ]}
-                        >
-                            <Text
-                                style={[
-                                    styles.status,
-                                    totalRecauder == 0 && { color: '#1F9144' },
-                                ]}
-                            >
-                                {totalRecauder == 0 ? 'Pago realizado' : 'Pendiente'}
-                            </Text>
-                        </View>
-                    </View>
-
-                    {/* Información del minimercado */}
-                    <View style={styles.merchantInfo}>
-                        <Text style={styles.merchantName}>{guide?.nombreCliente ?? ''}</Text>
-                        <Text style={styles.documentNumber}>{guide?.codigoCliente ?? '0'}</Text>
-                        <Text style={styles.address}>{cleanSpaces(guide?.direccion)}, {cleanSpaces(guide?.poblacion)}</Text>
-                    </View>
 
                     {/* Línea divisoria */}
                     <View style={styles.orderInfo}>
-                        <View style={styles.divider} />
-                        <View style={styles.row}>
-                            <Text style={styles.label}>Método de pago</Text>
-                            <Text style={styles.value}>
-                                {capitalizeFirst(value)}
-                            </Text>
+
+                        <View style={styles.storeRow}>
+                            <Image
+                                source={require("@/assets/icons/HouseIcon.png")}
+                                style={styles.storeIcon}
+                                resizeMode="contain"
+                            />
+
+                            <View style={styles.storeText}>
+                                <Text style={styles.labelTwo}>Nombre de la tienda</Text>
+                                <Text style={styles.value}>
+                                    {toUpperCase(guide?.nombreCliente)}
+                                </Text>
+                            </View>
                         </View>
-                        <View style={styles.row}>
-                            <Text style={styles.label}>N° de factura</Text>
-                            <Text style={styles.value}>{guide?.facturas[0]?.numeroFactura ?? '0'}</Text>
-                        </View>
+
                         <View style={styles.divider} />
+                        <View style={styles.storeRow}>
+                            <Image
+                                source={require("@/assets/icons/UbicationIcon.png")}
+                                style={styles.storeIcon}
+                                resizeMode="contain"
+                            />
+                            <View style={styles.storeText}>
+                                <Text style={styles.labelTwo}>Dirección</Text>
+                                <Text style={styles.direccionText}>{cleanSpaces(guide?.direccion)}, {cleanSpaces(guide?.poblacion)}</Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.divider} />
+
+                        <View style={styles.storeRow}>
+                            <Image
+                                source={require("@/assets/icons/NumberIcon.png")}
+                                style={styles.storeIcon}
+                                resizeMode="contain"
+                            />
+                            <View style={styles.storeText}>
+                                <Text style={styles.labelTwo}>Código del cliente</Text>
+                                <Text style={styles.value}>
+                                    {guide?.codigoCliente ?? '0'}
+                                </Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.divider} />
+
+                        <View style={styles.storeRow}>
+                            <Image
+                                source={require("@/assets/icons/CashIcon.png")}
+                                style={styles.storeIcon}
+                                resizeMode="contain"
+                            />
+                            <View style={styles.storeText}>
+
+                                <Text style={styles.labelTwo}>Método de pago</Text>
+                                <Text style={styles.value}>
+                                    {capitalizeFirst(value)}
+                                </Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.divider} />
+
+                        <View style={styles.storeRow}>
+                            <Image
+                                source={require("@/assets/icons/InvoiceIcon.png")}
+                                style={styles.storeIcon}
+                                resizeMode="contain"
+                            />
+                            <View style={styles.storeText}>
+                                <Text style={styles.labelTwo}>N° de factura</Text>
+                                <Text style={styles.value}>{guide?.facturas[0]?.numeroFactura ?? '0'}</Text>
+                            </View>
+
+                        </View>
+                    </View>
+                </View>
+
+                <View style={[styles.cardTwo, { minHeight: !closeButton ? undefined : 229 }]}>
+                    {/* Encabezado */}
+                    {(detailsCounterDelivery || closeButton) && (
+                        <View style={styles.cardHeader}>
+                            <View
+                                style={[
+                                    styles.statusContainer,
+                                    totalRecauder == 0 && { backgroundColor: '#DFF5E1' },
+                                ]}
+                            >
+                                <Text
+                                    style={[
+                                        styles.status,
+                                        totalRecauder == 0 && { color: '#1F9144' },
+                                    ]}
+                                >
+                                    {totalRecauder == 0 ? 'Pago realizado' : 'Pendiente'}
+                                </Text>
+                            </View>
+                        </View>
+                    )}
+
+                    {/* Línea divisoria */}
+                    <View style={styles.orderInfo}>
+
                         <View style={styles.row}>
                             <Text style={styles.label}>Subtotal</Text>
                             <Text style={styles.value}>{'$ ' + (Number(guide?.facturas[0]?.valorTotal) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
@@ -801,8 +1162,14 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                 {'$ - ' + Number(guide?.facturas[0]?.dfr).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                             </Text>
                         </View>
+                        {(detailsCounterDelivery || closeButton) && (
+                            <View style={styles.row}>
+                                <Text style={styles.label}>Productos rechazados</Text>
+                                <Text style={styles.value}>{'$ ' + Number(valueOrderCalculate).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
+                            </View>
+                        )}
                         <View style={styles.row}>
-                            <Text style={styles.labelTotal}>Total</Text>
+                            <Text style={styles.labelTotal}>Valor total</Text>
                             <Text style={[styles.value, { color: '#141D32', fontWeight: '800' }]}>
                                 {'$ ' + Number(totalValue || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                             </Text>
@@ -813,7 +1180,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         {/* Información del pedido */}
                         <View style={styles.row}>
                             <Text style={styles.label}>Valor recaudado</Text>
-                            <Text style={styles.value}>{'$ ' + Number(totalAproved || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
+                            <Text style={styles.value}>{'$ ' + Number(totalOrderPayment || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
                         </View>
 
                         <View style={styles.row}>
@@ -830,65 +1197,87 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             </Text>
                         </View>
 
-                        {totalRecauder != 0 && (
-                            <TouchableOpacity
-                                style={styles.qrButton}
-                                onPress={() => {
-                                    validateButton();
-                                    setShowDetailInvoiceQR(true);
-                                }}
-                            >
-                                <View style={styles.qrButtonContent}>
-                                    <Image
-                                        source={require('@/assets/icons/GenerateQR.png')}
-                                        style={styles.qrButtonIcon}
-                                    />
-                                    <Text style={styles.qrButtonText}>Generar QR de pago</Text>
-                                </View>
-                            </TouchableOpacity>
+                        {(detailsCounterDelivery || closeButton) && (
+                            totalRecauder != 0 ? (
+                                <TouchableOpacity
+                                    style={styles.qrButton}
+                                    onPress={() => {
+                                        const isValidButton = validateButton();
+                                        if (!isValidButton) return;
+                                        setTypePayment(true);
+                                    }}
+                                >
+                                    <View style={styles.qrButtonContent}>
+                                        <Text style={styles.qrButtonText}>Registrar pago</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            ) : (
+                                <TouchableOpacity
+                                    style={styles.qrButtonDetail}
+                                    onPress={() => { setShowPayment(true) }}
+                                >
+                                    <Text style={styles.qrButtonText}>Detalle de pagos</Text>
+                                </TouchableOpacity>
+                            )
                         )}
 
-                        <TouchableOpacity style={styles.qrButtonDetail} onPress={() => { setShowPayment(true) }}>
-                            <Text style={styles.qrButtonText}>Detalle de pagos</Text>
-                        </TouchableOpacity>
                     </View>
+
                 </View>
 
-                <View style={styles.headerContainerTwo}>
-                    <Text style={styles.headerTitleTWO}>Estado de entrega</Text>
-                </View>
+                {(!detailsCounterDelivery && !closeButton) && (
+                    <TouchableOpacity
+                        style={styles.qrButtonDetailTwo}
+                        onPress={() => {
+                            console.log('HOLA SI SE PRESIONO');
+                        }}
+                    >
+                        <View >
+                            <Image
+                                source={require('@/assets/icons/CloseRed.png')}
+                                style={styles.icon}
+                            />
+                        </View>
 
-                <View>
-                    <DeliveryStatus
-                        onStatusChange={(status) => {
-                            setShowStatusDelivery(status);
-                            // Resetear completado si cambia el estado
-                            if (status !== showStatusDelivery) {
-                                setIsDeliveryCompleted(false);
-                                setMultiplePhotos([]);
-                            }
-                        }}
-                        EntryVisible={isCountryDelivery ? true : isSelectInvocies ? true : buttonValue ? true : EntryVisible}
-                        onOpenRefusedModal={() => setShowModalRefused(true)}
-                        onUploadPhoto={() => {
-                            setUploadPhoto(true);
-                        }}
-                        isCompleted={isDeliveryCompleted}
-                        selectedStatus={showStatusDelivery}
-                        typeDerlivery={conceptDelivery?.tipoEntrega?.codigo ?? undefined}
-                        conceptDelivery={conceptDelivery}
-                    />
-                </View>
+                        <Text style={styles.qrButtonTexRed}>
+                            No pude entregar el pedido
+                        </Text>
+                    </TouchableOpacity>
+
+
+                )}
+
+                {(detailsCounterDelivery) && (
+                    <View>
+                        <DeliveryStatusAction
+                            onStatusChange={(status) => {
+                                setShowStatusDelivery(status);
+                                // Resetear completado si cambia el estado
+                                if (status !== showStatusDelivery) {
+                                    setIsDeliveryCompleted(false);
+                                    setMultiplePhotos([]);
+                                }
+                            }}
+                            EntryVisible={isCountryDelivery ? true : isSelectInvocies ? true : buttonValue ? true : EntryVisible}
+                            onOpenRefusedModal={() => setShowModalRefused(true)}
+                            onUploadPhoto={() => {
+                                setUploadPhoto(true);
+                            }}
+                            isCompleted={isDeliveryCompleted}
+                            selectedStatus={showStatusDelivery}
+                            typeDerlivery={statusDOcument ?? undefined}
+                            conceptDelivery={conceptDelivery}
+                        />
+                    </View>
+                )}
+
             </ScrollView>
-            
+
             {guide?.estado === 'Pendiente' && (
-                <View style={[styles.redBackground, { height:  heightValue ? 100: 90 }]} />
+                <View style={[styles.redBackground, { height: heightValue ? 100 : 90 }]} />
             )}
 
-            <View style={[styles.footer, {
-                marginBottom: isSmallScreen ? 0 : heightValue ? 0 : 20,
-                bottom: isSmallScreen ? 12 : heightValue ? 60 : 30
-            }]}>
+            <View style={[styles.footer, { marginBottom: 10 }]}>
                 {isSelectInvocies ? (
                     <PrimaryButton
                         title="Entregar"
@@ -897,9 +1286,24 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         width={328}
                         height={43}
                     />
+                ) : detailsCounterDelivery ? (
+                    <PrimaryButtonDetails
+                        ref={btnRef}
+                        autoReset={validateException}
+                        key="Enviar confirmación"
+                        title="Enviar confirmación"
+                        onPress={handleSubmitConfirmation}
+                        disabled={false}
+                        width={328}
+                        height={43}
+                        buttonColor={undefined}
+                        buttonColorEnd={undefined}
+                        titleColor={undefined}
+                        circleColor={undefined}
+                    />
                 ) : (
                     <>
-                        {(routeStarted && isCountryDelivery) ? (
+                        {routeStarted && isCountryDelivery ? (
                             <PrimaryButton
                                 title="Continuar"
                                 onPress={redirectContinue}
@@ -923,9 +1327,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                 circleColor={conceptDelivery ? undefined : closeButton ? "#788095" : undefined}
                             />
                         )}
-
                     </>
                 )}
+
+
+
+
             </View>
 
             <ExceptionModal
@@ -947,7 +1354,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 />
             )}
 
-            {(showDetailInvoiceQR && routeStarted) && (
+            {(showDetailInvoiceQR) && (
                 <DetailsInvoiceQR
                     data={guide}
                     onClose={() => setShowDetailInvoiceQR(false)}
@@ -961,6 +1368,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     onPressPayment={() => setRefreshingOnPress(true)}
                     onErrorPayment={() => setShowErrorQRP(true)}
                     statusTypeQR={typeQRSendWhatsApp}
+                    totalRecauder={totalRecauder}
 
                 />
             )}
@@ -985,6 +1393,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         setModalgenerateQR(false);
                     }}
                     onSendWhatsApp={handlSendWhatsApp}
+                    totalRecauder={totalRecauder}
+
                 />
             )}
 
@@ -1072,6 +1482,77 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     }}
                 />
             )}
+
+            {(typePayment) && (
+                <TypePayment
+                    title="Registrar pago"
+                    subTitle="Seleccioná el método de pago del cliente."
+                    onClose={() => {
+                        setTypePayment(false);
+                        // setAlertButton(false);
+                        // setSuccessButton(false);
+                    }}
+                    width={width}
+                    onEfecty={() => {
+                        setTypePayment(false);
+                        setTypePaymenTypeEfecty(true);
+                    }}
+                    onOthers={() => {
+                        setTypePaymenTypeOthers(true);
+                        setTypePayment(false);
+                        setTypePaymenTypeEfecty(false);
+                    }}
+                    onQr={() => {
+                        setTypePayment(false);
+                        setTypePaymenTypeEfecty(false);
+                        setShowDetailInvoiceQR(true);
+                    }}
+                />
+            )}
+
+            {typePaymentTypeEfecty && (
+                <DetailsPaymenTypeEfecty
+                    data={guide}
+                    onClose={() => setTypePaymenTypeEfecty(false)}
+                    onChangePhone={() => {
+                        setTypePaymenTypeEfecty(false);
+                        setShowChangePhone(true);
+                    }}
+                    width={width}
+                    phone={phone}
+                    onGenerateQR={handleGenerateQR}
+                    onPressPayment={(value) => {
+                        if (value) {
+                            setTypePaymentView(true);
+                            setNewValue(value)
+                            handleSubmitEfecty(value);
+                        }
+                    }}
+                    onErrorPayment={() => setShowErrorQRP(true)}
+                    statusTypeQR={typeQRSendWhatsApp}
+                    totalRecauder={totalRecauder}
+
+                />
+            )}
+            {typePaymentTypeOthers && (
+                <DetailsPaymenTypeOthers
+                    data={guide}
+                    onClose={() => setTypePaymenTypeOthers(false)}
+                    onChangePhone={() => {
+                        setTypePaymenTypeEfecty(false);
+                        setShowChangePhone(true);
+                    }}
+                    width={width}
+                    phone={phone}
+                    onGenerateQR={handleGenerateQR}
+                    onPressPayment={(value, observation) => {
+                        handleSubmitOthers(Number(value), observation)
+                    }}
+                    onErrorPayment={() => setShowErrorQRP(true)}
+                    statusTypeQR={typeQRSendWhatsApp}
+                    totalRecauder={totalRecauder}
+                />
+            )}
             {loading && <LoadingBlue />}
         </ThemedView>
     );
@@ -1089,6 +1570,14 @@ const styles = StyleSheet.create({
         width: width,
         height: height,
         backgroundColor: '#F9F9FA',
+    },
+    icon: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 8,
     },
     headerContainer: {
         width: '100%',
@@ -1126,7 +1615,7 @@ const styles = StyleSheet.create({
     },
     card: {
         width: 360,
-        minHeight: 368,
+        minHeight: 300,
         backgroundColor: '#FFFFFF',
         borderColor: '#F0F1F5',
         borderWidth: 1,
@@ -1139,41 +1628,31 @@ const styles = StyleSheet.create({
         shadowColor: "#000",
         marginTop: 1,
     },
+    cardTwo: {
+        width: 360,
+        backgroundColor: '#FFFFFF',
+        borderColor: '#F0F1F5',
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingTop: 10,
+        paddingBottom: 16,
+        paddingLeft: 12,
+        paddingRight: 12,
+        gap: 5,
+        shadowColor: "#000",
+        marginTop: 10,
+    },
     cardHeader: {
         alignItems: 'center',
         marginBottom: 4,
-    },
-    merchantInfo: {
-        alignItems: 'center',
-        marginBottom: 0,
-    },
-    merchantName: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#000',
-        textAlign: 'center',
-    },
-    documentNumber: {
-        fontFamily: 'Rubik',
-        fontWeight: '600',
-        fontSize: 12,
-        lineHeight: 16,
-        color: '#141D32',
-        textAlign: 'center',
-    },
-    address: {
-        fontFamily: 'Rubik',
-        fontWeight: '600',
-        fontSize: 12,
-        lineHeight: 16,
-        color: '#141D32',
-        textAlign: 'center',
     },
     divider: {
         height: 1,
         backgroundColor: '#E0E0E0',
         width: '100%',
         marginVertical: 2,
+        marginTop: 12,
+
     },
     dividerTwo: {
         borderBottomColor: '#E0E0E0',
@@ -1196,12 +1675,31 @@ const styles = StyleSheet.create({
         color: '#141D32',
         flex: 1,
     },
+    labelTwo: {
+        fontFamily: 'Rubik',
+        fontWeight: '400',
+        fontSize: 12,
+        color: '#788095',
+    },
     value: {
         fontFamily: 'Rubik',
         fontWeight: '600',
         fontSize: 12,
         color: '#141D32',
-        textAlign: 'right',
+        alignItems: 'flex-start',
+        overflow: 'hidden',
+    },
+    direccionText: {
+        fontFamily: 'Rubik',
+        fontWeight: '600',
+        fontSize: 12,
+        color: '#141D32',
+        alignItems: 'flex-start',
+        overflow: 'hidden',
+        flexWrap: 'wrap',
+        flexShrink: 1,
+        width: '100%',
+        maxWidth: '100%',
     },
     labelTotal: {
         fontFamily: 'Rubik',
@@ -1241,6 +1739,13 @@ const styles = StyleSheet.create({
         color: '#164194',
         textAlign: 'center',
     },
+    qrButtonTexRed: {
+        fontFamily: 'Rubik',
+        fontWeight: '700',
+        fontSize: 12,
+        color: '#C62828',
+        textAlign: 'center',
+    },
     qrButtonDetail: {
         height: 32,
         backgroundColor: '#fffffffc',
@@ -1249,6 +1754,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 12,
     },
+    qrButtonDetailTwo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        height: 32,
+        borderRadius: 16,
+        marginTop: 12,
+    },
+
     footer: {
         position: 'absolute',
         bottom: 45,
@@ -1297,5 +1810,22 @@ const styles = StyleSheet.create({
         backgroundColor: "#F9F9FA",
         zIndex: 0,
     },
+    storeRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    storeIcon: {
+        width: 24,
+        height: 24,
+    },
+    storeText: {
+        width: '100%',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        flexWrap: 'wrap',
+        flexShrink: 1,
+    },
+
 });
 

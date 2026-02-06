@@ -18,6 +18,7 @@ interface Props {
     styles: any;
     formatNumber: (value: number) => string;
     Row: any;
+    totalRecauder?: number;
 }
 
 // Decode base64 to text
@@ -43,6 +44,7 @@ export default function RenderQRView({
     styles,
     formatNumber,
     Row,
+    totalRecauder
 }: Props) {
     const [isQRGenerating, setIsQRGenerating] = useState(false);
     const [localQRData, setLocalQRData] = useState<string | undefined>(qrData);
@@ -289,7 +291,7 @@ export default function RenderQRView({
             <View style={styles.box}>
                 <Row label="N° de factura" value={dataInvoice.numeroFactura} />
                 <Row label="Valor total" value={`$${formatNumber(dataInvoice.valorTotal)}`} />
-                <Row bold label="Valor a pagar" value={`$${formatNumber(dataInvoice.valorRecaudar)}`} />
+                <Row bold label="Valor a pagar" value={`$${formatNumber(Number(totalRecauder))}`} />
             </View>
 
             {/* Teléfono */}

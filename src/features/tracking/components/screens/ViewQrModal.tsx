@@ -22,6 +22,7 @@ interface ViewQrModalQRProps {
     qrType?: string;
     onSendWhatsApp?: () => void;
     onChangeQRType?: () => void;
+    totalRecauder?: number;
 }
 
 interface Invoice {
@@ -45,7 +46,8 @@ export function ViewQrModal({
     qrData,
     qrType = 'Aplicación Bancaria',
     onSendWhatsApp,
-    onChangeQRType
+    onChangeQRType,
+    totalRecauder
 }: ViewQrModalQRProps) {
     const [loading, setLoading] = useState(false);
     const [currentView, setCurrentView] = useState<ViewType>('main');
@@ -64,7 +66,7 @@ export function ViewQrModal({
 
     
     const condPago = dataInvoice?.condPago == TypeConPagoEnum.TAT;
-    
+
     const handleSendWhatsApp = () => {
         try {
             
@@ -125,6 +127,8 @@ export function ViewQrModal({
                     styles={styles}
                     formatNumber={formatNumber}
                     Row={Row}
+                    totalRecauder={totalRecauder}
+
                 />
             </View>
 

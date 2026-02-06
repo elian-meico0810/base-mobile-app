@@ -1,6 +1,6 @@
 import { API_ROUTES } from "@/src/constants/apiRoutes";
 import { authApi, authDevApi } from "@/src/features/auth/infrastructure/authApi";
-import { ConciliationRouteResponse, PaymentsByInvoicePorps, RuteInitPorps } from "../../domain/details/DetailsGuide";
+import { NoveltyRefusedProps, PaymentsByInvoicePorps, ReentryOTPProps, ReportNoveltyFileArrayProps, RuteInitPorps, SendOrderArrayProps, SendOrderProps, SendOTOPProps, ValidateCodeOTPProps } from "../../domain/details/DetailsGuide";
 import { DetailsRepository } from "../../domain/details/DetailsRepository";
 
 export const detailsRepositoryImpl: DetailsRepository = {
@@ -11,57 +11,8 @@ export const detailsRepositoryImpl: DetailsRepository = {
           Authorization: `Bearer ${token}`,
         },
       });
+
       return data
-      // return {
-      //   statusCode: 200,
-      //   data: [
-      //     {
-      //       idDireccion: 1,
-      //       direccion: "Calle 1 #101",
-      //       poblacion: "Ciudad 1",
-      //       codigoCliente: "C1001",
-      //       nombreCliente: "Cliente 1",
-      //       count: 2,
-      //       latitud: "4.601234",
-      //       longitud: "-74.081234",
-      //       estado: "Pendiente",
-      //       facturas: [
-      //         { numeroFactura: "F1-1", valorTotal: 50000, dfr: 5000, valorRecaudar: 45000 }
-      //       ]
-      //     },
-      //     {
-      //       idDireccion: 2,
-      //       direccion: "Calle 2 #102",
-      //       poblacion: "Ciudad 2",
-      //       codigoCliente: "C1002",
-      //       nombreCliente: "Cliente 2",
-      //       count: 3,
-      //       latitud: "4.602345",
-      //       longitud: "-74.082345",
-      //       estado: "Cerrada",
-      //       facturas: [
-      //         { numeroFactura: "F2-1", valorTotal: 75000, dfr: 5000, valorRecaudar: 70000 }
-      //       ]
-      //     },
-      //     {
-      //       idDireccion: 3,
-      //       direccion: "Calle 3 #103",
-      //       poblacion: "Ciudad 3",
-      //       codigoCliente: "C1003",
-      //       nombreCliente: "Cliente 3",
-      //       count: 1,
-      //       latitud: "4.603456",
-      //       longitud: "-74.083456",
-      //       estado: "En Progreso",
-      //       facturas: [
-      //         { numeroFactura: "F3-1", valorTotal: 60000, dfr: 10000, valorRecaudar: 50000 }
-      //       ]
-      //     },
-      //     // ... continuar con los registros hasta el 20
-      //   ],
-      //   message: null,
-      //   success: true
-      // };
     } catch (error) {
       throw error;
     }
@@ -75,17 +26,7 @@ export const detailsRepositoryImpl: DetailsRepository = {
           "Content-Type": "application/json",
         },
       });
-      //   {
-      // "statusCode": 200,
-      // "data": {
-      //     "codigoGuia": "0",
-      //     "logId": 15,
-      //     "rutaId": 4,
-      //     "estadoRuta": "En curso"
-      // },
-      // "message": "Inicio de ruta registrado exitosamente",
-      // "success": true
-      // }
+
       return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {
       throw error;
@@ -100,6 +41,7 @@ export const detailsRepositoryImpl: DetailsRepository = {
           "Content-Type": "application/json",
         },
       });
+
       return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {
       throw error;
@@ -113,8 +55,8 @@ export const detailsRepositoryImpl: DetailsRepository = {
           Authorization: `Bearer ${token}`,
         },
       });
-      return data
 
+      return data
     } catch (error) {
       throw error;
     }
@@ -122,11 +64,137 @@ export const detailsRepositoryImpl: DetailsRepository = {
 
   async paymentsByGuide(data: PaymentsByInvoicePorps, key: string) {
     try {
-      const response = await authDevApi.post(`${API_ROUTES.PAYMENT_SUCCESS_FUL_BY_GUIDE}`,data, {
+      const response = await authDevApi.post(`${API_ROUTES.PAYMENT_SUCCESS_FUL_BY_GUIDE}`, data, {
         headers: {
           "api-key": key
         },
       });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async listPorductData(token: string, order: number) {
+    try {
+      const response = await authApi.get(`${API_ROUTES.GET_ORDER}${order}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async tokenPorducts(token: string) {
+    try {
+      const response = await authApi.get(`${API_ROUTES.GET_TOKEN_PRODUCTS}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async sendOrder(data: SendOrderProps, detalleId: string, token: string) {
+    try {
+      const response = await authApi.post(`${API_ROUTES.SENT_ORRDE_ORDER}${detalleId}/validar/`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async noveltyOrder(data: NoveltyRefusedProps[], token: string) {
+    try {
+      const response = await authApi.post(`${API_ROUTES.SEND_NOVELTY_ORDER}`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async sendOrderArray(data: SendOrderArrayProps[], token: string) {
+    try {
+      const response = await authApi.post(`${API_ROUTES.SEND_ORRDE_ARRAY}`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async reportNoveltyFileArray(data: ReportNoveltyFileArrayProps, token: string) {
+    try {
+      const response = await authApi.post(`${API_ROUTES.SEND_REPORT_NOLVETY_ARRAY}`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async novletyOrderByParams(orderId: number, token: string) {
+    try {
+      const response = await authApi.get(`${API_ROUTES.GET_NOVELTY_ORDER_BY_PARAMS}${orderId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async listTypeDetails(typeDetails: string, token: string) {
+    try {
+      const response = await authApi.get(`${API_ROUTES.GET_TYPE_DETAILS_BY_PARAMS}?tipo=${typeDetails}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async sendOTP(data: SendOTOPProps, token: string) {
+    try {
+      const response = await authApi.post(`${API_ROUTES.CREATE_OTP}`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {
       throw error;
@@ -171,5 +239,47 @@ export const detailsRepositoryImpl: DetailsRepository = {
         otros: Number(d.concepto?.otros ?? 0),
       },
     };
+  },
+
+  async reentryOTP(data: ReentryOTPProps, token: string) {
+    try {
+      const response = await authApi.post(`${API_ROUTES.REENTRY_OTP}`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error: any) {
+      return {
+        statusCode: error.response?.status ?? 500,
+        message:
+          error.response?.data?.message ??
+          "Ocurrió un error inesperado",
+        success: false,
+        data: null,
+      };
+    }
+  },
+
+  async validateCodeOTP(data: ValidateCodeOTPProps, token: string) {
+    try {
+      const response = await authApi.post(`${API_ROUTES.VALIDATE_OTP}`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error: any) {
+      return {
+        statusCode: error.response?.status ?? 500,
+        message:
+          error.response?.data?.message ??
+          "Ocurrió un error inesperado",
+        success: false,
+        data: null,
+      };
+    }
   },
 };

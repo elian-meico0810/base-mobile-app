@@ -1,0 +1,371 @@
+import { PrimaryButton } from "@/components/buttons/PrimaryButton";
+import { ExceptionModal } from "@/components/generals/ExecptionModal";
+import { LoadingBlue } from "@/components/generals/LoadingBlue";
+import { Row } from "@/components/generals/Row";
+import { formatNumber } from "@/src/utils/uitls";
+import { useEffect, useState } from "react";
+import {
+    Animated,
+    Keyboard,
+    Platform,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from "react-native";
+import { GuideDetails } from "../../domain/details/DetailsGuide";
+
+interface DetailsPaymenTypeOthersProps {
+    data?: GuideDetails;
+    onClose: () => void;
+    onChangePhone?: () => void;
+    disabled?: boolean;
+    width?: number;
+    height?: number;
+    phone?: string;
+    onGenerateQR?: (qrType: string, qrBase64?: string) => void;
+    onPressPayment: (value: number, observation: string) => void;
+    onErrorPayment?: () => void;
+    statusTypeQR?: boolean;
+    totalRecauder?: number;
+}
+
+interface Invoice {
+    dfr: number;
+    numeroFactura: string;
+    condPago: string;
+    valorRecaudar: number;
+    valorTotal: number;
+}
+
+export function DetailsPaymenTypeOthers({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone, onGenerateQR, onPressPayment, onErrorPayment, statusTypeQR, totalRecauder}: DetailsPaymenTypeOthersProps) {
+    const [loading, setLoading] = useState(false);
+    const [modalTitle, setModalTitle] = useState("");
+    const [modalMessage, setModalMessage] = useState("");
+    const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
+    const [modalVisible, setModalVisible] = useState(false);
+    const [valueSet, setValue] = useState('');
+    const [secondInput, setSecondInput] = useState('');
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+    const dataInvoice: Invoice = data?.facturas?.[0] ?? {
+        dfr: 0,
+        numeroFactura: "",
+        valorRecaudar: 0,
+        valorTotal: 0,
+        condPago: "",
+    };
+    const isValidCashValue = Number(valueSet) > 0 && secondInput != '';
+
+    useEffect(() => {
+        const keyboardDidShowListener = Keyboard.addListener(
+            Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+            (e) => {
+                setKeyboardHeight(e.endCoordinates.height);
+            }
+        );
+
+        const keyboardDidHideListener = Keyboard.addListener(
+            Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+            () => {
+                setKeyboardHeight(0);
+            }
+        );
+
+        return () => {
+            keyboardDidShowListener.remove();
+            keyboardDidHideListener.remove();
+        };
+    }, []);
+
+    const paymentGateway = async () => {
+        try {
+            onPressPayment?.(Number(valueSet), String(secondInput))
+            if (isValidCashValue) {
+                onClose?.();
+            }
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const formatPhoneNumber = (number: string) => {
+        if (!number) return '';
+
+        const num = parseInt(number, 10);
+        if (isNaN(num)) return '';
+
+        return num.toLocaleString('es-ES');
+    };
+
+    const formatCOP = (value: string | number) => {
+        if (!value) return '';
+
+        const number = Number(value);
+        if (isNaN(number)) return '';
+
+        return number.toLocaleString('es-CO', {
+            style: 'currency',
+            currency: 'COP',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2,
+        });
+    };
+
+    return (
+        <View style={styles.overlay} pointerEvents="box-none">
+            {/* FONDO — SOLO CAPTURA TOQUES FUERA */}
+            <TouchableOpacity
+                style={styles.backgroundOverlay}
+                onPress={onClose}
+                activeOpacity={1}
+            />
+
+            {/* CONTENIDO DEL MODAL CON ANIMACIÓN */}
+            <Animated.View
+                style={[
+                    styles.container,
+                    {
+                        width: width,
+                        transform: [{
+                            translateY: keyboardHeight > 0 ? -keyboardHeight : 0
+                        }]
+                    }
+                ]}
+                pointerEvents="box-none"
+            >
+                {/* BOTÓN X */}
+                <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                    <Text style={styles.closeText}>X</Text>
+                </TouchableOpacity>
+
+                <Text style={styles.title}>Otros</Text>
+                <Text style={styles.phoneDescription}>
+                    Ingresa la cantidad a justificar en este pedido..
+                </Text>
+
+                <View style={styles.box}>
+                    <Row label="N° de factura" value={dataInvoice.numeroFactura} />
+                    <Row bold label="Valor a pagar" value={`$${formatNumber(Number(totalRecauder))}`} />
+                </View>
+
+                {/* Primer input - Cantidad recibida */}
+                <View style={styles.phoneContainer}>
+                    <View style={styles.phoneRow}>
+                        <TextInput
+                            style={styles.phoneInput}
+                            keyboardType="number-pad"
+                            value={formatCOP(valueSet)}
+                            onChangeText={(text) => {
+                                const onlyNumbers = text.replace(/[^0-9]/g, '');
+                                setValue(onlyNumbers);
+                            }}
+                            editable={true}
+                        />
+
+                    </View>
+                </View>
+
+                {/* Segundo input - Observaciones (más largo) */}
+                <View style={styles.phoneContainer}>
+                    <Text style={styles.inputLabel}>Descripción del pago</Text>
+                    <View style={styles.phoneRowTwo}>
+                        <TextInput
+                            style={styles.phoneInputTwo}
+                            keyboardType="default"
+                            value={secondInput}
+                            onChangeText={setSecondInput}
+                            editable={true}
+                            placeholder="Describe como realizo el pago el cliente"
+                            placeholderTextColor="#DDDFE8"
+                            multiline={true}
+                            numberOfLines={5}
+                            textAlignVertical="top"
+                            maxLength={500}
+                        />
+                        {secondInput.length > 0 && (
+                            <Text style={styles.charCount}>
+                                {secondInput.length}/500
+                            </Text>
+                        )}
+                    </View>
+                </View>
+
+                <View style={styles.buttonsContainer}>
+                    <PrimaryButton
+                        title="Confirmar"
+                        onPress={paymentGateway}
+                        disabled={!isValidCashValue}
+                        width={350}
+                        height={43}
+                    />
+                </View>
+
+                <ExceptionModal
+                    visible={modalVisible}
+                    onClose={() => setModalVisible(false)}
+                    title={modalTitle}
+                    message={modalMessage}
+                    buttonLabel={modalButtonLabel}
+                />
+            </Animated.View>
+
+            {loading && <LoadingBlue />}
+        </View>
+    );
+}
+
+const styles = StyleSheet.create({
+    overlay: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: "flex-end",
+        alignItems: "center",
+        zIndex: 999,
+    },
+    backgroundOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: "rgba(0,0,0,0.5)",
+        zIndex: 1,
+    },
+    container: {
+        height: 520, // Más alto para acomodar el input grande
+        backgroundColor: "#F9F9FA",
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        paddingTop: 16,
+        paddingHorizontal: 16,
+        paddingBottom: 24,
+        zIndex: 2,
+    },
+    closeButton: {
+        position: "absolute",
+        right: 16,
+        top: 16,
+        zIndex: 3,
+    },
+    closeText: {
+        fontSize: 16,
+        color: "#788095",
+        fontWeight: "bold",
+    },
+    title: {
+        fontFamily: "Rubik",
+        fontWeight: "800",
+        fontSize: 20,
+        color: "#141D32",
+        marginBottom: 4,
+    },
+    phoneDescription: {
+        fontFamily: "Rubik",
+        fontWeight: "600",
+        fontSize: 12,
+        color: "#788095",
+        marginBottom: 16,
+    },
+    box: {
+        backgroundColor: "#FFFFFF",
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 20,
+        gap: 8,
+        borderWidth: 1,
+        borderColor: "#F0F1F5",
+    },
+    phoneContainer: {
+        marginBottom: 16,
+    },
+    inputLabel: {
+        fontFamily: "Rubik",
+        fontWeight: "400",
+        fontSize: 12,
+        color: "#788095",
+        marginBottom: 8,
+    },
+    phoneRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#FFFFFF",
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: "#E0E0E0",
+        paddingHorizontal: 16,
+        height: 48,
+    },
+    currencySymbol: {
+        fontFamily: "Rubik",
+        fontWeight: "600",
+        fontSize: 16,
+        color: "#141D32",
+        marginRight: 8,
+    },
+    phoneInput: {
+        flex: 1,
+        fontFamily: "Rubik",
+        fontWeight: "600",
+        fontSize: 16,
+        color: "#141D32",
+        height: '100%',
+    },
+    phoneRowTwo: {
+        backgroundColor: "#FFFFFF",
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: "#E0E0E0",
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        height: 100,
+        position: 'relative',
+    },
+    phoneInputTwo: {
+        flex: 1,
+        fontFamily: "Rubik",
+        fontWeight: "400",
+        fontSize: 14,
+        color: "#141D32",
+        textAlignVertical: 'top',
+        lineHeight: 20,
+        paddingTop: 0,
+        paddingBottom: 20,
+    },
+    charCount: {
+        position: 'absolute',
+        bottom: 8,
+        right: 16,
+        fontFamily: "Rubik",
+        fontWeight: "400",
+        fontSize: 12,
+        color: "#788095",
+    },
+    buttonsContainer: {
+        marginTop: 8,
+        gap: 12,
+    },
+    button: {
+        height: 48,
+        borderWidth: 1,
+        borderColor: "#164194",
+        borderRadius: 30,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    buttonText: {
+        color: "#164194",
+        fontWeight: "700",
+    },
+    QrTitle: {
+        fontFamily: "Rubik",
+        fontWeight: "800",
+        fontSize: 20,
+        color: "#141D32",
+        top: 10,
+    },
+});

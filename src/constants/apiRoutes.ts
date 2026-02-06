@@ -12,6 +12,7 @@ export const API_ROUTES = {
   REPORT_NOTIFICTION_WHATSAPP_TAT: "entregas/QR-bancolombia-whatsapp/",
   GET_ORDER: "pedidos/",
   GET_TOKEN_PRODUCTS: "productos/sas-token/",
+  GET_MEICOTRACK_TOKEN_PRODUCTS: "productos/meicotrack-token/",
   SENT_ORRDE_ORDER: "pedidos/detalle/",
   SEND_NOVELTY_ORDER: "novedades/registrar/",
   GET_NOVELTY_ORDER_BY_PARAMS: "novedades/novedad-pedido/",
@@ -30,6 +31,11 @@ export const API_ROUTES = {
   REPORT_NOTIFICTION_WHATSAPP: "pagos/transportista_enviar_linkpago_whatsapp/",
   PAYMENT_SUCCESS_FUL: "facturas/pagos/",
   PAYMENT_SUCCESS_FUL_BY_GUIDE: "transportista/obtener-pagos-por-guia/",
+  // Consignaciones
+  CONSIGNACIONES_RESUMEN: "consignaciones/resumen/",
+  CONSIGNACIONES_REGISTRAR: "consignaciones/registrar/",
+  CONSIGNACIONES_EDITAR: "consignaciones/editar/",
+  CONSIGNACIONES_ELIMINAR: "consignaciones/eliminar/",
 };
 
 

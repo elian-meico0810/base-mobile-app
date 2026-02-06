@@ -104,6 +104,20 @@ export const detailsRepositoryImpl: DetailsRepository = {
     }
   },
 
+  async tokenPorductsMeicoTrack(token: string) {
+    try {
+      const response = await authApi.get(`${API_ROUTES.GET_MEICOTRACK_TOKEN_PRODUCTS}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   async sendOrder(data: SendOrderProps, detalleId: string, token: string) {
     try {
       const response = await authApi.post(`${API_ROUTES.SENT_ORRDE_ORDER}${detalleId}/validar/`, data, {

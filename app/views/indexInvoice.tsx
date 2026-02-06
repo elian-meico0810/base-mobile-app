@@ -1,5 +1,6 @@
 import { TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import { GuideDetails, PaymentsByInvoice } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { ConciliationForm } from '@/src/ui/tracking/conciliation/ConciliationForm';
 import { ViewSelectAllAnticipe } from '@/src/ui/tracking/invoices/anticipe-and-count/ViewSelectAllAnticipe';
 import { ViewSelectInvoice as AnticipateAndCountViewSelectInvoice } from '@/src/ui/tracking/invoices/anticipe-and-count/ViewSelectInvoice';
 import { InfoInvoiceForm } from '@/src/ui/tracking/invoices/counter-delivery/InfoInvoiceForm';
@@ -86,6 +87,14 @@ export default function IndexInvoiceScreen() {
                             detailsCounterDelivery={detailsCounterDelivery ? true : false}
 
                         />
+                        /*
+                        <ConciliationForm
+                            initialGuide={String(numberGuide)}
+                            token={token || ""}
+                            onSubmit={async ({ guide, token }) => {
+                                console.log("submit", guide, token);
+                            }}
+                        />*/
                     );
                 }
 

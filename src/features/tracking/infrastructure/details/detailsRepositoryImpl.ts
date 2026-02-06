@@ -201,6 +201,46 @@ export const detailsRepositoryImpl: DetailsRepository = {
     }
   },
 
+  async getConciliationRoute(
+    guide: string,
+    token: string,
+  ): Promise<ConciliationRouteResponse> {
+    const response = await authApi.post(
+      API_ROUTES.GET_CONCILIATION_ROUTE,
+      { codigoGuia: guide },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    const raw =
+      typeof response.data === "string"
+        ? JSON.parse(response.data)
+        : response.data;
+
+    if (!raw.success || raw.statusCode !== 200) {
+      throw new Error(raw.message || "Error conciliación");
+    }
+
+    const d = raw.data;
+
+    return {
+      valor_total: Number(d.valor_total ?? 0),
+      valor_recaudado: Number(d.valor_recaudado ?? 0),
+      total_rechazado: Number(d.total_rechazado ?? 0),
+      recaudo_completo: Boolean(d.recaudo_completo),
+      concepto: {
+        efectivo: Number(d.concepto?.efectivo ?? 0),
+        qr_link: Number(d.concepto?.qr_link ?? 0),
+        consignaciones: Number(d.concepto?.consignaciones ?? 0),
+        otros: Number(d.concepto?.otros ?? 0),
+      },
+    };
+  },
+
   async reentryOTP(data: ReentryOTPProps, token: string) {
     try {
       const response = await authApi.post(`${API_ROUTES.REENTRY_OTP}`, data, {

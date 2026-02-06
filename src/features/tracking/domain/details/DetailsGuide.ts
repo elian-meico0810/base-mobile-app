@@ -64,6 +64,19 @@ export interface PaymentsByInvoice {
   puede_entregar_todo: boolean,
 }
 
+export interface ConciliationRouteResponse {
+  valor_total: number;
+  valor_recaudado: number;
+  total_rechazado: number;
+  recaudo_completo: boolean;
+  concepto: {
+    efectivo: number;
+    qr_link: number;
+    consignaciones: number;
+    otros: number;
+  };
+}
+
 export interface ConditionPago {
   id: number;
   nombre: string;

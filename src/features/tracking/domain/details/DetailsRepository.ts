@@ -7,6 +7,7 @@ export interface DetailsRepository {
   closeRouteInit: (data: RuteInitPorps, token: string) => Promise<any>;
   listRouteByCodeGuide: (guide: number, token: string) => Promise<ApiResponse<RuteByCodeGuide>>;
   paymentsByGuide: (data: PaymentsByInvoicePorps, token: string) => Promise<any>;
+  getConciliationRoute(guide: string, token: string): Promise<any>;
   listPorductData: (token: string, order: number) => Promise<ApiResponse<Document>>;
   tokenPorducts: (token: string) => Promise<ApiResponse<TokenProducts>>;
   sendOrder: (data: SendOrderProps, detalleId: string, token: string) => Promise<any>;

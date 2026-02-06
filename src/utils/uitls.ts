@@ -62,11 +62,15 @@ export const getMimeType = (uri: string): string => {
 };
 
 export const createDataUri = (base64: string, uri: string): string => {
+    if (base64.startsWith("data:")) {
+        return base64;
+    }
     const mimeType = getMimeType(uri);
     return `data:${mimeType};base64,${base64}`;
 };
 
-export function formatNumber(num: number) {
+export function formatNumber(num: number | undefined | null) {
+    if (num === undefined || num === null) return "0";
     return num.toLocaleString("es-CO");
 }
 

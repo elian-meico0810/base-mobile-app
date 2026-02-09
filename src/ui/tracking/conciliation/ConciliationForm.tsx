@@ -170,7 +170,7 @@ export function ConciliationForm({
         style={[
           styles.buttonContainer,
           {
-            paddingBottom: isSmallScreen ? 12 : heightValue ? 60 : 30,
+            paddingBottom: isSmallScreen ? 12 : heightValue ? 60 : 50,
           },
         ]}
       >

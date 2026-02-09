@@ -1,5 +1,5 @@
 import { ApiResponse } from "@/src/features/auth/domain/ApiResponse";
-import { Cause, Document, GuideDetails, NoveltyRefusedProps, NovletyOrder, PaymentsByInvoicePorps, ReentryOTPProps, ReportNoveltyFileArrayProps, RuteByCodeGuide, RuteInitPorps, SendOrderArrayProps, SendOrderProps, SendOTOPProps, TokenProducts, ValidateCodeOTPProps } from "./DetailsGuide";
+import { Cause, Document, GuideDetails, NoveltyRefusedProps, NovletyOrder, PaymentsByInvoicePorps, ReentryOTPProps, ReportNoveltyFileArrayProps, RuteByCodeGuide, RuteInitPorps, SendOrderArrayProps, SendOrderProps, SendOTOPProps, TokenProducts, ValidateCediQRResponse, ValidateCodeOTPProps } from "./DetailsGuide";
 
 export interface DetailsRepository {
   listGuide: (guide: number, token: string) => Promise<ApiResponse<GuideDetails>>;
@@ -19,4 +19,5 @@ export interface DetailsRepository {
   sendOTP: (data: SendOTOPProps, token: string) => Promise<any>;
   reentryOTP: (data: ReentryOTPProps, token: string) => Promise<any>;
   validateCodeOTP: (data: ValidateCodeOTPProps, token: string) => Promise<any>;
+  validateCediQR: (qr: string, token: string) => Promise<ValidateCediQRResponse>;
 }

@@ -4,14 +4,16 @@ import { DetailsGudes } from '@/components/generals/DetailsGudes';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { GuideCard } from '@/components/generals/GuideCard';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
+import { ScanQRCard } from '@/components/generals/ScanQRCard';
 import { TodayDeliveries } from '@/components/generals/TodayDeliveries';
 import { SearchInput } from '@/components/inputs/SearchInput';
 import { UploadPhotoItem } from '@/components/photo/uploadPhotoItem';
 import { GuideCardSkeleton } from '@/components/skeleton/GuideCardSkeleton';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
-import { StatusInvoice, StatusInvoiceID, TypeConPagoEnum, TypeInvoiceEnum } from '@/src/constants/GuideStates';
+import { GuideState, StatusInvoice, StatusInvoiceID, TypeConPagoEnum, TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import { ConsignmentData } from '@/src/features/detailsInvoice/components/ConsignmentData';
+import { QRScanner } from '@/src/features/detailsInvoice/components/qrScanner';
 import { GuideDetails, PaymentsByInvoice } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { getDeviceDateTime, heightCaldulate } from '@/src/utils/uitls';
@@ -23,7 +25,8 @@ import {
     AppState,
     AppStateStatus,
     Dimensions,
-    Image, ScrollView, StyleSheet,
+    Image,
+    ScrollView, StyleSheet,
     Text,
     TouchableOpacity,
     View
@@ -75,6 +78,22 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const isSmallScreen = height <= 780;
 
     const heightValue = heightCaldulate();
+
+    const [routeCompleted, setRouteCompleted] = useState(false);
+    const [showScanner, setShowScanner] = useState(false);
+    const [qrToken, setQrToken] = useState<string | null>(null);
+
+    useEffect(() => {
+        const totalVisits = data.length;
+
+        const completedVisits = data.filter(
+            d => d.estado === GuideState.Cerrada
+        ).length;
+
+        const completed = totalVisits > 0 && completedVisits === totalVisits;
+
+        setRouteCompleted(completed);
+    }, [data]);
 
     useEffect(() => {
         const fetchToken = async () => {
@@ -425,7 +444,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                 routeStarted={routeStarted}
                 statusName={statusValue}
             />
-            
+
             {showSuccess && (
                 <TopSuccessAlert
                     visible={showSuccess}
@@ -451,6 +470,9 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                                 waitingForPermission={waitingForPermission || !checkUbication}
                                 dataResult={dataResult}
                             />
+                            {routeCompleted && (
+                                <ScanQRCard onScan={() => setShowScanner(true)} />
+                            )}
                         </View>
                         {((data.length != 0 && hasValidInvoice)) && (
                             <TouchableOpacity style={styles.cardConsignment} onPress={() => {
@@ -613,7 +635,41 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                 </View>
             </View>
             {loading && <LoadingBlue />}
+            <QRScanner
+                visible={showScanner}
+                onClose={() => setShowScanner(false)}
+                onRead={async (qrToken) => {
+                    try {
+                        setShowScanner(false);
+                        console.log(qrToken);
 
+                        await detailsRepositoryImpl.validateCediQR(
+                            qrToken,
+                            tokenUser || ""
+                        );
+
+                        router.push({
+                            pathname: "/views/conciliation",
+                            params: {
+                                guide,
+                                token: tokenUser,
+                            },
+                        });
+
+                    } catch (e) {
+                        setModalTitle("¡Atención!");
+                        setModalMessage("El QR escaneado no es válido");
+                        setModalVisible(true);
+                    }
+                }}
+            />
+            <ExceptionModal
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                title={modalTitle}
+                message={modalMessage}
+                buttonLabel={modalButtonLabel}
+            />
         </ThemedView>
     );
 }

@@ -1,6 +1,6 @@
 import { API_ROUTES } from "@/src/constants/apiRoutes";
 import { authApi, authDevApi } from "@/src/features/auth/infrastructure/authApi";
-import { NoveltyRefusedProps, PaymentsByInvoicePorps, ReentryOTPProps, ReportNoveltyFileArrayProps, RuteInitPorps, SendOrderArrayProps, SendOrderProps, SendOTOPProps, ValidateCodeOTPProps } from "../../domain/details/DetailsGuide";
+import { ConciliationRouteResponse, NoveltyRefusedProps, PaymentsByInvoicePorps, ReentryOTPProps, ReportNoveltyFileArrayProps, RuteInitPorps, SendOrderArrayProps, SendOrderProps, SendOTOPProps, ValidateCediQRResponse, ValidateCodeOTPProps } from "../../domain/details/DetailsGuide";
 import { DetailsRepository } from "../../domain/details/DetailsRepository";
 
 export const detailsRepositoryImpl: DetailsRepository = {
@@ -296,4 +296,28 @@ export const detailsRepositoryImpl: DetailsRepository = {
       };
     }
   },
+
+  async validateCediQR(qr: string, token: string): Promise<ValidateCediQRResponse> {
+    const response = await authApi.post(`${API_ROUTES.VALIDATE_QR_CEDI}`,
+      { qr },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const raw =
+      typeof response.data === "string"
+        ? JSON.parse(response.data)
+        : response.data;
+
+    if (!raw.success || raw.statusCode !== 200) {
+      throw new Error(raw.message || "Código QR no válido");
+    }
+
+    return raw.data;
+  }
+
 };

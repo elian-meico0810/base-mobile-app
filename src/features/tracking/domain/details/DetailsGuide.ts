@@ -213,3 +213,11 @@ export interface ValidateCodeOTPProps {
   idDireccion: number;
   codigoOtp: string;
 }
+export interface ValidateCediQRResponse {
+  cedi: {
+    id: number;
+    nombre: string;
+    codigo: string;
+  };
+  habilitarCuadreRuta: boolean;
+}

@@ -62,6 +62,19 @@ export function ConciliationForm({
     }
   };
 
+  const handelClick = async () => {
+    try {
+
+      console.log("Finalizar ruta")
+
+    } catch (e) {
+      console.log("Error conciliation:", e);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const isSmallScreen = height <= 780;
   const heightValue = heightCaldulate();
 
@@ -176,7 +189,12 @@ export function ConciliationForm({
       >
         <PrimaryButton
           title="Finalizar Ruta"
-          onPress={() => console.log("Finalizar ruta")}
+          onPress={() => {
+            if (isSuccess) {
+              handelClick();
+            }
+          }
+          }
           disabled={!isSuccess}
           width={328}
           height={43}

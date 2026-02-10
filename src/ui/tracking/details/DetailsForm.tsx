@@ -470,7 +470,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                                 waitingForPermission={waitingForPermission || !checkUbication}
                                 dataResult={dataResult}
                             />
-                            {(//routeCompleted && (
+                            {routeCompleted && (
                                 <ScanQRCard onScan={() => setShowScanner(true)} />
                             )}
                         </View>

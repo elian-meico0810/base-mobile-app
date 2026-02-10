@@ -10,6 +10,7 @@ export interface DetailsRepository {
   getConciliationRoute(guide: string, token: string): Promise<any>;
   listPorductData: (token: string, order: number) => Promise<ApiResponse<Document>>;
   tokenPorducts: (token: string) => Promise<ApiResponse<TokenProducts>>;
+  tokenPorductsMeicoTrack: (token: string) => Promise<ApiResponse<TokenProducts>>;
   sendOrder: (data: SendOrderProps, detalleId: string, token: string) => Promise<any>;
   noveltyOrder: (data: NoveltyRefusedProps[], token: string) => Promise<any>;
   sendOrderArray: (data: SendOrderArrayProps[], token: string) => Promise<any>;

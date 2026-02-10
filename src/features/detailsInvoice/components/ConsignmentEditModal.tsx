@@ -1,8 +1,9 @@
-// En ConsignmentData.tsx - Con funcionalidad de formato en el input
 import { OutlineButton } from "@/components/buttons/OutlineButton";
 import { PrimaryButton } from "@/components/buttons/PrimaryButton";
 import { SecondaryButtonCancel } from "@/components/buttons/SecondaryButtonCancel";
+import { Consignment } from "@/src/features/tracking/domain/consignments/Consignment";
 import { Ionicons } from "@expo/vector-icons";
+import * as SecureStore from "expo-secure-store";
 import { useEffect, useState } from "react";
 import {
     ActivityIndicator,
@@ -24,54 +25,76 @@ interface EvidencePhoto {
     base64?: string;
 }
 
-interface ConsignmentDataProps {
-    title: string;
-    subTitle: string;
-    onClose?: () => void;
-    width?: number;
+interface ConsignmentEditModalProps {
     visible: boolean;
-    titleTwo?: string;
+    onClose: () => void;
+    consignment: Consignment | null;
+    onSave: (amount: string, evidences: EvidencePhoto[]) => void;
+    isLoading?: boolean;
+    width?: number;
     onUploadFile?: () => void;
     evidencePhotos?: EvidencePhoto[];
-    onValue?: (value: string) => void;
-    value?: string;
-    onConfirmation?: () => void;
-    isLoading?: boolean;
 }
 
-export function ConsignmentData({
-    title,
-    subTitle,
-    onClose,
-    width = 360,
+export function ConsignmentEditModal({
     visible,
-    titleTwo,
+    onClose,
+    consignment,
+    onSave,
+    isLoading = false,
+    width = 360,
     onUploadFile,
-    evidencePhotos = [],
-    onValue,
-    value,
-    onConfirmation,
-    isLoading: externalLoading = false
-}: ConsignmentDataProps) {
-    const [internalLoading, setInternalLoading] = useState(false);
-    const isLoading = internalLoading || externalLoading;
+    evidencePhotos = []
+}: ConsignmentEditModalProps) {
     const [amount, setAmount] = useState("");
-    const [displayAmount, setDisplayAmount] = useState(value ?? "");
+    const [displayAmount, setDisplayAmount] = useState("");
     const [keyboardHeight, setKeyboardHeight] = useState(0);
-    const [evidences, setEvidences] = useState<EvidencePhoto[]>(evidencePhotos);
-    const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
+    const [evidences, setEvidences] = useState<EvidencePhoto[]>([]);
     const [currentEvidenceIndex, setCurrentEvidenceIndex] = useState(0);
+    const [sasToken, setSasToken] = useState("");
 
     useEffect(() => {
-        if (value) {
-            const numericValue = value.replace(/\D/g, "");
-            const formatted = Number(numericValue).toLocaleString("es-CO");
-            setDisplayAmount(formatted);
-        } else {
-            setDisplayAmount("");
-        }
-    }, [value]);
+        const loadToken = async () => {
+            const token = await SecureStore.getItemAsync("service_token");
+            setSasToken(token || "");
+        };
+        loadToken();
+    }, []);
 
+    useEffect(() => {
+        if (visible && consignment) {
+            const val = consignment.valorConsignado.toString();
+            setAmount(val);
+            setDisplayAmount(Number(val).toLocaleString("es-CO"));
+
+            if (!evidencePhotos || evidencePhotos.length === 0) {
+                const existingEvidences: EvidencePhoto[] = consignment.evidencias.map(e => ({
+                    id: e.id.toString(),
+                    uri: sasToken ? `${e.url}${sasToken}` : e.url
+                }));
+
+                setEvidences(existingEvidences);
+            }
+        }
+    }, [visible, consignment, sasToken, evidencePhotos]);
+
+    useEffect(() => {
+        if (visible && evidencePhotos && evidencePhotos.length > 0) {
+            setEvidences(evidencePhotos);
+        }
+    }, [visible, evidencePhotos]);
+
+
+    const getFormattedTime = () => {
+        if (!consignment) return "";
+        const date = new Date(consignment.fechaHoraDispositivo);
+        let hours = date.getHours();
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'pm' : 'am';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        return `${hours}:${minutes} ${ampm}`;
+    };
 
     useEffect(() => {
         const keyboardDidShowListener = Keyboard.addListener(
@@ -96,39 +119,19 @@ export function ConsignmentData({
 
     const formatNumberWithCommas = (value: string): string => {
         const numericValue = value.replace(/\D/g, "");
-
         if (!numericValue) return "";
-
         return Number(numericValue).toLocaleString("es-CO");
     };
 
     const handleAmountChange = (text: string) => {
         const numericValue = text.replace(/\D/g, "");
         setAmount(numericValue);
-
-
         setDisplayAmount(formatNumberWithCommas(numericValue));
-        if (onValue) {
-            onValue(numericValue);
-        }
     };
 
-    const getNumericValue = (): number => {
-        return amount ? parseInt(amount, 10) : 0;
-    };
-
-    useEffect(() => {
-        if (!visible) {
-            setAmount("");
-            setDisplayAmount("");
-        }
-    }, [visible]);
-
-    // === ELIMINAR EVIDENCIA ===
     const handleRemoveEvidence = (index: number) => {
         const updatedEvidences = evidences.filter((_, i) => i !== index);
         setEvidences(updatedEvidences);
-
         if (index < currentEvidenceIndex) {
             setCurrentEvidenceIndex(currentEvidenceIndex - 1);
         } else if (currentEvidenceIndex >= updatedEvidences.length && updatedEvidences.length > 0) {
@@ -136,7 +139,6 @@ export function ConsignmentData({
         }
     };
 
-    // === SELECCIONAR EVIDENCIA PARA EDITAR ===
     const handleSelectEvidence = (index: number) => {
         setCurrentEvidenceIndex(index);
     };
@@ -177,11 +179,9 @@ export function ConsignmentData({
                         keyboardShouldPersistTaps="handled"
                         showsVerticalScrollIndicator={false}
                     >
-                        {/* Títulos */}
-                        <Text style={styles.title}>{title}</Text>
-                        <Text style={styles.subTitleLabel}>{subTitle}</Text>
+                        <Text style={styles.title}>Editar consignación</Text>
+                        <Text style={styles.subTitleLabel}>Registrada a las {getFormattedTime()}</Text>
 
-                        {/* Input de valor */}
                         <Text style={styles.inputLabel}>Valor consignado</Text>
                         <View style={styles.amountContainer}>
                             <Text style={styles.currency}>$</Text>
@@ -197,13 +197,13 @@ export function ConsignmentData({
                             <Text style={styles.currency}>COP</Text>
                         </View>
 
-                        <Text style={styles.titleTwo}>{titleTwo}</Text>
+                        <Text style={styles.titleTwo}>Comprobante de la consignación</Text>
 
                         {evidences.length > 0 ? (
                             <View style={styles.evidenceThumbnailsContainer}>
                                 <View style={styles.thumbnailsColumn}>
                                     {evidences.map((evidence, index) => (
-                                        <View key={evidence.id} style={styles.thumbnailRow}>
+                                        <View key={evidence.id || index} style={styles.thumbnailRow}>
                                             <TouchableOpacity
                                                 style={[
                                                     styles.thumbnailContainer,
@@ -212,18 +212,10 @@ export function ConsignmentData({
                                                 onPress={() => handleSelectEvidence(index)}
                                                 disabled={isLoading}
                                             >
-                                                {isLoading && loadingIndex === index ? (
-                                                    <ActivityIndicator
-                                                        size="small"
-                                                        color="#141D32"
-                                                        style={styles.loadingIndicator}
-                                                    />
-                                                ) : (
-                                                    <Image
-                                                        source={{ uri: evidence.uri }}
-                                                        style={styles.thumbnailImage}
-                                                    />
-                                                )}
+                                                <Image
+                                                    source={{ uri: evidence.uri }}
+                                                    style={styles.thumbnailImage}
+                                                />
                                             </TouchableOpacity>
 
                                             <Text style={styles.thumbnailLabel}>
@@ -239,55 +231,30 @@ export function ConsignmentData({
                                             </TouchableOpacity>
                                         </View>
                                     ))}
-
-                                    {/* Mostrar loading para la próxima evidencia */}
-                                    {isLoading && loadingIndex !== null && loadingIndex >= evidences.length && (
-                                        <View style={styles.thumbnailRow}>
-                                            <View style={[styles.thumbnailContainer, styles.emptyThumbnail]}>
-                                                <ActivityIndicator
-                                                    size="small"
-                                                    color="#141D32"
-                                                    style={styles.loadingIndicator}
-                                                />
-                                            </View>
-
-                                            <Text style={[styles.thumbnailLabel, styles.emptyLabel]}>
-                                                Evidencia {evidences.length + 1}
-                                            </Text>
-
-                                            <View style={styles.trashButtonPlaceholder} />
-                                        </View>
-                                    )}
                                 </View>
                             </View>
                         ) : (
-                            <>
-                                <View style={styles.outlineButtonWrapper}>
-                                    <OutlineButton
-                                        title="Agregar evidencia"
-                                        onPress={() => {
-                                            onUploadFile?.();
-                                            onValue?.(displayAmount);
-                                        }}
-                                        width={328}
-                                        height={34}
-                                    />
-                                </View>
-                            </>
-
+                            <View style={styles.outlineButtonWrapper}>
+                                <OutlineButton
+                                    title="Agregar evidencia"
+                                    onPress={() => {
+                                        onUploadFile?.();
+                                    }}
+                                    width={328}
+                                    height={34}
+                                />
+                            </View>
                         )}
 
-                        {/* Botones principales */}
                         <View style={styles.buttonsWrapper}>
                             {isLoading ? (
                                 <ActivityIndicator size="large" color="#164194" style={{ marginVertical: 20 }} />
                             ) : (
                                 <>
                                     <PrimaryButton
-                                        title={"Confirmar"}
+                                        title={"Guardar cambios"}
                                         onPress={() => {
-                                            onConfirmation?.();
-                                            onValue?.(displayAmount);
+                                            onSave(amount, evidences);
                                         }}
                                         disabled={!isValid}
                                         width={328}
@@ -297,7 +264,7 @@ export function ConsignmentData({
                                     <View style={styles.cancelButtonWrapper}>
                                         <SecondaryButtonCancel
                                             title="Cancelar"
-                                            onPress={() => { onClose?.() }}
+                                            onPress={onClose}
                                             disabled={false}
                                             width={328}
                                             height={43}
@@ -429,16 +396,6 @@ const styles = StyleSheet.create({
         includeFontPadding: false,
         textAlignVertical: "center",
     },
-    debugText: {
-        fontFamily: "Rubik",
-        fontSize: 12,
-        color: "#788095",
-        marginBottom: 10,
-        textAlign: "center",
-    },
-    outlineButtonWrapper: {
-        marginBottom: 24,
-    },
     buttonsWrapper: {
         width: '100%',
         alignItems: 'center',
@@ -448,6 +405,9 @@ const styles = StyleSheet.create({
         marginTop: 12,
         width: '100%',
         alignItems: 'center',
+    },
+    outlineButtonWrapper: {
+        marginBottom: 24,
     },
     thumbnailContainer: {
         width: 48,
@@ -474,21 +434,11 @@ const styles = StyleSheet.create({
     selectedThumbnail: {
         borderColor: "#141D32",
     },
-    emptyLabel: {
-        color: "#788095",
-    },
     trashButton: {
         width: 40,
         height: 40,
         justifyContent: "center",
         alignItems: "center",
-    },
-    trashButtonPlaceholder: {
-        width: 40,
-        height: 40,
-    },
-    loadingIndicator: {
-        padding: 8,
     },
     thumbnailImage: {
         width: 32,
@@ -502,10 +452,5 @@ const styles = StyleSheet.create({
         color: "#141D32",
         flex: 1,
         marginLeft: 12,
-    },
-    emptyThumbnail: {
-        borderStyle: "dashed",
-        borderWidth: 1,
-        backgroundColor: "#F9F9FA",
     },
 });

@@ -5,6 +5,7 @@ import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { CausalRefusedEnum, TyepeCausalRefusedEnum, TypeCaculateValueEnum, TypeDetailsEnum } from '@/src/constants/GuideStates';
 import { ProductValidationSection } from '@/src/features/detailsInvoice/components/ProductValidationScreen';
+import { ReportMassiveRejectScreen } from '@/src/features/detailsInvoice/components/ReportMassiveRejectScreen';
 import { ReportNoveltyScreen } from '@/src/features/detailsInvoice/components/ReportNoveltyScreen';
 import { causalValuePorps, Cause, Detail, Document, GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
@@ -13,7 +14,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from "react";
-import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View, Pressable } from 'react-native';
+import { Dimensions, Image, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 const { width, height } = Dimensions.get('window');
 
 interface ProductFormFormProps {
@@ -81,6 +82,8 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const [productItemDataPending, setProductItemDataPending] = useState<Detail[]>([]);
     const [showTypeDetails, setTypeDetails] = useState<Cause[]>([]);
     const [shoyStatusAlert, setStatusAlert] = useState(false);
+    const [showMassiveReject, setShowMassiveReject] = useState(false);
+    const [selectedCause, setSelectedCause] = useState<Cause | null>(null);
     const router = useRouter();
     const orderId = initialGuide?.pedidos?.[0]?.id;
 
@@ -215,7 +218,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     unidadesRechazadas: Number(pedido.unidadesSolicitadas),
                     novedades: [
                         {
-                            causalCodigo: CausalRefusedEnum.CS_NOV_OTRO,
+                            causalCodigo: selectedCause?.codigo || "",
                             valor: String(pedido.unidadesSolicitadas),
                         }
                     ],
@@ -720,9 +723,20 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     }}
                     width={width}
                     onConfirmation={() => {
-                        setAlertButton(true);
-                        setSuccessButton(false);
                         setViewModalActionRefused(false);
+                        setShowMassiveReject(true);
+                    }}
+                />
+            )}
+
+            {showMassiveReject && (
+                <ReportMassiveRejectScreen
+                    title="Motivo del rechazo"
+                    showTypeDetails={showTypeDetails}
+                    onClose={() => setShowMassiveReject(false)}
+                    onPress={(cause) => {
+                        setSelectedCause(cause);
+                        setAlertButton(true);
                     }}
                 />
             )}

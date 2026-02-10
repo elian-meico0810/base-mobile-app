@@ -5,6 +5,7 @@ import { TokenExpiredModal } from '@/components/generals/TokenExpiredModal';
 import { PrimaryInput } from '@/components/inputs/PrimaryInput';
 import { ThemedView } from '@/components/themed-view';
 import { authRepositoryImpl } from '@/src/features/auth/infrastructure/login/authRepositoryImpl';
+import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { decodeJWT } from '@/src/utils/jwt';
 import { heightCaldulate } from '@/src/utils/uitls';
 import NetInfo from '@react-native-community/netinfo';
@@ -118,6 +119,20 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
         const tokenString = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
         await SecureStore.deleteItemAsync('user_token');
         await SecureStore.setItemAsync('user_token', tokenString);
+        try {
+          const tokenProductsResponse = await detailsRepositoryImpl.tokenPorductsMeicoTrack(String(response.data));
+          if (tokenProductsResponse?.statusCode == 200 &&
+            tokenProductsResponse?.data &&
+            !Array.isArray(tokenProductsResponse.data) &&
+            typeof tokenProductsResponse.data !== "string") {
+            await SecureStore.setItemAsync('service_token', tokenProductsResponse.data.token);
+            await SecureStore.setItemAsync('base_url', tokenProductsResponse.data.base_url);
+            const inicializateToken = new Date();
+            const formatted = inicializateToken.toLocaleString('sv-SE').replace('T', ' ');
+            await SecureStore.setItemAsync('date_token', formatted);
+          }
+        } catch (error) {
+        }
         // Tu response.data es un JWT token, no un objeto
         router.push({
           pathname: '/views/details',

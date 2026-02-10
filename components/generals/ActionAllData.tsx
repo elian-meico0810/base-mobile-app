@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: 'Rubik-SemiBold',
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: '700',
     color: '#141D32',
     lineHeight: 22,

@@ -1,6 +1,5 @@
 import { TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import { GuideDetails, PaymentsByInvoice } from '@/src/features/tracking/domain/details/DetailsGuide';
-import { ConciliationForm } from '@/src/ui/tracking/conciliation/ConciliationForm';
 import { ViewSelectAllAnticipe } from '@/src/ui/tracking/invoices/anticipe-and-count/ViewSelectAllAnticipe';
 import { ViewSelectInvoice as AnticipateAndCountViewSelectInvoice } from '@/src/ui/tracking/invoices/anticipe-and-count/ViewSelectInvoice';
 import { InfoInvoiceForm } from '@/src/ui/tracking/invoices/counter-delivery/InfoInvoiceForm';
@@ -75,26 +74,18 @@ export default function IndexInvoiceScreen() {
                 if (areAllInvoicesConutreDlivery && guideObj.facturas.length < 2 || isCountryDelivery) {
                     return (
                         <InfoInvoiceForm
-                            initialGuide={guideObj}
-                            token={token || ""}
-                            onSubmit={async ({ guide, token }) => { }}
-                            numberGuide={Number(numberGuide)}
-                            isSelectInvocies={isSelectInvocies}
-                            documentMeico={documentMeico}
-                            isCountryDelivery={isCountryDelivery ? true : false}
-                            IsGoBack={IsGoBack ? true : false}
-                            routeStartedBotton={routeStartedBotton}
-                            detailsCounterDelivery={detailsCounterDelivery ? true : false}
+                             initialGuide={guideObj}
+                             token={token || ""}
+                             onSubmit={async ({ guide, token }) => { }}
+                             numberGuide={Number(numberGuide)}
+                             isSelectInvocies={isSelectInvocies}
+                             documentMeico={documentMeico}
+                             isCountryDelivery={isCountryDelivery ? true : false}
+                             IsGoBack={IsGoBack ? true : false}
+                             routeStartedBotton={routeStartedBotton}
+                             detailsCounterDelivery={detailsCounterDelivery ? true : false}
 
                         />
-                        /*
-                        <ConciliationForm
-                            initialGuide={String(numberGuide)}
-                            token={token || ""}
-                            onSubmit={async ({ guide, token }) => {
-                                console.log("submit", guide, token);
-                            }}
-                        />*/
                     );
                 }
 

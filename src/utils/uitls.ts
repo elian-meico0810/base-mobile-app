@@ -258,3 +258,29 @@ export function formatTimeByMinutes(totalSeconds: number): string {
 
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
+
+export const uriToBase64 = async (uri: string): Promise<string> => {
+  try {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        resolve(reader.result as string); 
+      };
+
+      reader.onerror = (error) => {
+        reject(error);
+      };
+
+      reader.readAsDataURL(blob);
+    });
+
+  } catch (error) {
+    console.error("Error convirtiendo URI a base64:", error);
+    throw error;
+  }
+};
+

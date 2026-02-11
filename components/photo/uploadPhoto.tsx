@@ -2,7 +2,7 @@ import { createDataUri } from "@/src/utils/uitls";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     ActivityIndicator,
     Image,
@@ -29,6 +29,8 @@ interface UploadPhotosProps {
     onPermisionsPhoto?: () => void;
     onPermisionsGallery?: () => void;
     maxEvidences?: number;
+    multiplePhotos?: EvidencePhoto[];
+    sasToken?: any;
 }
 
 
@@ -41,7 +43,9 @@ export function UploadPhoto({
     onEvidenceComplete,
     onPermisionsPhoto,
     onPermisionsGallery,
-    maxEvidences = 3
+    maxEvidences = 3,
+    multiplePhotos,
+    sasToken
 }: UploadPhotosProps) {
     const [evidences, setEvidences] = useState<EvidencePhoto[]>([]);
     const [currentEvidenceIndex, setCurrentEvidenceIndex] = useState(0);
@@ -57,6 +61,19 @@ export function UploadPhoto({
         format: ImageManipulator.SaveFormat.JPEG, // Formato de salida
         compress: 0.7,   // Nivel de compresión
     };
+
+    useEffect(() => {
+        if (multiplePhotos && multiplePhotos.length > 0) {
+
+            const mappedPhotos: EvidencePhoto[] = multiplePhotos.map((photo, index) => ({
+                id: photo.id || `${Date.now()}-${index}`,
+                uri: photo.uri, 
+                base64: photo.base64,
+            }));
+            
+            setEvidences(mappedPhotos);
+        }
+    }, [multiplePhotos, sasToken]);
 
     // Función para procesar y redimensionar la imagen
     const processAndResizeImage = async (uri: string): Promise<{ uri: string; base64: string }> => {
@@ -394,7 +411,7 @@ const styles = StyleSheet.create({
         backgroundColor: "rgba(0,0,0,0.5)",
     },
     container: {
-       paddingHorizontal: 24,
+        paddingHorizontal: 24,
         paddingTop: 32,
         position: "relative",
         paddingBottom: 20,
@@ -485,7 +502,7 @@ const styles = StyleSheet.create({
         color: "#788095",
     },
     // Botón de basura (trash)
-   trashButton: {
+    trashButton: {
         width: 40,
         height: 40,
         justifyContent: "center",

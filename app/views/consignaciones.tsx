@@ -14,13 +14,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Dimensions, Image, Linking, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Dimensions, Image, Linking, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Circle, G, Path } from 'react-native-svg';
 
 interface EvidencePhoto {
-    id: string;
-    uri: string;
-    base64?: string;
+  id: string;
+  uri: string;
+  base64?: string;
 }
 
 const { width } = Dimensions.get('window');
@@ -241,7 +241,7 @@ export default function ConsignacionesScreen() {
         }
         // If no base64, we might have a problem if the API expects base64 data URI.
         // The UploadPhotoItem component usually provides base64.
-        return ""; 
+        return "";
       }).filter(e => e !== "");
 
       if (evidences.length === 0) {
@@ -267,7 +267,7 @@ export default function ConsignacionesScreen() {
       setUploadPhoto(false);
       setValueInput("");
       setMultiplePhotos([]);
-      
+
       // Refresh summary
       fetchSummary();
 
@@ -292,16 +292,16 @@ export default function ConsignacionesScreen() {
         setLoading(false);
         return;
       }
-      
+
       // Fetch Route ID if not set
       if (!rutaId) {
         try {
           const routeResponse = await detailsRepositoryImpl.listRouteByCodeGuide(Number(codigoGuia), token);
           if (routeResponse && routeResponse.success && routeResponse.data) {
-             const routeData = routeResponse.data as any;
-             if (routeData.id) {
-               setRutaId(Number(routeData.id));
-             }
+            const routeData = routeResponse.data as any;
+            if (routeData.id) {
+              setRutaId(Number(routeData.id));
+            }
           }
         } catch (e) {
           console.error("Error fetching route ID", e);
@@ -312,7 +312,9 @@ export default function ConsignacionesScreen() {
       setSummary(data);
     } catch (error) {
       console.error(error);
-      Alert.alert('Error', 'No se pudo cargar el resumen de consignaciones');
+      setModalTitle("¡Error!");
+      setModalMessage("No se pudo cargar el resumen de consignaciones.");
+      setModalVisible(true);
     } finally {
       setLoading(false);
     }
@@ -327,6 +329,7 @@ export default function ConsignacionesScreen() {
     );
   }
 
+  
   return (
     <>
       <Stack.Screen
@@ -366,8 +369,8 @@ export default function ConsignacionesScreen() {
         <View style={styles.fixedContent}>
           {summary && <StatsCard summary={summary} />}
 
-          <TouchableOpacity 
-            style={styles.registerButton} 
+          <TouchableOpacity
+            style={styles.registerButton}
             activeOpacity={0.8}
             onPress={() => setViewConsignment(true)}
           >
@@ -431,25 +434,25 @@ export default function ConsignacionesScreen() {
             onClose={() => setShowOptionsModal(false)}
             consignment={selectedConsignment}
             onEdit={(item) => {
-               setShowOptionsModal(false);
-               setShowEditModal(true);
+              setShowOptionsModal(false);
+              setShowEditModal(true);
             }}
             onViewReceipt={(item) => {
-               if (item.evidencias && item.evidencias.length > 0) {
-                 const baseUrl = item.evidencias[0].url;
-                 const fullUrl = sasToken ? `${baseUrl}${sasToken}` : baseUrl;
-                 setReceiptEvidenceUrl(fullUrl);
-                 setShowReceiptModal(true);
-               } else {
-                 setModalTitle("¡Alerta!");
-                 setModalMessage("Esta consignación no tiene comprobantes disponibles.");
-                 setModalVisible(true);
-               }
+              if (item.evidencias && item.evidencias.length > 0) {
+                const baseUrl = item.evidencias[0].url;
+                const fullUrl = sasToken ? `${baseUrl}${sasToken}` : baseUrl;
+                setReceiptEvidenceUrl(fullUrl);
+                setShowReceiptModal(true);
+              } else {
+                setModalTitle("¡Alerta!");
+                setModalMessage("Esta consignación no tiene comprobantes disponibles.");
+                setModalVisible(true);
+              }
             }}
             onDelete={(item) => {
-               setSelectedConsignment(item);
-               setShowOptionsModal(false);
-               setShowDeleteModal(true);
+              setSelectedConsignment(item);
+              setShowOptionsModal(false);
+              setShowDeleteModal(true);
             }}
           />
         )}
@@ -533,7 +536,7 @@ export default function ConsignacionesScreen() {
         {uploadPhoto && (
           <UploadPhotoItem
             title="Cargar evidencia"
-            subTitle="Toma fotos de la mercancía ubicada en el cliente. Podrás asociar un máximo de 3 imágenes por entrega."
+            subTitle="Toma fotos de la mercancía ubicada en el cliente. Podrás asociar un máximo de 1 imágenes por entrega."
             onClose={() => {
               setUploadPhoto(false);
               if (uploadContext === "register") {
@@ -666,17 +669,17 @@ function HistoryCard({ item, onPressOptions }: { item: Consignment; onPressOptio
     <View style={styles.historyCard}>
       <View style={styles.historyHeader}>
         <Text style={styles.historyTitle}>Consignación #{item.id}</Text>
-        <TouchableOpacity onPress={() => onPressOptions(item)} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
-        <Svg width="18" 
-            height="18" 
+        <TouchableOpacity onPress={() => onPressOptions(item)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+          <Svg width="18"
+            height="18"
             viewBox="0 0 512 512"
             stroke="#141D32"
             strokeWidth={1}
             style={{ marginBottom: 4 }}>
-          <Circle cx="256" cy="256" r="32" fill="#141D32" />
-          <Circle cx="256" cy="416" r="32" fill="#141D32" />
-          <Circle cx="256" cy="96" r="32" fill="#141D32" />
-        </Svg>
+            <Circle cx="256" cy="256" r="32" fill="#141D32" />
+            <Circle cx="256" cy="416" r="32" fill="#141D32" />
+            <Circle cx="256" cy="96" r="32" fill="#141D32" />
+          </Svg>
         </TouchableOpacity>
       </View>
 

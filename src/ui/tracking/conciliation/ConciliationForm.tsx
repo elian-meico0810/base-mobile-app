@@ -28,6 +28,8 @@ export function ConciliationForm({
   token = "",
   onSubmit,
 }: ConciliationFormProps) {
+  console.log("initialGuide 2: ", initialGuide);
+
   const [guide] = useState(initialGuide);
   const [data, setData] = useState<ConciliationRouteResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -155,9 +157,13 @@ export function ConciliationForm({
           <TouchableOpacity
             style={styles.cardRow}
             onPress={() => {
-              router.push(
-                `/views/details?guide=${guide}&token=${encodeURIComponent(token ?? "")}`,
-              );
+              router.push({
+                pathname: '/views/consignaciones',
+                params: { codigoGuia: guide }
+              })
+              // router.push(
+              //   `/views/consignaciones?guide=${guide}&token=${encodeURIComponent(token ?? "")}`,
+              // );
             }}
           >
             <View style={styles.cardRowContent}>

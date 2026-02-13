@@ -88,19 +88,14 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const orderId = initialGuide?.pedidos?.[0]?.id;
 
     const handleGoBack = () => {
-        if (routeStarted && isCountryDelivery) {
-            router.push(
-                `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
-            );
-        } else {
-            router.back();
-        }
+        router.push(
+            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+        );
     };
 
     // Funciones para expandir/recoger
     const handleExpand = () => setIsExpanded(true);
     const handleCollapse = () => setIsExpanded(false);
-
 
     const handleSubmit = async () => {
         try {
@@ -274,17 +269,17 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     setModalTitle("¡Alerta!");
                     setModalMessage("La cantidad reportada no puede ser mayor a la despachada.");
                     setModalVisible(true);
-                    return false; 
+                    return false;
                 } else if (product && Number(totalUnits) == 0) {
                     setModalTitle("¡Alerta!");
                     setModalMessage("La cantidad reportada no puede ser 0");
                     setModalVisible(true);
-                    return false; 
+                    return false;
                 }
             }
             return true;
         } catch (error) {
-            return false; 
+            return false;
         }
     };
 
@@ -570,7 +565,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                         <Text style={styles.merchantName}>
                             {capitalizeFirst(guide?.nombreCliente) ?? ''}
                         </Text>
-                
+
                         {/* Icono solo visual (opcional) */}
                         <View style={styles.expandButton}>
                             <View style={styles.arrowsContainer}>
@@ -582,14 +577,14 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                             </View>
                         </View>
                     </View>
-                
+
                     {/* Contenido expandido */}
                     {(isExpanded && !validateStatus) && (
                         <View style={styles.expandedContent}>
                             <Text style={styles.address}>
                                 {cleanSpaces(guide?.direccion)}, {cleanSpaces(guide?.poblacion)}
                             </Text>
-                    
+
                             <View style={styles.actionButtonsRow}>
                                 <TouchableOpacity
                                     style={styles.rejectButton}
@@ -598,7 +593,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                                     <MaterialIcons name="close" size={16} color="#C62828" />
                                     <Text style={styles.rejectButtonText}> Rechazo masivo</Text>
                                 </TouchableOpacity>
-                    
+
                                 <TouchableOpacity
                                     style={styles.acceptButton}
                                     onPress={() => setViewModalActionSuccess(true)}

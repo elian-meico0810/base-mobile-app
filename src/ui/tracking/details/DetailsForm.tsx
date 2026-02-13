@@ -1,3 +1,4 @@
+import SecurityAlert from '@/components/alerts/SecurityAlert';
 import { TopSuccessAlert } from '@/components/alerts/TopSuccessAlert';
 import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails';
 import { DetailsGudes } from '@/components/generals/DetailsGudes';
@@ -144,6 +145,21 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
             subscription.remove();
         };
     }, [waitingForPermission]);
+
+    // const listInfOTByDirection = async () => {
+    //     try {
+          
+    //         const response = await detailsRepositoryImpl.listInfOTP(String(guide?.dire), token);
+
+
+    //     } catch (error: any) {
+    //         setModalTitle("¡Error!");
+    //         setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+    //         setModalVisible(true);
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
 
     // Función para verificar permisos
     const checkLocationPermissions = async () => {
@@ -475,26 +491,41 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                             )}
                         </View>
                         {((data.length != 0 && hasValidInvoice)) && (
-                            <TouchableOpacity style={styles.cardConsignment} onPress={() => {
-                                router.push({
-                                    pathname: '/views/consignaciones',
-                                    params: { codigoGuia: guide }
-                                });
-                            }}>
-                                <View style={styles.leftContent}>
-                                    <Image
-                                        source={require('@/assets/icons/ConsignmentIcons.png')}
-                                        style={styles.icon}
-                                    />
-                                    <Text style={styles.titleConsignment}>Consignaciones</Text>
-                                </View>
+                            <>
+                                <TouchableOpacity style={styles.cardConsignment} onPress={() => {
+                                    router.push({
+                                        pathname: '/views/consignaciones',
+                                        params: { codigoGuia: guide }
+                                    });
+                                }}>
+                                    <View style={styles.leftContent}>
+                                        <Image
+                                            source={require('@/assets/icons/ConsignmentIcons.png')}
+                                            style={styles.icon}
+                                        />
+                                        <Text style={styles.titleConsignment}>Consignaciones</Text>
+                                    </View>
 
-                                <Image
-                                    source={require('@/assets/icons/ChevronRight.png')}
-                                    style={styles.chevron}
+                                    <Image
+                                        source={require('@/assets/icons/ChevronRight.png')}
+                                        style={styles.chevron}
+                                    />
+                                </TouchableOpacity>
+
+                                <SecurityAlert
+                                    height={130}
+                                    title="Superaste el tope de seguridad de efectivo."
+                                    subtitle="Realiza una consignación en el punto de recaudo más cercano."
+                                    buttonLabel="Registrar consignación"
+                                    onPress={() => router.push({
+                                        pathname: '/views/consignaciones',
+                                        params: { codigoGuia: guide, statusConsignment: 'true'}
+                                    })}
                                 />
-                            </TouchableOpacity>
+                            </>
+
                         )}
+
 
                         <Text style={styles.title}>Tu ruta</Text>
                         <SearchInput

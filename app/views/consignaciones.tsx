@@ -29,12 +29,12 @@ const { width } = Dimensions.get('window');
 export default function ConsignacionesScreen() {
   const router = useRouter();
   const { codigoGuia } = useLocalSearchParams();
+  const { statusConsignment } = useLocalSearchParams();
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<ConsignmentSummary | null>(null);
   const [rutaId, setRutaId] = useState<number | null>(null);
-
   // Modal states
-  const [showViewConsignment, setViewConsignment] = useState(false);
+  const [showViewConsignment, setViewConsignment] = useState(statusConsignment ? true: false );
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [selectedConsignment, setSelectedConsignment] = useState<Consignment | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);

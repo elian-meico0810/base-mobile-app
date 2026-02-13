@@ -65,15 +65,27 @@ export function UploadPhoto({
     useEffect(() => {
         if (multiplePhotos && multiplePhotos.length > 0) {
 
-            const mappedPhotos: EvidencePhoto[] = multiplePhotos.map((photo, index) => ({
-                id: photo.id || `${Date.now()}-${index}`,
-                uri: photo.uri, 
-                base64: photo.base64,
-            }));
-            
+            const mappedPhotos: EvidencePhoto[] = multiplePhotos.map((photo, index) => {
+
+                const hasQueryParams = photo.uri?.includes('?');
+
+                const finalUri = hasQueryParams
+                    ? photo.uri
+                    : sasToken
+                        ? photo.uri + sasToken
+                        : photo.uri;
+
+                return {
+                    id: photo.id || `${Date.now()}-${index}`,
+                    uri: finalUri,
+                    base64: photo.base64,
+                };
+            });
+
             setEvidences(mappedPhotos);
         }
     }, [multiplePhotos, sasToken]);
+
 
     // Función para procesar y redimensionar la imagen
     const processAndResizeImage = async (uri: string): Promise<{ uri: string; base64: string }> => {

@@ -109,6 +109,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const router = useRouter();
     const heightValue = heightCaldulate();
     const [sasToken, setSasToken] = useState("");
+    const orderId = initialGuide?.pedidos?.[0]?.id;
+    const [checkUbication, setCheckUbication] = useState(false);
 
     useEffect(() => {
         const backAction = () => {
@@ -126,14 +128,29 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         return () => backHandler.remove();
     }, [allowBack, numberGuide, token]);
 
-    const orderId = initialGuide?.pedidos?.[0]?.id;
-    const [checkUbication, setCheckUbication] = useState(false);
 
-    const handleGoBack = () => {
+
+
+    const handleGoBack = async () => {
         // router.back();
-        router.push(
-            `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
-        );
+        if (detailsCounterDelivery) {
+
+
+            await deletePaymentByOrder();
+
+            router.push({
+                pathname: '/views/IndexDetailsInvoice',
+                params: {
+                    guide: JSON.stringify(guide),
+                    numberGuide: numberGuide,
+                    token: token ?? "",
+                }
+            });
+        } else {
+            router.push(
+                `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+            );
+        }
     };
 
     useEffect(() => {
@@ -193,6 +210,18 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     };
 
+    const deletePaymentByOrder = async () => {
+        try {
+            await detailsRepositoryImpl.deleteByOrder(token, String(orderId),);
+
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
     const handleGenerateQRNotcondPago = async (type: string, qr?: string) => {
         setModalgenerateQR(true);
         setShowDetailInvoiceQR(false);
@@ -469,6 +498,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 token
             );
             if (response?.statusCode === 200) {
+                btnRef.current?.reset();
+
                 router.push({
                     pathname: '/views/IndexDetailsInvoice',
                     params: {
@@ -480,7 +511,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
                 setvalidateIsBotton(true);
                 setEntryVisible(true);
-                setRouteStarted(true);
+                // setRouteStarted(true);
+
                 listDocumentQuery();
             } else {
                 setValidateException(true);
@@ -575,12 +607,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 return false;
             }
 
-            if (condPago || buttonValue && condPago) {
+            if (condPago && condPago) {
                 setTypeQRSendWhatsApp(true);
                 setModalgenerateQR(true);
                 setShowDetailInvoiceQR(true);
                 setRouteStarted(true);
-            } else if (!condPago || buttonValue && !condPago) {
+            } else if (!condPago && !condPago) {
                 setRouteStarted(true);
                 setTypeQRSendWhatsApp(false);
                 setShowDetailInvoiceQR(false);
@@ -802,7 +834,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
             setModalVisible(true);
-        } 
+        }
     };
 
     useEffect(() => {
@@ -824,12 +856,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         loadToken();
     }, []);
 
-    useEffect(() => {
-        if (guide?.fecha_apertura && !buttonValue) {
-            listDocumentQuery();
-            setButtonValue(true);
-        }
-    }, [token]);
+
 
     const listDocumentQuery = async () => {
         try {
@@ -954,7 +981,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             break;
     }
 
-    const closeButton = routeStarted || buttonValue;
+    const closeButton = routeStarted;
 
     useEffect(() => {
         if (detailsCounterDelivery || closeButton) {
@@ -1040,8 +1067,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 setModalVisible(true);
             }
         } catch (error: any) {
-            console.log("error: ", error);
-
             setValidateException(true);
             btnRef.current?.reset();
             setModalTitle("¡Error!");

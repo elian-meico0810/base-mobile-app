@@ -221,3 +221,17 @@ export interface ValidateCediQRResponse {
   };
   habilitarCuadreRuta: boolean;
 }
+
+export interface ListInfOTP {
+  id: number;
+  direccion: number;
+  codigo: string;
+  momento_envio: string;
+  canal: string;
+  estado_envio: number;
+  numero_reenvio: number;
+  numero_validacion_conductor: number;
+  transportador: string;
+  expira_en: string;
+  ultimo_intento_verificacion: string;
+}

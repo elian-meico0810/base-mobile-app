@@ -318,6 +318,30 @@ export const detailsRepositoryImpl: DetailsRepository = {
     }
 
     return raw.data;
-  }
+  },
 
+  async deleteByOrder(token: string, order: string): Promise<void> {
+    try {
+      await authApi.delete(`${API_ROUTES.DELETE_REPORT_PAYMENT_BY_ORDER}${order}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async listInfOTP(direccion_id: string, token: string) {
+    try {
+      const response = await authApi.get(`${API_ROUTES.GET_TYPE_DETAILS_BY_PARAMS}${direccion_id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
 };

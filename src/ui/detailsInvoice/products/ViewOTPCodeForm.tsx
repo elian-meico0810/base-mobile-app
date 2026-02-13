@@ -10,6 +10,7 @@ import { formatTimeByMinutes } from '@/src/utils/uitls';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from "react";
 import {
+    BackHandler,
     Dimensions,
     Image,
     Keyboard,
@@ -111,9 +112,9 @@ export function ViewOTPCodeForm({
     }, []);
 
     const handleGoBack = () => {
-        router.push(
-            `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
-        );
+        // router.push(
+        //     `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+        // );
     };
 
 
@@ -338,7 +339,6 @@ export function ViewOTPCodeForm({
         }, 1000);
     };
 
-
     const resendOtp = async () => {
         try {
             if (resendDisabled) return;
@@ -375,6 +375,18 @@ export function ViewOTPCodeForm({
         }
     }, [isExpired]);
 
+    useEffect(() => {
+        const backAction = () => {
+            return true; 
+        };
+
+        const backHandler = BackHandler.addEventListener(
+            'hardwareBackPress',
+            backAction
+        );
+
+        return () => backHandler.remove();
+    }, []);
 
     return (
         <ThemedView style={styles.container}>

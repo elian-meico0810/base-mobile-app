@@ -4,7 +4,7 @@ import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { ThemedView } from '@/components/themed-view';
-import { GuideDetails, ResponseOTPInitPorps } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { GuideDetails, ResponseOTPInitPorps, ResponseOTPInitTwoPorps } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { formatTimeByMinutes } from '@/src/utils/uitls';
 import { useRouter } from 'expo-router';
@@ -39,6 +39,7 @@ interface ViewOTPCodeFormProps {
     totalRecauder?: number;
     totalValue?: number;
     totalOrderPayment?: number;
+    expireDate?: boolean;
 }
 
 export function ViewOTPCodeForm({
@@ -54,10 +55,12 @@ export function ViewOTPCodeForm({
     responseOTPInit,
     totalRecauder,
     totalValue,
-    totalOrderPayment
+    totalOrderPayment,
+    expireDate
 }: ViewOTPCodeFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [guideOTP, setGuideOTP] = useState<ResponseOTPInitPorps | undefined>(responseOTPInit);
+    const [guideOTPTwo, setGuideOTPTwo] = useState<ResponseOTPInitTwoPorps | undefined>(responseOTPInit);
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
     const [modalTitle, setModalTitle] = useState("");
@@ -66,6 +69,7 @@ export function ViewOTPCodeForm({
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [otpValues, setOtpValues] = useState<string[]>(["", "", "", "", "", ""]);
     const [currentFocusIndex, setCurrentFocusIndex] = useState<number>(0);
+    const [currentRemainingSeconds, setRemainingSeconds] = useState<number>(0);
     const [keyboardVisible, setKeyboardVisible] = useState(false);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [showSuccess, setShowSuccess] = useState(false);
@@ -83,7 +87,6 @@ export function ViewOTPCodeForm({
     const timerRef = useRef<number | null>(null);
     const router = useRouter();
     const inputRefs = useRef<TextInput[]>([]);
-
 
     // Verificar si todos los campos OTP están llenos
     const isOtpComplete = otpValues.every(value => value !== "");
@@ -209,6 +212,31 @@ export function ViewOTPCodeForm({
             setLoading(false);
         }
     };
+    useEffect(() => {
+        if (
+            guideOTP?.expiraEn &&
+            guideOTP?.momentoEnvio &&
+            !timerRef.current && !dataBack
+        ) {
+            const expira = new Date(guideOTP.expiraEn).getTime();
+            const send = new Date(guideOTP.momentoEnvio).getTime();
+            const time = Date.now();
+
+            // Tiempo total del OTP
+            const totalSeconds = Math.floor((expira - send) / 1000);
+
+            // Tiempo restante real
+            const remainingSeconds = Math.max(
+                totalSeconds - Math.floor((time - send) / 1000),
+                0
+            );
+
+            startOtpTimer(remainingSeconds);
+            resendOtp();
+
+        }
+    }, [guideOTP]);
+
 
     const reentryCodeOTP = async () => {
         try {
@@ -220,7 +248,6 @@ export function ViewOTPCodeForm({
             //     setModalVisible(true);
             //     return;
             // }
-
             if (!Number.isFinite(totalValue) || !Number.isFinite(totalRecauder)) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Los valores aún no están listos. Intenta nuevamente.");
@@ -295,6 +322,7 @@ export function ViewOTPCodeForm({
             guideOTP?.momentoEnvio &&
             !timerRef.current && !dataBack
         ) {
+            
             const expira = new Date(guideOTP.expiraEn).getTime();
             const send = new Date(guideOTP.momentoEnvio).getTime();
             const time = Date.now();
@@ -313,6 +341,35 @@ export function ViewOTPCodeForm({
 
         }
     }, [guideOTP]);
+
+
+    useEffect(() => {
+        if (
+            guideOTPTwo?.expira_en &&
+            guideOTPTwo?.momento_envio
+        ) {
+            setReentryPermission(
+                2 - Number(guideOTPTwo?.numero_reenvio ?? 0)
+            );
+
+            const expira = new Date(guideOTPTwo.expira_en).getTime();
+            const send = new Date(guideOTPTwo.momento_envio).getTime();
+            const time = Date.now();
+
+            // Tiempo total del OTP
+            const totalSeconds = Math.floor((expira - send) / 1000);
+
+            // Tiempo restante real
+            const remainingSeconds = Math.max(
+                totalSeconds - Math.floor((time - send) / 1000),
+                0
+            );
+            setRemainingSeconds(remainingSeconds);
+            startOtpTimer(remainingSeconds);
+            resendOtp(true);
+
+        }
+    }, [guideOTPTwo]);
 
     const isExpired = secondsLeft <= 0;
 
@@ -339,14 +396,15 @@ export function ViewOTPCodeForm({
         }, 1000);
     };
 
-    const resendOtp = async () => {
+    const resendOtp = async (showViewAplication?: boolean) => {
         try {
             if (resendDisabled) return;
             // const isValid = validateOTP();
             // if (!isValid) return;
-
-            setResendDisabled(true);
-            setResendSecondsLeft(30);
+            if (!showViewAplication) {
+                setResendDisabled(true);
+                setResendSecondsLeft(30);
+            }
 
             if (resendTimerRef.current) {
                 clearInterval(resendTimerRef.current);
@@ -377,7 +435,7 @@ export function ViewOTPCodeForm({
 
     useEffect(() => {
         const backAction = () => {
-            return true; 
+            return true;
         };
 
         const backHandler = BackHandler.addEventListener(

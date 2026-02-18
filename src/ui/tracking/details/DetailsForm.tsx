@@ -146,20 +146,6 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
         };
     }, [waitingForPermission]);
 
-    // const listInfOTByDirection = async () => {
-    //     try {
-          
-    //         const response = await detailsRepositoryImpl.listInfOTP(String(guide?.dire), token);
-
-
-    //     } catch (error: any) {
-    //         setModalTitle("¡Error!");
-    //         setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
-    //         setModalVisible(true);
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
 
     // Función para verificar permisos
     const checkLocationPermissions = async () => {
@@ -510,6 +496,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                                         source={require('@/assets/icons/ChevronRight.png')}
                                         style={styles.chevron}
                                     />
+
                                 </TouchableOpacity>
 
                                 <SecurityAlert

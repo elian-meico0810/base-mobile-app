@@ -1,6 +1,7 @@
 import { API_ROUTES } from "@/src/constants/apiRoutes";
+import { ApiResponse } from "@/src/features/auth/domain/ApiResponse";
 import { authApi, authDevApi } from "@/src/features/auth/infrastructure/authApi";
-import { ConciliationRouteResponse, NoveltyRefusedProps, PaymentsByInvoicePorps, ReentryOTPProps, ReportNoveltyFileArrayProps, RuteInitPorps, SendOrderArrayProps, SendOrderProps, SendOTOPProps, ValidateCediQRResponse, ValidateCodeOTPProps } from "../../domain/details/DetailsGuide";
+import { ConciliationRouteResponse, ListInfOTP, NoveltyRefusedProps, PaymentsByInvoicePorps, ReentryOTPProps, ReportNoveltyFileArrayProps, RuteInitPorps, SendOrderArrayProps, SendOrderProps, SendOTOPProps, ValidateCediQRResponse, ValidateCodeOTPProps } from "../../domain/details/DetailsGuide";
 import { DetailsRepository } from "../../domain/details/DetailsRepository";
 
 export const detailsRepositoryImpl: DetailsRepository = {
@@ -332,16 +333,35 @@ export const detailsRepositoryImpl: DetailsRepository = {
     }
   },
 
-  async listInfOTP(direccion_id: string, token: string) {
+  async listInfOTP(
+    direccion_id: string,
+    token: string
+  ): Promise<ApiResponse<ListInfOTP>> {
     try {
-      const response = await authApi.get(`${API_ROUTES.GET_TYPE_DETAILS_BY_PARAMS}${direccion_id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
-    } catch (error) {
-      throw error;
+      const response = await authApi.get(
+        `${API_ROUTES.GET_INFO_BY_DIRECTION_OF_OTP}${direccion_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      return typeof response.data === "string"
+        ? JSON.parse(response.data)
+        : response.data;
+
+    } catch (error: any) {
+      return {
+        success: false,
+        data: null,
+        message:
+          error.response?.data?.message ??
+          "Ocurrió un error inesperado",
+        statusCode: error.response?.status ?? 500,
+      };
     }
-  },
-};
+  }
+
+
+}

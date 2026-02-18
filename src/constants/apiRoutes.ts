@@ -25,6 +25,7 @@ export const API_ROUTES = {
   REENTRY_OTP: "otp/direccion/reenviar/",
   VALIDATE_OTP: "otp/verificar/",
   WS_ALL_PAYMENT_SUCCESS_FUL: "reporte-pago/ws-pagos-registrados/",
+  GET_INFO_BY_DIRECTION_OF_OTP: "otp/info-otp-by-direccion-id/",
   // Back contado anticipado
   SEND_PAYMENT_GATEWAY: "pagos/generar-link-pasarela/",
   GENERATE_QR: "pagos/generar_qr_bancolombia/",

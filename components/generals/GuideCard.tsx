@@ -4,7 +4,7 @@ import { cleanSpaces } from '@/src/utils/uitls';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ExceptionModal } from './ExecptionModal';
 
@@ -39,6 +39,7 @@ export function GuideCard({ guide, onPress, routeStarted, numberGuide, token }: 
 
         openChooser(lat, lng);
     };
+    
     return (
         <TouchableOpacity
             disabled={guide.estado !== 'Pendiente' ? true : false}
@@ -53,6 +54,7 @@ export function GuideCard({ guide, onPress, routeStarted, numberGuide, token }: 
             ]}
             activeOpacity={0.8}
             onPress={() => {
+                onPress?.();
                 if (!routeStarted) return;
                 router.push(
                     `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`

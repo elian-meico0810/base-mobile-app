@@ -21,11 +21,11 @@ export default function IndexDetailsInvoiceScreen() {
     const totalRecauder = params.totalRecauder ? Number(params.totalRecauder) : 0;
     const totalValue = params.totalValue ? Number(params.totalValue) : 0;
     const totalOrderPayment = params.totalOrderPayment ? Number(params.totalOrderPayment) : 0;
-    
+    const expireDate = params.expireDate as string;
     const validateConditionRender =
         Number.isFinite(Number(totalRecauder)) && Number.isFinite(Number(totalOrderPayment))
         Number.isFinite(Number(totalValue));
-
+    
     return (
         <>
             <Stack.Screen
@@ -52,7 +52,7 @@ export default function IndexDetailsInvoiceScreen() {
                     );
                 }
 
-                if (confirmationStatus && responseOTPInit && validateConditionRender) {
+                if (confirmationStatus && responseOTPInit && validateConditionRender || expireDate ) {
                     return (
                         <ViewOTPCodeForm
                             initialGuide={guideObj}
@@ -66,6 +66,7 @@ export default function IndexDetailsInvoiceScreen() {
                             totalRecauder={totalRecauder}
                             totalValue={totalValue}
                             totalOrderPayment={totalOrderPayment}
+                            expireDate={expireDate ? true : false}
                         />
                     );
                 }

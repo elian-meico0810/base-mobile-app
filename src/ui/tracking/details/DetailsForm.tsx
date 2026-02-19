@@ -567,19 +567,21 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                                         />
 
                                     </TouchableOpacity>
-
-                                    {(hasValidInvoice && valueParameterized) && (
-                                        <SecurityAlert
-                                            height={130}
-                                            title="Superaste el tope de seguridad de efectivo."
-                                            subtitle="Realiza una consignación en el punto de recaudo más cercano."
-                                            buttonLabel="Registrar consignación"
-                                            onPress={() => router.push({
-                                                pathname: '/views/consignaciones',
-                                                params: { codigoGuia: guide, statusConsignment: 'true' }
-                                            })}
-                                        />
-                                    )}
+                                    
+                                    <View style={{ marginBottom: 10 }}>
+                                        {(hasValidInvoice && valueParameterized) && (
+                                            <SecurityAlert
+                                                height={130}
+                                                title="Superaste el tope de seguridad de efectivo."
+                                                subtitle="Realiza una consignación en el punto de recaudo más cercano."
+                                                buttonLabel="Registrar consignación"
+                                                onPress={() => router.push({
+                                                    pathname: '/views/consignaciones',
+                                                    params: { codigoGuia: guide, statusConsignment: 'true' }
+                                                })}
+                                            />
+                                        )}
+                                    </View>
 
                                 </>
                             )}
@@ -759,7 +761,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
 
                 </View>
             </View>
-            
+
             <QRScanner
                 visible={showScanner}
                 onClose={() => setShowScanner(false)}
@@ -788,7 +790,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                     }
                 }}
             />
-            
+
             <ExceptionModal
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}

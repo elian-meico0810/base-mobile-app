@@ -20,7 +20,7 @@ import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/de
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
 import { getDeviceDateTime, heightCaldulate } from '@/src/utils/uitls';
 import * as Location from 'expo-location';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useRef, useState } from "react";
 import {
@@ -81,6 +81,9 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const isSmallScreen = height <= 780;
 
     const heightValue = heightCaldulate();
+
+    const params = useLocalSearchParams();
+    const success = params?.success as string | undefined;
 
     const [routeCompleted, setRouteCompleted] = useState(false);
     const [showScanner, setShowScanner] = useState(false);
@@ -230,6 +233,16 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
         }
     }, [token, !waitingForPermission]);
 
+    useEffect(() => {
+        if (success === "route_closed") {
+            setShowSuccess(true);
+
+            setTimeout(() => {
+                setShowSuccess(false);
+            }, 4000);
+        }
+    }, [success]);
+
 
     const checkUnicationPermissions = async () => {
         try {
@@ -290,7 +303,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                         );
 
                         if (hasInCourse) {
-                            await finshRoute();
+                            //await finshRoute();
                         }
                         const responseData = await detailsRepositoryImpl.paymentsByGuide(
                             {
@@ -345,7 +358,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                         case StatusInvoiceID.CLOSE:
                             setDate(await SecureStore.getItemAsync('expiration_date'));
                             setStatusValue(StatusInvoice.CLOSE);
-                            setRunApiFinish(true);
+                            //setRunApiFinish(true);
                             setRouteStarted(true);
                             break;
 
@@ -357,7 +370,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
             }
 
             if (runApiFinish) {
-                await finshRoute();
+                //await finshRoute();
             }
         } catch (error: any) {
             setModalTitle("¡Error!");
@@ -483,7 +496,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
             <View style={[styles.backgroundFill,]} >
                 <Image
                     source={require('@/assets/icons/Welcome.png')}
-                    style={[styles.backgroundImage, { width, height:'100%' }]}
+                    style={[styles.backgroundImage, { width, height: '100%' }]}
                     resizeMode="cover"
                 />
             </View>
@@ -506,6 +519,15 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                 />
             )}
 
+            {showSuccess && (
+                <TopSuccessAlert
+                    visible={showSuccess}
+                    message="Ruta cuadrada"
+                    onHide={() => setShowSuccess(false)}
+                    subtitle={`La ruta #${guide} fue cuadrada con éxito`}
+                />
+            )}
+
             <View style={[
                 styles.whitePanel,
                 { height: height - (heightValue ? 150 : 200) }
@@ -522,49 +544,82 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                                 waitingForPermission={waitingForPermission || !checkUbication}
                                 dataResult={dataResult}
                             />
-                            {routeCompleted && (
+
+                            {((data.length != 0 && hasValidInvoice)) && (
+                                <>
+                                    <TouchableOpacity style={styles.cardConsignment} onPress={() => {
+                                        router.push({
+                                            pathname: '/views/consignaciones',
+                                            params: { codigoGuia: guide }
+                                        });
+                                    }}>
+                                        <View style={styles.leftContent}>
+                                            <Image
+                                                source={require('@/assets/icons/ConsignmentIcons.png')}
+                                                style={styles.icon}
+                                            />
+                                            <Text style={styles.titleConsignment}>Consignaciones</Text>
+                                        </View>
+
+                                        <Image
+                                            source={require('@/assets/icons/ChevronRight.png')}
+                                            style={styles.chevron}
+                                        />
+
+                                    </TouchableOpacity>
+
+                                    {(hasValidInvoice && valueParameterized) && (
+                                        <SecurityAlert
+                                            height={130}
+                                            title="Superaste el tope de seguridad de efectivo."
+                                            subtitle="Realiza una consignación en el punto de recaudo más cercano."
+                                            buttonLabel="Registrar consignación"
+                                            onPress={() => router.push({
+                                                pathname: '/views/consignaciones',
+                                                params: { codigoGuia: guide, statusConsignment: 'true' }
+                                            })}
+                                        />
+                                    )}
+
+                                </>
+                            )}
+
+                            {routeCompleted && statusValue !== StatusInvoice.CLOSE && (
                                 <ScanQRCard onScan={() => setShowScanner(true)} />
                             )}
-                        </View>
-                        {((data.length != 0 && hasValidInvoice)) && (
-                            <>
-                                <TouchableOpacity style={styles.cardConsignment} onPress={() => {
-                                    router.push({
-                                        pathname: '/views/consignaciones',
-                                        params: { codigoGuia: guide }
-                                    });
-                                }}>
+
+                            {/* Si estado es CLOSE → Mostrar botón Cuadre de ruta */}
+                            {statusValue === StatusInvoice.CLOSE && (
+                                <TouchableOpacity
+                                    style={styles.cardConsignment}
+                                    onPress={() => {
+                                        router.push({
+                                            pathname: "/views/conciliationSummary" as any,
+                                            params: {
+                                                guide,
+                                                token: tokenUser,
+                                            },
+                                        });
+                                    }}
+                                >
                                     <View style={styles.leftContent}>
                                         <Image
-                                            source={require('@/assets/icons/ConsignmentIcons.png')}
+                                            source={require('@/assets/icons/ConciliationSummary.png')}
                                             style={styles.icon}
                                         />
-                                        <Text style={styles.titleConsignment}>Consignaciones</Text>
+                                        <Text style={styles.titleConsignment}>
+                                            Cuadre de ruta
+                                        </Text>
                                     </View>
 
                                     <Image
                                         source={require('@/assets/icons/ChevronRight.png')}
                                         style={styles.chevron}
                                     />
-
                                 </TouchableOpacity>
+                            )}
 
-                                {(hasValidInvoice && valueParameterized) && (
-                                    <SecurityAlert
-                                        height={130}
-                                        title="Superaste el tope de seguridad de efectivo."
-                                        subtitle="Realiza una consignación en el punto de recaudo más cercano."
-                                        buttonLabel="Registrar consignación"
-                                        onPress={() => router.push({
-                                            pathname: '/views/consignaciones',
-                                            params: { codigoGuia: guide, statusConsignment: 'true' }
-                                        })}
-                                    />
-                                )}
-
-                            </>
-
-                        )}
+                        </View>
 
 
                         <Text style={styles.title}>Tu ruta</Text>
@@ -678,7 +733,6 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                     )}
 
 
-
                     <ExceptionModal
                         visible={modalVisible}
                         onClose={() => {
@@ -705,7 +759,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
 
                 </View>
             </View>
-            {loading && <LoadingBlue />}
+            
             <QRScanner
                 visible={showScanner}
                 onClose={() => setShowScanner(false)}
@@ -734,6 +788,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                     }
                 }}
             />
+            
             <ExceptionModal
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
@@ -741,6 +796,9 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                 message={modalMessage}
                 buttonLabel={modalButtonLabel}
             />
+
+            {loading && <LoadingBlue />}
+
         </ThemedView>
     );
 }

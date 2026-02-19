@@ -14,7 +14,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from "react";
-import { Dimensions, Image, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 const { width, height } = Dimensions.get('window');
 
 interface ProductFormFormProps {
@@ -615,45 +615,47 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 message={modalMessage}
                 buttonLabel={modalButtonLabel}
             />
+<ScrollView contentContainerStyle={{ flexGrow: 1 }}>
 
-            {/** Listado de productos */}
-            <ProductValidationSection
-                onFinalize={() => {
-                    handleSubmit;
-                    setUploadPhoto(true);
-                }}
-                onSuccessAlet={successButton}
-                onErrorAlert={alertButton}
-                onStatusNovelty={(data) => {
-                    setStatusNovelty(data);
-                }}
-                shouldAutoValidate={showNovelty}
-                modalStatusNovelty={modalStatusNovelty}
-                onCloseReportPorduct={(value) => {
-                    setViewModal(value);
+                {/** Listado de productos */}
+                <ProductValidationSection
+                    onFinalize={() => {
+                        handleSubmit;
+                        setUploadPhoto(true);
+                    }}
+                    onSuccessAlet={successButton}
+                    onErrorAlert={alertButton}
+                    onStatusNovelty={(data) => {
+                        setStatusNovelty(data);
+                    }}
+                    shouldAutoValidate={showNovelty}
+                    modalStatusNovelty={modalStatusNovelty}
+                    onCloseReportPorduct={(value) => {
+                        setViewModal(value);
 
-                }}
-                data={dataNovelty}
-                // messages={(messages) => {
-                //     setModalTitle("¡Alerta!");
-                //     setModalMessage(messages);
-                //     setModalVisible(true);
-                // }}
-                dataPorduct={showPorductData}
-                onItemData={(data) => {
-                    setProductItemData(data);
+                    }}
+                    data={dataNovelty}
+                    // messages={(messages) => {
+                    //     setModalTitle("¡Alerta!");
+                    //     setModalMessage(messages);
+                    //     setModalVisible(true);
+                    // }}
+                    dataPorduct={showPorductData}
+                    onItemData={(data) => {
+                        setProductItemData(data);
 
-                }}
-                refreshing={refreshing}
-                onRefreshing={() => {
-                    setRefreshingOnPress(false);
-                }}
-                onItemProductsPending={(data) => {
-                    if (data.length > 0) {
-                        setProductItemDataPending(data);
-                    }
-                }}
-            />
+                    }}
+                    refreshing={refreshing}
+                    onRefreshing={() => {
+                        setRefreshingOnPress(false);
+                    }}
+                    onItemProductsPending={(data) => {
+                        if (data.length > 0) {
+                            setProductItemDataPending(data);
+                        }
+                    }}
+                />
+            </ScrollView>
 
             {(uploadPhoto) && (
                 <UploadPhoto
@@ -765,8 +767,6 @@ const styles = StyleSheet.create({
         flex: 1,
         width: width,
         height: height,
-        alignItems: 'center',
-        position: 'absolute',
     },
     background: {
         position: 'absolute',

@@ -1,15 +1,19 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-const { width } = Dimensions.get("window");
+const { width: screenWidth } = Dimensions.get('window');
 
 interface Props {
     onScan: () => void;
+    height?: number;
 }
 
-export const ScanQRCard = ({ onScan }: Props) => {
+export const ScanQRCard = ({ 
+    onScan, 
+    height = 109,
+}: Props) => {
     return (
-        <View style={styles.card}>
+        <View style={[styles.card, { width: screenWidth * 0.9 }]}>
             <View style={styles.header}>
                 <MaterialIcons name="check-circle" size={24} color="#1F9144" style={styles.checkIcon} />
                 <View style={styles.textContainer}>
@@ -30,7 +34,6 @@ export const ScanQRCard = ({ onScan }: Props) => {
 
 const styles = StyleSheet.create({
     card: {
-        width: width - 32,
         backgroundColor: "#EAF7ED",
         borderRadius: 8,
         borderWidth: 1,

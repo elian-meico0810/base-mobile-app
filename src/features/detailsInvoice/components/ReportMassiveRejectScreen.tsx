@@ -1,6 +1,9 @@
 import { PrimaryButton } from "@/components/buttons/PrimaryButton";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+    Animated,
+    Keyboard,
+    Platform,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -22,18 +25,48 @@ export function ReportMassiveRejectScreen({
     title,
     onPress,
     onClose,
-    width = 360,
-    height = 440,
+    width = 385,
+    height = 480,
     showTypeDetails
 }: Props) {
 
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+    const [keyboardHeight] = useState(new Animated.Value(0));
 
     const handleConfirm = () => {
         if (selectedIndex === null) return;
         onPress?.(showTypeDetails![selectedIndex]);
         onClose?.();
     };
+
+    useEffect(() => {
+        const keyboardWillShow = Keyboard.addListener(
+            Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+            (e) => {
+                Animated.timing(keyboardHeight, {
+                    duration: 250,
+                    toValue: e.endCoordinates.height,
+                    useNativeDriver: false,
+                }).start();
+            }
+        );
+
+        const keyboardWillHide = Keyboard.addListener(
+            Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+            () => {
+                Animated.timing(keyboardHeight, {
+                    duration: 250,
+                    toValue: 0,
+                    useNativeDriver: false,
+                }).start();
+            }
+        );
+
+        return () => {
+            keyboardWillShow.remove();
+            keyboardWillHide.remove();
+        };
+    }, []);
 
     return (
         <View style={styles.overlay}>
@@ -46,7 +79,12 @@ export function ReportMassiveRejectScreen({
                         onPress={onClose}
                     />
 
-                    <View style={[styles.container, { width, height }]}>
+                    <View style={[styles.container,
+                    {
+                        width,
+                        height,
+                        marginBottom: keyboardHeight
+                    }]}>
 
                         <View style={styles.track} />
 

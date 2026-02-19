@@ -692,7 +692,7 @@ const styles = StyleSheet.create({
     background: {
         position: 'absolute',
         width: width,
-        height: height,
+        height: '100%',
         backgroundColor: '#F9F9FA',
     },
     headerContainer: {

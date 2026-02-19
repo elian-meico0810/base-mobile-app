@@ -483,7 +483,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
             <View style={[styles.backgroundFill,]} >
                 <Image
                     source={require('@/assets/icons/Welcome.png')}
-                    style={[styles.backgroundImage, { width, height }]}
+                    style={[styles.backgroundImage, { width, height:'100%' }]}
                     resizeMode="cover"
                 />
             </View>

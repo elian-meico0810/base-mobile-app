@@ -136,7 +136,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         // router.back();
         if (detailsCounterDelivery) {
 
-
             await deletePaymentByOrder();
 
             router.push({
@@ -1047,7 +1046,14 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
 
     const totalOrderPayment = Number(totalAproved) + Number(valueOrderPaymentByType);
-    const totalValue = (Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.dfr)) - Number(valueOrderCalculate);
+    const totalValue =
+        Number(
+            (
+                (Number(guide?.facturas[0]?.valorTotal) -
+                    Number(guide?.facturas[0]?.dfr)) -
+                Number(valueOrderCalculate)
+            ).toFixed(2)
+        );
     const totalRecauder = Math.max(0, Number(totalValue) - Number(totalOrderPayment));
 
     useEffect(() => {
@@ -1056,8 +1062,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         const executeLogic = async () => {
 
             if (!Number.isFinite(totalValue) || !Number.isFinite(totalRecauder) || !Number.isFinite(totalOrderPayment)) {
-                setModalTitle("¡Alerta!");
-                setModalMessage("Los valores aún no están listos. Intenta nuevamente.");
+                setModalTitle("Cargando...");
+                setModalMessage("Los valores aún no están listos, espere un momento.");
                 setModalVisible(true);
                 return;
             } else {
@@ -1094,12 +1100,13 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
             if (!Number.isFinite(totalValue) || !Number.isFinite(totalRecauder)) {
                 btnRef.current?.reset();
-                setModalTitle("¡Alerta!");
-                setModalMessage("Los valores aún no están listos. Intenta nuevamente.");
+                setModalTitle("Cargando...");
+                setModalMessage("Los valores aún no están listos, espere un momento.");
                 setModalVisible(true);
                 return;
             }
 
+            setButtonValueOTP(true);
 
             const responseData = await detailsRepositoryImpl.sendOTP(
                 {
@@ -1115,20 +1122,21 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
             if (responseData?.statusCode === 200) {
                 btnRef.current?.reset();
-                router.push({
-                    pathname: '/views/IndexDetailsInvoice',
-                    params: {
-                        guide: JSON.stringify(guide),
-                        numberGuide: numberGuide,
-                        token: token ?? "",
-                        confirmationStatus: 'true',
-                        responseOTPInit: JSON.stringify(responseData.data),
-                        totalValue: String(totalValue) ?? 0,
-                        totalRecauder: String(totalRecauder) ?? 0,
-                        totalOrderPayment: String(totalOrderPayment) ?? 0,
-                    }
+                setLoading(true);
+                // router.push({
+                //     pathname: '/views/IndexDetailsInvoice',
+                //     params: {
+                //         guide: JSON.stringify(guide),
+                //         numberGuide: numberGuide,
+                //         token: token ?? "",
+                //         confirmationStatus: 'true',
+                //         responseOTPInit: JSON.stringify(responseData.data),
+                //         totalValue: String(totalValue) ?? 0,
+                //         totalRecauder: String(totalRecauder) ?? 0,
+                //         totalOrderPayment: String(totalOrderPayment) ?? 0,
+                //     }
 
-                });
+                // });
             } else {
                 setValidateException(true);
                 btnRef.current?.reset();
@@ -1140,10 +1148,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setValidateException(true);
             btnRef.current?.reset();
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 222.");
             setModalVisible(true);
-        } finally {
-            setLoading(false);
         }
     };
 

@@ -18,7 +18,7 @@ import { GuideDetails, PaymentsByInvoice } from '@/src/features/tracking/domain/
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { getDeviceDateTime, heightCaldulate } from '@/src/utils/uitls';
 import * as Location from 'expo-location';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useRef, useState } from "react";
 import {
@@ -78,6 +78,9 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const isSmallScreen = height <= 780;
 
     const heightValue = heightCaldulate();
+
+    const params = useLocalSearchParams();
+    const success = params?.success as string | undefined;
 
     const [routeCompleted, setRouteCompleted] = useState(false);
     const [showScanner, setShowScanner] = useState(false);
@@ -179,6 +182,16 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
         }
     }, [token, !waitingForPermission]);
 
+    useEffect(() => {
+        if (success === "route_closed") {
+            setShowSuccess(true);
+
+            setTimeout(() => {
+                setShowSuccess(false);
+            }, 4000);
+        }
+    }, [success]);
+
 
     const checkUnicationPermissions = async () => {
         try {
@@ -239,7 +252,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                         );
 
                         if (hasInCourse) {
-                            await finshRoute();
+                            //await finshRoute();
                         }
                         const responseData = await detailsRepositoryImpl.paymentsByGuide(
                             {
@@ -294,7 +307,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                         case StatusInvoiceID.CLOSE:
                             setDate(await SecureStore.getItemAsync('expiration_date'));
                             setStatusValue(StatusInvoice.CLOSE);
-                            setRunApiFinish(true);
+                            //setRunApiFinish(true);
                             setRouteStarted(true);
                             break;
 
@@ -306,7 +319,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
             }
 
             if (runApiFinish) {
-                await finshRoute();
+                //await finshRoute();
             }
         } catch (error: any) {
             setModalTitle("¡Error!");
@@ -454,6 +467,15 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                 />
             )}
 
+            {showSuccess && (
+                <TopSuccessAlert
+                    visible={showSuccess}
+                    message="Ruta cuadrada"
+                    onHide={() => setShowSuccess(false)}
+                    subtitle={`La ruta #${guide} fue cuadrada con éxito`}
+                />
+            )}
+
             <View style={[
                 styles.whitePanel,
                 { height: height - (heightValue ? 150 : 200) }
@@ -470,31 +492,64 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                                 waitingForPermission={waitingForPermission || !checkUbication}
                                 dataResult={dataResult}
                             />
-                            {routeCompleted && (
+                            
+                            {((data.length != 0 && hasValidInvoice)) && (
+                                <TouchableOpacity style={styles.cardConsignment} onPress={() => {
+                                    router.push({
+                                        pathname: '/views/consignaciones',
+                                        params: { codigoGuia: guide }
+                                    });
+                                }}>
+                                    <View style={styles.leftContent}>
+                                        <Image
+                                            source={require('@/assets/icons/ConsignmentIcons.png')}
+                                            style={styles.icon}
+                                        />
+                                        <Text style={styles.titleConsignment}>Consignaciones</Text>
+                                    </View>
+
+                                    <Image
+                                        source={require('@/assets/icons/ChevronRight.png')}
+                                        style={styles.chevron}
+                                    />
+                                </TouchableOpacity>
+                            )}
+
+                            {routeCompleted && statusValue !== StatusInvoice.CLOSE && (
                                 <ScanQRCard onScan={() => setShowScanner(true)} />
                             )}
-                        </View>
-                        {((data.length != 0 && hasValidInvoice)) && (
-                            <TouchableOpacity style={styles.cardConsignment} onPress={() => {
-                                router.push({
-                                    pathname: '/views/consignaciones',
-                                    params: { codigoGuia: guide }
-                                });
-                            }}>
-                                <View style={styles.leftContent}>
-                                    <Image
-                                        source={require('@/assets/icons/ConsignmentIcons.png')}
-                                        style={styles.icon}
-                                    />
-                                    <Text style={styles.titleConsignment}>Consignaciones</Text>
-                                </View>
+                            {/* Si estado es CLOSE → Mostrar botón Cuadre de ruta */}
+                            {statusValue === StatusInvoice.CLOSE && (
+                                <TouchableOpacity
+                                    style={styles.cardConsignment}
+                                    onPress={() => {
+                                        router.push({
+                                            pathname: "/views/conciliationSummary",
+                                            params: {
+                                                guide,
+                                                token: tokenUser,
+                                            },
+                                        });
+                                    }}
+                                >
+                                    <View style={styles.leftContent}>
+                                        <Image
+                                            source={require('@/assets/icons/ConciliationSummary.png')}
+                                            style={styles.icon}
+                                        />
+                                        <Text style={styles.titleConsignment}>
+                                            Cuadre de ruta
+                                        </Text>
+                                    </View>
 
-                                <Image
-                                    source={require('@/assets/icons/ChevronRight.png')}
-                                    style={styles.chevron}
-                                />
-                            </TouchableOpacity>
-                        )}
+                                    <Image
+                                        source={require('@/assets/icons/ChevronRight.png')}
+                                        style={styles.chevron}
+                                    />
+                                </TouchableOpacity>
+                            )}
+
+                        </View>
 
                         <Text style={styles.title}>Tu ruta</Text>
                         <SearchInput

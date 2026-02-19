@@ -1,10 +1,12 @@
 import { PrimaryButton } from "@/components/buttons/PrimaryButton";
 import { LoadingBlue } from "@/components/generals/LoadingBlue";
 import { ThemedView } from "@/components/themed-view";
+import { StatusInvoice } from "@/src/constants/GuideStates";
 import { ConciliationRouteResponse } from "@/src/features/tracking/domain/details/DetailsGuide";
 import { detailsRepositoryImpl } from "@/src/features/tracking/infrastructure/details/detailsRepositoryImpl";
-import { heightCaldulate } from "@/src/utils/uitls";
+import { getDeviceDateTime, heightCaldulate } from "@/src/utils/uitls";
 import { MaterialIcons } from "@expo/vector-icons";
+import * as Location from 'expo-location';
 import { router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -32,6 +34,10 @@ export function ConciliationForm({
   const [data, setData] = useState<ConciliationRouteResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
+  const [statusValue, setStatusValue] = useState("");
 
   const format = useMemo(
     () => (n?: number) => `$${Number(n ?? 0).toLocaleString("es-CO")}`,
@@ -64,9 +70,9 @@ export function ConciliationForm({
 
   const handelClick = async () => {
     try {
-
       console.log("Finalizar ruta")
-
+      setStatusValue(StatusInvoice.CLOSE);      
+      await finshRoute();   
     } catch (e) {
       console.log("Error conciliation:", e);
       setError(true);
@@ -84,6 +90,45 @@ export function ConciliationForm({
     //`/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`,
     //);
   };
+
+  const finshRoute = async () => {
+    try {
+      setLoading(true);
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Highest,
+      });
+
+      const responseData = await detailsRepositoryImpl.closeRouteInit(
+        {
+          codigoGuia: String(guide),
+          latitud: String(location.coords.latitude),
+          longitud: String(location.coords.longitude),
+          fechaHoraDispositivo: getDeviceDateTime()
+        },
+        token
+      );
+      if (responseData?.statusCode == 200) {
+        router.replace({
+          pathname: "/views/details",
+          params: {
+            guide,
+            token,
+            success: "route_closed",
+          },
+        });
+      } else {
+        setModalTitle("¡Alerta!");
+        setModalMessage(responseData?.message ?? "Ocurrió un error inesperado.");
+        setModalVisible(true);
+      }
+    } catch (error: any) {
+      setModalTitle("¡Error!");
+      setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+      setModalVisible(true);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <ThemedView style={styles.container}>

@@ -128,3 +128,21 @@ export interface successOrderPayment {
   tipoPago: string,
   descripcion: string,
 }
+
+export interface successOrderCashPayment {
+  codigoGuia: string;
+  totalEfectivo: number;
+  pagos: successOrderPayment[];
+}
+
+export interface TypeParameterValue {
+  id: number,
+  valor: number,
+  descripcion: string,
+  fecha_inicio: string,
+  fecha_fin: string,
+  fecha_creacion: string,
+  eliminado: boolean,
+  fecha_eliminacion: string,
+  tipo_parametro: number,
+}

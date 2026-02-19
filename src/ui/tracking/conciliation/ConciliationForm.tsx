@@ -28,8 +28,6 @@ export function ConciliationForm({
   token = "",
   onSubmit,
 }: ConciliationFormProps) {
-  console.log("initialGuide 2: ", initialGuide);
-
   const [guide] = useState(initialGuide);
   const [data, setData] = useState<ConciliationRouteResponse | null>(null);
   const [loading, setLoading] = useState(true);

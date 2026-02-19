@@ -26,6 +26,8 @@ export const API_ROUTES = {
   VALIDATE_OTP: "otp/verificar/",
   WS_ALL_PAYMENT_SUCCESS_FUL: "reporte-pago/ws-pagos-registrados/",
   GET_INFO_BY_DIRECTION_OF_OTP: "otp/info-otp-by-direccion-id/",
+  GET_REPRORT__APYMENT_BY_CODE_GUIDE: "reporte-pago/por-guia/",
+  GET_PARAMETER_VALUE_BY_TYPE: "valores-parametrizados/get-valores-parametrizados/",
   // Back contado anticipado
   SEND_PAYMENT_GATEWAY: "pagos/generar-link-pasarela/",
   GENERATE_QR: "pagos/generar_qr_bancolombia/",

@@ -12,11 +12,12 @@ import { UploadPhotoItem } from '@/components/photo/uploadPhotoItem';
 import { GuideCardSkeleton } from '@/components/skeleton/GuideCardSkeleton';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
-import { GuideState, StatusInvoice, StatusInvoiceID, TypeConPagoEnum, TypeInvoiceEnum } from '@/src/constants/GuideStates';
+import { GuideState, StatusInvoice, StatusInvoiceID, TypeConPagoEnum, TypeDetailsEnum, TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import { ConsignmentData } from '@/src/features/detailsInvoice/components/ConsignmentData';
 import { QRScanner } from '@/src/features/detailsInvoice/components/qrScanner';
 import { GuideDetails, PaymentsByInvoice } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
+import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
 import { getDeviceDateTime, heightCaldulate } from '@/src/utils/uitls';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
@@ -68,6 +69,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const [statusValue, setStatusValue] = useState("");
     const [valueInput, setValueInput] = useState("");
     const [runApiFinish, setRunApiFinish] = useState(false);
+    const [valueParameterized, setValueParameterized] = useState(false);
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [waitingForPermission, setWaitingForPermission] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
@@ -99,10 +101,17 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     useEffect(() => {
         const fetchToken = async () => {
             const savedToken = await SecureStore.getItemAsync('user_token');
+
+            if (!savedToken) return;
+
             setToken(savedToken);
+
+            await listReportPaymentByCOideGuide(savedToken);
         };
+
         fetchToken();
     }, []);
+
 
     // Listener de AppState mejorado
     useEffect(() => {
@@ -170,6 +179,46 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
             setWaitingForPermission(false);
         }
     };
+
+    // Función para verificar permisos
+    const listReportPaymentByCOideGuide = async (authToken: string) => {
+        try {
+
+            const responseQueryData = await invoiceRepositoryImpl.successTypeCashPayment(
+                String(initialGuide),
+                authToken
+            );
+            let total = 0;
+
+            if (responseQueryData?.statusCode === 200) {
+                const data = responseQueryData.data as any;
+                total = data?.totalEfectivo
+
+                // setValuePaymentByType(total);
+                if (total) {
+                    const response = await invoiceRepositoryImpl.typeParameterValue(
+                        TypeDetailsEnum.MAXIMUM_AMOUNT,
+                        authToken
+                    );
+
+                    if (Array.isArray(response?.data)) {
+                        if (total >= response?.data?.[0].valor) {
+                            setValueParameterized(true);
+                        }
+                    }
+
+                }
+
+            }
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     useEffect(() => {
         const fetchPermissions = async () => {
@@ -348,6 +397,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
             setLoading(false);
         }
     }
+
     const handleExit = async () => {
         setLoading(true);
         await SecureStore.deleteItemAsync('user_token');
@@ -499,16 +549,19 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
 
                                 </TouchableOpacity>
 
-                                <SecurityAlert
-                                    height={130}
-                                    title="Superaste el tope de seguridad de efectivo."
-                                    subtitle="Realiza una consignación en el punto de recaudo más cercano."
-                                    buttonLabel="Registrar consignación"
-                                    onPress={() => router.push({
-                                        pathname: '/views/consignaciones',
-                                        params: { codigoGuia: guide, statusConsignment: 'true'}
-                                    })}
-                                />
+                                {(hasValidInvoice && valueParameterized) && (
+                                    <SecurityAlert
+                                        height={130}
+                                        title="Superaste el tope de seguridad de efectivo."
+                                        subtitle="Realiza una consignación en el punto de recaudo más cercano."
+                                        buttonLabel="Registrar consignación"
+                                        onPress={() => router.push({
+                                            pathname: '/views/consignaciones',
+                                            params: { codigoGuia: guide, statusConsignment: 'true' }
+                                        })}
+                                    />
+                                )}
+
                             </>
 
                         )}

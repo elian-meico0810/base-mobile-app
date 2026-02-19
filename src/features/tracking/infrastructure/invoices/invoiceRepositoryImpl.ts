@@ -245,4 +245,34 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
     }
   },
 
+  async successTypeCashPayment(guide: string, token: string) {
+    try {
+
+      const response = await authApi.get(`${API_ROUTES.GET_REPRORT__APYMENT_BY_CODE_GUIDE}${guide}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async typeParameterValue(type_paramter: string, token: string) {
+    try {
+
+      const response = await authApi.get(`${API_ROUTES.GET_PARAMETER_VALUE_BY_TYPE}${type_paramter}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
 };

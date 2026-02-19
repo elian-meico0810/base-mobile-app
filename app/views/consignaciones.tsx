@@ -34,7 +34,7 @@ export default function ConsignacionesScreen() {
   const [summary, setSummary] = useState<ConsignmentSummary | null>(null);
   const [rutaId, setRutaId] = useState<number | null>(null);
   // Modal states
-  const [showViewConsignment, setViewConsignment] = useState(statusConsignment ? true: false );
+  const [showViewConsignment, setViewConsignment] = useState(statusConsignment ? true : false);
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [selectedConsignment, setSelectedConsignment] = useState<Consignment | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -322,14 +322,55 @@ export default function ConsignacionesScreen() {
 
   if (loading) {
     return (
-      <ThemedView style={[styles.container, styles.loadingContainer]}>
-        <Stack.Screen options={{ title: 'Consignaciones', headerShown: true, headerShadowVisible: false, headerBackVisible: false, headerTitle: () => <Text style={{ fontFamily: 'Rubik', fontWeight: '700', fontSize: 18, color: '#141D32' }}>Consignaciones</Text> }} />
-        <ActivityIndicator size="large" color="#164194" />
-      </ThemedView>
+      <>
+        <Stack.Screen
+          options={{
+            title: 'Consignaciones',
+            headerShown: true,
+            headerShadowVisible: false,
+            headerBackVisible: false,
+            headerStyle: { backgroundColor: '#F9F9FA' },
+            headerTitleAlign: 'left',
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={{ paddingHorizontal: 12 }}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Svg width="23" height="23" viewBox="0 0 512 512" style={{ marginLeft: -10, marginBottom: -2 }}>
+                  <Path
+                    fill="none"
+                    stroke="#141D32"
+                    strokeWidth={35}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M328 112L184 256l144 144"
+                  />
+                </Svg>
+              </TouchableOpacity>
+            ),
+            headerTitle: () => (
+              <Text style={{ fontFamily: 'Rubik', fontWeight: '700', fontSize: 18, color: '#141D32' }}>
+                Consignaciones
+              </Text>
+            ),
+          }}
+        />
+
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: '#F9F9FA',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <ActivityIndicator size="large" color="#164194" />
+        </View>
+      </>
     );
   }
 
-  
   return (
     <>
       <Stack.Screen

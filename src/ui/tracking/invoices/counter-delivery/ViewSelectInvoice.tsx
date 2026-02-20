@@ -4,12 +4,13 @@ import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { ThemedView } from '@/components/themed-view';
-import InvoicesList from '@/src/features/tracking/components/tabs/InvoicesList';
-import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { TypeCaculateValueEnum, TypeInvoiceEnum } from '@/src/constants/GuideStates';
+import { Detail, Document, GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
-import { cleanSpaces, getDeviceDateTime, getDistanceInMeters, heightCaldulate } from '@/src/utils/uitls';
+import { calculateVlueByPorducts, capitalizeFirst, cleanSpaces, getDeviceDateTime, getDistanceInMeters, heightCaldulate, toUpperCase } from '@/src/utils/uitls';
+import { Image } from 'expo-image';
 import * as Location from "expo-location";
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from "react";
@@ -24,10 +25,11 @@ interface ViewSelectInvoiceProps {
     isSelectInvocies?: string;
     documentMeico?: string;
     routeStartedBotton?: string;
+    detailsCounterDelivery?: boolean;
 
 }
 
-export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, routeStartedBotton }: ViewSelectInvoiceProps) {
+export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, routeStartedBotton, detailsCounterDelivery }: ViewSelectInvoiceProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
@@ -53,8 +55,15 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [allowBack, setAllowBack] = useState(false);
     const btnRef = useRef<any>(null);
     const router = useRouter();
+    const [typePayment, setTypePayment] = useState(false);
+    const [valueOrderCalculate, setValueOrderCalculate] = useState(0);
     const [checkUbication, setCheckUbication] = useState(false);
+    const [showPorductData, setPorductData] = useState<Document[]>([]);
+    const [valueOrderPaymentByType, setValuePaymentByType] = useState(0);
+
     const heightValue = heightCaldulate();
+
+    console.log("guide?.factura: ", guide?.facturas);
 
     const handleGoBack = () => {
         // router.back();
@@ -63,6 +72,28 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         );
     };
 
+    const getSuccessOrderPayment = async () => {
+        try {
+
+            const responseQueryData = await invoiceRepositoryImpl.successOrderPayment(
+                Number(initialGuide?.pedidos?.[0]?.id),
+                token
+            );
+            if (responseQueryData?.statusCode === 200 && Array.isArray(responseQueryData.data)) {
+                const total = responseQueryData.data
+                    .map(item => Number(item.valorRegistrado ?? 0))
+                    .reduce((a, b) => a + b, 0);
+
+                setValuePaymentByType(total);
+            }
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         if (token) {
@@ -230,6 +261,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         }
     };
 
+
     const listGuideData = async () => {
         try {
             setLoading(true);
@@ -360,8 +392,57 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const totalRecauder = Math.max(0, totalFacturas - totalAproved);
     const conditionButton = conceptDelivery.length != 0 || routeStarted;
     const validateCheckboxlength = conceptDelivery.length == guide?.facturas?.length
+
     const isSmallScreen = height <= 780;
     const conceptDeliveryValue = conceptDelivery.length > 0
+    var value = '';
+
+    switch (guide?.facturas[0]?.tipo) {
+        case TypeInvoiceEnum.CONTADO_EFECTIVO:
+            value = 'Contra-entrega';
+            break;
+
+        case TypeInvoiceEnum.CREDITO:
+            value = 'Credito';
+            break;
+
+        case TypeInvoiceEnum.ANTICIPO:
+            value = 'Anticipado';
+            break;
+    }
+    const closeButton = routeStarted;
+    const totalValue =
+        Number(
+            (
+                (Number(guide?.facturas[0]?.valorTotal) -
+                    Number(guide?.facturas[0]?.dfr)) -
+                Number(valueOrderCalculate)
+            ).toFixed(2)
+        );
+    const totalOrderPayment = Number(totalAproved) + Number(valueOrderPaymentByType);
+
+    useEffect(() => {
+        if (detailsCounterDelivery || closeButton) {
+            const total =
+                showPorductData?.[0]?.detalles?.reduce((suma, detalle) => {
+                    return (
+                        suma +
+                        calculateVlueByPorducts(
+                            detalle as Detail,
+                            TypeCaculateValueEnum.ACTION_5
+                        )
+                    );
+                }, 0) || 0;
+
+            setValueOrderCalculate(total);
+        }
+    }, [
+        token,
+        closeButton,
+        detailsCounterDelivery,
+        showPorductData,
+    ]);
+
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -401,56 +482,154 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
                 {/* Card blanco centrado */}
                 <View style={styles.card}>
-                    {/* Encabezado */}
-                    <View style={styles.cardHeader}>
-                        <View
-                            style={[
-                                styles.statusContainer,
-                                validateCheckboxlength && { backgroundColor: '#DFF5E1' },
-                            ]}
-                        >
-                            <Text
-                                style={[
-                                    styles.status,
-                                    validateCheckboxlength && { color: '#1F9144' },
-                                ]}
-                            >
-                                {validateCheckboxlength ? 'Pedido entregado' : 'Pendiente'}
-                            </Text>
-                        </View>
-                    </View>
-
-                    {/* Información del minimercado */}
-                    <View style={styles.merchantInfo}>
-                        <Text style={styles.merchantName}>{guide?.nombreCliente ?? ''}</Text>
-                        <Text style={styles.documentNumber}>{guide?.codigoCliente ?? '0'}</Text>
-                        <Text style={styles.address}>{cleanSpaces(guide?.direccion)}, {cleanSpaces(guide?.poblacion)}</Text>
-                    </View>
 
                     {/* Línea divisoria */}
                     <View style={styles.orderInfo}>
+
+                        <View style={styles.storeRow}>
+                            <Image
+                                source={require("@/assets/icons/HouseIcon.png")}
+                                style={styles.storeIcon}
+                                resizeMode="contain"
+                            />
+
+                            <View style={styles.storeText}>
+                                <Text style={styles.labelTwo}>Nombre de la tienda</Text>
+                                <Text style={styles.value}>
+                                    {toUpperCase(guide?.nombreCliente)}
+                                </Text>
+                            </View>
+                        </View>
+
                         <View style={styles.divider} />
+                        <View style={styles.storeRow}>
+                            <Image
+                                source={require("@/assets/icons/UbicationIcon.png")}
+                                style={styles.storeIcon}
+                                resizeMode="contain"
+                            />
+                            <View style={styles.storeText}>
+                                <Text style={styles.labelTwo}>Dirección</Text>
+                                <Text style={styles.direccionText}>{cleanSpaces(guide?.direccion)}, {cleanSpaces(guide?.poblacion)}</Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.divider} />
+
+                        <View style={styles.storeRow}>
+                            <Image
+                                source={require("@/assets/icons/NumberIcon.png")}
+                                style={styles.storeIcon}
+                                resizeMode="contain"
+                            />
+                            <View style={styles.storeText}>
+                                <Text style={styles.labelTwo}>Código del cliente</Text>
+                                <Text style={styles.value}>
+                                    {guide?.codigoCliente ?? '0'}
+                                </Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.divider} />
+
+                        <View style={styles.storeRow}>
+                            <Image
+                                source={require("@/assets/icons/CashIcon.png")}
+                                style={styles.storeIcon}
+                                resizeMode="contain"
+                            />
+                            <View style={styles.storeText}>
+
+                                <Text style={styles.labelTwo}>Método de pago</Text>
+                                <Text style={styles.value}>
+                                    {capitalizeFirst(value)}
+                                </Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.divider} />
+
+                        <View style={styles.storeRow}>
+                            <Image
+                                source={require("@/assets/icons/InvoiceIcon.png")}
+                                style={styles.storeIcon}
+                                resizeMode="contain"
+                            />
+                            <View style={styles.storeText}>
+                                <Text style={styles.labelTwo}>N° de factura</Text>
+                                <Text style={styles.value}>
+                                    {
+                                        guide?.facturas?.length
+                                            ? guide.facturas
+                                                .map(f => f.numeroFactura)
+                                                .join(' / ')
+                                            : '0'
+                                    }
+                                </Text>
+                                <Text style={styles.labelThree}>{guide?.facturas?.length} facturas asociadas</Text>
+
+                            </View>
+                        </View>
+                    </View>
+                </View>
+
+
+                <View style={[styles.cardTwo, { minHeight: !closeButton ? undefined : 229 }]}>
+                    {/* Encabezado */}
+                    {(detailsCounterDelivery || closeButton) && (
+                        <View style={styles.cardHeader}>
+                            <View
+                                style={[
+                                    styles.statusContainer,
+                                    totalRecauder == 0 && { backgroundColor: '#DFF5E1' },
+                                ]}
+                            >
+                                <Text
+                                    style={[
+                                        styles.status,
+                                        totalRecauder == 0 && { color: '#1F9144' },
+                                    ]}
+                                >
+                                    {totalRecauder == 0 ? 'Pago realizado' : 'Pendiente'}
+                                </Text>
+                            </View>
+                        </View>
+                    )}
+
+                    {/* Línea divisoria */}
+                    <View style={styles.orderInfo}>
+
                         <View style={styles.row}>
-                            <Text style={styles.label}>Ordenes a entregar</Text>
-                            <Text style={styles.value}> {Number(guide?.facturas?.length) - Number(conceptDelivery.length)}</Text>
+                            <Text style={styles.label}>Subtotal</Text>
+                            <Text style={styles.value}>{'$ ' + (Number(guide?.facturas[0]?.valorTotal) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
                         </View>
                         <View style={styles.row}>
-                            <Text style={styles.labelTotal}>Valor total del pedido</Text>
-                            <Text style={[styles.value, { color: '#141D32', fontWeight: '800' }]}>
-                                {
-                                    '$ ' +
-                                    guide?.facturas
-                                        ?.reduce((sum, f) => sum + (f.valorRecaudar ?? 0), 0)
-                                        .toLocaleString('es-CO', { minimumFractionDigits: 0 })
-                                }
+                            <Text style={styles.label}>Descuento financiero</Text>
+                            <Text style={[styles.value, { color: '#1F9144' }]}>
+                                {'$ - ' + Number(guide?.facturas[0]?.dfr).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                             </Text>
                         </View>
-                        <View style={styles.divider} />
+                        {(detailsCounterDelivery || closeButton) && (
+                            <View style={styles.row}>
+                                <Text style={styles.label}>Productos rechazados</Text>
+                                <Text style={styles.value}>{'$ ' + Number(valueOrderCalculate).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
+                            </View>
+                        )}
+                        <View style={styles.row}>
+                            <Text style={styles.labelTotal}>Valor total</Text>
+                            <Text style={[styles.value, { color: '#141D32', fontWeight: '800' }]}>
+                                {'$ ' + Number(totalValue || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                            </Text>
+                        </View>
+
+                        <View style={styles.dividerTwo} />
+
+                        {/* Información del pedido */}
                         <View style={styles.row}>
                             <Text style={styles.label}>Valor recaudado</Text>
-                            <Text style={styles.value}>{'$ ' + Number(totalAproved || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
-
+                            <Text style={styles.value}>{'$ ' + Number(totalOrderPayment || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
                         </View>
+
                         <View style={styles.row}>
                             <Text style={styles.labelTotal}>Valor a recaudar</Text>
                             <Text style={[
@@ -464,10 +643,56 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                                 {'$ ' + (Number(totalRecauder) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                             </Text>
                         </View>
+
+                        {(detailsCounterDelivery || closeButton) && (
+                            totalRecauder != 0 ? (
+                                <TouchableOpacity
+                                    style={styles.qrButton}
+                                    onPress={() => {
+                                        setTypePayment(true);
+                                    }}
+                                >
+                                    <View style={styles.qrButtonContent}>
+                                        <Text style={styles.qrButtonText}>Registrar pago</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            ) : (
+                                <TouchableOpacity
+                                    style={styles.qrButtonDetail}
+                                    onPress={() => { setShowPayment(true) }}
+                                >
+                                    <Text style={styles.qrButtonText}>Detalle de pagos</Text>
+                                </TouchableOpacity>
+                            )
+                        )}
+
                     </View>
+
                 </View>
 
-                <View style={styles.headerContainerTwo}>
+                {(!detailsCounterDelivery && !closeButton) && (
+                    <TouchableOpacity
+                        style={styles.qrButtonDetailTwo}
+                        onPress={() => {
+                            console.log('HOLA SI SE PRESIONO');
+                        }}
+                    >
+                        <View >
+                            <Image
+                                source={require('@/assets/icons/CloseRed.png')}
+                                style={styles.icon}
+                            />
+                        </View>
+
+                        <Text style={styles.qrButtonTexRed}>
+                            No pude entregar el pedido
+                        </Text>
+                    </TouchableOpacity>
+
+
+                )}
+
+                {/* <View style={styles.headerContainerTwo}>
                     <Text style={styles.headerTitleTWO}>Ordenes a entregar</Text>
                 </View>
 
@@ -481,7 +706,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         conceptDelivery={conceptDelivery}
                         activeView={activeView}
                     />
-                </View>
+                </View> */}
             </ScrollView>
             {guide?.estado === 'Pendiente' && (
                 <View style={[styles.redBackground, { height: heightValue ? 100 : 90 }]} />
@@ -535,6 +760,14 @@ const styles = StyleSheet.create({
         height: height,
         backgroundColor: '#F9F9FA',
     },
+    icon: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 8,
+    },
     headerContainer: {
         width: '100%',
         flexDirection: 'row',
@@ -571,7 +804,7 @@ const styles = StyleSheet.create({
     },
     card: {
         width: 360,
-        minHeight: 240,
+        minHeight: 300,
         backgroundColor: '#FFFFFF',
         borderColor: '#F0F1F5',
         borderWidth: 1,
@@ -584,41 +817,31 @@ const styles = StyleSheet.create({
         shadowColor: "#000",
         marginTop: 1,
     },
+    cardTwo: {
+        width: 360,
+        backgroundColor: '#FFFFFF',
+        borderColor: '#F0F1F5',
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingTop: 10,
+        paddingBottom: 16,
+        paddingLeft: 12,
+        paddingRight: 12,
+        gap: 5,
+        shadowColor: "#000",
+        marginTop: 10,
+    },
     cardHeader: {
         alignItems: 'center',
         marginBottom: 4,
-    },
-    merchantInfo: {
-        alignItems: 'center',
-        marginBottom: 0,
-    },
-    merchantName: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#000',
-        textAlign: 'center',
-    },
-    documentNumber: {
-        fontFamily: 'Rubik',
-        fontWeight: '600',
-        fontSize: 12,
-        lineHeight: 16,
-        color: '#141D32',
-        textAlign: 'center',
-    },
-    address: {
-        fontFamily: 'Rubik',
-        fontWeight: '600',
-        fontSize: 12,
-        lineHeight: 16,
-        color: '#141D32',
-        textAlign: 'center',
     },
     divider: {
         height: 1,
         backgroundColor: '#E0E0E0',
         width: '100%',
         marginVertical: 2,
+        marginTop: 12,
+
     },
     dividerTwo: {
         borderBottomColor: '#E0E0E0',
@@ -637,28 +860,47 @@ const styles = StyleSheet.create({
     label: {
         fontFamily: 'Rubik',
         fontWeight: '400',
-        fontSize: 12,
+        fontSize: 14,
         color: '#141D32',
         flex: 1,
+    },
+    labelTwo: {
+        fontFamily: 'Rubik',
+        fontWeight: '600',
+        fontSize: 14,
+        color: '#788095',
     },
     value: {
         fontFamily: 'Rubik',
         fontWeight: '600',
-        fontSize: 12,
+        fontSize: 14,
         color: '#141D32',
-        textAlign: 'right',
+        alignItems: 'flex-start',
+        overflow: 'hidden',
+    },
+    direccionText: {
+        fontFamily: 'Rubik',
+        fontWeight: '600',
+        fontSize: 14,
+        color: '#141D32',
+        alignItems: 'flex-start',
+        overflow: 'hidden',
+        flexWrap: 'wrap',
+        flexShrink: 1,
+        width: '100%',
+        maxWidth: '100%',
     },
     labelTotal: {
         fontFamily: 'Rubik',
         fontWeight: '800',
-        fontSize: 12,
+        fontSize: 14,
         color: '#141D32',
         flex: 1,
     },
     status: {
         fontFamily: 'Rubik',
         fontWeight: '400',
-        fontSize: 12,
+        fontSize: 14,
         color: '#4F74C4',
     },
     statusContainer: {
@@ -686,6 +928,13 @@ const styles = StyleSheet.create({
         color: '#164194',
         textAlign: 'center',
     },
+    qrButtonTexRed: {
+        fontFamily: 'Rubik',
+        fontWeight: '700',
+        fontSize: 12,
+        color: '#C62828',
+        textAlign: 'center',
+    },
     qrButtonDetail: {
         height: 32,
         backgroundColor: '#fffffffc',
@@ -694,6 +943,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 12,
     },
+    qrButtonDetailTwo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        height: 32,
+        borderRadius: 16,
+        marginTop: 12,
+    },
+
     footer: {
         position: 'absolute',
         bottom: 45,
@@ -741,6 +998,28 @@ const styles = StyleSheet.create({
         height: 90,
         backgroundColor: "#F9F9FA",
         zIndex: 0,
+    },
+    storeRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    storeIcon: {
+        width: 24,
+        height: 24,
+    },
+    storeText: {
+        width: '100%',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        flexWrap: 'wrap',
+        flexShrink: 1,
+    },
+    labelThree: {
+        fontFamily: 'Rubik',
+        fontWeight: '200',
+        fontSize: 11,
+        color: '#788095',
     },
 });
 

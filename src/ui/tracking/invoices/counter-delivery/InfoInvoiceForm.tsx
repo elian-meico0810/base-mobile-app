@@ -1833,20 +1833,20 @@ const styles = StyleSheet.create({
     label: {
         fontFamily: 'Rubik',
         fontWeight: '400',
-        fontSize: 12,
+        fontSize: 14,
         color: '#141D32',
         flex: 1,
     },
     labelTwo: {
         fontFamily: 'Rubik',
-        fontWeight: '400',
-        fontSize: 12,
+        fontWeight: '600',
+        fontSize: 14,
         color: '#788095',
     },
     value: {
         fontFamily: 'Rubik',
         fontWeight: '600',
-        fontSize: 12,
+        fontSize: 14,
         color: '#141D32',
         alignItems: 'flex-start',
         overflow: 'hidden',
@@ -1854,7 +1854,7 @@ const styles = StyleSheet.create({
     direccionText: {
         fontFamily: 'Rubik',
         fontWeight: '600',
-        fontSize: 12,
+        fontSize: 14,
         color: '#141D32',
         alignItems: 'flex-start',
         overflow: 'hidden',
@@ -1866,14 +1866,14 @@ const styles = StyleSheet.create({
     labelTotal: {
         fontFamily: 'Rubik',
         fontWeight: '800',
-        fontSize: 12,
+        fontSize: 14,
         color: '#141D32',
         flex: 1,
     },
     status: {
         fontFamily: 'Rubik',
         fontWeight: '400',
-        fontSize: 12,
+        fontSize: 14,
         color: '#4F74C4',
     },
     statusContainer: {
@@ -1988,6 +1988,5 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         flexShrink: 1,
     },
-
 });
 

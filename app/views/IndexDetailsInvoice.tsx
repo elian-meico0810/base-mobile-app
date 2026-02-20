@@ -1,6 +1,6 @@
 import { GuideDetails, ResponseOTPInitPorps } from '@/src/features/tracking/domain/details/DetailsGuide';
-import { ProductForm } from '@/src/ui/detailsInvoice/products/ProductForm';
-import { ViewOTPCodeForm } from '@/src/ui/detailsInvoice/products/ViewOTPCodeForm';
+import { ProductForm } from '@/src/ui/detailsInvoice/counter-delivery/indexInvoice/products/ProductForm';
+import { ViewOTPCodeForm } from '@/src/ui/detailsInvoice/counter-delivery/indexInvoice/products/ViewOTPCodeForm';
 import { Stack, useLocalSearchParams } from 'expo-router';
 
 export default function IndexDetailsInvoiceScreen() {

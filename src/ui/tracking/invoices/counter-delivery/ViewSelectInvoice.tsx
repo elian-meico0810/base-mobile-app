@@ -44,7 +44,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [showPaymentPending, setShowPaymentPending] = useState(false);
     const [isEquals, setIsEquals] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
-    const [paymentSuccessful, setPaymentSuccessful] = useState<Invoice | undefined>();
+    const [paymentSuccessful, setPaymentSuccessful] = useState<Invoice[]>([]);
     const [RefreshingOnPress, setRefreshingOnPress] = useState(false);
     const [EntryVisible, setEntryVisible] = useState(false);
     const [validateException, setValidateException] = useState(false);
@@ -63,7 +63,6 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
     const heightValue = heightCaldulate();
 
-    console.log("guide?.factura: ", guide?.facturas);
 
     const handleGoBack = () => {
         // router.back();
@@ -72,17 +71,18 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         );
     };
 
+
     const getSuccessOrderPayment = async () => {
         try {
+            const idsArray = initialGuide?.pedidos?.map(p => p.id) ?? [];
+            const ids = idsArray.join(",");
 
-            const responseQueryData = await invoiceRepositoryImpl.successOrderPayment(
-                Number(initialGuide?.pedidos?.[0]?.id),
+            const responseQueryData = await invoiceRepositoryImpl.successOrderArrayPayment(
+                ids,
                 token
             );
             if (responseQueryData?.statusCode === 200 && Array.isArray(responseQueryData.data)) {
-                const total = responseQueryData.data
-                    .map(item => Number(item.valorRegistrado ?? 0))
-                    .reduce((a, b) => a + b, 0);
+                const total = responseQueryData.data?.[0].valorRegistrado
 
                 setValuePaymentByType(total);
             }
@@ -357,13 +357,20 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     useEffect(() => {
         const fetchGuide = async () => {
             try {
-                const respones = await invoiceRepositoryImpl.successfulBillPayment(
-                    Number(initialGuide?.facturas[0]?.numeroFactura),
+
+                const invoices = initialGuide?.facturas?.map(p => p.numeroFactura) ?? [];
+                const numeroFactura = invoices.join(",");
+
+                const idsArray = initialGuide?.pedidos?.map(p => p.id) ?? [];
+                const ids = idsArray.join(",");
+
+                const respones = await invoiceRepositoryImpl.successfulBillArrayPayment(
+                    numeroFactura,
                     token,
-                    Number(initialGuide?.pedidos?.[0]?.id),
+                    ids
                 );
                 if (respones?.statusCode === 200) {
-                    setPaymentSuccessful(respones.data as Invoice);
+                    setPaymentSuccessful(respones.data as Invoice[]);
                 }
             } catch (error) {
                 setModalTitle("¡Error!");
@@ -373,23 +380,33 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 setLoading(false);
             }
         };
-
+        getSuccessOrderPayment();
         fetchGuide();
     }, [Number(initialGuide?.facturas[0]?.numeroFactura), token]);
 
 
-    const totalAproved = paymentSuccessful?.pagos
-        ?.filter(pago => pago.estado === "APPROVED")
-        .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0) || 0;
+    const totalApproved = (paymentSuccessful ?? [])
+        .flatMap(invoice => invoice.pagos ?? [])
+        .filter(pago => pago.estado === "APPROVED")
+        .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0);
 
-    // Calcular la suma de todos los valorTotal y dfr de todas las facturas
     const totalFacturas = guide?.facturas?.reduce((sum, factura) => {
         const valorTotal = Number(factura?.valorTotal || 0);
         const dfr = Number(factura?.dfr || 0);
         return sum + (valorTotal - dfr);
     }, 0) || 0;
 
-    const totalRecauder = Math.max(0, totalFacturas - totalAproved);
+    const totalvalorTotal = (guide?.facturas ?? [])
+        .reduce((acc, factura) => {
+            return acc + Number(factura?.valorTotal ?? 0);
+        }, 0);
+
+    const totalDfr = (guide?.facturas ?? [])
+        .reduce((acc, factura) => {
+            return acc + Number(factura?.dfr ?? 0);
+        }, 0);
+
+    const totalRecauder = Math.max(0, totalFacturas - totalApproved);
     const conditionButton = conceptDelivery.length != 0 || routeStarted;
     const validateCheckboxlength = conceptDelivery.length == guide?.facturas?.length
 
@@ -410,16 +427,19 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             value = 'Anticipado';
             break;
     }
+
     const closeButton = routeStarted;
+
     const totalValue =
         Number(
             (
-                (Number(guide?.facturas[0]?.valorTotal) -
-                    Number(guide?.facturas[0]?.dfr)) -
+                (Number(totalvalorTotal) -
+                    Number(totalDfr)) -
                 Number(valueOrderCalculate)
             ).toFixed(2)
         );
-    const totalOrderPayment = Number(totalAproved) + Number(valueOrderPaymentByType);
+
+    const totalOrderPayment = Number(totalApproved) + Number(valueOrderPaymentByType);
 
     useEffect(() => {
         if (detailsCounterDelivery || closeButton) {
@@ -490,7 +510,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                             <Image
                                 source={require("@/assets/icons/HouseIcon.png")}
                                 style={styles.storeIcon}
-                                resizeMode="contain"
+                                contentFit="contain"
                             />
 
                             <View style={styles.storeText}>
@@ -506,7 +526,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                             <Image
                                 source={require("@/assets/icons/UbicationIcon.png")}
                                 style={styles.storeIcon}
-                                resizeMode="contain"
+                                contentFit="contain"
                             />
                             <View style={styles.storeText}>
                                 <Text style={styles.labelTwo}>Dirección</Text>
@@ -520,7 +540,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                             <Image
                                 source={require("@/assets/icons/NumberIcon.png")}
                                 style={styles.storeIcon}
-                                resizeMode="contain"
+                                contentFit="contain"
                             />
                             <View style={styles.storeText}>
                                 <Text style={styles.labelTwo}>Código del cliente</Text>
@@ -536,7 +556,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                             <Image
                                 source={require("@/assets/icons/CashIcon.png")}
                                 style={styles.storeIcon}
-                                resizeMode="contain"
+                                contentFit="contain"
                             />
                             <View style={styles.storeText}>
 
@@ -553,7 +573,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                             <Image
                                 source={require("@/assets/icons/InvoiceIcon.png")}
                                 style={styles.storeIcon}
-                                resizeMode="contain"
+                                contentFit="contain"
                             />
                             <View style={styles.storeText}>
                                 <Text style={styles.labelTwo}>N° de factura</Text>
@@ -601,12 +621,12 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
                         <View style={styles.row}>
                             <Text style={styles.label}>Subtotal</Text>
-                            <Text style={styles.value}>{'$ ' + (Number(guide?.facturas[0]?.valorTotal) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
+                            <Text style={styles.value}>{'$ ' + (Number(totalvalorTotal) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
                         </View>
                         <View style={styles.row}>
                             <Text style={styles.label}>Descuento financiero</Text>
                             <Text style={[styles.value, { color: '#1F9144' }]}>
-                                {'$ - ' + Number(guide?.facturas[0]?.dfr).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                                {'$ - ' + Number(totalDfr).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                             </Text>
                         </View>
                         {(detailsCounterDelivery || closeButton) && (

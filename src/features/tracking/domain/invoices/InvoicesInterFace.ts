@@ -146,3 +146,7 @@ export interface TypeParameterValue {
   fecha_eliminacion: string,
   tipo_parametro: number,
 }
+
+export interface SuccessOrderArrayPayment {
+  valorRegistrado: number,
+}

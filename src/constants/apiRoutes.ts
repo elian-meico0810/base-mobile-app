@@ -28,6 +28,8 @@ export const API_ROUTES = {
   GET_INFO_BY_DIRECTION_OF_OTP: "otp/info-otp-by-direccion-id/",
   GET_REPRORT__APYMENT_BY_CODE_GUIDE: "reporte-pago/por-guia/",
   GET_PARAMETER_VALUE_BY_TYPE: "valores-parametrizados/get-valores-parametrizados/",
+  GET_REPORT_PAYMENT_IN_APP_BY_ARRAY_ID_ORDERS: "reporte-pago/por-array-of-pedido/",
+  WS_ALL_PAYMENT_SUCCESS_FUL_ARRAY: "reporte-pago/ws-pagos-registrados-array/",
   // Back contado anticipado
   SEND_PAYMENT_GATEWAY: "pagos/generar-link-pasarela/",
   GENERATE_QR: "pagos/generar_qr_bancolombia/",

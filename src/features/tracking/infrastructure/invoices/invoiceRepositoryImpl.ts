@@ -275,4 +275,36 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
     }
   },
 
+  async successOrderArrayPayment(arrayIds: any, token: string) {
+    try {
+      
+      const response = await authApi.get(`${API_ROUTES.GET_REPORT_PAYMENT_IN_APP_BY_ARRAY_ID_ORDERS}?array_ids=${arrayIds}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  
+  async successfulBillArrayPayment(numeroFactura: any, token: string, arrayIds: any) {
+    try {
+
+      const response = await authApi.get(`${API_ROUTES.WS_ALL_PAYMENT_SUCCESS_FUL_ARRAY}?array_ids=${arrayIds}&numero_factura=${numeroFactura}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
 };
+

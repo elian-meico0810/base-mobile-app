@@ -1,11 +1,14 @@
 import { PaymentPendingAlert } from '@/components/alerts/PaymentPendingAlert';
+import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
+import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { TypeCaculateValueEnum, TypeInvoiceEnum } from '@/src/constants/GuideStates';
-import { Detail, Document, GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { NoDeliveryModal } from '@/src/features/tracking/components/checkbox/NoDeliveryModal';
+import { Cause, Detail, Document, GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
@@ -60,6 +63,11 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [checkUbication, setCheckUbication] = useState(false);
     const [showPorductData, setPorductData] = useState<Document[]>([]);
     const [valueOrderPaymentByType, setValuePaymentByType] = useState(0);
+    const [showNoDeliveryModal, setShowNoDeliveryModal] = useState(false);
+    const [selectedNoDeliveryCause, setSelectedNoDeliveryCause] = useState<Cause | null>(null);
+    const [uploadPhotoNoDelivery, setUploadPhotoNoDelivery] = useState(false);
+    const [noDeliveryFiles, setNoDeliveryFiles] = useState<string[]>([]);
+    const [confirmNoDelivery, setConfirmNoDelivery] = useState(false);
 
     const heightValue = heightCaldulate();
 
@@ -674,7 +682,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                     <TouchableOpacity
                         style={styles.qrButtonDetailTwo}
                         onPress={() => {
-                            console.log('HOLA SI SE PRESIONO');
+                            setShowNoDeliveryModal(true);
                         }}
                     >
                         <View >
@@ -716,7 +724,57 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 marginBottom: isSmallScreen ? 0 : heightValue ? 0 : 20,
                 bottom: isSmallScreen ? 12 : heightValue ? 60 : 30
             }]}>
-                {guide?.estado === 'Pendiente' && (
+                {guide?.estado === 'Pendiente' && confirmNoDelivery && (
+                    <PrimaryButton
+                        title="Confirmar no entrega"
+                        onPress={async () => {
+                            try {
+                                const documentos = guide?.facturas?.map(f => String(f.numeroFactura)) ?? [];
+                                const payload: any = {
+                                    ruta: String(numberGuide),
+                                    direccion: Number(guide?.idDireccion),
+                                    causal: String(selectedNoDeliveryCause?.codigo),
+                                };
+                                if (documentos.length > 1) {
+                                    payload.documentosArray = documentos;
+                                } else {
+                                    payload.documentMeico = documentos[0] ?? null;
+                                }
+                                if (noDeliveryFiles.length > 0) {
+                                    payload.files = noDeliveryFiles;
+                                }
+                                setLoading(true);
+                                const response = await invoiceRepositoryImpl.registerNoDelivery(payload, String(token));
+                                if (response?.statusCode === 200) {
+                                    setModalTitle("¡Procesado!");
+                                    setModalMessage("No entrega registrada exitosamente");
+                                    setModalVisible(true);
+                                    await invoiceRepositoryImpl.closeAddresses(guide?.idDireccion || 0, String(token));
+                                    router.push(
+                                        `/views/details?guide=${numberGuide}&token=${encodeURIComponent(String(token ?? ""))}`
+                                    );
+                                } else {
+                                    setModalTitle("Alerta");
+                                    setModalMessage(response?.message || "Error inesperado.");
+                                    setModalVisible(true);
+                                }
+                            } catch (error: any) {
+                                setModalTitle("¡Error!");
+                                setModalMessage(error?.data?.message ?? "Ocurrió un error inesperado.");
+                                setModalVisible(true);
+                            } finally {
+                                setLoading(false);
+                                setConfirmNoDelivery(false);
+                                setSelectedNoDeliveryCause(null);
+                                setNoDeliveryFiles([]);
+                            }
+                        }}
+                        disabled={false}
+                        width={328}
+                        height={43}
+                    />
+                )}
+                {guide?.estado === 'Pendiente' && !confirmNoDelivery && (
                     <PrimaryButtonDetails
                         ref={btnRef}
                         autoReset={validateException}
@@ -741,6 +799,50 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 message={modalMessage}
                 buttonLabel={modalButtonLabel}
             />
+            {showNoDeliveryModal && (
+                <NoDeliveryModal
+                    token={String(token)}
+                    onClose={() => setShowNoDeliveryModal(false)}
+                    width={width}
+                    onContinue={(cause) => {
+                        setSelectedNoDeliveryCause(cause);
+                        setShowNoDeliveryModal(false);
+                        if (cause.requiereEvidencia) {
+                            setUploadPhotoNoDelivery(true);
+                        } else {
+                            setConfirmNoDelivery(true);
+                        }
+                    }}
+                />
+            )}
+            {uploadPhotoNoDelivery && (
+                <UploadPhoto
+                    title="Cargar evidencia"
+                    subTitle="Toma o adjunta fotos. Máximo 3."
+                    onClose={() => setUploadPhotoNoDelivery(false)}
+                    width={width}
+                    onEvidenceComplete={(evidences) => {
+                        const files = evidences
+                            .map(e => e.base64)
+                            .filter((b64): b64 is string => typeof b64 === "string");
+                        setNoDeliveryFiles(files);
+                        setUploadPhotoNoDelivery(false);
+                        setConfirmNoDelivery(true);
+                    }}
+                    onPermisionsPhoto={() => {
+                        setUploadPhotoNoDelivery(false);
+                        setModalTitle("Permiso denegado ¡Alerta!");
+                        setModalMessage("No podemos acceder a la cámara. Activa el permiso en la configuración del dispositivo para continuar.");
+                        setModalVisible(true);
+                    }}
+                    onPermisionsGallery={() => {
+                        setUploadPhotoNoDelivery(false);
+                        setModalTitle("Permiso denegado ¡Alerta!");
+                        setModalMessage("No podemos acceder a la galería. Activa el permiso en la configuración del dispositivo para continuar.");
+                        setModalVisible(true);
+                    }}
+                />
+            )}
 
             {loading && <LoadingBlue />}
         </ThemedView>

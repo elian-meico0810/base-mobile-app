@@ -146,3 +146,12 @@ export interface TypeParameterValue {
   fecha_eliminacion: string,
   tipo_parametro: number,
 }
+
+export interface NoDeliveryProps {
+  ruta: string;
+  direccion: number;
+  causal: string;
+  documentMeico?: string;
+  documentosArray?: string[];
+  files?: string[];
+}

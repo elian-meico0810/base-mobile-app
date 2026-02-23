@@ -28,6 +28,7 @@ export const API_ROUTES = {
   GET_INFO_BY_DIRECTION_OF_OTP: "otp/info-otp-by-direccion-id/",
   GET_REPRORT__APYMENT_BY_CODE_GUIDE: "reporte-pago/por-guia/",
   GET_PARAMETER_VALUE_BY_TYPE: "valores-parametrizados/get-valores-parametrizados/",
+  NO_DELIVERY: "entregas/no-entrega/",
   // Back contado anticipado
   SEND_PAYMENT_GATEWAY: "pagos/generar-link-pasarela/",
   GENERATE_QR: "pagos/generar_qr_bancolombia/",

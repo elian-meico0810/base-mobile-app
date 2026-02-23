@@ -4,6 +4,7 @@ import {
   CreateEntregaProps,
   CreatePaymentTypeProps,
   GenerateQRPorps,
+  NoDeliveryProps,
   OpneAddressesDeliveryProps, OpneAddressesProps,
   PaymentGatewayProps, ReportWhatsAppQRPorps,
   WhatsappProps, WhatsappTATImageProps
@@ -269,6 +270,24 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
           "Content-Type": "application/json",
         },
       });
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async registerNoDelivery(data: NoDeliveryProps, token: string) {
+    try {
+      const response = await authApi.post(
+        `${API_ROUTES.NO_DELIVERY}`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
       return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {
       throw error;

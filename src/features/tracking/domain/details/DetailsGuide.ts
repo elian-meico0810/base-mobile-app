@@ -249,3 +249,14 @@ export interface ListInfOTP {
   expira_en: string;
   ultimo_intento_verificacion: string;
 }
+
+export interface EvidencePhoto {
+  id: string;
+  uri: string;
+  base64?: string;
+}
+
+export interface DataUploadFIlePprops {
+  direccion_id: number;
+  files: string[];
+}

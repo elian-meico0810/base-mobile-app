@@ -1,5 +1,6 @@
-import { GuideDetails, ResponseOTPInitPorps } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { EvidencePhoto, GuideDetails, ResponseOTPInitPorps } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { ProductForm } from '@/src/ui/detailsInvoice/counter-delivery/indexInvoice/products/ProductForm';
+import { ViewFileFormOTP } from '@/src/ui/detailsInvoice/counter-delivery/indexInvoice/products/ViewFileFormOTP';
 import { ViewOTPCodeForm } from '@/src/ui/detailsInvoice/counter-delivery/indexInvoice/products/ViewOTPCodeForm';
 import { Stack, useLocalSearchParams } from 'expo-router';
 
@@ -24,8 +25,14 @@ export default function IndexDetailsInvoiceScreen() {
     const expireDate = params.expireDate as string;
     const validateConditionRender =
         Number.isFinite(Number(totalRecauder)) && Number.isFinite(Number(totalOrderPayment))
-        Number.isFinite(Number(totalValue));
-    
+    Number.isFinite(Number(totalValue));
+    const isFileView = params.isFileView as string;
+    const sasToken = params.sasToken as string;
+    const data = params.multiplePhotos as string;
+    const multiplePhotos: EvidencePhoto[] = data ? JSON.parse(data) : [];
+
+
+
     return (
         <>
             <Stack.Screen
@@ -37,7 +44,7 @@ export default function IndexDetailsInvoiceScreen() {
 
             {/* listado de detalle de facturas */}
             {(() => {
-                if (!confirmationStatus) {
+                if (!confirmationStatus && !isFileView) {
 
                     return (
                         <ProductForm
@@ -52,7 +59,7 @@ export default function IndexDetailsInvoiceScreen() {
                     );
                 }
 
-                if (confirmationStatus && responseOTPInit && validateConditionRender || expireDate ) {
+                if (confirmationStatus && responseOTPInit && validateConditionRender || expireDate) {
                     return (
                         <ViewOTPCodeForm
                             initialGuide={guideObj}
@@ -67,6 +74,20 @@ export default function IndexDetailsInvoiceScreen() {
                             totalValue={totalValue}
                             totalOrderPayment={totalOrderPayment}
                             expireDate={expireDate ? true : false}
+                        />
+                    );
+                }
+
+                if (isFileView) {
+                    return (
+                        <ViewFileFormOTP
+                            onPermisionsPhoto={() => { }}
+                            multiplePhotos={multiplePhotos}
+                            sasToken={sasToken}
+                            initialGuide={guideObj}
+                            token={token || ""}
+                            numberGuide={Number(numberGuide)}
+
                         />
                     );
                 }

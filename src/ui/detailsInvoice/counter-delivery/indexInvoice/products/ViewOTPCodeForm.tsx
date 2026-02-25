@@ -3,11 +3,14 @@ import { TopSuccessAlert } from '@/components/alerts/TopSuccessAlert';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
+import { UploadPhotoOTP } from '@/components/photo/uploadPhotoOTP';
 import { ThemedView } from '@/components/themed-view';
 import { GuideDetails, ResponseOTPInitPorps, ResponseOTPInitTwoPorps } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
+import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
 import { formatTimeByMinutes } from '@/src/utils/uitls';
 import { useRouter } from 'expo-router';
+import * as SecureStore from "expo-secure-store";
 import { useEffect, useRef, useState } from "react";
 import {
     BackHandler,
@@ -23,6 +26,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+
 const { width, height } = Dimensions.get('window');
 
 interface ViewOTPCodeFormProps {
@@ -40,6 +44,12 @@ interface ViewOTPCodeFormProps {
     totalValue?: number;
     totalOrderPayment?: number;
     expireDate?: boolean;
+}
+
+interface EvidencePhoto {
+    id: string;
+    uri: string;
+    base64?: string;
 }
 
 export function ViewOTPCodeForm({
@@ -87,6 +97,10 @@ export function ViewOTPCodeForm({
     const timerRef = useRef<number | null>(null);
     const router = useRouter();
     const inputRefs = useRef<TextInput[]>([]);
+    const [sasToken, setSasToken] = useState("");
+    const [uploadPhoto, setUploadPhoto] = useState(false);
+    const [multiplePhotosTwo, setMultiplePhotosTwo] = useState<EvidencePhoto[]>([]);
+    const [multiplePhotos, setMultiplePhotos] = useState<EvidencePhoto[]>([]);
 
     // Verificar si todos los campos OTP están llenos
     const isOtpComplete = otpValues.every(value => value !== "");
@@ -198,20 +212,27 @@ export function ViewOTPCodeForm({
                 },
                 token
             );
-            if (responseData?.statusCode === 200) {
+            const response = await invoiceRepositoryImpl.closeAddresses(
+                guide?.idDireccion || 0,
+                token
+            );
+
+            if (responseData?.statusCode === 200 && response?.statusCode === 200) {
                 setShowSuccess(true);
+                router.push(
+                    `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+                );
             } else {
-                setShowErrorQRPMessage(responseData?.message || "Código OTP incorrecto");
+                setShowErrorQRPMessage(responseData?.message || response?.message || "Código OTP incorrecto");
                 setShowErrorQRP(true);
             }
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
             setModalVisible(true);
-        } finally {
-            setLoading(false);
         }
     };
+
     useEffect(() => {
         if (
             guideOTP?.expiraEn &&
@@ -322,7 +343,7 @@ export function ViewOTPCodeForm({
             guideOTP?.momentoEnvio &&
             !timerRef.current && !dataBack
         ) {
-            
+
             const expira = new Date(guideOTP.expiraEn).getTime();
             const send = new Date(guideOTP.momentoEnvio).getTime();
             const time = Date.now();
@@ -445,6 +466,45 @@ export function ViewOTPCodeForm({
 
         return () => backHandler.remove();
     }, []);
+
+    useEffect(() => {
+        const init = async () => {
+            const token = await SecureStore.getItemAsync("service_token");
+            setSasToken(token || "");
+
+        };
+        init();
+
+    }, []);
+
+
+    const submitFile = async (newPhoto: EvidencePhoto[]) => {
+        try {
+            setLoading(true);
+
+            // Pequeña pausa para que se muestre el loading (opcional)
+            await new Promise(resolve => setTimeout(resolve, 100));
+            router.push({
+                pathname: '/views/IndexDetailsInvoice',
+                params: {
+                    guide: JSON.stringify(guide),
+                    numberGuide: numberGuide,
+                    token: token ?? "",
+                    isFileView: "true",
+                    sasToken: sasToken,
+                    multiplePhotos: JSON.stringify(newPhoto)
+                }
+            });
+            setLoading(false);
+
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
+        }
+    };
+
+
 
     return (
         <ThemedView style={styles.container}>
@@ -584,36 +644,66 @@ export function ViewOTPCodeForm({
                     )}
 
                     {/* Reenviar código */}
-                    <TouchableOpacity
-                        style={[
-                            styles.resendContainer,
-                            resendDisabled && styles.resendDisabled
-                        ]}
-                        activeOpacity={0.6}
-                        disabled={resendDisabled}
-                        onPress={reentryCodeOTP}
-                    >
-                        <Text style={styles.otpExpireIconText}>⟳</Text>
-                        <Text style={styles.resendText}>Reenviar código OTP </Text>
-                    </TouchableOpacity>
+                    {reentryPermission != 0 && (
+                        <TouchableOpacity
+                            style={[
+                                styles.resendContainer,
+                                resendDisabled && styles.resendDisabled
+                            ]}
+                            activeOpacity={0.6}
+                            disabled={resendDisabled}
+                            onPress={reentryCodeOTP}
+                        >
+                            <Text style={styles.otpExpireIconText}>⟳</Text>
+                            <Text style={styles.resendText}>Reenviar código OTP </Text>
+                        </TouchableOpacity>
+                    )}
 
 
-                    {/* {reentryPermission == 0 && (
-                        <>
-                            <View
-                                style={styles.resendContainerCamera}
-                            >
-                                <Image
-                                    source={require("@/assets/icons/CameraIcon.png")}
-                                    style={styles.iconCamera}
-                                />
+                    {reentryPermission == 0 && (
+                        <TouchableOpacity
+                            style={styles.resendContainerCamera}
+                            onPress={() => {
+                                setUploadPhoto(true);
+                                // Aquí va tu función
+                                // navigation.navigate(...)
+                                // openCamera()
+                            }}
+                            activeOpacity={0.7}
+                        >
+                            <Image
+                                source={require("@/assets/icons/CameraIcon.png")}
+                                style={styles.iconCamera}
+                            />
 
-                                <Text style={styles.resendText}>
-                                    {"Validar con captura de imagen"}
-                                </Text>
-                            </View>
-                        </>
-                    )} */}
+                            <Text style={styles.resendText}>
+                                {"Validar con captura de imagen"}
+                            </Text>
+                        </TouchableOpacity>
+                    )}
+
+
+                    {(uploadPhoto) && (
+                        <UploadPhotoOTP
+                            onClose={() => setUploadPhoto(false)}
+                            onPick={(data) => {
+                                const newPhoto: EvidencePhoto = {
+                                    id: Date.now().toString(), // Generar un ID único
+                                    uri: data.uri,
+                                    base64: data.base64
+                                };
+
+                                submitFile([newPhoto]);
+                            }}
+                            onPermisionsPhoto={() => {
+                                setUploadPhoto(false);
+                                setModalTitle("Permiso denegado ¡Alerta!");
+                                setModalMessage("No podemos acceder a la cámara. Activa el permiso en la configuración del dispositivo para continuar.");
+                                setModalVisible(true);
+                            }}
+
+                        />
+                    )}
                 </View>
 
                 <View style={styles.spacer} />

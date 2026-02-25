@@ -566,7 +566,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 typeof response.data !== "string" &&
                 !Array.isArray(response.data)
             ) {
-                if (response.data.expira_en && response.data.momento_envio && guide && response.data.numero_reenvio < 2) {
+                if (response.data.expira_en && response.data.momento_envio && guide) {
                     setButtonValueOTP(true);
                     router.push({
                         pathname: '/views/IndexDetailsInvoice',

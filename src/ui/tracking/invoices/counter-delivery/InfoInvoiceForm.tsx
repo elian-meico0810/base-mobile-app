@@ -1103,6 +1103,20 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const handleSubmitConfirmation = async () => {
         try {
+            if (!Number.isFinite(totalValue) || !Number.isFinite(totalRecauder)) {
+                btnRef.current?.reset();
+                setModalTitle("Cargando...");
+                setModalMessage("Los valores aún no están listos, espere un momento.");
+                setModalVisible(true);
+                return;
+            }
+            if (Number(totalRecauder) > 0) {
+                btnRef.current?.reset();
+                setModalTitle("¡Alerta!");
+                setModalMessage("El valor a recaudar debe ser 0 para continuar con la confirmación.");
+                setModalVisible(true);
+                return;
+            }
 
             if (!guide?.whatsapp || guide?.whatsapp != "") {
                 btnRef.current?.reset();
@@ -1112,13 +1126,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 return;
             }
 
-            if (!Number.isFinite(totalValue) || !Number.isFinite(totalRecauder)) {
-                btnRef.current?.reset();
-                setModalTitle("Cargando...");
-                setModalMessage("Los valores aún no están listos, espere un momento.");
-                setModalVisible(true);
-                return;
-            }
             setLoading(true);
 
             setButtonValueOTP(true);

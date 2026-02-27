@@ -645,6 +645,7 @@ function StatsCard({ summary }: { summary: ConsignmentSummary }) {
   const total = summary.totalEfectivo > 0 ? summary.totalEfectivo : 1;
   const current = summary.totalConsignado;
   const percentage = Math.min(1, Math.max(0, current / total));
+  const efectivoNeto = Math.max(0, summary.totalEfectivo - summary.totalConsignado);
 
   const size = 92;
   const strokeWidth = 6;
@@ -656,7 +657,7 @@ function StatsCard({ summary }: { summary: ConsignmentSummary }) {
     <View style={styles.statsCard}>
       <View style={styles.statsLeft}>
         <View style={styles.amountRow}>
-          <Text style={styles.amountValue}>${formatNumber(summary.totalEfectivo)}</Text>
+          <Text style={styles.amountValue}>${formatNumber(efectivoNeto)}</Text>
           <Text style={styles.amountLabel}>Total efectivo recaudado</Text>
         </View>
         <View style={styles.amountRow}>

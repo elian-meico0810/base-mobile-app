@@ -150,3 +150,12 @@ export interface TypeParameterValue {
 export interface SuccessOrderArrayPayment {
   valorRegistrado: number,
 }
+
+export interface NoDeliveryProps {
+  ruta: string;
+  direccion: number;
+  causal: string;
+  documentMeico?: string;
+  documentosArray?: string[];
+  files?: string[];
+}

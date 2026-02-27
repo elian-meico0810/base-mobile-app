@@ -13,6 +13,7 @@ import { ENV_DEV } from '@/src/constants/apiRoutes';
 import { OptionsRefusedEnum, StatusDelivery, TypeCaculateValueEnum, TypeConPagoEnum, TypeInvoiceEnum, TypeQr } from '@/src/constants/GuideStates';
 import { DeliveryStatus } from '@/src/features/tracking/components/checkbox/DeliveryStatus';
 import { DeliveryStatusAction } from '@/src/features/tracking/components/checkbox/DeliveryStatusAction';
+import { NoDeliveryModal } from '@/src/features/tracking/components/checkbox/NoDeliveryModal';
 import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
 import { ChangePhoneModal } from '@/src/features/tracking/components/screens/ChangePhoneModal';
 import { DetailsInvoiceQR } from '@/src/features/tracking/components/screens/DetailsInvoiceQR';
@@ -20,7 +21,7 @@ import { DetailsPaymenTypeEfecty } from '@/src/features/tracking/components/scre
 import { DetailsPaymenTypeOthers } from '@/src/features/tracking/components/screens/DetailsPaymenTypeOthers';
 import { InfoPayments } from '@/src/features/tracking/components/screens/InfoPayments';
 import { ViewQrModal } from '@/src/features/tracking/components/screens/ViewQrModal';
-import { Detail, Document, GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { Cause, Detail, Document, GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { CreateEntregaProps, DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
@@ -112,6 +113,11 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [sasToken, setSasToken] = useState("");
     const orderId = initialGuide?.pedidos?.[0]?.id;
     const [checkUbication, setCheckUbication] = useState(false);
+    const [showNoDeliveryModal, setShowNoDeliveryModal] = useState(false);
+    const [selectedNoDeliveryCause, setSelectedNoDeliveryCause] = useState<Cause | null>(null);
+    const [uploadPhotoNoDelivery, setUploadPhotoNoDelivery] = useState(false);
+    const [noDeliveryFiles, setNoDeliveryFiles] = useState<string[]>([]);
+    const [confirmNoDelivery, setConfirmNoDelivery] = useState(false);
 
     useEffect(() => {
         const backAction = () => {
@@ -1390,7 +1396,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     <TouchableOpacity
                         style={styles.qrButtonDetailTwo}
                         onPress={() => {
-                            console.log('HOLA SI SE PRESIONO');
+                            setShowNoDeliveryModal(true);
                         }}
                     >
                         <View >
@@ -1439,7 +1445,56 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             )}
 
             <View style={[styles.footer, { marginBottom: 10 }]}>
-                {isSelectInvocies ? (
+                {confirmNoDelivery ? (
+                    <PrimaryButton
+                        title="Confirmar no entrega"
+                        onPress={async () => {
+                            try {
+                                const documentos = guide?.facturas?.map(f => String(f.numeroFactura)) ?? [];
+                                const payload: any = {
+                                    ruta: String(numberGuide),
+                                    direccion: Number(guide?.idDireccion),
+                                    causal: String(selectedNoDeliveryCause?.codigo),
+                                };
+                                if (documentos.length > 1) {
+                                    payload.documentosArray = documentos;
+                                } else {
+                                    payload.documentMeico = documentos[0] ?? null;
+                                }
+                                if (noDeliveryFiles.length > 0) {
+                                    payload.files = noDeliveryFiles;
+                                }
+                                setLoading(true);
+                                const response = await invoiceRepositoryImpl.registerNoDelivery(payload, String(token));
+                                if (response?.statusCode === 200) {
+                                    setModalTitle("¡Procesado!");
+                                    setModalMessage("No entrega registrada exitosamente");
+                                    setModalVisible(true);
+                                    await invoiceRepositoryImpl.closeAddresses(guide?.idDireccion || 0, String(token));
+                                    router.push(
+                                        `/views/details?guide=${numberGuide}&token=${encodeURIComponent(String(token ?? ""))}`
+                                    );
+                                } else {
+                                    setModalTitle("Alerta");
+                                    setModalMessage(response?.message || "Error inesperado.");
+                                    setModalVisible(true);
+                                }
+                            } catch (error: any) {
+                                setModalTitle("¡Error!");
+                                setModalMessage(error?.data?.message ?? "Ocurrió un error inesperado.");
+                                setModalVisible(true);
+                            } finally {
+                                setLoading(false);
+                                setConfirmNoDelivery(false);
+                                setSelectedNoDeliveryCause(null);
+                                setNoDeliveryFiles([]);
+                            }
+                        }}
+                        disabled={false}
+                        width={328}
+                        height={43}
+                    />
+                ) : isSelectInvocies ? (
                     <PrimaryButton
                         title="Entregar"
                         onPress={handleSubmitData}
@@ -1490,10 +1545,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         )}
                     </>
                 )}
-
-
-
-
             </View>
 
             <ExceptionModal
@@ -1503,6 +1554,22 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 message={modalMessage}
                 buttonLabel={modalButtonLabel}
             />
+            {showNoDeliveryModal && (
+                <NoDeliveryModal
+                    token={String(token)}
+                    onClose={() => setShowNoDeliveryModal(false)}
+                    width={width}
+                    onContinue={(cause) => {
+                        setSelectedNoDeliveryCause(cause);
+                        setShowNoDeliveryModal(false);
+                        if (cause.requiereEvidencia) {
+                            setUploadPhotoNoDelivery(true);
+                        } else {
+                            setConfirmNoDelivery(true);
+                        }
+                    }}
+                />
+            )}
 
             {(showPayment) && (
                 <InfoPayments
@@ -1594,6 +1661,34 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     }}
                     multiplePhotos={multiplePhotosTwo}
                     sasToken={sasToken}
+                />
+            )}
+            {uploadPhotoNoDelivery && (
+                <UploadPhoto
+                    title="Cargar evidencia"
+                    subTitle="Toma o adjunta fotos. Máximo 3."
+                    onClose={() => setUploadPhotoNoDelivery(false)}
+                    width={width}
+                    onEvidenceComplete={(evidences) => {
+                        const files = evidences
+                            .map(e => e.base64)
+                            .filter((b64): b64 is string => typeof b64 === "string");
+                        setNoDeliveryFiles(files);
+                        setUploadPhotoNoDelivery(false);
+                        setConfirmNoDelivery(true);
+                    }}
+                    onPermisionsPhoto={() => {
+                        setUploadPhotoNoDelivery(false);
+                        setModalTitle("Permiso denegado ¡Alerta!");
+                        setModalMessage("No podemos acceder a la cámara. Activa el permiso en la configuración del dispositivo para continuar.");
+                        setModalVisible(true);
+                    }}
+                    onPermisionsGallery={() => {
+                        setUploadPhotoNoDelivery(false);
+                        setModalTitle("Permiso denegado ¡Alerta!");
+                        setModalMessage("No podemos acceder a la galería. Activa el permiso en la configuración del dispositivo para continuar.");
+                        setModalVisible(true);
+                    }}
                 />
             )}
 

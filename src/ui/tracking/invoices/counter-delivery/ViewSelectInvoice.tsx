@@ -477,7 +477,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 marginBottom: isSmallScreen ? 0 : heightValue ? 0 : 20,
                 bottom: isSmallScreen ? 12 : heightValue ? 60 : 30
             }]}>
-                {guide?.estado === 'Pendiente' && (
+           
+                {guide?.estado === 'Pendiente' &&  (
                     <PrimaryButtonDetails
                         ref={btnRef}
                         autoReset={validateException}
@@ -502,6 +503,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 message={modalMessage}
                 buttonLabel={modalButtonLabel}
             />
+
 
             {loading && <LoadingBlue />}
         </ThemedView>

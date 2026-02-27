@@ -615,7 +615,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 message={modalMessage}
                 buttonLabel={modalButtonLabel}
             />
-<ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+            <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
 
                 {/** Listado de productos */}
                 <ProductValidationSection
@@ -818,6 +818,7 @@ const styles = StyleSheet.create({
     card: {
         width: 360,
         backgroundColor: '#FFFFFF',
+        alignSelf: 'center',
         borderColor: '#F0F1F5',
         borderWidth: 1,
         borderRadius: 8,

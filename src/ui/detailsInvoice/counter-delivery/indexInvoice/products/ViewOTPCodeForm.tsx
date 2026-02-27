@@ -199,12 +199,13 @@ export function ViewOTPCodeForm({
 
     const validateCodeOTP = async () => {
         try {
-            setLoading(true);
             const isOtpComplete = otpValues.every(value => value.trim() !== "");
 
             if (!isOtpComplete) {
                 return;
             }
+
+            setLoading(true);
             const responseData = await detailsRepositoryImpl.validateCodeOTP(
                 {
                     idDireccion: Number(guide?.idDireccion),
@@ -212,19 +213,29 @@ export function ViewOTPCodeForm({
                 },
                 token
             );
-            const response = await invoiceRepositoryImpl.closeAddresses(
-                guide?.idDireccion || 0,
-                token
-            );
 
-            if (responseData?.statusCode === 200 && response?.statusCode === 200) {
-                setShowSuccess(true);
-                router.push(
-                    `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+            if (responseData?.statusCode === 200) {
+                const response = await invoiceRepositoryImpl.closeAddresses(
+                    guide?.idDireccion || 0,
+                    token
                 );
+                if (response?.statusCode === 200) {
+                    setShowSuccess(true);
+                    router.push(
+                        `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+                    );
+                } else {
+                    setShowErrorQRPMessage(response?.message || "No se pudo iniciar la ruta. Intente nuevamente.");
+                    setShowErrorQRP(true);
+                    setLoading(false);
+                    return;
+                }
+
             } else {
-                setShowErrorQRPMessage(responseData?.message || response?.message || "Código OTP incorrecto");
+                setShowErrorQRPMessage(responseData?.message || "Código OTP incorrecto");
                 setShowErrorQRP(true);
+                setLoading(false);
+                return;
             }
         } catch (error) {
             setModalTitle("¡Error!");
@@ -261,27 +272,28 @@ export function ViewOTPCodeForm({
 
     const reentryCodeOTP = async () => {
         try {
-            setLoading(true);
 
-            // if (!guide?.whatsapp || guide?.whatsapp != "") {
-            //     setModalTitle("¡Alerta!");
-            //     setModalMessage("El numero de telefono es requerido.");
-            //     setModalVisible(true);
-            //     return;
-            // }
+            if (!guide?.whatsapp || guide?.whatsapp != "") {
+                setModalTitle("¡Alerta!");
+                setModalMessage("El numero de telefono es requerido.");
+                setModalVisible(true);
+                return;
+            }
+            
             if (!Number.isFinite(totalValue) || !Number.isFinite(totalRecauder)) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Los valores aún no están listos. Intenta nuevamente.");
                 setModalVisible(true);
                 return;
             }
+            setLoading(true);
 
             const responseData = await detailsRepositoryImpl.reentryOTP(
                 {
                     idDireccion: Number(guide?.idDireccion),
                     numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
-                    // numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
-                    numeroDestino: "+573112187956",
+                    numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
+                    // numeroDestino: "+573112187956",
                     valorOriginal: String(totalValue),
                     valorPagado: String(totalOrderPayment),
                 },

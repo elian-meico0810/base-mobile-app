@@ -59,7 +59,7 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
     }
   },
 
-  async successfulBillPayment(numeroFactura: number, token: string, pedidoId: number) {
+  async successfulBillPaymentTwo(numeroFactura: number, token: string, pedidoId: number) {
     try {
 
       const response = await authApi.get(`${API_ROUTES.WS_ALL_PAYMENT_SUCCESS_FUL}?pedido_id=${pedidoId}&numero_factura=${numeroFactura}`,
@@ -70,6 +70,20 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
           },
         });
 
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async successfulBillPayment(invoiceNumber: number, key: string) {
+    try {
+
+      const response = await authDevApi.get(`${API_ROUTES.PAYMENT_SUCCESS_FUL}${invoiceNumber}/`, {
+        headers: {
+          "api-key": key
+        },
+      });
       return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {
       throw error;
@@ -277,7 +291,7 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
 
   async successOrderArrayPayment(arrayIds: any, token: string) {
     try {
-      
+
       const response = await authApi.get(`${API_ROUTES.GET_REPORT_PAYMENT_IN_APP_BY_ARRAY_ID_ORDERS}?array_ids=${arrayIds}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -289,7 +303,7 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
       throw error;
     }
   },
-  
+
   async successfulBillArrayPayment(numeroFactura: any, token: string, arrayIds: any) {
     try {
 

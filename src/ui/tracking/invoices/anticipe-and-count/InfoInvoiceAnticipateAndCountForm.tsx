@@ -123,8 +123,7 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
             try {
                 const respones = await invoiceRepositoryImpl.successfulBillPayment(
                     Number(initialGuide?.facturas[0]?.numeroFactura),
-                    token,
-                    Number(initialGuide?.pedidos?.[0]?.id),
+                    ENV_DEV.KEY_APP
                 );
                 if (respones?.statusCode === 200) {
                     setPaymentSuccessful(respones.data as Invoice);
@@ -431,11 +430,9 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
                     }
                 }
 
-
                 const responeData = await invoiceRepositoryImpl.successfulBillPayment(
                     Number(initialGuide?.facturas[0]?.numeroFactura),
-                    token,
-                    Number(initialGuide?.pedidos?.[0]?.id),
+                    ENV_DEV.KEY_APP
                 );
                 if (responeData?.statusCode === 200) {
                     const invoice = responeData.data as Invoice;

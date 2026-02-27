@@ -180,11 +180,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
         const fetchGuide = async () => {
             try {
-                const respones = await invoiceRepositoryImpl.successfulBillPayment(
+                const respones = await invoiceRepositoryImpl.successfulBillPaymentTwo(
                     Number(initialGuide?.facturas[0]?.numeroFactura),
                     token,
                     Number(initialGuide?.pedidos?.[0]?.id),
                 );
+
                 if (respones?.statusCode === 200) {
                     setPaymentSuccessful(respones.data as Invoice);
                 }
@@ -328,6 +329,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
 
     const condPago = guide?.facturas[0]?.condPago == TypeConPagoEnum.TAT;
+    // const condPagoFalse = guide?.facturasx0]?.condPago != TypeConPagoEnum.TAT;
 
     const handlSendWhatsApp = async () => {
         try {
@@ -414,12 +416,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const handleSubmitData = async () => {
         try {
 
-            if (!deliveryStatus) {
-                setModalTitle("¡Alerta!");
-                setModalMessage("Debe especificar un estado de entrega.");
-                setModalVisible(true);
-                return;
-            }
+            // if (!deliveryStatus) {
+            //     setModalTitle("¡Alerta!");
+            //     setModalMessage("Debe especificar un estado de entrega.");
+            //     setModalVisible(true);
+            //     return;
+            // }
 
             setLoading(true);
             const location = await Location.getCurrentPositionAsync({
@@ -465,6 +467,13 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const handleSubmit = async () => {
         try {
+            if (!Number.isFinite(totalValue) || !Number.isFinite(totalRecauder) || !Number.isFinite(totalOrderPayment)) {
+                btnRef.current?.reset();
+                setModalTitle("¡Alerta!");
+                setModalMessage("Los valores aún no están listos, espere un momento.");
+                setModalVisible(true);
+                return;
+            }
             setLoading(true);
             setvalidateIsBotton(true);
             setEntryVisible(true);
@@ -723,7 +732,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 }
 
 
-                const responeData = await invoiceRepositoryImpl.successfulBillPayment(
+                const responeData = await invoiceRepositoryImpl.successfulBillPaymentTwo(
                     Number(initialGuide?.facturas[0]?.numeroFactura),
                     token,
                     Number(initialGuide?.pedidos?.[0]?.id),
@@ -1088,15 +1097,14 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const handleSubmitConfirmation = async () => {
         try {
-            setLoading(true);
 
-            // if (!guide?.whatsapp || guide?.whatsapp != "") {
-            //     btnRef.current?.reset();
-            //     setModalTitle("¡Alerta!");
-            //     setModalMessage("El numero de telefono es requerido."); 
-            //     setModalVisible(true);
-            //     return;
-            // }
+            if (!guide?.whatsapp || guide?.whatsapp != "") {
+                btnRef.current?.reset();
+                setModalTitle("¡Alerta!");
+                setModalMessage("El numero de telefono es requerido.");
+                setModalVisible(true);
+                return;
+            }
 
             if (!Number.isFinite(totalValue) || !Number.isFinite(totalRecauder)) {
                 btnRef.current?.reset();
@@ -1105,6 +1113,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 setModalVisible(true);
                 return;
             }
+            setLoading(true);
 
             setButtonValueOTP(true);
 
@@ -1112,8 +1121,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 {
                     idDireccion: Number(guide?.idDireccion),
                     numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
-                    // numeroDestino: "+57"+String(guide?.whatsapp).replace(/\D/g, ''),
-                    numeroDestino: "+573112187956",
+                    numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
+                    // numeroDestino: "+573112187956",
                     valorOriginal: String(totalValue),
                     valorPagado: String(totalOrderPayment),
                 },
@@ -1434,7 +1443,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     <PrimaryButton
                         title="Entregar"
                         onPress={handleSubmitData}
-                        disabled={!showStatusDelivery}
+                        disabled={false}
                         width={328}
                         height={43}
                     />
@@ -1645,7 +1654,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 />
             )}
 
-            {(typePayment) && (
+            {(typePayment && !condPago) && (
                 <TypePayment
                     title="Registrar pago"
                     subTitle="Seleccioná el método de pago del cliente."

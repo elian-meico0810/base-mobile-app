@@ -289,9 +289,9 @@ export function ViewFileFormOTP({
     const validateCodeOTP = async () => {
         try {
             setLoading(true);
-            
+
             if (isOtpComplete && multiplePhotos && multiplePhotos.length > 0) {
-                
+
                 const validBase64 = multiplePhotos
                     .filter(photo => photo.base64 && photo.base64.trim() !== '')
                     .map(photo => photo.base64!);
@@ -303,18 +303,25 @@ export function ViewFileFormOTP({
                     },
                     token
                 );
-                
-                const response = await invoiceRepositoryImpl.closeAddresses(
-                    guide?.idDireccion || 0,
-                    token
-                );
-                if (responseData?.statusCode === 200 && response?.statusCode === 200) {
-                    router.push(
-                        `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+
+                if (responseData?.statusCode === 200) {
+                    const response = await invoiceRepositoryImpl.closeAddresses(
+                        guide?.idDireccion || 0,
+                        token
                     );
+                    if (response?.statusCode === 200) {
+                        router.push(
+                            `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+                        );
+                    } else {
+                        setModalTitle("¡Error!");
+                        setModalMessage(response?.message || "Código OTP incorrecto");
+                        setModalVisible(true);
+                        return;
+                    }
                 } else {
                     setModalTitle("¡Error!");
-                    setModalMessage(responseData?.message || response?.message || "Código OTP incorrecto");
+                    setModalMessage(responseData?.message || "Código OTP incorrecto");
                     setModalVisible(true);
                     return
                 }

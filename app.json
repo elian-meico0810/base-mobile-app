@@ -12,6 +12,7 @@
       "supportsTablet": true
     },
     "android": {
+      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./assets/meitruck/meitruck_adaptive_fore.png",
         "backgroundColor": "#164194",

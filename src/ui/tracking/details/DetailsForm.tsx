@@ -547,27 +547,29 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
 
                             {((data.length != 0 && hasValidInvoice)) && (
                                 <>
-                                    <TouchableOpacity style={styles.cardConsignment} onPress={() => {
-                                        router.push({
-                                            pathname: '/views/consignaciones',
-                                            params: { codigoGuia: guide }
-                                        });
-                                    }}>
-                                        <View style={styles.leftContent}>
+                                    {(!hasValidInvoice) && (
+
+                                        <TouchableOpacity style={styles.cardConsignment} onPress={() => {
+                                            router.push({
+                                                pathname: '/views/consignaciones',
+                                                params: { codigoGuia: guide }
+                                            });
+                                        }}>
+                                            <View style={styles.leftContent}>
+                                                <Image
+                                                    source={require('@/assets/icons/ConsignmentIcons.png')}
+                                                    style={styles.icon}
+                                                />
+                                                <Text style={styles.titleConsignment}>Consignaciones</Text>
+                                            </View>
+
                                             <Image
-                                                source={require('@/assets/icons/ConsignmentIcons.png')}
-                                                style={styles.icon}
+                                                source={require('@/assets/icons/ChevronRight.png')}
+                                                style={styles.chevron}
                                             />
-                                            <Text style={styles.titleConsignment}>Consignaciones</Text>
-                                        </View>
 
-                                        <Image
-                                            source={require('@/assets/icons/ChevronRight.png')}
-                                            style={styles.chevron}
-                                        />
-
-                                    </TouchableOpacity>
-                                    
+                                        </TouchableOpacity>
+                                    )}
                                     <View style={{ marginBottom: 10 }}>
                                         {(hasValidInvoice && valueParameterized) && (
                                             <SecurityAlert

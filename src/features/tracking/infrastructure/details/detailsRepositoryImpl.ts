@@ -177,7 +177,7 @@ export const detailsRepositoryImpl: DetailsRepository = {
 
   async novletyOrderByParams(orderId: number, token: string) {
     try {
-      const response = await authApi.get(`${API_ROUTES.GET_NOVELTY_ORDER_BY_PARAMS}${orderId}`, {
+      const response = await authApi.get(`${API_ROUTES.GET_NOVELTY_ORDER_BY_PARAMS}${orderId}/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -339,7 +339,7 @@ export const detailsRepositoryImpl: DetailsRepository = {
   ): Promise<ApiResponse<ListInfOTP>> {
     try {
       const response = await authApi.get(
-        `${API_ROUTES.GET_INFO_BY_DIRECTION_OF_OTP}${direccion_id}`,
+        `${API_ROUTES.GET_INFO_BY_DIRECTION_OF_OTP}${direccion_id}/`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -337,7 +337,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                 style={styles.scrollContainer}
                 showsVerticalScrollIndicator={true}
                 contentContainerStyle={{
-                    paddingBottom: 160,
+                    paddingBottom: 20,
                 }}
             >
                 <View style={styles.container}>
@@ -514,6 +514,8 @@ const styles = StyleSheet.create({
     },
     scrollContainer: {
         flex: 1,
+        maxHeight: 500,
+        marginTop: 12,
         backgroundColor: '#F9F9FA',
     },
     container: {
@@ -704,6 +706,7 @@ const styles = StyleSheet.create({
         paddingVertical: 6,
         elevation: 8,
         shadowColor: '#000',
+        zIndex: 1000,
     },
     pendingText: {
         fontFamily: 'Rubik',

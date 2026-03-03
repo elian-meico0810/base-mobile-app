@@ -545,9 +545,9 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                                 dataResult={dataResult}
                             />
 
-                            {((data.length != 0 && hasValidInvoice)) && (
+                            {((data.length != 0)) && (
                                 <>
-                                    {(!hasValidInvoice) && (
+                                    {(hasValidInvoice && !valueParameterized) && (
 
                                         <TouchableOpacity style={styles.cardConsignment} onPress={() => {
                                             router.push({

@@ -1174,6 +1174,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setModalVisible(true);
         }
     };
+    const discount = Number(guide?.facturas[0]?.dfr ?? 0);
+    const isZero = discount === 0;
 
     return (
         <ThemedView style={styles.container}>
@@ -1332,8 +1334,11 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         </View>
                         <View style={styles.row}>
                             <Text style={styles.label}>Descuento financiero</Text>
-                            <Text style={[styles.value, { color: '#1F9144' }]}>
-                                {'$ - ' + Number(guide?.facturas[0]?.dfr).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                            <Text style={[
+                                styles.value,
+                                { color: isZero ? '#000000' : '#1F9144' }
+                            ]}>
+                                {'$ ' + (isZero ? '' : '- ') + discount.toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                             </Text>
                         </View>
                         {(detailsCounterDelivery || closeButton) && (

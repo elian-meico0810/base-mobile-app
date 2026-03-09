@@ -497,11 +497,9 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 const distance = getDistanceInMeters(Number(guide?.latitud), Number(guide?.longitud), Number(location.coords.latitude), Number(location.coords.longitude));
                 const isInsideRange = distance <= 100;
                 if (!isInsideRange) {
-                    btnRef.current?.reset();
                     setModalTitle("¡Alerta!");
                     setModalMessage("Estás fuera del rango permitido de 100 metros.");
                     setModalVisible(true);
-                    return;
                 }
 
             }

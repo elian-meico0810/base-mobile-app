@@ -186,6 +186,9 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
         const fetchGuide = async () => {
             try {
+                console.log("initialGuide?.facturas[0]?.numeroFactura: ",initialGuide?.facturas[0]?.numeroFactura);
+                console.log("initialGuide?.facturas[0]?.id: ",initialGuide?.pedidos?.[0]?.id);
+                
                 const respones = await invoiceRepositoryImpl.successfulBillPaymentTwo(
                     Number(initialGuide?.facturas[0]?.numeroFactura),
                     token,
@@ -202,7 +205,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             }
         };
         getDataProduct();
-        getSuccessOrderPayment();
+        // getSuccessOrderPayment();
         fetchGuide();
     }, [Number(initialGuide?.facturas[0]?.numeroFactura), token]);
 
@@ -765,7 +768,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
                 }
 
-                getSuccessOrderPayment();
+                // getSuccessOrderPayment();
                 setRefreshing(false);
             }, 2000);
         } catch (error) {
@@ -1061,6 +1064,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
 
     const totalOrderPayment = Number(totalAproved) + Number(valueOrderPaymentByType);
+    
     const totalValue =
         Number(
             (
@@ -1077,9 +1081,9 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         const executeLogic = async () => {
 
             if (!Number.isFinite(totalValue) || !Number.isFinite(totalRecauder) || !Number.isFinite(totalOrderPayment)) {
-                setModalTitle("Cargando...");
-                setModalMessage("Los valores aún no están listos, espere un momento.");
-                setModalVisible(true);
+                // setModalTitle("Cargando...");
+                // setModalMessage("Los valores aún no están listos, espere un momento.");
+                // setModalVisible(true);
                 return;
             } else {
                 setModalVisible(false);

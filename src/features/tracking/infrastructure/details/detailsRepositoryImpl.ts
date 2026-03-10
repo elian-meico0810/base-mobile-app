@@ -377,4 +377,18 @@ export const detailsRepositoryImpl: DetailsRepository = {
       throw error;
     }
   },
+
+  async listAceptationGuide(guide: string, token: string) {
+    try {
+      const { data } = await authApi.get(`${API_ROUTES.GET_ACEPTATION_GUIDE}?codigo_guia=${guide}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return data
+    } catch (error) {
+      throw error;
+    }
+  },
 }

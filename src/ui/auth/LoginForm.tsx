@@ -5,6 +5,7 @@ import { TokenExpiredModal } from '@/components/generals/TokenExpiredModal';
 import { PrimaryInput } from '@/components/inputs/PrimaryInput';
 import { ThemedView } from '@/components/themed-view';
 import { authRepositoryImpl } from '@/src/features/auth/infrastructure/login/authRepositoryImpl';
+import { ListAceptationGuide } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { decodeJWT } from '@/src/utils/jwt';
 import { heightCaldulate } from '@/src/utils/uitls';
@@ -85,13 +86,8 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
                 if (now >= exp) {
                   setShowModal(true);
                 } else {
-                  router.push({
-                    pathname: '/views/details',
-                    params: {
-                      guide: Number(tokenData?.numeroGuia),
-                      token: String(tokenEncode)
-                    }
-                  });
+                  await handleData();
+
                 }
               }
             }
@@ -116,7 +112,10 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
       setIsLoading(true);
       const response = await authRepositoryImpl.login(guide);
       if (response?.statusCode == 200) {
+
         const tokenString = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+        await handleData(tokenString);
+
         await SecureStore.deleteItemAsync('user_token');
         await SecureStore.setItemAsync('user_token', tokenString);
         try {
@@ -133,15 +132,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
           }
         } catch (error) {
         }
-        // Tu response.data es un JWT token, no un objeto
-        router.push({
-          pathname: '/views/details',
-          params: {
-            guide: Number(guide),
-            token: String(response.data)
-          }
 
-        });
       } else {
         setErrorMessage(response?.message || "La guía no existe o es incorrecta.");
       }
@@ -152,16 +143,62 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
     }
   };
 
+  const handleData = async (tokenReseponse?: string) => {
+    setErrorMessage("");
+
+    if (!isValid) {
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      var token = "";
+      token = tokenReseponse ? tokenReseponse : await SecureStore.getItemAsync('user_token') || "";
+
+      if (token !== "" && token !== null) {
+        const response = await detailsRepositoryImpl.listAceptationGuide(guide, token ?? "");
+        const data = response.data as ListAceptationGuide[]
+
+        if (response?.statusCode == 200) {
+          if (data?.[0]?.codigo_guia && data?.[0]?.estado_aceptacion) {
+            router.push({
+              pathname: '/views/AcceptanceTerms' as any,
+              params: {
+                guide: Number(guide),
+                token: String(token)
+              }
+            });
+          } else {
+            router.push({
+              pathname: '/views/details',
+              params: {
+                guide: Number(guide),
+                token: String(token)
+              }
+            });
+          }
+        } else {
+          setErrorMessage(response?.message || "La guía no existe o es incorrecta.");
+        }
+      }
+    } catch (error: any) {
+      setErrorMessage(error.response?.data?.message ?? "Error en la consulta de datos.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
   return (
     <ThemedView style={styles.container}>
       <TokenExpiredModal visible={showModal} onClose={() => setShowModal(false)} />
 
       {/* <NetworkStatus /> */}
 
-      <View style={[styles.backgroundFill, { width, height:'100%' }]} pointerEvents="none">
+      <View style={[styles.backgroundFill, { width, height: '100%' }]} pointerEvents="none">
         <Image
           source={require('@/assets/icons/Welcome.png')}
-          style={[styles.backgroundImage, { width, height:'100%' }]}
+          style={[styles.backgroundImage, { width, height: '100%' }]}
           resizeMode="cover"
         />
       </View>

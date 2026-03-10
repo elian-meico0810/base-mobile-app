@@ -41,6 +41,7 @@ export const API_ROUTES = {
   GET_CONCILIATION_ROUTE: "facturas/resumen-pagos-por-guia/",
   VALIDATE_QR_CEDI: "cedis-qr/validar/",
   DELETE_REPORT_PAYMENT_BY_ORDER: "reporte-pago/eliminar-by-pedido-id/",
+  GET_ACEPTATION_GUIDE: "aceptacion-guia/get-all/",
   // Consignaciones
   CONSIGNACIONES_RESUMEN: "consignaciones/resumen/",
   CONSIGNACIONES_REGISTRAR: "consignaciones/registrar/",

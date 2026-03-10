@@ -260,3 +260,11 @@ export interface DataUploadFIlePprops {
   direccion_id: number;
   files: string[];
 }
+
+export interface ListAceptationGuide {
+  id: number;
+  codigo_guia: string;
+  estado_aceptacion: boolean;
+  fecha_aceptacion: string;
+  fecha_rechazo: string;
+}

@@ -42,6 +42,7 @@ export const API_ROUTES = {
   VALIDATE_QR_CEDI: "cedis-qr/validar/",
   DELETE_REPORT_PAYMENT_BY_ORDER: "reporte-pago/eliminar-by-pedido-id/",
   GET_ACEPTATION_GUIDE: "aceptacion-guia/get-all/",
+  GET_TOTALS_GUIDE_DETAILS: "facturas/total-guia-detalle/",
   // Consignaciones
   CONSIGNACIONES_RESUMEN: "consignaciones/resumen/",
   CONSIGNACIONES_REGISTRAR: "consignaciones/registrar/",

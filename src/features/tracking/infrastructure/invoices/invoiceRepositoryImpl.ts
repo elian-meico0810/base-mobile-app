@@ -338,7 +338,22 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
     } catch (error) {
       throw error;
     }
-  }
+  },
 
+  async listTotalsGuide(guide: string, token: string) {
+    try {
+      const response = await authApi.get(`${API_ROUTES.GET_TOTALS_GUIDE_DETAILS}${guide}/`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 

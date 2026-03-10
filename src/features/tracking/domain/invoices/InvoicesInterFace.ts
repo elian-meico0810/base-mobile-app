@@ -159,3 +159,71 @@ export interface NoDeliveryProps {
   documentosArray?: string[];
   files?: string[];
 }
+
+
+export interface GuideResponse {
+  details: CustomerAddress[];
+}
+
+export interface CustomerAddress {
+  idDireccion: number;
+  direccion: string;
+  poblacion: string;
+  codigoCliente: string;
+  nombreCliente: string;
+  latitud: string;
+  longitud: string;
+  estado: string;
+  fecha_apertura: string | null;
+  whatsapp: string;
+  CondPagoCliente: string;
+  facturas: InvoiceDetail[];
+  pedidos: Order[];
+}
+
+export interface InvoiceDetail {
+  idGuia: number;
+  numeroFactura: string;
+  valorTotal: number;
+  dfr: number;
+  valorRecaudar: number;
+  tipo: string;
+  condPago: string;
+  tipoCliente: string;
+  bodega: string;
+  fechaPedido: string;
+  numeroPedido: string;
+  porcentajeDFR: number;
+}
+
+export interface Order {
+  id: number;
+  codigo: string;
+  bodega: string;
+  fecha: string;
+  canal: string;
+  codigoCliente: string;
+  codigoGuia: string;
+  dfr: number;
+  porcentajeDFR: number;
+  detalles: OrderDetail[];
+}
+
+export interface OrderDetail {
+  id: number;
+  linea: number;
+  producto: Product;
+  valorBaseProducto: string;
+  totalImpuestos: string;
+  unidadesSolicitadas: number;
+  unidadesRechazadas: number;
+  unidadesEntregadas: number;
+  totalEntregado: string;
+  totalImpuestoEntrega: string;
+}
+
+export interface Product {
+  id: number;
+  codigo: string;
+  nombre: string;
+}

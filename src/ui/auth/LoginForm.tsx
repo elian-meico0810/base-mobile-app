@@ -164,7 +164,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
             router.push({
               pathname: '/views/AcceptanceTerms' as any,
               params: {
-                guide: Number(guide),
+                numberGuide: Number(guide),
                 token: String(token)
               }
             });

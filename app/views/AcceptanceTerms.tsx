@@ -1,5 +1,5 @@
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
-import { VewAcceptationTerms } from '@/src/ui/acceptation-terminal/VewAcceptationTerms';
+import { ViewAcceptationTerms } from '@/src/ui/acceptation-terminal/ViewAcceptationTerms';
 import { Stack, useLocalSearchParams } from 'expo-router';
 
 export default function AcceptanceTermsScreen() {
@@ -20,7 +20,7 @@ export default function AcceptanceTermsScreen() {
                     headerShown: false
                 }}
             />
-            <VewAcceptationTerms
+            <ViewAcceptationTerms
                 token={token || ""}
                 onSubmit={async ({ guide, token }) => { }}
                 numberGuide={Number(numberGuide)}

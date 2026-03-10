@@ -186,13 +186,13 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     // Función para verificar permisos
     const listReportPaymentByCOideGuide = async (authToken: string) => {
         try {
-
+            
             const responseQueryData = await invoiceRepositoryImpl.successTypeCashPayment(
                 String(initialGuide),
                 authToken
             );
             let total = 0;
-
+            
             if (responseQueryData?.statusCode === 200) {
                 const data = responseQueryData.data as any;
                 total = data?.totalEfectivo
@@ -205,7 +205,12 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                     );
 
                     if (Array.isArray(response?.data)) {
-                        if (total >= response?.data?.[0].valor) {
+                        const parameterToalas = response.data.reduce((acc: number, item: any) => {
+                          const numero = Number(item.valor);
+                          return !isNaN(numero) ? acc + numero : acc;
+                        }, 0);
+
+                        if (total >= parameterToalas) {
                             setValueParameterized(true);
                         }
                     }
@@ -476,8 +481,6 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
             setUploadPhoto(false);
             // setValueInput("");
             // setMultiplePhotos([]);
-            console.log("multiplePhotos: ", multiplePhotos);
-            console.log("valueInput: ", valueInput);
 
 
         } catch (error: any) {
@@ -770,7 +773,6 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                 onRead={async (qrToken) => {
                     try {
                         setShowScanner(false);
-                        console.log(qrToken);
 
                         await detailsRepositoryImpl.validateCediQR(
                             qrToken,

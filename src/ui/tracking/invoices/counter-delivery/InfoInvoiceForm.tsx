@@ -8,6 +8,7 @@ import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { TypePayment } from '@/components/generals/TypePayment';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
+import { OrderDetailSkeleton } from '@/components/skeleton/OrderDetailSkeleton ';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
 import { OptionsRefusedEnum, StatusDelivery, TypeCaculateValueEnum, TypeConPagoEnum, TypeInvoiceEnum, TypeQr } from '@/src/constants/GuideStates';
@@ -135,9 +136,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         return () => backHandler.remove();
     }, [allowBack, numberGuide, token]);
 
-
-
-
     const handleGoBack = async () => {
         // router.back();
         if (detailsCounterDelivery) {
@@ -186,9 +184,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
         const fetchGuide = async () => {
             try {
-                console.log("initialGuide?.facturas[0]?.numeroFactura: ",initialGuide?.facturas[0]?.numeroFactura);
-                console.log("initialGuide?.facturas[0]?.id: ",initialGuide?.pedidos?.[0]?.id);
-                
                 const respones = await invoiceRepositoryImpl.successfulBillPaymentTwo(
                     Number(initialGuide?.facturas[0]?.numeroFactura),
                     token,
@@ -270,6 +265,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             ], token);
 
             if (response?.statusCode === 200) {
+                onRefresh();
                 setModalTitle("¡Procesado!");
                 setModalMessage(`Registro(s) procesado exitosamente.`);
                 setModalVisible(true);
@@ -318,6 +314,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             ], token);
 
             if (response?.statusCode === 200) {
+                onRefresh();
                 setModalTitle("¡Procesado!");
                 setModalMessage(`Registro(s) procesado exitosamente.`);
                 setModalVisible(true);
@@ -732,7 +729,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             latitud: clienteEncontrado.latitud,
                             longitud: clienteEncontrado.longitud,
                             estado: clienteEncontrado.estado,
-                            facturas: clienteEncontrado.facturas
+                            facturas: clienteEncontrado.facturas,
+                            pedidos: clienteEncontrado.pedidos
                         });
 
                     }
@@ -1062,7 +1060,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
 
     const totalOrderPayment = Number(totalAproved) + Number(valueOrderPaymentByType);
-    
+
     const totalValue =
         Number(
             (
@@ -1222,234 +1220,241 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             >
 
                 {/* Card blanco centrado */}
-                <View style={styles.card}>
 
-                    {/* Línea divisoria */}
-                    <View style={styles.orderInfo}>
+                {!guide || !Number.isFinite(totalValue) || !Number.isFinite(totalRecauder) || !Number.isFinite(totalOrderPayment) ? (
+                    <OrderDetailSkeleton />
+                ) : (
+                    <>
+                        <View style={styles.card}>
 
-                        <View style={styles.storeRow}>
-                            <Image
-                                source={require("@/assets/icons/HouseIcon.png")}
-                                style={styles.storeIcon}
-                                resizeMode="contain"
-                            />
+                            {/* Línea divisoria */}
+                            <View style={styles.orderInfo}>
 
-                            <View style={styles.storeText}>
-                                <Text style={styles.labelTwo}>Nombre de la tienda</Text>
-                                <Text style={styles.value}>
-                                    {toUpperCase(guide?.nombreCliente)}
-                                </Text>
-                            </View>
-                        </View>
+                                <View style={styles.storeRow}>
+                                    <Image
+                                        source={require("@/assets/icons/HouseIcon.png")}
+                                        style={styles.storeIcon}
+                                        resizeMode="contain"
+                                    />
 
-                        <View style={styles.divider} />
-                        <View style={styles.storeRow}>
-                            <Image
-                                source={require("@/assets/icons/UbicationIcon.png")}
-                                style={styles.storeIcon}
-                                resizeMode="contain"
-                            />
-                            <View style={styles.storeText}>
-                                <Text style={styles.labelTwo}>Dirección</Text>
-                                <Text style={styles.direccionText}>{cleanSpaces(guide?.direccion)}, {cleanSpaces(guide?.poblacion)}</Text>
-                            </View>
-                        </View>
-
-                        <View style={styles.divider} />
-
-                        <View style={styles.storeRow}>
-                            <Image
-                                source={require("@/assets/icons/NumberIcon.png")}
-                                style={styles.storeIcon}
-                                resizeMode="contain"
-                            />
-                            <View style={styles.storeText}>
-                                <Text style={styles.labelTwo}>Código del cliente</Text>
-                                <Text style={styles.value}>
-                                    {guide?.codigoCliente ?? '0'}
-                                </Text>
-                            </View>
-                        </View>
-
-                        <View style={styles.divider} />
-
-                        <View style={styles.storeRow}>
-                            <Image
-                                source={require("@/assets/icons/CashIcon.png")}
-                                style={styles.storeIcon}
-                                resizeMode="contain"
-                            />
-                            <View style={styles.storeText}>
-
-                                <Text style={styles.labelTwo}>Método de pago</Text>
-                                <Text style={styles.value}>
-                                    {capitalizeFirst(value)}
-                                </Text>
-                            </View>
-                        </View>
-
-                        <View style={styles.divider} />
-
-                        <View style={styles.storeRow}>
-                            <Image
-                                source={require("@/assets/icons/InvoiceIcon.png")}
-                                style={styles.storeIcon}
-                                resizeMode="contain"
-                            />
-                            <View style={styles.storeText}>
-                                <Text style={styles.labelTwo}>N° de factura</Text>
-                                <Text style={styles.value}>{guide?.facturas[0]?.numeroFactura ?? '0'}</Text>
-                            </View>
-
-                        </View>
-                    </View>
-                </View>
-
-                <View style={[styles.cardTwo, { minHeight: !closeButton ? undefined : 229 }]}>
-                    {/* Encabezado */}
-                    {(detailsCounterDelivery || closeButton) && (
-                        <View style={styles.cardHeader}>
-                            <View
-                                style={[
-                                    styles.statusContainer,
-                                    totalRecauder == 0 && { backgroundColor: '#DFF5E1' },
-                                ]}
-                            >
-                                <Text
-                                    style={[
-                                        styles.status,
-                                        totalRecauder == 0 && { color: '#1F9144' },
-                                    ]}
-                                >
-                                    {totalRecauder == 0 ? 'Pago realizado' : 'Pendiente'}
-                                </Text>
-                            </View>
-                        </View>
-                    )}
-
-                    {/* Línea divisoria */}
-                    <View style={styles.orderInfo}>
-
-                        <View style={styles.row}>
-                            <Text style={styles.label}>Subtotal</Text>
-                            <Text style={styles.value}>{'$ ' + (Number(guide?.facturas[0]?.valorTotal) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
-                        </View>
-                        <View style={styles.row}>
-                            <Text style={styles.label}>Descuento financiero</Text>
-                            <Text style={[
-                                styles.value,
-                                { color: isZero ? '#000000' : '#1F9144' }
-                            ]}>
-                                {'$ ' + (isZero ? '' : '- ') + discount.toLocaleString('es-CO', { minimumFractionDigits: 0 })}
-                            </Text>
-                        </View>
-                        {(detailsCounterDelivery || closeButton) && (
-                            <View style={styles.row}>
-                                <Text style={styles.label}>Productos rechazados</Text>
-                                <Text style={styles.value}>{'$ ' + Number(valueOrderCalculate).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
-                            </View>
-                        )}
-                        <View style={styles.row}>
-                            <Text style={styles.labelTotal}>Valor total</Text>
-                            <Text style={[styles.value, { color: '#141D32', fontWeight: '800' }]}>
-                                {'$ ' + Number(totalValue || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
-                            </Text>
-                        </View>
-
-                        <View style={styles.dividerTwo} />
-
-                        {/* Información del pedido */}
-                        <View style={styles.row}>
-                            <Text style={styles.label}>Valor recaudado</Text>
-                            <Text style={styles.value}>{'$ ' + Number(totalOrderPayment || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
-                        </View>
-
-                        <View style={styles.row}>
-                            <Text style={styles.labelTotal}>Valor a recaudar</Text>
-                            <Text style={[
-                                styles.value,
-                                {
-                                    color: Number(totalRecauder) === 0 ? '#1F9144' : '#C62828',
-                                    fontWeight: '800',
-                                    fontSize: 16
-                                }
-                            ]}>
-                                {'$ ' + (Number(totalRecauder) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
-                            </Text>
-                        </View>
-
-                        {(detailsCounterDelivery || closeButton) && (
-                            totalRecauder != 0 ? (
-                                <TouchableOpacity
-                                    style={styles.qrButton}
-                                    onPress={() => {
-                                        const isValidButton = validateButton();
-                                        if (!isValidButton) return;
-                                        setTypePayment(true);
-                                    }}
-                                >
-                                    <View style={styles.qrButtonContent}>
-                                        <Text style={styles.qrButtonText}>Registrar pago</Text>
+                                    <View style={styles.storeText}>
+                                        <Text style={styles.labelTwo}>Nombre de la tienda</Text>
+                                        <Text style={styles.value}>
+                                            {toUpperCase(guide?.nombreCliente)}
+                                        </Text>
                                     </View>
-                                </TouchableOpacity>
-                            ) : (
-                                <TouchableOpacity
-                                    style={styles.qrButtonDetail}
-                                    onPress={() => { setShowPayment(true) }}
-                                >
-                                    <Text style={styles.qrButtonText}>Detalle de pagos</Text>
-                                </TouchableOpacity>
-                            )
-                        )}
+                                </View>
 
-                    </View>
+                                <View style={styles.divider} />
+                                <View style={styles.storeRow}>
+                                    <Image
+                                        source={require("@/assets/icons/UbicationIcon.png")}
+                                        style={styles.storeIcon}
+                                        resizeMode="contain"
+                                    />
+                                    <View style={styles.storeText}>
+                                        <Text style={styles.labelTwo}>Dirección</Text>
+                                        <Text style={styles.direccionText}>{cleanSpaces(guide?.direccion)}, {cleanSpaces(guide?.poblacion)}</Text>
+                                    </View>
+                                </View>
 
-                </View>
+                                <View style={styles.divider} />
 
-                {(!detailsCounterDelivery && !closeButton) && (
-                    <TouchableOpacity
-                        style={styles.qrButtonDetailTwo}
-                        onPress={() => {
-                            setShowNoDeliveryModal(true);
-                        }}
-                    >
-                        <View >
-                            <Image
-                                source={require('@/assets/icons/CloseRed.png')}
-                                style={styles.icon}
-                            />
+                                <View style={styles.storeRow}>
+                                    <Image
+                                        source={require("@/assets/icons/NumberIcon.png")}
+                                        style={styles.storeIcon}
+                                        resizeMode="contain"
+                                    />
+                                    <View style={styles.storeText}>
+                                        <Text style={styles.labelTwo}>Código del cliente</Text>
+                                        <Text style={styles.value}>
+                                            {guide?.codigoCliente ?? '0'}
+                                        </Text>
+                                    </View>
+                                </View>
+
+                                <View style={styles.divider} />
+
+                                <View style={styles.storeRow}>
+                                    <Image
+                                        source={require("@/assets/icons/CashIcon.png")}
+                                        style={styles.storeIcon}
+                                        resizeMode="contain"
+                                    />
+                                    <View style={styles.storeText}>
+
+                                        <Text style={styles.labelTwo}>Método de pago</Text>
+                                        <Text style={styles.value}>
+                                            {capitalizeFirst(value)}
+                                        </Text>
+                                    </View>
+                                </View>
+
+                                <View style={styles.divider} />
+
+                                <View style={styles.storeRow}>
+                                    <Image
+                                        source={require("@/assets/icons/InvoiceIcon.png")}
+                                        style={styles.storeIcon}
+                                        resizeMode="contain"
+                                    />
+                                    <View style={styles.storeText}>
+                                        <Text style={styles.labelTwo}>N° de factura</Text>
+                                        <Text style={styles.value}>{guide?.facturas[0]?.numeroFactura ?? '0'}</Text>
+                                    </View>
+
+                                </View>
+                            </View>
                         </View>
 
-                        <Text style={styles.qrButtonTexRed}>
-                            No pude entregar el pedido
-                        </Text>
-                    </TouchableOpacity>
+                        <View style={[styles.cardTwo, { minHeight: !closeButton ? undefined : 229 }]}>
+                            {/* Encabezado */}
+                            {(detailsCounterDelivery || closeButton) && (
+                                <View style={styles.cardHeader}>
+                                    <View
+                                        style={[
+                                            styles.statusContainer,
+                                            totalRecauder == 0 && { backgroundColor: '#DFF5E1' },
+                                        ]}
+                                    >
+                                        <Text
+                                            style={[
+                                                styles.status,
+                                                totalRecauder == 0 && { color: '#1F9144' },
+                                            ]}
+                                        >
+                                            {totalRecauder == 0 ? 'Pago realizado' : 'Pendiente'}
+                                        </Text>
+                                    </View>
+                                </View>
+                            )}
+
+                            {/* Línea divisoria */}
+                            <View style={styles.orderInfo}>
+
+                                <View style={styles.row}>
+                                    <Text style={styles.label}>Subtotal</Text>
+                                    <Text style={styles.value}>{'$ ' + (Number(guide?.facturas[0]?.valorTotal) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
+                                </View>
+                                <View style={styles.row}>
+                                    <Text style={styles.label}>Descuento financiero</Text>
+                                    <Text style={[
+                                        styles.value,
+                                        { color: isZero ? '#000000' : '#1F9144' }
+                                    ]}>
+                                        {'$ ' + (isZero ? '' : '- ') + discount.toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                                    </Text>
+                                </View>
+                                {(detailsCounterDelivery || closeButton) && (
+                                    <View style={styles.row}>
+                                        <Text style={styles.label}>Productos rechazados</Text>
+                                        <Text style={styles.value}>{'$ ' + Number(valueOrderCalculate).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
+                                    </View>
+                                )}
+                                <View style={styles.row}>
+                                    <Text style={styles.labelTotal}>Valor total</Text>
+                                    <Text style={[styles.value, { color: '#141D32', fontWeight: '800' }]}>
+                                        {'$ ' + Number(totalValue || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                                    </Text>
+                                </View>
+
+                                <View style={styles.dividerTwo} />
+
+                                {/* Información del pedido */}
+                                <View style={styles.row}>
+                                    <Text style={styles.label}>Valor recaudado</Text>
+                                    <Text style={styles.value}>{'$ ' + Number(totalOrderPayment || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
+                                </View>
+
+                                <View style={styles.row}>
+                                    <Text style={styles.labelTotal}>Valor a recaudar</Text>
+                                    <Text style={[
+                                        styles.value,
+                                        {
+                                            color: Number(totalRecauder) === 0 ? '#1F9144' : '#C62828',
+                                            fontWeight: '800',
+                                            fontSize: 16
+                                        }
+                                    ]}>
+                                        {'$ ' + (Number(totalRecauder) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                                    </Text>
+                                </View>
+
+                                {(detailsCounterDelivery || closeButton) && (
+                                    totalRecauder != 0 ? (
+                                        <TouchableOpacity
+                                            style={styles.qrButton}
+                                            onPress={() => {
+                                                const isValidButton = validateButton();
+                                                if (!isValidButton) return;
+                                                setTypePayment(true);
+                                            }}
+                                        >
+                                            <View style={styles.qrButtonContent}>
+                                                <Text style={styles.qrButtonText}>Registrar pago</Text>
+                                            </View>
+                                        </TouchableOpacity>
+                                    ) : (
+                                        <TouchableOpacity
+                                            style={styles.qrButtonDetail}
+                                            onPress={() => { setShowPayment(true) }}
+                                        >
+                                            <Text style={styles.qrButtonText}>Detalle de pagos</Text>
+                                        </TouchableOpacity>
+                                    )
+                                )}
+
+                            </View>
+
+                        </View>
+
+                        {(!detailsCounterDelivery && !closeButton) && (
+                            <TouchableOpacity
+                                style={styles.qrButtonDetailTwo}
+                                onPress={() => {
+                                    setShowNoDeliveryModal(true);
+                                }}
+                            >
+                                <View >
+                                    <Image
+                                        source={require('@/assets/icons/CloseRed.png')}
+                                        style={styles.icon}
+                                    />
+                                </View>
+
+                                <Text style={styles.qrButtonTexRed}>
+                                    No pude entregar el pedido
+                                </Text>
+                            </TouchableOpacity>
 
 
-                )}
+                        )}
+                        {(detailsCounterDelivery) && (
+                            <View>
+                                <DeliveryStatusAction
+                                    onStatusChange={(status) => {
+                                        setShowStatusDelivery(status);
+                                        // Resetear completado si cambia el estado
+                                        if (status !== showStatusDelivery) {
+                                            setIsDeliveryCompleted(false);
+                                            setMultiplePhotos([]);
+                                        }
+                                    }}
+                                    EntryVisible={isCountryDelivery ? true : isSelectInvocies ? true : buttonValue ? true : EntryVisible}
+                                    onOpenRefusedModal={() => setShowModalRefused(true)}
+                                    onUploadPhoto={() => {
+                                        setUploadPhoto(true);
+                                    }}
+                                    isCompleted={isDeliveryCompleted}
+                                    selectedStatus={showStatusDelivery}
+                                    typeDerlivery={statusDOcument ?? undefined}
+                                    conceptDelivery={conceptDelivery}
+                                />
+                            </View>
+                        )}
 
-                {(detailsCounterDelivery) && (
-                    <View>
-                        <DeliveryStatusAction
-                            onStatusChange={(status) => {
-                                setShowStatusDelivery(status);
-                                // Resetear completado si cambia el estado
-                                if (status !== showStatusDelivery) {
-                                    setIsDeliveryCompleted(false);
-                                    setMultiplePhotos([]);
-                                }
-                            }}
-                            EntryVisible={isCountryDelivery ? true : isSelectInvocies ? true : buttonValue ? true : EntryVisible}
-                            onOpenRefusedModal={() => setShowModalRefused(true)}
-                            onUploadPhoto={() => {
-                                setUploadPhoto(true);
-                            }}
-                            isCompleted={isDeliveryCompleted}
-                            selectedStatus={showStatusDelivery}
-                            typeDerlivery={statusDOcument ?? undefined}
-                            conceptDelivery={conceptDelivery}
-                        />
-                    </View>
+                    </>
                 )}
 
             </ScrollView>
@@ -1458,109 +1463,111 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 <View style={[styles.redBackground, { height: heightValue ? 100 : 90 }]} />
             )}
 
-            <View style={[styles.footer, { marginBottom: 10 }]}>
-                {confirmNoDelivery ? (
-                    <PrimaryButton
-                        title="Confirmar no entrega"
-                        onPress={async () => {
-                            try {
-                                const documentos = guide?.facturas?.map(f => String(f.numeroFactura)) ?? [];
-                                const payload: any = {
-                                    ruta: String(numberGuide),
-                                    direccion: Number(guide?.idDireccion),
-                                    causal: String(selectedNoDeliveryCause?.codigo),
-                                };
-                                if (documentos.length > 1) {
-                                    payload.documentosArray = documentos;
-                                } else {
-                                    payload.documentMeico = documentos[0] ?? null;
-                                }
-                                if (noDeliveryFiles.length > 0) {
-                                    payload.files = noDeliveryFiles;
-                                }
-                                setLoading(true);
-                                const response = await invoiceRepositoryImpl.registerNoDelivery(payload, String(token));
-                                if (response?.statusCode === 200) {
-                                    setModalTitle("¡Procesado!");
-                                    setModalMessage("No entrega registrada exitosamente");
-                                    setModalVisible(true);
-                                    await invoiceRepositoryImpl.closeAddresses(guide?.idDireccion || 0, String(token));
-                                    router.push(
-                                        `/views/details?guide=${numberGuide}&token=${encodeURIComponent(String(token ?? ""))}`
-                                    );
-                                } else {
-                                    setModalTitle("Alerta");
-                                    setModalMessage(response?.message || "Error inesperado.");
-                                    setModalVisible(true);
-                                }
-                            } catch (error: any) {
-                                setModalTitle("¡Error!");
-                                setModalMessage(error?.data?.message ?? "Ocurrió un error inesperado.");
-                                setModalVisible(true);
-                            } finally {
-                                setLoading(false);
-                                setConfirmNoDelivery(false);
-                                setSelectedNoDeliveryCause(null);
-                                setNoDeliveryFiles([]);
-                            }
-                        }}
-                        disabled={false}
-                        width={328}
-                        height={43}
-                    />
-                ) : isSelectInvocies ? (
-                    <PrimaryButton
-                        title="Entregar"
-                        onPress={handleSubmitData}
-                        disabled={false}
-                        width={328}
-                        height={43}
-                    />
-                ) : detailsCounterDelivery ? (
-                    <PrimaryButtonDetails
-                        ref={btnRef}
-                        autoReset={validateException}
-                        key="Enviar confirmación"
-                        title="Enviar confirmación"
-                        onPress={handleSubmitConfirmation}
-                        disabled={(Number(totalRecauder) > 0)}
-                        width={328}
-                        height={43}
-                        buttonColor={undefined}
-                        buttonColorEnd={undefined}
-                        titleColor={undefined}
-                        circleColor={undefined}
-                    />
-                ) : (
-                    <>
-                        {routeStarted && isCountryDelivery ? (
-                            <PrimaryButton
-                                title="Continuar"
-                                onPress={redirectContinue}
-                                disabled={false}
-                                width={328}
-                                height={43}
-                            />
-                        ) : (
-                            <PrimaryButtonDetails
-                                ref={btnRef}
-                                autoReset={validateException}
-                                key={closeButton ? "cerrar" : "llegue"}
-                                title={closeButton ? "Cerrar pedido" : "Ya llegué"}
-                                onPress={closeButton ? submitData : handleSubmit}
-                                disabled={false}
-                                width={328}
-                                height={43}
-                                buttonColor={conceptDelivery ? undefined : closeButton ? "#DDDFE8" : undefined}
-                                buttonColorEnd={conceptDelivery ? undefined : closeButton ? "#DDDFE8" : undefined}
-                                titleColor={conceptDelivery ? undefined : closeButton ? "#FFFFFF" : undefined}
-                                circleColor={conceptDelivery ? undefined : closeButton ? "#788095" : undefined}
-                            />
-                        )}
-                    </>
-                )}
-            </View>
+            {guide && Number.isFinite(totalValue) && Number.isFinite(totalRecauder) && Number.isFinite(totalOrderPayment) && (
 
+                <View style={[styles.footer, { marginBottom: 10 }]}>
+                    {confirmNoDelivery ? (
+                        <PrimaryButton
+                            title="Confirmar no entrega"
+                            onPress={async () => {
+                                try {
+                                    const documentos = guide?.facturas?.map(f => String(f.numeroFactura)) ?? [];
+                                    const payload: any = {
+                                        ruta: String(numberGuide),
+                                        direccion: Number(guide?.idDireccion),
+                                        causal: String(selectedNoDeliveryCause?.codigo),
+                                    };
+                                    if (documentos.length > 1) {
+                                        payload.documentosArray = documentos;
+                                    } else {
+                                        payload.documentMeico = documentos[0] ?? null;
+                                    }
+                                    if (noDeliveryFiles.length > 0) {
+                                        payload.files = noDeliveryFiles;
+                                    }
+                                    setLoading(true);
+                                    const response = await invoiceRepositoryImpl.registerNoDelivery(payload, String(token));
+                                    if (response?.statusCode === 200) {
+                                        setModalTitle("¡Procesado!");
+                                        setModalMessage("No entrega registrada exitosamente");
+                                        setModalVisible(true);
+                                        await invoiceRepositoryImpl.closeAddresses(guide?.idDireccion || 0, String(token));
+                                        router.push(
+                                            `/views/details?guide=${numberGuide}&token=${encodeURIComponent(String(token ?? ""))}`
+                                        );
+                                    } else {
+                                        setModalTitle("Alerta");
+                                        setModalMessage(response?.message || "Error inesperado.");
+                                        setModalVisible(true);
+                                    }
+                                } catch (error: any) {
+                                    setModalTitle("¡Error!");
+                                    setModalMessage(error?.data?.message ?? "Ocurrió un error inesperado.");
+                                    setModalVisible(true);
+                                } finally {
+                                    setLoading(false);
+                                    setConfirmNoDelivery(false);
+                                    setSelectedNoDeliveryCause(null);
+                                    setNoDeliveryFiles([]);
+                                }
+                            }}
+                            disabled={false}
+                            width={328}
+                            height={43}
+                        />
+                    ) : isSelectInvocies ? (
+                        <PrimaryButton
+                            title="Entregar"
+                            onPress={handleSubmitData}
+                            disabled={false}
+                            width={328}
+                            height={43}
+                        />
+                    ) : detailsCounterDelivery ? (
+                        <PrimaryButtonDetails
+                            ref={btnRef}
+                            autoReset={validateException}
+                            key="Enviar confirmación"
+                            title="Enviar confirmación"
+                            onPress={handleSubmitConfirmation}
+                            disabled={(Number(totalRecauder) > 0)}
+                            width={328}
+                            height={43}
+                            buttonColor={undefined}
+                            buttonColorEnd={undefined}
+                            titleColor={undefined}
+                            circleColor={undefined}
+                        />
+                    ) : (
+                        <>
+                            {routeStarted && isCountryDelivery ? (
+                                <PrimaryButton
+                                    title="Continuar"
+                                    onPress={redirectContinue}
+                                    disabled={false}
+                                    width={328}
+                                    height={43}
+                                />
+                            ) : (
+                                <PrimaryButtonDetails
+                                    ref={btnRef}
+                                    autoReset={validateException}
+                                    key={closeButton ? "cerrar" : "llegue"}
+                                    title={closeButton ? "Cerrar pedido" : "Ya llegué"}
+                                    onPress={closeButton ? submitData : handleSubmit}
+                                    disabled={false}
+                                    width={328}
+                                    height={43}
+                                    buttonColor={conceptDelivery ? undefined : closeButton ? "#DDDFE8" : undefined}
+                                    buttonColorEnd={conceptDelivery ? undefined : closeButton ? "#DDDFE8" : undefined}
+                                    titleColor={conceptDelivery ? undefined : closeButton ? "#FFFFFF" : undefined}
+                                    circleColor={conceptDelivery ? undefined : closeButton ? "#788095" : undefined}
+                                />
+                            )}
+                        </>
+                    )}
+                </View>
+            )}
             <ExceptionModal
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}

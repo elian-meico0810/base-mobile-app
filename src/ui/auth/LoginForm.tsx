@@ -146,7 +146,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
   const handleData = async (tokenReseponse?: string) => {
     setErrorMessage("");
 
-    if (!isValid) {
+    if (!isValid && !tokenData?.numeroGuia) {
       return;
     }
 
@@ -154,10 +154,8 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
       setIsLoading(true);
       var token = "";
       token = tokenReseponse ? tokenReseponse : await SecureStore.getItemAsync('user_token') || "";
-      console.log("token: ",token);
-      
       if (token !== "" && token !== null) {
-        const response = await detailsRepositoryImpl.listAceptationGuide(guide, token ?? "");
+        const response = await detailsRepositoryImpl.listAceptationGuide(guide ? guide : tokenData?.numeroGuia, token ?? "");
         const data = response.data as ListAceptationGuide[]
 
         if (response?.statusCode == 200) {
@@ -165,7 +163,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
             router.push({
               pathname: '/views/AcceptanceTerms' as any,
               params: {
-                numberGuide: Number(guide),
+                numberGuide: Number(guide) ? Number(guide) : Number(tokenData?.numeroGuia),
                 token: String(token)
               }
             });
@@ -173,7 +171,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
             router.push({
               pathname: '/views/details',
               params: {
-                guide: Number(guide),
+                guide: Number(guide) ? Number(guide) : Number(tokenData?.numeroGuia),
                 token: String(token)
               }
             });

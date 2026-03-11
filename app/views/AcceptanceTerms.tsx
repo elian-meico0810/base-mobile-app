@@ -20,6 +20,7 @@ export default function AcceptanceTermsScreen() {
                     headerShown: false
                 }}
             />
+            
             <ViewAcceptationTerms
                 token={token || ""}
                 onSubmit={async ({ guide, token }) => { }}

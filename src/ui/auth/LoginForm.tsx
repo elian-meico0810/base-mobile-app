@@ -154,13 +154,14 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
       setIsLoading(true);
       var token = "";
       token = tokenReseponse ? tokenReseponse : await SecureStore.getItemAsync('user_token') || "";
-
+      console.log("token: ",token);
+      
       if (token !== "" && token !== null) {
         const response = await detailsRepositoryImpl.listAceptationGuide(guide, token ?? "");
         const data = response.data as ListAceptationGuide[]
 
         if (response?.statusCode == 200) {
-          if (data?.[0]?.codigo_guia && data?.[0]?.estado_aceptacion) {
+          if (data?.[0]?.codigo_guia && !data?.[0]?.estado_aceptacion) {
             router.push({
               pathname: '/views/AcceptanceTerms' as any,
               params: {

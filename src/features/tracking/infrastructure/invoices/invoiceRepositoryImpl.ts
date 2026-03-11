@@ -1,6 +1,7 @@
 import { API_ROUTES } from "@/src/constants/apiRoutes";
 import { authApi, authDevApi } from "@/src/features/auth/infrastructure/authApi";
 import {
+  ApproveOrReject,
   CreateEntregaProps,
   CreatePaymentTypeProps,
   GenerateQRPorps,
@@ -350,6 +351,24 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
           },
         });
 
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async apporveOrReject(data: ApproveOrReject, token: string) {
+    try {
+      const response = await authApi.post(
+        `${API_ROUTES.APPROVE_OR_REJECT}`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+      // Aquí devuelves solo el JSON que envió el servidor
       return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {
       throw error;

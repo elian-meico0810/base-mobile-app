@@ -40,6 +40,7 @@ interface DetailsFormProps {
     initialGuide?: string;
     token?: string;
     onSubmit: (params: { guide: string; token: string }) => void | Promise<void>;
+    showAlert: boolean;
 }
 
 interface EvidencePhoto {
@@ -48,7 +49,7 @@ interface EvidencePhoto {
     base64?: string;
 }
 
-export function DetailsForm({ initialGuide = "", token = "", onSubmit }: DetailsFormProps) {
+export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert }: DetailsFormProps) {
     const [guide, setGuide] = useState(initialGuide);
     const [tokenUser, setToken] = useState<string | null>(null);
     const [data, setData] = useState<GuideDetails[]>([]);
@@ -72,6 +73,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const [valueParameterized, setValueParameterized] = useState(false);
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [waitingForPermission, setWaitingForPermission] = useState(false);
+    const [viewshowAlert, setViewshowAlert] = useState(showAlert);
     const [showSuccess, setShowSuccess] = useState(false);
     const [date, setDate] = useState<string | null>(null);
     const btnRef = useRef<any>(null);
@@ -186,13 +188,13 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     // Función para verificar permisos
     const listReportPaymentByCOideGuide = async (authToken: string) => {
         try {
-            
+
             const responseQueryData = await invoiceRepositoryImpl.successTypeCashPayment(
                 String(initialGuide),
                 authToken
             );
             let total = 0;
-            
+
             if (responseQueryData?.statusCode === 200) {
                 const data = responseQueryData.data as any;
                 total = data?.totalEfectivo
@@ -206,8 +208,8 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
 
                     if (Array.isArray(response?.data)) {
                         const parameterToalas = response.data.reduce((acc: number, item: any) => {
-                          const numero = Number(item.valor);
-                          return !isNaN(numero) ? acc + numero : acc;
+                            const numero = Number(item.valor);
+                            return !isNaN(numero) ? acc + numero : acc;
                         }, 0);
 
                         if (total >= parameterToalas) {
@@ -802,7 +804,14 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                 message={modalMessage}
                 buttonLabel={modalButtonLabel}
             />
-
+            
+            {viewshowAlert && (
+                <TopSuccessAlert
+                    visible={viewshowAlert}
+                    message={`El documento de transporte ${initialGuide} ha sido aceptado con éxito.`}
+                    onHide={() => setViewshowAlert(false)}
+                />
+            )}
             {loading && <LoadingBlue />}
 
         </ThemedView>

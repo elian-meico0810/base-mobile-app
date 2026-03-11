@@ -227,3 +227,8 @@ export interface Product {
   codigo: string;
   nombre: string;
 }
+
+export interface ApproveOrReject {
+  guia_id: number;
+  is_acceptation: boolean;
+}

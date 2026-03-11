@@ -10,7 +10,7 @@ import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/in
 import { useRouter } from 'expo-router';
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useRef, useState } from "react";
-import { BackHandler, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BackHandler, Dimensions, ScrollView, StyleSheet, Text, View } from 'react-native';
 const { width, height } = Dimensions.get('window');
 
 interface InfoInvoiceFormProps {
@@ -37,6 +37,7 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
     const [allowBack, setAllowBack] = useState(false);
     const [validateException, setValidateException] = useState(false);
     const [ejecuteData, setEjecuteData] = useState(false);
+    const [showSuccessQRp, setShowSuccessQRP] = useState(false);
 
     const btnRef = useRef<any>(null);
     const router = useRouter();
@@ -57,28 +58,38 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
         return () => backHandler.remove();
     }, [allowBack, numberGuide, token]);
 
-    const handleGoBack = async () => {
-        router.back();
 
-    };
-
-
-    const handleSubmit = async () => {
+    const handleSubmitReject = async () => {
         try {
+            setLoading(true);
 
+            const response = await invoiceRepositoryImpl.apporveOrReject(
+                {
+                    guia_id: Number(numberGuide),
+                    is_acceptation: false
+                }, token);
+
+            if (response?.statusCode === 200) {
+                await SecureStore.deleteItemAsync('user_token');
+                setTimeout(() => {
+                    setLoading(false);
+                    router.replace('/auth/login');
+                }, 1200);
+            } else {
+                setModalTitle("¡Alerta!");
+                setModalMessage("Problemas al aceptar la guía, contacta con el área de soporte.");
+                setModalVisible(true);
+            }
         } catch (error: any) {
             btnRef.current?.reset();
             setModalTitle("¡Error!");
             setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
-        } finally {
-            setLoading(false);
         }
     };
 
     const listTotalsGuide = async () => {
         try {
-            console.log("llego aca");
             const respones = await invoiceRepositoryImpl.listTotalsGuide(String(numberGuide), token);
             if (respones?.statusCode === 200 && respones.data) {
 
@@ -113,9 +124,31 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
         }
     }, [token]);
 
-    const redirectContinue = async () => {
+    const handleSubmit = async () => {
         try {
+            setLoading(true);
 
+            const response = await invoiceRepositoryImpl.apporveOrReject(
+                {
+                    guia_id: Number(numberGuide),
+                    is_acceptation: true
+                }, token);
+
+            if (response?.statusCode === 200) {
+                setShowSuccessQRP(true);
+                router.push({
+                    pathname: '/views/details',
+                    params: {
+                        guide: Number(numberGuide),
+                        token: String(token),
+                        showAlert: "true"
+                    }
+                });
+            } else {
+                setModalTitle("¡Alerta!");
+                setModalMessage(response?.message ?? "Ocurrió un error inesperado.");
+                setModalVisible(true);
+            }
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
@@ -124,18 +157,6 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
             setLoading(false);
         }
     };
-
-    const totalAproved = 0;
-    const closeButton = routeStarted;
-
-
-    const totalOrderPayment = Number(totalAproved) + Number(0);
-
-    const totalValue = 0;
-
-    const totalRecauder = Math.max(0, Number(totalValue) - Number(totalOrderPayment));
-
-
 
 
     return (
@@ -147,16 +168,13 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
 
             {/* Header con título */}
             <View style={styles.headerContainer}>
-                <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-                    {/* <Text style={styles.backArrow}>‹</Text> */}
-                </TouchableOpacity>
                 <Text style={styles.headerTitle}>Validación de documento de transporte</Text>
                 <View style={styles.placeholder} />
             </View>
 
             {/* Card blanco centrado */}
 
-            {!guide || !Number.isFinite(totalValue) || !Number.isFinite(totalRecauder) || !Number.isFinite(totalOrderPayment) ? (
+            {!guide ? (
                 <GuideDetailSkeleton />
             ) : (
                 <>
@@ -170,7 +188,11 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
                                     Documento de transporte {numberGuide}
                                 </Text>
                                 <Text style={styles.subTitle}>
-                                    {guide?.details?.length ?? 0} Pedidos
+                                    {
+                                        guide?.details?.reduce((total, address) => {
+                                            return total + (address.pedidos?.length ?? 0);
+                                        }, 0) ?? 0
+                                    } Pedidos
                                 </Text>
                             </View>
                         </View>
@@ -217,13 +239,13 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
                 </>
             )}
 
-            {guide && Number.isFinite(totalValue) && Number.isFinite(totalRecauder) && Number.isFinite(totalOrderPayment) && (
+            {guide && (
 
                 <View style={[styles.footer, { marginBottom: 10 }]}>
                     <>
                         <PrimaryButton
                             title="Aceptar carga"
-                            onPress={redirectContinue}
+                            onPress={handleSubmit}
                             disabled={false}
                             width={328}
                             height={43}
@@ -231,7 +253,7 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
 
                         <SecondaryButtonCancel
                             title="Rechazar carga"
-                            onPress={redirectContinue}
+                            onPress={handleSubmitReject}
                             disabled={false}
                             width={328}
                             height={43}
@@ -239,6 +261,7 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
                     </>
                 </View>
             )}
+
             <ExceptionModal
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
@@ -288,7 +311,6 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         fontSize: 18,
         color: '#000',
-        marginLeft: 0,
     },
     placeholder: {
         width: 40,

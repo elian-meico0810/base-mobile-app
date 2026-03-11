@@ -43,6 +43,7 @@ export const API_ROUTES = {
   DELETE_REPORT_PAYMENT_BY_ORDER: "reporte-pago/eliminar-by-pedido-id/",
   GET_ACEPTATION_GUIDE: "aceptacion-guia/get-all/",
   GET_TOTALS_GUIDE_DETAILS: "facturas/total-guia-detalle/",
+  APPROVE_OR_REJECT: "aceptacion-guia/approve-or-reject/",
   // Consignaciones
   CONSIGNACIONES_RESUMEN: "consignaciones/resumen/",
   CONSIGNACIONES_REGISTRAR: "consignaciones/registrar/",

@@ -6,6 +6,7 @@ export interface Factura {
   condPago: string;
   tipo: string;
   tipoCliente: string;
+  numeroPedido?: string;
 }
 
 export interface Pedidos {

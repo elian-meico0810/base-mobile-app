@@ -39,6 +39,7 @@ interface UploadPhotosProps {
     initialGuide?: GuideDetails;
     token?: string;
     numberGuide?: number;
+    isViewDetailsPorducts?: boolean;
 
 }
 
@@ -54,7 +55,8 @@ export function ViewFileFormOTP({
     sasToken,
     initialGuide,
     token = "",
-    numberGuide
+    numberGuide,
+    isViewDetailsPorducts
 }: UploadPhotosProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [evidences, setEvidences] = useState<EvidencePhoto[]>([]);

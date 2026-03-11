@@ -45,6 +45,7 @@ interface InfoInvoiceFormProps {
     IsGoBack?: boolean;
     routeStartedBotton?: string;
     detailsCounterDelivery?: boolean;
+    isViewDetailsPorducts?: boolean;
 }
 
 interface EvidencePhoto {
@@ -56,7 +57,7 @@ interface EvidencePhoto {
 type DeliveryStatus = "total" | "parcial" | "rechazo" | null;
 type OptionsRefusedPorps = 'Dinero' | 'Dueño' | 'Tienda' | 'Productos' | null;
 
-export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton, detailsCounterDelivery }: InfoInvoiceFormProps) {
+export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton, detailsCounterDelivery, isViewDetailsPorducts }: InfoInvoiceFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [guideAny, setGuideAny] = useState<GuideDetails[]>([]);
     const [guideByProduct, setGuideByPorduct] = useState<GuideDetails[]>([]);
@@ -120,6 +121,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [noDeliveryFiles, setNoDeliveryFiles] = useState<string[]>([]);
     const [confirmNoDelivery, setConfirmNoDelivery] = useState(false);
 
+    console.log("isViewDetailsPorducts: ",isViewDetailsPorducts);
+    
     useEffect(() => {
         const backAction = () => {
             if (!allowBack) {
@@ -168,11 +171,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         }
     }, [modalRefused]);
 
-    useEffect(() => {
-        if (isSelectInvocies) {
-            setRouteStarted(true);
-        }
-    }, [isSelectInvocies]);
 
     useEffect(() => {
         if (conceptDelivery?.tipoEntrega?.codigo) {
@@ -446,9 +444,16 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             if (response?.statusCode === 200) {
                 setRouteStarted(true);
                 if (isSelectInvocies) {
-                    router.push(
-                        `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}`
-                    );
+                    router.push({
+                        pathname: '/views/IndexDetailsInvoice',
+                        params: {
+                            guide: JSON.stringify(initialGuide),
+                            numberGuide: numberGuide,
+                            token: token ?? "",
+                            isSelectInvocies: 'true'
+
+                        }
+                    });
                 }
                 setvalidateIsBotton(true);
                 setEntryVisible(true);
@@ -464,7 +469,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setValidateException(true);
             btnRef.current?.reset();
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 1.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -538,7 +543,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setValidateException(true);
             btnRef.current?.reset();
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 2.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -562,7 +567,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             }
         } catch (error: any) {
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 3.");
             setModalVisible(true);
         } finally {
         }
@@ -600,7 +605,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             }
         } catch (error: any) {
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 4.");
             setModalVisible(true);
         }
     };
@@ -636,7 +641,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             }
         } catch (error: any) {
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 5.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -674,7 +679,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             return true;
         } catch (error) {
             setModalTitle("¡Error!");
-            setModalMessage("Ocurrio un error inesperado.");
+            setModalMessage("Ocurrio un error inesperado 6.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -697,7 +702,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             }
         } catch (error) {
             setModalTitle("¡Error!");
-            setModalMessage("Ocurrio un error inesperado.");
+            setModalMessage("Ocurrio un error inesperado 7.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -770,7 +775,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         } catch (error) {
             setRefreshing(false);
             setModalTitle("¡Error!");
-            setModalMessage("Ocurrio un error inesperado.");
+            setModalMessage("Ocurrio un error inesperado 8.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -882,7 +887,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             }
         } catch (error) {
             setModalTitle("¡Error!");
-            setModalMessage("Ocurrio un error inesperado.");
+            setModalMessage("Ocurrio un error inesperado 9.");
             setModalVisible(true);
         }
     };
@@ -907,8 +912,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         init();
 
     }, []);
-
-
 
 
     const listDocumentQuery = async () => {
@@ -942,7 +945,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
         } catch (error) {
             setModalTitle("¡Error!");
-            setModalMessage("Ocurrio un error inesperado.");
+            setModalMessage("Ocurrio un error inesperado 10.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -966,7 +969,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             }
         } catch (error) {
             setModalTitle("¡Error!");
-            setModalMessage("Ocurrio un error inesperado.");
+            setModalMessage("Ocurrio un error inesperado 11.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -1110,21 +1113,21 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 setModalVisible(true);
                 return;
             }
-            if (Number(totalRecauder) > 0) {
-                btnRef.current?.reset();
-                setModalTitle("¡Alerta!");
-                setModalMessage("El valor a recaudar debe ser 0 para continuar con la confirmación.");
-                setModalVisible(true);
-                return;
-            }
+            // if (Number(totalRecauder) > 0) {
+            //     btnRef.current?.reset();
+            //     setModalTitle("¡Alerta!");
+            //     setModalMessage("El valor a recaudar debe ser 0 para continuar con la confirmación.");
+            //     setModalVisible(true);
+            //     return;
+            // }
 
-            if (!guide?.whatsapp || guide?.whatsapp != "") {
-                btnRef.current?.reset();
-                setModalTitle("¡Alerta!");
-                setModalMessage("El numero de telefono es requerido.");
-                setModalVisible(true);
-                return;
-            }
+            // if (!guide?.whatsapp || guide?.whatsapp != "") {
+            //     btnRef.current?.reset();
+            //     setModalTitle("¡Alerta!");
+            //     setModalMessage("El numero de telefono es requerido.");
+            //     setModalVisible(true);
+            //     return;
+            // }
 
             setLoading(true);
 
@@ -1134,8 +1137,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 {
                     idDireccion: Number(guide?.idDireccion),
                     numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
-                    numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
-                    // numeroDestino: "+573112187956",
+                    // numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
+                    numeroDestino: "+573112187956",
                     valorOriginal: String(totalValue),
                     valorPagado: String(totalOrderPayment),
                 },
@@ -1145,20 +1148,21 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             if (responseData?.statusCode === 200) {
                 btnRef.current?.reset();
                 setLoading(true);
-                // router.push({
-                //     pathname: '/views/IndexDetailsInvoice',
-                //     params: {
-                //         guide: JSON.stringify(guide),
-                //         numberGuide: numberGuide,
-                //         token: token ?? "",
-                //         confirmationStatus: 'true',
-                //         responseOTPInit: JSON.stringify(responseData.data),
-                //         totalValue: String(totalValue) ?? 0,
-                //         totalRecauder: String(totalRecauder) ?? 0,
-                //         totalOrderPayment: String(totalOrderPayment) ?? 0,
-                //     }
+                router.push({
+                    pathname: '/views/IndexDetailsInvoice',
+                    params: {
+                        guide: JSON.stringify(guide),
+                        numberGuide: numberGuide,
+                        token: token ?? "",
+                        confirmationStatus: 'true',
+                        responseOTPInit: JSON.stringify(responseData.data),
+                        totalValue: String(totalValue) ?? 0,
+                        totalRecauder: String(totalRecauder) ?? 0,
+                        totalOrderPayment: String(totalOrderPayment) ?? 0,
+                        isViewDetailsPorducts: 'true'
+                    }
 
-                // });
+                });
             } else {
                 setValidateException(true);
                 btnRef.current?.reset();
@@ -1176,7 +1180,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     };
     const discount = Number(guide?.facturas[0]?.dfr ?? 0);
     const isZero = discount === 0;
-
+    const isValidateCondition = (detailsCounterDelivery || closeButton || isViewDetailsPorducts);
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -1310,7 +1314,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
                         <View style={[styles.cardTwo, { minHeight: !closeButton ? undefined : 229 }]}>
                             {/* Encabezado */}
-                            {(detailsCounterDelivery || closeButton) && (
+                            {(isValidateCondition) && (
                                 <View style={styles.cardHeader}>
                                     <View
                                         style={[
@@ -1346,7 +1350,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                         {'$ ' + (isZero ? '' : '- ') + discount.toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                                     </Text>
                                 </View>
-                                {(detailsCounterDelivery || closeButton) && (
+                                {(isValidateCondition) && (
                                     <View style={styles.row}>
                                         <Text style={styles.label}>Productos rechazados</Text>
                                         <Text style={styles.value}>{'$ ' + Number(valueOrderCalculate).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
@@ -1381,7 +1385,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                     </Text>
                                 </View>
 
-                                {(detailsCounterDelivery || closeButton) && (
+                                {(isValidateCondition) && (
                                     totalRecauder != 0 ? (
                                         <TouchableOpacity
                                             style={styles.qrButton}
@@ -1530,7 +1534,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             key="Enviar confirmación"
                             title="Enviar confirmación"
                             onPress={handleSubmitConfirmation}
-                            disabled={(Number(totalRecauder) > 0)}
+                            disabled={false}
                             width={328}
                             height={43}
                             buttonColor={undefined}

@@ -23,6 +23,7 @@ export default function IndexDetailsInvoiceScreen() {
     const totalValue = params.totalValue ? Number(params.totalValue) : 0;
     const totalOrderPayment = params.totalOrderPayment ? Number(params.totalOrderPayment) : 0;
     const expireDate = params.expireDate as string;
+    const isViewDetailsPorducts = params.isViewDetailsPorducts as string;
     const validateConditionRender =
         Number.isFinite(Number(totalRecauder)) && Number.isFinite(Number(totalOrderPayment))
     Number.isFinite(Number(totalValue));
@@ -30,8 +31,6 @@ export default function IndexDetailsInvoiceScreen() {
     const sasToken = params.sasToken as string;
     const data = params.multiplePhotos as string;
     const multiplePhotos: EvidencePhoto[] = data ? JSON.parse(data) : [];
-
-
 
     return (
         <>
@@ -55,6 +54,7 @@ export default function IndexDetailsInvoiceScreen() {
                             isSelectInvocies={isSelectInvocies}
                             documentMeico={documentMeico}
                             routeStartedBotton={routeStartedBotton}
+                            isViewDetailsPorducts={isViewDetailsPorducts ? true : false}
                         />
                     );
                 }
@@ -74,6 +74,8 @@ export default function IndexDetailsInvoiceScreen() {
                             totalValue={totalValue}
                             totalOrderPayment={totalOrderPayment}
                             expireDate={expireDate ? true : false}
+                            isViewDetailsPorducts={isViewDetailsPorducts ? true : false}
+
                         />
                     );
                 }
@@ -87,6 +89,7 @@ export default function IndexDetailsInvoiceScreen() {
                             initialGuide={guideObj}
                             token={token || ""}
                             numberGuide={Number(numberGuide)}
+                            isViewDetailsPorducts={isViewDetailsPorducts ? true : false}
 
                         />
                     );

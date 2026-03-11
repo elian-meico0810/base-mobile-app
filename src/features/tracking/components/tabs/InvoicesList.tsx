@@ -1,15 +1,15 @@
 "use client";
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { GuideDetails } from '../../domain/details/DetailsGuide';
+import { GuideDetails, NovletyOrder } from '../../domain/details/DetailsGuide';
 import { DerliveryDocument } from '../../domain/invoices/InvoicesInterFace';
 import { InvoiceItem } from './InvoiceItem';
 
 interface InvoicesListProps {
     invoices?: GuideDetails[] | GuideDetails;
-    guide?: GuideDetails;
+    guide: GuideDetails;
     onInvoiceSelect?: (selectedGuide: GuideDetails | null) => void;
-    onInvoicesMultiSelect?: (selectedGuides: GuideDetails[]) => void; 
+    onInvoicesMultiSelect?: (selectedGuides: GuideDetails[]) => void;
     isSelectInvocies?: string;
     documentMeico?: string;
     numberGuide?: number;
@@ -18,7 +18,9 @@ interface InvoicesListProps {
     isSelect?: boolean;
     activeView?: boolean;
     showCheckboxes?: boolean; // Nuevo prop para mostrar checkboxes
+    conceptDeliverySelect?: NovletyOrder | NovletyOrder[] | null;
 }
+
 
 const InvoicesList = ({
     invoices,
@@ -32,12 +34,13 @@ const InvoicesList = ({
     conceptDelivery,
     isSelect = false,
     activeView = false,
-    showCheckboxes = false
+    showCheckboxes = false,
+    conceptDeliverySelect
 }: InvoicesListProps) => {
     const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
     const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<Set<string>>(new Set());
     const [selectedGuideData, setSelectedGuideData] = useState<GuideDetails | null>(null);
-    const [selectedGuidesData, setSelectedGuidesData] = useState<GuideDetails[]>([]); 
+    const [selectedGuidesData, setSelectedGuidesData] = useState<GuideDetails[]>([]);
     const [response, setResponse] = useState<any>(null);
     let dataToProcess: GuideDetails[] = [];
 
@@ -49,7 +52,8 @@ const InvoicesList = ({
         dataToProcess = Array.isArray(invoices) ? invoices : [invoices];
     }
 
-    const allInvoicesWithParent: Array<{ invoice: any, parentGuide: GuideDetails }> = [];
+    const allInvoicesWithParent: Array<{ invoice: any, parentGuide: GuideDetails, pedidos: any }> = [];
+
 
     dataToProcess.forEach((guideItem) => {
         if (guideItem.facturas && guideItem.facturas.length > 0) {
@@ -62,7 +66,11 @@ const InvoicesList = ({
                         poblacion: guideItem.poblacion,
                         codigoCliente: guideItem.codigoCliente
                     },
-                    parentGuide: guideItem
+                    pedidos: guideItem.pedidos,
+                    parentGuide: {
+                        ...guideItem,
+                        pedidos: guideItem.pedidos
+                    }
                 });
             });
         }
@@ -90,7 +98,8 @@ const InvoicesList = ({
 
                 const selectedGuide: GuideDetails = {
                     ...parentGuide,
-                    facturas: [invoice]
+                    facturas: [invoice],
+                    pedidos: parentGuide.pedidos
                 };
                 const newSelectedGuides = [...selectedGuidesData, selectedGuide];
                 setSelectedGuidesData(newSelectedGuides);
@@ -112,7 +121,9 @@ const InvoicesList = ({
                 setSelectedInvoiceId(invoice.numeroFactura);
                 const selectedGuide: GuideDetails = {
                     ...parentGuide,
-                    facturas: [invoice]
+                    facturas: [invoice],
+                    pedidos: parentGuide.pedidos
+
                 };
                 setSelectedGuideData(selectedGuide);
                 if (onInvoiceSelect) {
@@ -143,7 +154,8 @@ const InvoicesList = ({
                 if (!facturaMap.has(facturaId)) {
                     const selectedGuide: GuideDetails = {
                         ...item.parentGuide,
-                        facturas: [item.invoice]
+                        facturas: [item.invoice],
+                        pedidos: item.pedidos 
                     };
                     facturaMap.set(facturaId, selectedGuide);
                 }
@@ -166,11 +178,9 @@ const InvoicesList = ({
                         .map((item: DerliveryDocument) => item.documentMeico?.toString())
                         .filter(Boolean) as string[];
 
-
                     filteredIds = Array.from(allIds).filter(id =>
                         !existingDocumentMeicos.includes(id)
                     );
-
                 }
             }
 
@@ -181,7 +191,6 @@ const InvoicesList = ({
                     const facturaId = guide.facturas[0]?.numeroFactura;
                     return selectedIdsSet.has(facturaId);
                 });
-
 
             setSelectedInvoiceIds(selectedIdsSet);
             setSelectedGuidesData(filteredGuidesArray);
@@ -213,7 +222,7 @@ const InvoicesList = ({
             </View>
         );
     }
-    
+
     const renderInvoices = () => (
         <View>
             {/* Checkbox "Seleccionar todas" */}
@@ -253,6 +262,7 @@ const InvoicesList = ({
                     isSelect={isSelect}
                     activeView={activeView}
                     showCheckbox={showCheckboxes}
+                    conceptDeliverySelect={conceptDeliverySelect}
                 />
             ))}
         </View>

@@ -24,7 +24,7 @@ export default function IndexInvoiceScreen() {
     const areAllInvoicesCredito = guideObj.facturas.every(
         factura => factura.tipo === TypeInvoiceEnum.CREDITO
     );
-      const areAllInvoicesAnticipeOne = guideObj.facturas.every(
+    const areAllInvoicesAnticipeOne = guideObj.facturas.every(
         factura => factura.tipo === TypeInvoiceEnum.ANTICIPO
     );
 
@@ -43,7 +43,7 @@ export default function IndexInvoiceScreen() {
 
     const isCountryDelivery = params.isCountryDelivery as string;
     const IsGoBack = params.IsGoBack as string;
-
+    const isViewDetailsPorducts = params.isViewDetailsPorducts as string;
 
     return (
         <>
@@ -74,23 +74,24 @@ export default function IndexInvoiceScreen() {
                 if (areAllInvoicesConutreDlivery && guideObj.facturas.length < 2 || isCountryDelivery) {
                     return (
                         <InfoInvoiceForm
-                             initialGuide={guideObj}
-                             token={token || ""}
-                             onSubmit={async ({ guide, token }) => { }}
-                             numberGuide={Number(numberGuide)}
-                             isSelectInvocies={isSelectInvocies}
-                             documentMeico={documentMeico}
-                             isCountryDelivery={isCountryDelivery ? true : false}
-                             IsGoBack={IsGoBack ? true : false}
-                             routeStartedBotton={routeStartedBotton}
-                             detailsCounterDelivery={detailsCounterDelivery ? true : false}
+                            initialGuide={guideObj}
+                            token={token || ""}
+                            onSubmit={async ({ guide, token }) => { }}
+                            numberGuide={Number(numberGuide)}
+                            isSelectInvocies={isSelectInvocies}
+                            documentMeico={documentMeico}
+                            isCountryDelivery={isCountryDelivery ? true : false}
+                            IsGoBack={IsGoBack ? true : false}
+                            routeStartedBotton={routeStartedBotton}
+                            detailsCounterDelivery={detailsCounterDelivery ? true : false}
+                            isViewDetailsPorducts={isViewDetailsPorducts ? true : false}
 
                         />
                     );
                 }
 
                 // Condición 3
-                if ((areAllInvoicesAnticipeOne || areAllInvoicesCredito )&& guideObj.facturas.length < 2) {
+                if ((areAllInvoicesAnticipeOne || areAllInvoicesCredito) && guideObj.facturas.length < 2) {
                     return (
                         <InfoInvoiceCreditForm
                             initialGuide={guideObj}

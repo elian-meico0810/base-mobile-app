@@ -3,7 +3,7 @@ import { AddEvidenceButton } from '@/components/inputs/AddEvidenceButton';
 import { TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import { formatNumber } from '@/src/utils/uitls';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { GuideDetails } from '../../domain/details/DetailsGuide';
+import { GuideDetails, NovletyOrder } from '../../domain/details/DetailsGuide';
 import { DerliveryDocument } from '../../domain/invoices/InvoicesInterFace';
 
 interface InvoiceItemProps {
@@ -17,6 +17,7 @@ interface InvoiceItemProps {
   isSelect: boolean;
   activeView: boolean;
   showCheckbox?: boolean;
+  conceptDeliverySelect?: NovletyOrder | NovletyOrder[] | null;
 }
 
 const InvoiceItem = ({
@@ -29,20 +30,44 @@ const InvoiceItem = ({
   conceptDelivery,
   isSelect,
   activeView,
-  showCheckbox = false
+  showCheckbox = false,
+  conceptDeliverySelect
 }: InvoiceItemProps) => {
-  const hasEvidence = (numeroFactura: string): boolean => {
-    if (Array.isArray(conceptDelivery)) {
-      return conceptDelivery.some(
-        (doc) => String(doc.documentMeico) === String(numeroFactura)
+  const hasEvidence = (numeroFactura: string) => {
+
+    if (Array.isArray(parentGuide?.pedidos) && Array.isArray(conceptDeliverySelect)) {
+      const factura = parentGuide.facturas?.find(
+        f => String(f.numeroFactura) === String(numeroFactura)
+      );
+
+      if (!factura) return false;
+
+      const pedido = parentGuide.pedidos.find(
+        p => String(p.codigo) === String(factura.numeroPedido)
+      );
+
+      if (!pedido) return false;
+
+      return conceptDeliverySelect.some(
+        doc => Number(doc.id_pedido) === Number(pedido.id)
       );
     }
+
+    else if (Array.isArray(conceptDelivery) && conceptDelivery.length > 0) {
+
+      return conceptDelivery.some(
+        doc => String(doc.documentMeico) === String(numeroFactura)
+      );
+    }
+
     return false;
   };
 
+  const evidence = hasEvidence(invoice.numeroFactura);
+
   const canShowCheckbox =
     showCheckbox &&
-    (!hasEvidence(invoice.numeroFactura));
+    (!evidence);
 
   var value = '';
   switch (invoice?.tipo) {
@@ -59,15 +84,16 @@ const InvoiceItem = ({
       break;
 
   }
-
+  const validation = evidence && invoice?.tipo != TypeInvoiceEnum.CONTADO_EFECTIVO;
+  
   return (
     <TouchableOpacity
-      disabled={hasEvidence(invoice.numeroFactura) ? true : false}
+      disabled={(validation ) ? false : false}
 
       style={[
         styles.invoiceContainer,
         isSelected && styles.selectedContainer,
-        (!activeView || hasEvidence(invoice.numeroFactura)) && {
+        (!activeView || validation) && {
           backgroundColor: '#FFFFFF',
           opacity: 0.6,
           borderColor: '#F0F1F5',
@@ -98,15 +124,15 @@ const InvoiceItem = ({
           {/* Estado */}
           <View style={[
             styles.statusContainer,
-            hasEvidence(invoice.numeroFactura)
+            evidence
               ? { backgroundColor: '#DFF5E1' }
               : {}]}>
             <Text style={[
               styles.status,
-              hasEvidence(invoice.numeroFactura)
+              evidence
                 ? { color: '#1F9144' }
                 : {}]}>
-              {hasEvidence(invoice.numeroFactura) ? "Entregado" : "Pendiente"}
+              {evidence ? "Entregado" : "Pendiente"}
             </Text>
           </View>
 
@@ -124,7 +150,7 @@ const InvoiceItem = ({
             </View>
           </View>
 
-          {invoice?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO  ? (
+          {invoice?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO ? (
             <Text style={styles.codText} numberOfLines={1} ellipsizeMode="tail">
               {value}
             </Text>
@@ -133,7 +159,7 @@ const InvoiceItem = ({
         </View>
       </View>
 
-      {hasEvidence(invoice.numeroFactura) && (
+      {(evidence) && (
         <AddEvidenceButton
           title="Evidencias cargadas"
           backgroundColor="#EAF7ED"

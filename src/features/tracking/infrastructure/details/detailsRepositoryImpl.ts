@@ -365,7 +365,7 @@ export const detailsRepositoryImpl: DetailsRepository = {
 
   async dataUploadFIle(data: DataUploadFIlePprops, token: string) {
     try {
-      
+
       const response = await authApi.post(`${API_ROUTES.POST_EVIDENCE_OTP}`, data, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -387,6 +387,20 @@ export const detailsRepositoryImpl: DetailsRepository = {
       });
 
       return data
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async novletyOrderByids(orderId: any, token: string) {
+    try {
+      const response = await authApi.get(`${API_ROUTES.GET_NOVELTY_ORDER_BY_IDS}${orderId}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {
       throw error;
     }

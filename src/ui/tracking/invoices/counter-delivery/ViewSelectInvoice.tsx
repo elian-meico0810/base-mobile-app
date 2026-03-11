@@ -6,7 +6,7 @@ import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
 import InvoicesList from '@/src/features/tracking/components/tabs/InvoicesList';
-import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { GuideDetails, NovletyOrder } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
@@ -39,6 +39,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [modalMessage, setModalMessage] = useState("");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [conceptDelivery, setConceptDelivery] = useState<DerliveryDocument[]>([]);
+    const [conceptDeliverySelect, setConceptDeliverySelect] = useState<NovletyOrder[]>([]);
     const [isValidData, setIsValidData] = useState(false);
     const [showPaymentPending, setShowPaymentPending] = useState(false);
     const [isEquals, setIsEquals] = useState(false);
@@ -95,7 +96,23 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
     const handleInvoiceSelect = (selectedGuide: GuideDetails | null) => {
         try {
-            setSelectedInvoice(selectedGuide);
+            if (!selectedGuide) {
+                setSelectedInvoice(null);
+                return;
+            }
+
+            const facturas = selectedGuide.facturas || [];
+
+            const orderFIlter = selectedGuide.pedidos?.filter(pedido =>
+                facturas.some(factura =>
+                    String(factura.numeroPedido) === String(pedido.codigo)
+                )
+            );
+
+            const guideFilter = {
+                ...selectedGuide,
+                pedidos: orderFIlter
+            };
 
             if (!routeStarted && !conditionButton && !buttonValue) {
                 setValidateException(true);
@@ -105,9 +122,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 setModalVisible(true);
                 return;
             }
-            if (selectedInvoice) {
+            if (guideFilter) {
                 router.push(
-                    `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(selectedInvoice))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}`
+                    `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guideFilter))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}`
                 );
             }
         } catch (error) {
@@ -173,7 +190,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
     const submitData = async () => {
         try {
-            if (conceptDelivery?.length != guide?.facturas?.length) {
+            if (conceptDeliverySelect?.length != guide?.facturas?.length) {
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");
@@ -239,7 +256,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         latitud: clienteEncontrado.latitud,
                         longitud: clienteEncontrado.longitud,
                         estado: clienteEncontrado.estado,
-                        facturas: clienteEncontrado.facturas
+                        facturas: clienteEncontrado.facturas,
+                        pedidos: clienteEncontrado.pedidos
                     });
                     listDocumentQuery();
 
@@ -256,36 +274,20 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
     const listDocumentQuery = async () => {
         try {
-            setLoading(true);
-            const responseQuery = await invoiceRepositoryImpl.listDocument(
-                null,
-                Number(guide?.idDireccion),
-                token
-            );
-            let conceptList: DerliveryDocument[] = [];
+            if (guide?.pedidos && guide.pedidos.length > 0) {
+                const ids = guide?.pedidos?.map(p => p.id).join(",") ?? "";
 
-            if (responseQuery?.statusCode === 200) {
-                if (Array.isArray(responseQuery.data)) {
-                    conceptList = responseQuery.data;
-                } else if (responseQuery.data && typeof responseQuery.data === "object") {
-                    conceptList = [responseQuery.data];
-                } else {
-                    conceptList = [];
-                }
-                const facturaNumbers = guide?.facturas?.map(f => f.numeroFactura) ?? [];
-                const documentNumbers = conceptList.map(c => c.documentMeico);
+                setLoading(true);
+                const response = await detailsRepositoryImpl.novletyOrderByids(
+                    ids,
+                    token
+                )
 
-                const isValid = facturaNumbers.every(numero =>
-                    documentNumbers.includes(numero)
-                );
-                if (isValid) {
-                    setIsValidData(true);
+                if (response?.data && Array.isArray(response.data) && response.data.length > 0) {
+                    setConceptDeliverySelect(response.data)
+
                 }
-                setConceptDelivery(conceptList)
-                setLoading(false);
             }
-
-
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
@@ -456,18 +458,21 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 <View style={styles.headerContainerTwo}>
                     <Text style={styles.headerTitleTWO}>Ordenes a entregar</Text>
                 </View>
+                {guide && (
+                    <View style={{ flex: 1, padding: 16 }}>
+                        <InvoicesList
+                            guide={guide}
+                            onInvoiceSelect={handleInvoiceSelect}
+                            documentMeico={documentMeico}
+                            numberGuide={numberGuide}
+                            isSelectInvocies={isSelectInvocies}
+                            token={token}
+                            conceptDelivery={conceptDelivery}
+                            activeView={activeView}
+                            conceptDeliverySelect={conceptDeliverySelect} />
+                    </View>
+                )}
 
-                <View style={{ flex: 1, padding: 16 }}>
-                    <InvoicesList guide={guide}
-                        onInvoiceSelect={handleInvoiceSelect}
-                        documentMeico={documentMeico}
-                        numberGuide={numberGuide}
-                        isSelectInvocies={isSelectInvocies}
-                        token={token}
-                        conceptDelivery={conceptDelivery}
-                        activeView={activeView}
-                    />
-                </View>
             </ScrollView>
             {guide?.estado === 'Pendiente' && (
                 <View style={[styles.redBackground, { height: heightValue ? 100 : 90 }]} />
@@ -477,8 +482,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 marginBottom: isSmallScreen ? 0 : heightValue ? 0 : 20,
                 bottom: isSmallScreen ? 12 : heightValue ? 60 : 30
             }]}>
-           
-                {guide?.estado === 'Pendiente' &&  (
+
+                {guide?.estado === 'Pendiente' && (
                     <PrimaryButtonDetails
                         ref={btnRef}
                         autoReset={validateException}

@@ -16,12 +16,13 @@ export interface DetailsRepository {
   sendOrderArray: (data: SendOrderArrayProps[], token: string) => Promise<any>;
   reportNoveltyFileArray: (data: ReportNoveltyFileArrayProps, token: string) => Promise<any>;
   novletyOrderByParams: (orderId: number, token: string) => Promise<ApiResponse<NovletyOrder>>;
-  listTypeDetails: (type: string, token: string) => Promise<ApiResponse<Cause>>;
+  listTypeDetails: (type: string, token: string) => Promise<ApiResponse<Cause>>; 
+  novletyOrderByids: (orderId: any, token: string) => Promise<ApiResponse<NovletyOrder>>;
   sendOTP: (data: SendOTOPProps, token: string) => Promise<any>;
   reentryOTP: (data: ReentryOTPProps, token: string) => Promise<any>;
   validateCodeOTP: (data: ValidateCodeOTPProps, token: string) => Promise<any>;
   validateCediQR: (qr: string, token: string) => Promise<ValidateCediQRResponse>;
-  deleteByOrder: (token: string,  order: string) => Promise<any>;
+  deleteByOrder: (token: string, order: string) => Promise<any>;
   listInfOTP: (direccion_id: string, token: string) => Promise<ApiResponse<ListInfOTP>>;
   dataUploadFIle: (data: DataUploadFIlePprops, token: string) => Promise<any>;
   listAceptationGuide: (guide: string, token: string) => Promise<ApiResponse<ListAceptationGuide[]>>;

@@ -32,6 +32,7 @@ export const API_ROUTES = {
   WS_ALL_PAYMENT_SUCCESS_FUL_ARRAY: "reporte-pago/ws-pagos-registrados-array/",
   POST_EVIDENCE_OTP: "evidencias-otp/upload-file/",
   NO_DELIVERY: "entregas/no-entrega/",
+  GET_NOVELTY_ORDER_BY_IDS:"novedades/novedad-pedido-in-ids/",
   // Back contado anticipado
   SEND_PAYMENT_GATEWAY: "pagos/generar-link-pasarela/",
   GENERATE_QR: "pagos/generar_qr_bancolombia/",

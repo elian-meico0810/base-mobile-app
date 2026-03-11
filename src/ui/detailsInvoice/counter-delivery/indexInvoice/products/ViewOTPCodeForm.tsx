@@ -44,6 +44,7 @@ interface ViewOTPCodeFormProps {
     totalValue?: number;
     totalOrderPayment?: number;
     expireDate?: boolean;
+    isViewDetailsPorducts?: boolean;
 }
 
 interface EvidencePhoto {
@@ -66,7 +67,8 @@ export function ViewOTPCodeForm({
     totalRecauder,
     totalValue,
     totalOrderPayment,
-    expireDate
+    expireDate,
+    isViewDetailsPorducts
 }: ViewOTPCodeFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [guideOTP, setGuideOTP] = useState<ResponseOTPInitPorps | undefined>(responseOTPInit);
@@ -196,7 +198,7 @@ export function ViewOTPCodeForm({
         Keyboard.dismiss();
         setCurrentFocusIndex(-1);
     };
-
+    
     const validateCodeOTP = async () => {
         try {
             const isOtpComplete = otpValues.every(value => value.trim() !== "");
@@ -221,9 +223,14 @@ export function ViewOTPCodeForm({
                 );
                 if (response?.statusCode === 200) {
                     setShowSuccess(true);
-                    router.push(
-                        `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
-                    );
+                    if (isViewDetailsPorducts) {
+                        console.log("Llego aca");
+                    } else {
+                        router.push(
+                            `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+                        );
+                    }
+
                 } else {
                     setShowErrorQRPMessage(response?.message || "No se pudo iniciar la ruta. Intente nuevamente.");
                     setShowErrorQRP(true);
@@ -273,27 +280,28 @@ export function ViewOTPCodeForm({
     const reentryCodeOTP = async () => {
         try {
 
-            if (!guide?.whatsapp || guide?.whatsapp != "") {
-                setModalTitle("¡Alerta!");
-                setModalMessage("El numero de telefono es requerido.");
-                setModalVisible(true);
-                return;
-            }
-            
+            // if (!guide?.whatsapp || guide?.whatsapp != "") {
+            //     setModalTitle("¡Alerta!");
+            //     setModalMessage("El numero de telefono es requerido.");
+            //     setModalVisible(true);
+            //     return;
+            // }
+
             if (!Number.isFinite(totalValue) || !Number.isFinite(totalRecauder)) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Los valores aún no están listos. Intenta nuevamente.");
                 setModalVisible(true);
                 return;
             }
+
             setLoading(true);
 
             const responseData = await detailsRepositoryImpl.reentryOTP(
                 {
                     idDireccion: Number(guide?.idDireccion),
                     numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
-                    numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
-                    // numeroDestino: "+573112187956",
+                    // numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
+                    numeroDestino: "+573112187956",
                     valorOriginal: String(totalValue),
                     valorPagado: String(totalOrderPayment),
                 },

@@ -27,6 +27,8 @@ interface ProductFormFormProps {
     isCountryDelivery?: boolean;
     IsGoBack?: boolean;
     routeStartedBotton?: string;
+    isViewDetailsPorducts?: boolean;
+
 }
 
 interface EvidencePhoto {
@@ -55,7 +57,7 @@ interface FinalizedData {
         warningCount: number;
     };
 }
-export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton }: ProductFormFormProps) {
+export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton, isViewDetailsPorducts }: ProductFormFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
@@ -152,9 +154,16 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     setModalTitle("¡Procesado!");
                     setModalMessage(`Soporte(s) procesados exitosamente.`);
                     setModalVisible(true);
-                    router.push(
-                        `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&detailsCounterDelivery=${true}`
-                    );
+                    if (isSelectInvocies) {
+                        router.push(
+                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&detailsCounterDelivery=${true}&isViewDetailsPorducts=${'true'}`
+                        );
+                    } else {
+                        router.push(
+                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&detailsCounterDelivery=${true}`
+                        );
+                    }
+
                 } else {
                     setModalTitle("Alerta");
                     setModalMessage(response?.message || "Error inesperado.");

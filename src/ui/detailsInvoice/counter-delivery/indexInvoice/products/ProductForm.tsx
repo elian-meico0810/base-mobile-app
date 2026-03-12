@@ -127,6 +127,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         processPhotos();
 
     }, [uploadPhotoFile]);
+    console.log("isSelectInvocies -->handleSubmitData: ", isSelectInvocies);
 
     const handleSubmitData = async () => {
         try {
@@ -150,13 +151,14 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 };
                 const response = await detailsRepositoryImpl.reportNoveltyFileArray(payload, token);
                 if (response) {
+
                     setUploadPhotoFile(false);
                     setModalTitle("¡Procesado!");
                     setModalMessage(`Soporte(s) procesados exitosamente.`);
                     setModalVisible(true);
                     if (isSelectInvocies) {
                         router.push(
-                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&detailsCounterDelivery=${true}&isViewDetailsPorducts=${'true'}`
+                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&detailsCounterDelivery=${true}&isSelectInvocies=${'true'}&isViewDetailsPorducts=${'true'}`
                         );
                     } else {
                         router.push(

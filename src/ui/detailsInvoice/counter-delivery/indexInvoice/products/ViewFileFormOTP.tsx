@@ -40,7 +40,7 @@ interface UploadPhotosProps {
     token?: string;
     numberGuide?: number;
     isViewDetailsPorducts?: boolean;
-
+    isSelectInvocies?: string;
 }
 
 const { width, height } = Dimensions.get('window');
@@ -56,7 +56,8 @@ export function ViewFileFormOTP({
     initialGuide,
     token = "",
     numberGuide,
-    isViewDetailsPorducts
+    isViewDetailsPorducts,
+    isSelectInvocies
 }: UploadPhotosProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [evidences, setEvidences] = useState<EvidencePhoto[]>([]);
@@ -311,15 +312,18 @@ export function ViewFileFormOTP({
                         guide?.idDireccion || 0,
                         token
                     );
-                    if (response?.statusCode === 200) {
-                        router.push(
-                            `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
-                        );
+                    if (true) {
+                        if (isSelectInvocies) {
+                            router.push(
+                                `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}`
+                            );
+                        } else {
+                            router.push(
+                                `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+                            );
+                        }
+
                     } else {
-                        setModalTitle("¡Error!");
-                        setModalMessage(response?.message || "Código OTP incorrecto");
-                        setModalVisible(true);
-                        return;
                     }
                 } else {
                     setModalTitle("¡Error!");

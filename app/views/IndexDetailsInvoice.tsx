@@ -31,6 +31,7 @@ export default function IndexDetailsInvoiceScreen() {
     const sasToken = params.sasToken as string;
     const data = params.multiplePhotos as string;
     const multiplePhotos: EvidencePhoto[] = data ? JSON.parse(data) : [];
+    console.log("IndexDetailsInvoiceScreen: ", isSelectInvocies);
 
     return (
         <>
@@ -44,6 +45,7 @@ export default function IndexDetailsInvoiceScreen() {
             {/* listado de detalle de facturas */}
             {(() => {
                 if (!confirmationStatus && !isFileView) {
+                    console.log("llego aca primer 1 if  : ", isSelectInvocies);
 
                     return (
                         <ProductForm
@@ -60,6 +62,8 @@ export default function IndexDetailsInvoiceScreen() {
                 }
 
                 if (confirmationStatus && responseOTPInit && validateConditionRender || expireDate) {
+                    console.log("llego aca segundo if: ", isSelectInvocies);
+
                     return (
                         <ViewOTPCodeForm
                             initialGuide={guideObj}
@@ -81,6 +85,7 @@ export default function IndexDetailsInvoiceScreen() {
                 }
 
                 if (isFileView) {
+                    console.log("llego aca isFileView : ", isFileView);
                     return (
                         <ViewFileFormOTP
                             onPermisionsPhoto={() => { }}
@@ -90,6 +95,7 @@ export default function IndexDetailsInvoiceScreen() {
                             token={token || ""}
                             numberGuide={Number(numberGuide)}
                             isViewDetailsPorducts={isViewDetailsPorducts ? true : false}
+                            isSelectInvocies={isSelectInvocies}
 
                         />
                     );

@@ -88,9 +88,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     }, [token]);
 
     useEffect(() => {
-        if (guide?.fecha_apertura && !buttonValue) {
+        if (conceptDeliverySelect?.length != guide?.facturas?.length) {
             listDocumentQuery();
-            setButtonValue(true);
         }
     }, [token]);
 
@@ -114,7 +113,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 pedidos: orderFIlter
             };
 
-            if (!routeStarted && !conditionButton && !buttonValue) {
+            if (!validateCheckboxlength) {
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");
@@ -194,18 +193,18 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");
-                setModalMessage("Debe especificar un estado de entrega.");
-                setModalVisible(true);
-                return;
-            }
-            if (!isEquals) {
-                setValidateException(true);
-                btnRef.current?.reset();
-                setModalTitle("¡Alerta!");
                 setModalMessage("Debe especificar los estados de entrega por factura.");
                 setModalVisible(true);
                 return;
             }
+            // if (!isEquals) {
+            //     setValidateException(true);
+            //     btnRef.current?.reset();
+            //     setModalTitle("¡Alerta!");
+            //     setModalMessage("Debe especificar los estados de entrega por factura.");
+            //     setModalVisible(true);
+            //     return;
+            // }
             setLoading(true);
             const response = await invoiceRepositoryImpl.closeAddresses(
                 guide?.idDireccion || 0,
@@ -267,9 +266,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             setModalTitle("¡Error!");
             setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
-        } finally {
-            setLoading(false);
-        }
+        } 
     };
 
     const listDocumentQuery = async () => {
@@ -345,10 +342,11 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     }, 0) || 0;
 
     const totalRecauder = Math.max(0, totalFacturas - totalAproved);
-    const conditionButton = conceptDelivery.length != 0 || routeStarted;
-    const validateCheckboxlength = conceptDelivery.length == guide?.facturas?.length;
+    const conditionButton = conceptDeliverySelect.length != 0;
+    const validateCheckboxlength = conceptDeliverySelect.length == guide?.facturas?.length;
     const isSmallScreen = height <= 780;
-    const conceptDeliveryValue = conceptDelivery.length > 0;
+    const conceptDeliveryValue = conceptDeliverySelect.length > 0;
+    console.log("conceptDeliveryValue: ", conceptDeliveryValue);
 
     return (
         <ThemedView style={styles.container}>
@@ -488,7 +486,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         ref={btnRef}
                         autoReset={validateException}
                         key={conditionButton || buttonValue ? "cerrar" : "llegue"}
-                        title={conditionButton || buttonValue ? "Cerrar pedido" : "Ya llegué"}
+                        title={conditionButton || buttonValue ? "Cerrar pedidosss" : "Ya llegué"}
                         onPress={conditionButton || buttonValue ? submitData : handleSubmit}
                         disabled={false}
                         width={328}

@@ -219,7 +219,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 setCheckUbication(true);
             }
         } catch (error: any) {
-            
+
         }
     };
 
@@ -649,9 +649,10 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                     </View>
                 </View>
 
-                {(!showCheckbox || activateSelect) && (
+                {((!showCheckbox || activateSelect) && guide) && (
                     <View style={{ flex: 1, padding: 16 }}>
-                        <InvoicesList guide={guide}
+                        <InvoicesList 
+                            guide={guide}
                             onInvoicesMultiSelect={handleMultiSelect}
                             documentMeico={documentMeico}
                             numberGuide={numberGuide}

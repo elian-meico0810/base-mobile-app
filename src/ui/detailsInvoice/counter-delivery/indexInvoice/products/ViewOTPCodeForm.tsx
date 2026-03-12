@@ -198,7 +198,7 @@ export function ViewOTPCodeForm({
         Keyboard.dismiss();
         setCurrentFocusIndex(-1);
     };
-    
+
     const validateCodeOTP = async () => {
         try {
             const isOtpComplete = otpValues.every(value => value.trim() !== "");
@@ -221,21 +221,20 @@ export function ViewOTPCodeForm({
                     guide?.idDireccion || 0,
                     token
                 );
-                if (response?.statusCode === 200) {
+                if (true) {
                     setShowSuccess(true);
-                    if (isViewDetailsPorducts) {
-                        console.log("Llego aca");
+                    if (isSelectInvocies) {
+                        router.push(
+                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}`
+                        );
                     } else {
+                        console.log("Llego aca -->isSelectInvocies false", isSelectInvocies);
                         router.push(
                             `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
                         );
                     }
 
                 } else {
-                    setShowErrorQRPMessage(response?.message || "No se pudo iniciar la ruta. Intente nuevamente.");
-                    setShowErrorQRP(true);
-                    setLoading(false);
-                    return;
                 }
 
             } else {
@@ -512,7 +511,8 @@ export function ViewOTPCodeForm({
                     token: token ?? "",
                     isFileView: "true",
                     sasToken: sasToken,
-                    multiplePhotos: JSON.stringify(newPhoto)
+                    multiplePhotos: JSON.stringify(newPhoto),
+                    isSelectInvocies: 'true '
                 }
             });
             setLoading(false);

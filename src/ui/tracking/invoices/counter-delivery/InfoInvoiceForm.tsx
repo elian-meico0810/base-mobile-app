@@ -121,7 +121,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [noDeliveryFiles, setNoDeliveryFiles] = useState<string[]>([]);
     const [confirmNoDelivery, setConfirmNoDelivery] = useState(false);
 
-    console.log("isViewDetailsPorducts: ",isViewDetailsPorducts);
+    console.log("InfoInvoiceForm: ",isSelectInvocies);
     
     useEffect(() => {
         const backAction = () => {
@@ -450,7 +450,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             guide: JSON.stringify(initialGuide),
                             numberGuide: numberGuide,
                             token: token ?? "",
-                            isSelectInvocies: 'true'
+                            isSelectInvocies: isSelectInvocies
 
                         }
                     });
@@ -1075,7 +1075,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const totalRecauder = Math.max(0, Number(totalValue) - Number(totalOrderPayment));
 
     useEffect(() => {
-        if (buttonValueOTP) return;
+        if (buttonValueOTP || isSelectInvocies === 'true') return;
 
         const executeLogic = async () => {
 
@@ -1146,6 +1146,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             );
 
             if (responseData?.statusCode === 200) {
+                console.log("send otp: ",isSelectInvocies);
+                
                 btnRef.current?.reset();
                 setLoading(true);
                 router.push({
@@ -1159,7 +1161,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         totalValue: String(totalValue) ?? 0,
                         totalRecauder: String(totalRecauder) ?? 0,
                         totalOrderPayment: String(totalOrderPayment) ?? 0,
-                        isViewDetailsPorducts: 'true'
+                        isViewDetailsPorducts: 'true',
+                        isSelectInvocies: isSelectInvocies
                     }
 
                 });
@@ -1519,7 +1522,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             width={328}
                             height={43}
                         />
-                    ) : isSelectInvocies ? (
+                    ) : !isViewDetailsPorducts ? (
                         <PrimaryButton
                             title="Entregar"
                             onPress={handleSubmitData}

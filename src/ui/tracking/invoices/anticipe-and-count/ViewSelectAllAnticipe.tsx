@@ -618,7 +618,7 @@ export function ViewSelectAllAnticipe({ initialGuide, token = "", onSubmit, numb
                     </View>
                 </View>
 
-                {(!showCheckbox || activateSelect) && (
+                {((!showCheckbox || activateSelect) && guide) && (
                     <View style={{ flex: 1, padding: 16 }}>
                         <InvoicesList guide={guide}
                             onInvoicesMultiSelect={handleMultiSelect}

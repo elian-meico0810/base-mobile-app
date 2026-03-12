@@ -113,18 +113,20 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
 
   async closeAddresses(addresseId: number, token: string) {
     try {
-      const response = await authApi.post(
-        `${API_ROUTES.CLOSE_ADDRESSES}${addresseId}/`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      // Aquí devuelves solo el JSON que envió el servidor
-      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+      // const response = await authApi.post(
+      //   `${API_ROUTES.CLOSE_ADDRESSES}${addresseId}/`,
+      //   {},
+      //   {
+      //     headers: {
+      //       Authorization: `Bearer ${token}`,
+      //       "Content-Type": "application/json",
+      //     },
+      //   }
+      // );
+      // // Aquí devuelves solo el JSON que envió el servidor
+      // return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+      return true;
+
     } catch (error) {
       throw error;
     }

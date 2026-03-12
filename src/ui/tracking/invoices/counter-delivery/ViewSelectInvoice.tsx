@@ -332,7 +332,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const conceptDeliveryValue = conceptDeliverySelect.length > 0;
     const conditionEntryVisible = !conditionButton && conceptDeliveryValue || EntryVisible;
     const conditionEntryVisibleTwo = !conditionButton && conceptDeliveryValue;
-
+    console.log("guide?.estado: ",guide?.estado);
+    
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}

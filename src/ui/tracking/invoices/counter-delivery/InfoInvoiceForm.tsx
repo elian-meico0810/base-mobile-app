@@ -424,6 +424,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             //     setModalVisible(true);
             //     return;
             // }
+            const existOtp = await listInfOTByDirection();
+            if (existOtp) {
+                return;  
+            }
 
             setLoading(true);
             const location = await Location.getCurrentPositionAsync({
@@ -575,7 +579,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         try {
             if (buttonValueOTP) return;
 
-            const response = await detailsRepositoryImpl.listInfOTP(String(guide?.idDireccion), token);
+            const response = await detailsRepositoryImpl.listInfOTP(String(guide?.idDireccion), String(initialGuide?.facturas[0]?.numeroFactura), token);
             if (
                 response.success &&
                 response.data &&
@@ -595,12 +599,16 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             totalValue: Number(totalValue) ?? 0,
                             totalRecauder: Number(totalRecauder) ?? 0,
                             totalOrderPayment: Number(totalOrderPayment) ?? 0,
-                            expireDate: 'true'
+                            expireDate: 'true',
+                            isSelectInvocies: isSelectInvocies
                         }
 
                     });
+                    return true;
                 }
             }
+            return false;
+
         } catch (error: any) {
             setModalTitle("¡Error!");
             setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 4.");

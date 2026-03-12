@@ -23,7 +23,7 @@ export interface DetailsRepository {
   validateCodeOTP: (data: ValidateCodeOTPProps, token: string) => Promise<any>;
   validateCediQR: (qr: string, token: string) => Promise<ValidateCediQRResponse>;
   deleteByOrder: (token: string, order: string) => Promise<any>;
-  listInfOTP: (direccion_id: string, token: string) => Promise<ApiResponse<ListInfOTP>>;
+  listInfOTP: (direccion_id: string, numberInvoice: string, token: string) => Promise<ApiResponse<ListInfOTP>>;
   dataUploadFIle: (data: DataUploadFIlePprops, token: string) => Promise<any>;
   listAceptationGuide: (guide: string, token: string) => Promise<ApiResponse<ListAceptationGuide[]>>;
 

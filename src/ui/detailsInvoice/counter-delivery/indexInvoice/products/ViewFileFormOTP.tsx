@@ -1,3 +1,4 @@
+import { TopErrorAlert } from "@/components/alerts/TopErrorAlert";
 import { PrimaryButton } from "@/components/buttons/PrimaryButton";
 import { LoadingBlue } from "@/components/generals/LoadingBlue";
 import { ThemedView } from "@/components/themed-view";
@@ -72,7 +73,9 @@ export function ViewFileFormOTP({
     const [modalVisible, setModalVisible] = useState(false);
     const [keyboardVisible, setKeyboardVisible] = useState(false);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
-
+    const [showErrorQRP, setShowErrorQRP] = useState(false);
+    const [showErrorQRPMessage, setShowErrorQRPMessage] = useState("Código OTP incorrecto");
+    const [showErrorQRPMessageView, setShowErrorQRPMessageView] = useState("Código vencido");
     useEffect(() => {
         const keyboardDidShowListener = Keyboard.addListener(
             Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
@@ -309,31 +312,32 @@ export function ViewFileFormOTP({
                 );
 
                 if (responseData?.statusCode === 200) {
-                    const response = await invoiceRepositoryImpl.closeAddresses(
-                        guide?.idDireccion || 0,
-                        token
-                    );
-                    if (true) {
-                        if (isSelectInvocies) {
-                            router.push(
-                                `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}`
-                            );
-                        } else {
+                    if (isSelectInvocies) {
+                        router.push(
+                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}`
+                        );
+                    } else {
+                        const response = await invoiceRepositoryImpl.closeAddresses(
+                            guide?.idDireccion || 0,
+                            token
+                        );
+                        if (response?.statusCode === 200) {
                             router.push(
                                 `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
                             );
+                        } else {
+                            setShowErrorQRP(true);
+                            setShowErrorQRPMessage(response?.message || "Ocurrio un error inesperado");
+                            return
                         }
 
-                    } else {
                     }
                 } else {
-                    setModalTitle("¡Error!");
-                    setModalMessage(responseData?.message || "Código OTP incorrecto");
-                    setModalVisible(true);
+                    setShowErrorQRP(true);
+                    setShowErrorQRPMessage(responseData?.message || "Código OTP incorrecto");
                     return
                 }
             }
-
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
@@ -447,6 +451,15 @@ export function ViewFileFormOTP({
                     height={43}
                 />
             </View>
+
+            {showErrorQRP && (
+                <TopErrorAlert
+                    visible={showErrorQRP}
+                    message={showErrorQRPMessage}
+                    onHide={() => setShowErrorQRP(false)}
+                />
+            )}
+
             {loading && <LoadingBlue />}
 
         </ThemedView>

@@ -217,41 +217,42 @@ export function ViewOTPCodeForm({
             );
 
             if (responseData?.statusCode === 200) {
-                const response = await invoiceRepositoryImpl.closeAddresses(
-                    guide?.idDireccion || 0,
-                    token
-                );
-                if (true) {
-                    setShowSuccess(true);
-                    if (isSelectInvocies) {
-                        router.push(
-                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}`
-                        );
-                    } else {
+                if (isSelectInvocies) {
+                    router.push(
+                        `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}`
+                    );
+                } else {
+                    const response = await invoiceRepositoryImpl.closeAddresses(
+                        guide?.idDireccion || 0,
+                        token
+                    );
+                    if (response?.statusCode === 200) {
                         router.push(
                             `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
                         );
+                    } else {
+                        setShowErrorQRP(true);
+                        setShowErrorQRPMessage(response?.message || "Ocurrio un error inesperado");
+                        return
                     }
-
-                } else {
                 }
-
             } else {
-                setShowErrorQRPMessage(responseData?.message || "Código OTP incorrecto");
                 setShowErrorQRP(true);
-                setLoading(false);
-                return;
+                setShowErrorQRPMessage(responseData?.message || "Código OTP incorrecto");
+                return
             }
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
             setModalVisible(true);
+        } finally {
+            setLoading(false);
         }
     };
 
     useEffect(() => {
         if (
-            guideOTP?.expiraEn &&
+            guideOTP?.expiraEn &&   
             guideOTP?.momentoEnvio &&
             !timerRef.current && !dataBack
         ) {

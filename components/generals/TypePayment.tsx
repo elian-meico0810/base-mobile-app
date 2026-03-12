@@ -1,3 +1,5 @@
+import { TypeConPagoEnum } from "@/src/constants/GuideStates";
+import { GuideDetails } from "@/src/features/tracking/domain/details/DetailsGuide";
 import { Image } from "expo-image";
 import { useState } from "react";
 import {
@@ -21,6 +23,7 @@ interface TypePaymentProps {
     onEfecty?: () => void;
     onQr?: () => void;
     onOthers?: () => void;
+    guide?: GuideDetails | undefined;
 }
 
 export function TypePayment({
@@ -30,9 +33,11 @@ export function TypePayment({
     width = 360,
     onEfecty,
     onQr,
-    onOthers
+    onOthers,
+    guide
 }: TypePaymentProps) {
     const [isLoading, setIsLoading] = useState(false);
+    console.log("guide: ",);
 
     return (
         <View style={styles.overlay}>
@@ -50,26 +55,29 @@ export function TypePayment({
 
                 <View style={styles.evidenceThumbnailsContainer}>
                     <View style={styles.thumbnailsColumn}>
-                        <TouchableOpacity
-                            style={styles.card}
-                            onPress={onEfecty}
-                            disabled={isLoading}
-                        >
-                            <View style={styles.row}>
-                                <Image
-                                    source={require("@/assets/icons/CashIcon.png")}
-                                    style={styles.storeIconCash}
-                                />
-                                <View style={styles.textContainer}>
-                                    <Text style={styles.cardTitle}>
-                                        {'Efectivo'}
-                                    </Text>
-                                    <Text style={styles.cardSub} numberOfLines={2}>
-                                        Pago directo en billetes al momento de la entrega.
-                                    </Text>
+                        {guide?.pedidos?.[0]?.canal != TypeConPagoEnum.PGM && (
+                            <TouchableOpacity
+                                style={styles.card}
+                                onPress={onEfecty}
+                                disabled={isLoading}
+                            >
+                                <View style={styles.row}>
+                                    <Image
+                                        source={require("@/assets/icons/CashIcon.png")}
+                                        style={styles.storeIconCash}
+                                    />
+                                    <View style={styles.textContainer}>
+                                        <Text style={styles.cardTitle}>
+                                            {'Efectivo'}
+                                        </Text>
+                                        <Text style={styles.cardSub} numberOfLines={2}>
+                                            Pago directo en billetes al momento de la entrega.
+                                        </Text>
+                                    </View>
                                 </View>
-                            </View>
-                        </TouchableOpacity>
+                            </TouchableOpacity>
+                        )}
+
 
                         <TouchableOpacity
                             style={styles.card}
@@ -92,26 +100,29 @@ export function TypePayment({
                             </View>
                         </TouchableOpacity>
 
-                        <TouchableOpacity
-                            style={styles.card}
-                            onPress={onOthers}
-                            disabled={isLoading}
-                        >
-                            <View style={styles.row}>
-                                <Image
-                                    source={require("@/assets/icons/Others.png")}
-                                    style={styles.storeIcon}
-                                />
-                                <View style={styles.textContainer}>
-                                    <Text style={styles.cardTitle}>
-                                        {'Otros'}
-                                    </Text>
-                                    <Text style={styles.cardSub} numberOfLines={2}>
-                                        Pagos previos, abonos o acuerdos comerciales especiales.
-                                    </Text>
+                        {guide?.pedidos?.[0]?.canal != TypeConPagoEnum.PGM && (
+                            <TouchableOpacity
+                                style={styles.card}
+                                onPress={onOthers}
+                                disabled={isLoading}
+                            >
+                                <View style={styles.row}>
+                                    <Image
+                                        source={require("@/assets/icons/Others.png")}
+                                        style={styles.storeIcon}
+                                    />
+                                    <View style={styles.textContainer}>
+                                        <Text style={styles.cardTitle}>
+                                            {'Otros'}
+                                        </Text>
+                                        <Text style={styles.cardSub} numberOfLines={2}>
+                                            Pagos previos, abonos o acuerdos comerciales especiales.
+                                        </Text>
+                                    </View>
                                 </View>
-                            </View>
-                        </TouchableOpacity>
+                            </TouchableOpacity>
+                        )}
+
                     </View>
                 </View>
 

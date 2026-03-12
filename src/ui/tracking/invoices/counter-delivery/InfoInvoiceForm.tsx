@@ -331,7 +331,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
 
     const condPago = guide?.facturas[0]?.condPago == TypeConPagoEnum.TAT;
-    // const condPagoFalse = guide?.facturasx0]?.condPago != TypeConPagoEnum.TAT;
 
     const handlSendWhatsApp = async () => {
         try {
@@ -1781,7 +1780,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 />
             )}
 
-            {(typePayment && !condPago) && (
+            {(typePayment && !condPago && guide) && (
                 <TypePayment
                     title="Registrar pago"
                     subTitle="Seleccioná el método de pago del cliente."
@@ -1805,6 +1804,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         setTypePaymenTypeEfecty(false);
                         setShowDetailInvoiceQR(true);
                     }}
+                    guide={guide}
                 />
             )}
 

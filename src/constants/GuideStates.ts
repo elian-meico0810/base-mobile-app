@@ -76,7 +76,8 @@ export enum TypeInvoiceEnum {
 
 export enum TypeConPagoEnum {
     TAT = "TAT",
-    MIXTO = "MIXTO"
+    MIXTO = "MIXTO",
+    PGM = "PGM",
 }
 
 export enum TypeCaculateValueEnum {

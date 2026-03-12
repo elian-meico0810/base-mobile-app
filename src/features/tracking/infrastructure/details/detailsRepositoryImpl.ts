@@ -339,8 +339,6 @@ export const detailsRepositoryImpl: DetailsRepository = {
     token: string
   ): Promise<ApiResponse<ListInfOTP>> {
     try {
-      console.log("numberInvoice_ ",numberInvoice);
-      console.log("direccion_id:  ",direccion_id);
       
       const response = await authApi.get(
         `${API_ROUTES.GET_INFO_BY_DIRECTION_OF_OTP}${direccion_id}/?numero_factura=${numberInvoice}`,

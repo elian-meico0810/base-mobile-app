@@ -31,6 +31,7 @@ export interface GuideDetails {
   longitud: string;
   estado: string;
   whatsapp?: string;
+  CondPagoCliente?: string;
   fecha_apertura?: string | null;
   facturas: Factura[];
   pedidos?: Pedidos[];

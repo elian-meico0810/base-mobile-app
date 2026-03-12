@@ -3,6 +3,7 @@ import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails'
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
+import { OrderDetailSkeletonSelect } from '@/components/skeleton/OrderDetailSkeletonSelect';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
 import InvoicesList from '@/src/features/tracking/components/tabs/InvoicesList';
@@ -29,7 +30,7 @@ interface ViewSelectInvoiceProps {
 }
 
 export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, routeStartedBotton }: ViewSelectInvoiceProps) {
-    const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
+    const [guide, setGuide] = useState<GuideDetails>();
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
     const [showPayment, setShowPayment] = useState(false);
@@ -56,7 +57,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const btnRef = useRef<any>(null);
     const router = useRouter();
     const heightValue = heightCaldulate();
-    
+
     useEffect(() => {
         const backAction = () => {
             if (!allowBack) {
@@ -79,13 +80,75 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
         );
     };
+    const listGuideData = async () => {
+        try {
+            setLoading(true);
+            const response = await detailsRepositoryImpl.listGuide(
+                Number(numberGuide),
+                token
+            );
+            if (response?.statusCode === 200 && response?.data && Array.isArray(response.data)) {
+                const clienteFiltrado = response.data.filter(item =>
+                    item.codigoCliente === initialGuide?.codigoCliente
+                );
+                if (clienteFiltrado.length > 0) {
+                    const clienteEncontrado = clienteFiltrado[0];
 
+                    setGuide({
+                        idDireccion: clienteEncontrado.idDireccion,
+                        direccion: clienteEncontrado.direccion,
+                        poblacion: clienteEncontrado.poblacion,
+                        codigoCliente: clienteEncontrado.codigoCliente,
+                        nombreCliente: clienteEncontrado.nombreCliente,
+                        latitud: clienteEncontrado.latitud,
+                        longitud: clienteEncontrado.longitud,
+                        estado: clienteEncontrado.estado,
+                        fecha_apertura: clienteEncontrado.fecha_apertura,
+                        facturas: clienteEncontrado.facturas,
+                        pedidos: clienteEncontrado.pedidos
+                    });
+                    listDocumentQuery(clienteEncontrado);
+                    
+                }
+            }
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        }
+    };
+
+    const listDocumentQuery = async (guide?: GuideDetails) => {
+        try {
+            
+            if (guide?.pedidos && guide.pedidos.length > 0) {
+                const ids = guide?.pedidos?.map(p => p.id).join(",") ?? "";
+
+                setLoading(true);
+                const response = await detailsRepositoryImpl.novletyOrderByids(
+                    ids,
+                    token
+                )
+
+                if (response?.data && Array.isArray(response.data) && response.data.length > 0) {
+                    setConceptDeliverySelect(response.data)
+
+                }
+            }
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        if (token) {
+        if (!guide) {
             listGuideData();
         }
-    }, [token]);
+    }, []);
 
     useEffect(() => {
         if (conceptDeliverySelect?.length > (guide?.facturas?.length ?? 0)) {
@@ -113,14 +176,15 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 pedidos: orderFIlter
             };
 
-            // if (conditionEntryVisibleTwo && !EntryVisible) {
-            //     setValidateException(true);
-            //     btnRef.current?.reset();
-            //     setModalTitle("¡Alerta!");
-            //     setModalMessage("Debe confirmar que ya ha llegado a la dirección.");
-            //     setModalVisible(true);
-            //     return;
-            // }
+
+            if (!guide?.fecha_apertura && !EntryVisible || conceptDeliverySelect?.length == 0 && !EntryVisible) {
+                setValidateException(true);
+                btnRef.current?.reset();
+                setModalTitle("¡Alerta!");
+                setModalMessage("Debe confirmar que ya ha llegado a la dirección.");
+                setModalVisible(true);
+                return;
+            }
             if (guideFilter) {
                 router.push(
                     `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guideFilter))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}`
@@ -225,67 +289,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         }
     };
 
-    const listGuideData = async () => {
-        try {
-            setLoading(true);
-            const response = await detailsRepositoryImpl.listGuide(
-                Number(numberGuide),
-                token
-            );
-            if (response?.statusCode === 200 && response?.data && Array.isArray(response.data)) {
-                const clienteFiltrado = response.data.filter(item =>
-                    item.codigoCliente === guide?.codigoCliente
-                );
-                if (clienteFiltrado.length > 0) {
-                    const clienteEncontrado = clienteFiltrado[0];
 
-                    setGuide({
-                        idDireccion: clienteEncontrado.idDireccion,
-                        direccion: clienteEncontrado.direccion,
-                        poblacion: clienteEncontrado.poblacion,
-                        codigoCliente: clienteEncontrado.codigoCliente,
-                        nombreCliente: clienteEncontrado.nombreCliente,
-                        latitud: clienteEncontrado.latitud,
-                        longitud: clienteEncontrado.longitud,
-                        estado: clienteEncontrado.estado,
-                        facturas: clienteEncontrado.facturas,
-                        pedidos: clienteEncontrado.pedidos
-                    });
-                    listDocumentQuery();
-
-                }
-            }
-        } catch (error: any) {
-            setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
-            setModalVisible(true);
-        }
-    };
-
-    const listDocumentQuery = async () => {
-        try {
-            if (guide?.pedidos && guide.pedidos.length > 0) {
-                const ids = guide?.pedidos?.map(p => p.id).join(",") ?? "";
-
-                setLoading(true);
-                const response = await detailsRepositoryImpl.novletyOrderByids(
-                    ids,
-                    token
-                )
-
-                if (response?.data && Array.isArray(response.data) && response.data.length > 0) {
-                    setConceptDeliverySelect(response.data)
-
-                }
-            }
-        } catch (error) {
-            setModalTitle("¡Error!");
-            setModalMessage("Ocurrio un error inesperado.");
-            setModalVisible(true);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     useEffect(() => {
         const fetchGuide = async () => {
@@ -356,129 +360,135 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 />
             </View>
 
+            {!guide ? (
+                <OrderDetailSkeletonSelect />
 
-            <ScrollView
-                style={[styles.scrollView, { marginTop: RefreshingOnPress ? 90 : 8 }]}
-                contentContainerStyle={[
-                    styles.scrollContent,
-                    // Ajustar el padding cuando no hay alerta
-                ]}
-                showsVerticalScrollIndicator={false}
-            >
+            ) : (
+                <>
+                    <ScrollView
+                        style={[styles.scrollView, { marginTop: RefreshingOnPress ? 90 : 8 }]}
+                        contentContainerStyle={[
+                            styles.scrollContent,
+                            // Ajustar el padding cuando no hay alerta
+                        ]}
+                        showsVerticalScrollIndicator={false}
+                    >
 
-                {/* Card blanco centrado */}
-                <View style={styles.card}>
-                    {/* Encabezado */}
-                    <View style={styles.cardHeader}>
-                        <View
-                            style={[
-                                styles.statusContainer,
-                                validateCheckboxlength && { backgroundColor: '#DFF5E1' },
-                            ]}
-                        >
-                            <Text
-                                style={[
-                                    styles.status,
-                                    validateCheckboxlength && { color: '#1F9144' },
-                                ]}
-                            >
-                                {validateCheckboxlength ? 'Pedido entregado' : 'Pendiente'}
-                            </Text>
+                        {/* Card blanco centrado */}
+                        <View style={styles.card}>
+                            {/* Encabezado */}
+                            <View style={styles.cardHeader}>
+                                <View
+                                    style={[
+                                        styles.statusContainer,
+                                        validateCheckboxlength && { backgroundColor: '#DFF5E1' },
+                                    ]}
+                                >
+                                    <Text
+                                        style={[
+                                            styles.status,
+                                            validateCheckboxlength && { color: '#1F9144' },
+                                        ]}
+                                    >
+                                        {validateCheckboxlength ? 'Pedido entregado' : 'Pendiente'}
+                                    </Text>
+                                </View>
+                            </View>
+
+                            {/* Información del minimercado */}
+                            <View style={styles.merchantInfo}>
+                                <Text style={styles.merchantName}>{guide?.nombreCliente ?? ''}</Text>
+                                <Text style={styles.documentNumber}>{guide?.codigoCliente ?? '0'}</Text>
+                                <Text style={styles.address}>{cleanSpaces(guide?.direccion)}, {cleanSpaces(guide?.poblacion)}</Text>
+                            </View>
+
+                            {/* Línea divisoria */}
+                            <View style={styles.orderInfo}>
+                                <View style={styles.divider} />
+                                <View style={styles.row}>
+                                    <Text style={styles.label}>Ordenes a entregar</Text>
+                                    <Text style={styles.value}> {Number(guide?.facturas?.length) - Number(conceptDelivery.length)}</Text>
+                                </View>
+                                <View style={styles.row}>
+                                    <Text style={styles.labelTotal}>Valor total del pedido</Text>
+                                    <Text style={[styles.value, { color: '#141D32', fontWeight: '800' }]}>
+                                        {
+                                            '$ ' +
+                                            guide?.facturas
+                                                ?.reduce((sum, f) => sum + (f.valorRecaudar ?? 0), 0)
+                                                .toLocaleString('es-CO', { minimumFractionDigits: 0 })
+                                        }
+                                    </Text>
+                                </View>
+                                <View style={styles.divider} />
+                                <View style={styles.row}>
+                                    <Text style={styles.label}>Valor recaudado</Text>
+                                    <Text style={styles.value}>{'$ ' + Number(totalAproved || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
+
+                                </View>
+                                <View style={styles.row}>
+                                    <Text style={styles.labelTotal}>Valor a recaudar</Text>
+                                    <Text style={[
+                                        styles.value,
+                                        {
+                                            color: Number(totalRecauder) === 0 ? '#1F9144' : '#C62828',
+                                            fontWeight: '800',
+                                            fontSize: 16
+                                        }
+                                    ]}>
+                                        {'$ ' + (Number(totalRecauder) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                                    </Text>
+                                </View>
+                            </View>
                         </View>
+
+                        <View style={styles.headerContainerTwo}>
+                            <Text style={styles.headerTitleTWO}>Ordenes a entregar</Text>
+                        </View>
+                        {guide && (
+                            <View style={{ flex: 1, padding: 16 }}>
+                                <InvoicesList
+                                    guide={guide}
+                                    onInvoiceSelect={handleInvoiceSelect}
+                                    documentMeico={documentMeico}
+                                    numberGuide={numberGuide}
+                                    isSelectInvocies={isSelectInvocies}
+                                    token={token}
+                                    conceptDelivery={conceptDelivery}
+                                    activeView={activeView}
+                                    conceptDeliverySelect={conceptDeliverySelect} />
+                            </View>
+                        )}
+
+                    </ScrollView>
+                    {guide?.estado === 'Pendiente' && (
+                        <View style={[styles.redBackground, { height: heightValue ? 100 : 90 }]} />
+                    )}
+
+                    <View style={[styles.footer, {
+                        marginBottom: isSmallScreen ? 0 : heightValue ? 0 : 20,
+                        bottom: isSmallScreen ? 12 : heightValue ? 60 : 30
+                    }]}>
+
+                        {guide?.estado === 'Pendiente' && (
+                            <PrimaryButtonDetails
+                                ref={btnRef}
+                                autoReset={validateException}
+                                key={conditionEntryVisible || EntryVisible || conditionButton? "cerrar" : "llegue"}
+                                title={conditionEntryVisible || EntryVisible || conditionButton? "Cerrar pedido" : "Ya llegué"}
+                                onPress={conditionEntryVisible || EntryVisible || conditionButton? submitData : handleSubmit}
+                                disabled={false}
+                                width={328}
+                                height={43}
+                                buttonColor={conditionEntryVisible ? "#DDDFE8" : undefined}
+                                buttonColorEnd={conditionEntryVisible ? "#DDDFE8" : undefined}
+                                titleColor={conditionEntryVisible ? "#FFFFFF" : undefined}
+                                circleColor={conditionEntryVisible ? "#788095" : undefined}
+                            />
+                        )}
                     </View>
-
-                    {/* Información del minimercado */}
-                    <View style={styles.merchantInfo}>
-                        <Text style={styles.merchantName}>{guide?.nombreCliente ?? ''}</Text>
-                        <Text style={styles.documentNumber}>{guide?.codigoCliente ?? '0'}</Text>
-                        <Text style={styles.address}>{cleanSpaces(guide?.direccion)}, {cleanSpaces(guide?.poblacion)}</Text>
-                    </View>
-
-                    {/* Línea divisoria */}
-                    <View style={styles.orderInfo}>
-                        <View style={styles.divider} />
-                        <View style={styles.row}>
-                            <Text style={styles.label}>Ordenes a entregar</Text>
-                            <Text style={styles.value}> {Number(guide?.facturas?.length) - Number(conceptDelivery.length)}</Text>
-                        </View>
-                        <View style={styles.row}>
-                            <Text style={styles.labelTotal}>Valor total del pedido</Text>
-                            <Text style={[styles.value, { color: '#141D32', fontWeight: '800' }]}>
-                                {
-                                    '$ ' +
-                                    guide?.facturas
-                                        ?.reduce((sum, f) => sum + (f.valorRecaudar ?? 0), 0)
-                                        .toLocaleString('es-CO', { minimumFractionDigits: 0 })
-                                }
-                            </Text>
-                        </View>
-                        <View style={styles.divider} />
-                        <View style={styles.row}>
-                            <Text style={styles.label}>Valor recaudado</Text>
-                            <Text style={styles.value}>{'$ ' + Number(totalAproved || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
-
-                        </View>
-                        <View style={styles.row}>
-                            <Text style={styles.labelTotal}>Valor a recaudar</Text>
-                            <Text style={[
-                                styles.value,
-                                {
-                                    color: Number(totalRecauder) === 0 ? '#1F9144' : '#C62828',
-                                    fontWeight: '800',
-                                    fontSize: 16
-                                }
-                            ]}>
-                                {'$ ' + (Number(totalRecauder) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
-                            </Text>
-                        </View>
-                    </View>
-                </View>
-
-                <View style={styles.headerContainerTwo}>
-                    <Text style={styles.headerTitleTWO}>Ordenes a entregar</Text>
-                </View>
-                {guide && (
-                    <View style={{ flex: 1, padding: 16 }}>
-                        <InvoicesList
-                            guide={guide}
-                            onInvoiceSelect={handleInvoiceSelect}
-                            documentMeico={documentMeico}
-                            numberGuide={numberGuide}
-                            isSelectInvocies={isSelectInvocies}
-                            token={token}
-                            conceptDelivery={conceptDelivery}
-                            activeView={activeView}
-                            conceptDeliverySelect={conceptDeliverySelect} />
-                    </View>
-                )}
-
-            </ScrollView>
-            {guide?.estado === 'Pendiente' && (
-                <View style={[styles.redBackground, { height: heightValue ? 100 : 90 }]} />
+                </>
             )}
-
-            <View style={[styles.footer, {
-                marginBottom: isSmallScreen ? 0 : heightValue ? 0 : 20,
-                bottom: isSmallScreen ? 12 : heightValue ? 60 : 30
-            }]}>
-
-                {guide?.estado === 'Pendiente' && (
-                    <PrimaryButtonDetails
-                        ref={btnRef}
-                        autoReset={validateException}
-                        key={conditionButton || EntryVisible ? "cerrar" : "llegue"}
-                        title={conditionButton || EntryVisible ? "Cerrar pedido" : "Ya llegué"}
-                        onPress={conditionButton || EntryVisible ? submitData : handleSubmit}
-                        disabled={false}
-                        width={328}
-                        height={43}
-                        buttonColor={conditionEntryVisible ? "#DDDFE8" : undefined}
-                        buttonColorEnd={conditionEntryVisible ? "#DDDFE8" : undefined}
-                        titleColor={conditionEntryVisible ? "#FFFFFF" : undefined}
-                        circleColor={conditionEntryVisible ? "#788095" : undefined}
-                    />
-                )}
-            </View>
 
             <ExceptionModal
                 visible={modalVisible}

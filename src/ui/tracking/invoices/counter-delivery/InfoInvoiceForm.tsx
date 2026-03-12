@@ -119,7 +119,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [uploadPhotoNoDelivery, setUploadPhotoNoDelivery] = useState(false);
     const [noDeliveryFiles, setNoDeliveryFiles] = useState<string[]>([]);
     const [confirmNoDelivery, setConfirmNoDelivery] = useState(false);
-
+    
     useEffect(() => {
         const backAction = () => {
             if (!allowBack) {
@@ -730,6 +730,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             longitud: clienteEncontrado.longitud,
                             estado: clienteEncontrado.estado,
                             facturas: clienteEncontrado.facturas,
+                            whatsapp: clienteEncontrado.whatsapp,
                             pedidos: clienteEncontrado.pedidos
                         });
 
@@ -1103,6 +1104,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const handleSubmitConfirmation = async () => {
         try {
+
             if (!Number.isFinite(totalValue) || !Number.isFinite(totalRecauder)) {
                 btnRef.current?.reset();
                 setModalTitle("Cargando...");
@@ -1118,10 +1120,11 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 return;
             }
 
-            if (!guide?.whatsapp || guide?.whatsapp != "") {
+            
+            if (!guide?.whatsapp || guide?.whatsapp == "") {
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");
-                setModalMessage("El numero de telefono es requerido.");
+                setModalMessage("El numero de telefono es requerido 111.");
                 setModalVisible(true);
                 return;
             }
@@ -1129,7 +1132,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setLoading(true);
 
             setButtonValueOTP(true);
-
+            
             const responseData = await detailsRepositoryImpl.sendOTP(
                 {
                     idDireccion: Number(guide?.idDireccion),
@@ -1174,6 +1177,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setModalVisible(true);
         }
     };
+    
     const discount = Number(guide?.facturas[0]?.dfr ?? 0);
     const isZero = discount === 0;
 

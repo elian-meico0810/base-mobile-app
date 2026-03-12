@@ -273,7 +273,7 @@ export function ViewOTPCodeForm({
     const reentryCodeOTP = async () => {
         try {
 
-            if (!guide?.whatsapp || guide?.whatsapp != "") {
+            if (!guide?.whatsapp || guide?.whatsapp == "") {
                 setModalTitle("¡Alerta!");
                 setModalMessage("El numero de telefono es requerido.");
                 setModalVisible(true);

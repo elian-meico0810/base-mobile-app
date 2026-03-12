@@ -121,8 +121,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [noDeliveryFiles, setNoDeliveryFiles] = useState<string[]>([]);
     const [confirmNoDelivery, setConfirmNoDelivery] = useState(false);
 
-    console.log("InfoInvoiceForm: ",isSelectInvocies);
-    
     useEffect(() => {
         const backAction = () => {
             if (!allowBack) {
@@ -1146,8 +1144,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             );
 
             if (responseData?.statusCode === 200) {
-                console.log("send otp: ",isSelectInvocies);
-                
                 btnRef.current?.reset();
                 setLoading(true);
                 router.push({
@@ -1522,7 +1518,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             width={328}
                             height={43}
                         />
-                    ) : !isViewDetailsPorducts ? (
+                    ) : (!isViewDetailsPorducts && isSelectInvocies) ? (
                         <PrimaryButton
                             title="Entregar"
                             onPress={handleSubmitData}

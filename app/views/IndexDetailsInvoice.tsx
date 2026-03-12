@@ -24,14 +24,11 @@ export default function IndexDetailsInvoiceScreen() {
     const totalOrderPayment = params.totalOrderPayment ? Number(params.totalOrderPayment) : 0;
     const expireDate = params.expireDate as string;
     const isViewDetailsPorducts = params.isViewDetailsPorducts as string;
-    const validateConditionRender =
-        Number.isFinite(Number(totalRecauder)) && Number.isFinite(Number(totalOrderPayment))
-    Number.isFinite(Number(totalValue));
+    const validateConditionRender = Number.isFinite(Number(totalRecauder)) && Number.isFinite(Number(totalOrderPayment)) && Number.isFinite(Number(totalValue));
     const isFileView = params.isFileView as string;
     const sasToken = params.sasToken as string;
     const data = params.multiplePhotos as string;
     const multiplePhotos: EvidencePhoto[] = data ? JSON.parse(data) : [];
-    console.log("IndexDetailsInvoiceScreen: ", isSelectInvocies);
 
     return (
         <>
@@ -45,8 +42,6 @@ export default function IndexDetailsInvoiceScreen() {
             {/* listado de detalle de facturas */}
             {(() => {
                 if (!confirmationStatus && !isFileView) {
-                    console.log("llego aca primer 1 if  : ", isSelectInvocies);
-
                     return (
                         <ProductForm
                             initialGuide={guideObj}
@@ -62,8 +57,6 @@ export default function IndexDetailsInvoiceScreen() {
                 }
 
                 if (confirmationStatus && responseOTPInit && validateConditionRender || expireDate) {
-                    console.log("llego aca segundo if: ", isSelectInvocies);
-
                     return (
                         <ViewOTPCodeForm
                             initialGuide={guideObj}
@@ -85,7 +78,6 @@ export default function IndexDetailsInvoiceScreen() {
                 }
 
                 if (isFileView) {
-                    console.log("llego aca isFileView : ", isFileView);
                     return (
                         <ViewFileFormOTP
                             onPermisionsPhoto={() => { }}

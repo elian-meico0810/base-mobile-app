@@ -302,7 +302,8 @@ export function ViewFileFormOTP({
                 const responseData = await detailsRepositoryImpl.dataUploadFIle(
                     {
                         direccion_id: Number(guide?.idDireccion),
-                        files: validBase64
+                        files: validBase64,
+                        numero_factura: String(guide?.facturas[0]?.numeroFactura)
                     },
                     token
                 );

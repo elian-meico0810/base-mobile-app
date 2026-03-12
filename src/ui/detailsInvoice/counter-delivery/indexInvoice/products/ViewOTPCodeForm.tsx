@@ -228,7 +228,6 @@ export function ViewOTPCodeForm({
                             `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}`
                         );
                     } else {
-                        console.log("Llego aca -->isSelectInvocies false", isSelectInvocies);
                         router.push(
                             `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
                         );
@@ -512,7 +511,7 @@ export function ViewOTPCodeForm({
                     isFileView: "true",
                     sasToken: sasToken,
                     multiplePhotos: JSON.stringify(newPhoto),
-                    isSelectInvocies: 'true '
+                    isSelectInvocies: isSelectInvocies ? 'true' : undefined,
                 }
             });
             setLoading(false);

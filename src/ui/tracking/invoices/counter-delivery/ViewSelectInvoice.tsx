@@ -56,7 +56,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const btnRef = useRef<any>(null);
     const router = useRouter();
     const heightValue = heightCaldulate();
-
+    
     useEffect(() => {
         const backAction = () => {
             if (!allowBack) {
@@ -88,7 +88,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     }, [token]);
 
     useEffect(() => {
-        if (conceptDeliverySelect?.length != guide?.facturas?.length) {
+        if (conceptDeliverySelect?.length > (guide?.facturas?.length ?? 0)) {
             listDocumentQuery();
         }
     }, [token]);
@@ -113,14 +113,14 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 pedidos: orderFIlter
             };
 
-            if (!validateCheckboxlength) {
-                setValidateException(true);
-                btnRef.current?.reset();
-                setModalTitle("¡Alerta!");
-                setModalMessage("Debe confirmar que ya ha llegado a la dirección.");
-                setModalVisible(true);
-                return;
-            }
+            // if (conditionEntryVisibleTwo && !EntryVisible) {
+            //     setValidateException(true);
+            //     btnRef.current?.reset();
+            //     setModalTitle("¡Alerta!");
+            //     setModalMessage("Debe confirmar que ya ha llegado a la dirección.");
+            //     setModalVisible(true);
+            //     return;
+            // }
             if (guideFilter) {
                 router.push(
                     `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guideFilter))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}`
@@ -197,14 +197,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 setModalVisible(true);
                 return;
             }
-            // if (!isEquals) {
-            //     setValidateException(true);
-            //     btnRef.current?.reset();
-            //     setModalTitle("¡Alerta!");
-            //     setModalMessage("Debe especificar los estados de entrega por factura.");
-            //     setModalVisible(true);
-            //     return;
-            // }
+
             setLoading(true);
             const response = await invoiceRepositoryImpl.closeAddresses(
                 guide?.idDireccion || 0,
@@ -266,7 +259,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             setModalTitle("¡Error!");
             setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
-        } 
+        }
     };
 
     const listDocumentQuery = async () => {
@@ -293,19 +286,6 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             setLoading(false);
         }
     };
-
-    useEffect(() => {
-        if (conceptDelivery.length > 0 && guide) {
-            const numerosFacturas = guide.facturas.map(factura => factura.numeroFactura);
-            const documentosMeico = conceptDelivery.map(item => item.documentMeico);
-            // Ordenar y comparar como strings
-            numerosFacturas.sort();
-            documentosMeico.sort();
-
-            const equals = JSON.stringify(numerosFacturas) === JSON.stringify(documentosMeico);
-            setIsEquals(equals)
-        }
-    }, [conceptDelivery, guide]);
 
     useEffect(() => {
         const fetchGuide = async () => {
@@ -342,11 +322,12 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     }, 0) || 0;
 
     const totalRecauder = Math.max(0, totalFacturas - totalAproved);
-    const conditionButton = conceptDeliverySelect.length != 0;
+    const conditionButton = conceptDeliverySelect.length == guide?.facturas?.length;
     const validateCheckboxlength = conceptDeliverySelect.length == guide?.facturas?.length;
     const isSmallScreen = height <= 780;
     const conceptDeliveryValue = conceptDeliverySelect.length > 0;
-    console.log("conceptDeliveryValue: ", conceptDeliveryValue);
+    const conditionEntryVisible = !conditionButton && conceptDeliveryValue || EntryVisible;
+    const conditionEntryVisibleTwo = !conditionButton && conceptDeliveryValue;
 
     return (
         <ThemedView style={styles.container}>
@@ -485,16 +466,16 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                     <PrimaryButtonDetails
                         ref={btnRef}
                         autoReset={validateException}
-                        key={conditionButton || buttonValue ? "cerrar" : "llegue"}
-                        title={conditionButton || buttonValue ? "Cerrar pedidosss" : "Ya llegué"}
-                        onPress={conditionButton || buttonValue ? submitData : handleSubmit}
+                        key={conditionButton || EntryVisible ? "cerrar" : "llegue"}
+                        title={conditionButton || EntryVisible ? "Cerrar pedido" : "Ya llegué"}
+                        onPress={conditionButton || EntryVisible ? submitData : handleSubmit}
                         disabled={false}
                         width={328}
                         height={43}
-                        buttonColor={validateCheckboxlength ? undefined : !validateCheckboxlength || conditionButton ? "#DDDFE8" : undefined}
-                        buttonColorEnd={validateCheckboxlength ? undefined : !validateCheckboxlength || conditionButton ? "#DDDFE8" : undefined}
-                        titleColor={!conceptDeliveryValue || conditionButton ? "#FFFFFF" : undefined}
-                        circleColor={validateCheckboxlength ? undefined : !validateCheckboxlength || conditionButton ? "#788095" : undefined}
+                        buttonColor={conditionEntryVisible ? "#DDDFE8" : undefined}
+                        buttonColorEnd={conditionEntryVisible ? "#DDDFE8" : undefined}
+                        titleColor={conditionEntryVisible ? "#FFFFFF" : undefined}
+                        circleColor={conditionEntryVisible ? "#788095" : undefined}
                     />
                 )}
             </View>

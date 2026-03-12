@@ -260,6 +260,7 @@ export interface EvidencePhoto {
 export interface DataUploadFIlePprops {
   direccion_id: number;
   files: string[];
+  numero_factura: string;
 }
 
 export interface ListAceptationGuide {

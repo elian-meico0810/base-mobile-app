@@ -127,7 +127,6 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         processPhotos();
 
     }, [uploadPhotoFile]);
-    console.log("isSelectInvocies -->handleSubmitData: ", isSelectInvocies);
 
     const handleSubmitData = async () => {
         try {

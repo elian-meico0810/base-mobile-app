@@ -71,8 +71,7 @@ export function UploadPhotoItem({
                 [
                     {
                         resize: {
-                            width: IMAGE_CONFIG.maxWidth,
-                            height: IMAGE_CONFIG.maxHeight,
+                            width: IMAGE_CONFIG.maxWidth
                         }
                     }
                 ],
@@ -225,8 +224,8 @@ export function UploadPhotoItem({
             animationType="slide"
             onRequestClose={handleClose}
         >
-            <TouchableOpacity 
-                style={styles.fullScreenOverlay} 
+            <TouchableOpacity
+                style={styles.fullScreenOverlay}
                 onPress={handleClose}
                 activeOpacity={1}
             />

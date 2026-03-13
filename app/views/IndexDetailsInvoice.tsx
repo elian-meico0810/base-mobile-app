@@ -24,14 +24,12 @@ export default function IndexDetailsInvoiceScreen() {
     const totalOrderPayment = params.totalOrderPayment ? Number(params.totalOrderPayment) : 0;
     const expireDate = params.expireDate as string;
     const validateConditionRender =
-        Number.isFinite(Number(totalRecauder)) && Number.isFinite(Number(totalOrderPayment))
+        Number.isFinite(Number(totalRecauder)) && Number.isFinite(Number(totalOrderPayment)) && 
     Number.isFinite(Number(totalValue));
     const isFileView = params.isFileView as string;
     const sasToken = params.sasToken as string;
     const data = params.multiplePhotos as string;
     const multiplePhotos: EvidencePhoto[] = data ? JSON.parse(data) : [];
-
-
 
     return (
         <>

@@ -286,8 +286,8 @@ export function ViewOTPCodeForm({
                 setModalVisible(true);
                 return;
             }
-            setLoading(true);
 
+            setLoading(true);
             const responseData = await detailsRepositoryImpl.reentryOTP(
                 {
                     idDireccion: Number(guide?.idDireccion),

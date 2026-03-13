@@ -338,7 +338,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     };
 
 
-    const condPago = guide?.facturas[0]?.condPago != TypeConPagoEnum.TAT;
+    const condPago = guide?.facturas[0]?.condPago == TypeConPagoEnum.TAT;
     // const condPagoFalse = guide?.facturasx0]?.condPago != TypeConPagoEnum.TAT;
 
     const handlSendWhatsApp = async () => {

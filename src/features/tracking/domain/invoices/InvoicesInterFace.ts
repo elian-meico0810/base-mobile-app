@@ -137,7 +137,7 @@ export interface successOrderCashPayment {
 
 export interface TypeParameterValue {
   id: number,
-  valor: number,
+  valor: string,
   descripcion: string,
   fecha_inicio: string,
   fecha_fin: string,

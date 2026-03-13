@@ -23,7 +23,7 @@ import { DetailsPaymenTypeOthers } from '@/src/features/tracking/components/scre
 import { InfoPayments } from '@/src/features/tracking/components/screens/InfoPayments';
 import { ViewQrModal } from '@/src/features/tracking/components/screens/ViewQrModal';
 import { Cause, Detail, Document, GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
-import { CreateEntregaProps, DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
+import { CreateEntregaProps, DerliveryDocument, Invoice, TypeParameterValue } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
 import { calculateVlueByPorducts, capitalizeFirst, cleanSpaces, getDeviceDateTime, getDistanceInMeters, heightCaldulate, toUpperCase, uriToBase64 } from '@/src/utils/uitls';
@@ -102,6 +102,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [conceptDelivery, setConceptDelivery] = useState<DerliveryDocument | null>(null);
     const [validateException, setValidateException] = useState(false);
     const [paymentSuccessful, setPaymentSuccessful] = useState<Invoice | undefined>();
+    const [typeCash, setTypeCash] = useState<TypeParameterValue[]>([]);
     const [qrBase64, setQrBase64] = useState<string>('');
     const [qrType, setQrType] = useState<string>('');
     const [phone, setPhone] = useState("");
@@ -120,6 +121,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [uploadPhotoNoDelivery, setUploadPhotoNoDelivery] = useState(false);
     const [noDeliveryFiles, setNoDeliveryFiles] = useState<string[]>([]);
     const [confirmNoDelivery, setConfirmNoDelivery] = useState(false);
+
 
     useEffect(() => {
         const backAction = () => {
@@ -196,6 +198,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             }
         };
         getDataProduct();
+        listTypeCash();
         // getSuccessOrderPayment();
         fetchGuide();
     }, [Number(initialGuide?.facturas[0]?.numeroFactura), token]);
@@ -280,6 +283,33 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         }
     };
 
+    const listTypeCash = async () => {
+        try {
+            setLoading(true);
+
+            const now = new Date();
+
+            const date = now.toLocaleString('sv-SE', {
+                timeZone: 'America/Bogota',
+                hour12: false
+            }).replace('T', ' ');
+
+            const response = await invoiceRepositoryImpl.getTypeCash(token);
+            if (response?.statusCode === 200 && Array.isArray(response.data)) {
+                setTypeCash(response.data);
+            } else {
+                setModalTitle("¡Alerta!");
+                setModalMessage(response?.message ?? "Ocurrió un error inesperado.");
+                setModalVisible(true);
+            }
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleSubmitOthers = async (value: number, observation?: string) => {
         try {
@@ -330,7 +360,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     };
 
 
-    const condPago = guide?.facturas[0]?.condPago == TypeConPagoEnum.TAT;
+    const condPago = guide?.facturas[0]?.condPago === TypeConPagoEnum.TAT;
 
     const handlSendWhatsApp = async () => {
         try {
@@ -425,7 +455,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             // }
             const existOtp = await listInfOTByDirection();
             if (existOtp) {
-                return;  
+                return;
             }
 
             setLoading(true);
@@ -1805,6 +1835,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         setShowDetailInvoiceQR(true);
                     }}
                     guide={guide}
+                    typeCash={typeCash}
                 />
             )}
 

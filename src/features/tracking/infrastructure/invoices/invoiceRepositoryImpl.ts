@@ -374,5 +374,21 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
       throw error;
     }
   },
+
+  async getTypeCash(token: string) {
+    try {
+      const response = await authApi.get(`${API_ROUTES.GET_TYPE_CASH_CONDITIONS}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 

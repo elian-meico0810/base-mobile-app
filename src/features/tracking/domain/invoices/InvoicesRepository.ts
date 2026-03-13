@@ -23,5 +23,6 @@ export interface InvoicesRepository {
   registerNoDelivery: (data: NoDeliveryProps, token: string) => Promise<any>;
   listTotalsGuide: (guide: string, token: string)  => Promise<ApiResponse<GuideResponse>>;
   apporveOrReject: (data: ApproveOrReject, token: string) => Promise<any>;
+  getTypeCash: (token: string)  => Promise<ApiResponse<TypeParameterValue>>;
 
 }

@@ -1,5 +1,5 @@
-import { TypeConPagoEnum } from "@/src/constants/GuideStates";
 import { GuideDetails } from "@/src/features/tracking/domain/details/DetailsGuide";
+import { TypeParameterValue } from "@/src/features/tracking/domain/invoices/InvoicesInterFace";
 import { Image } from "expo-image";
 import { useState } from "react";
 import {
@@ -24,6 +24,7 @@ interface TypePaymentProps {
     onQr?: () => void;
     onOthers?: () => void;
     guide?: GuideDetails | undefined;
+    typeCash?: TypeParameterValue[];
 }
 
 export function TypePayment({
@@ -34,10 +35,13 @@ export function TypePayment({
     onEfecty,
     onQr,
     onOthers,
-    guide
+    guide,
+    typeCash
 }: TypePaymentProps) {
     const [isLoading, setIsLoading] = useState(false);
-    console.log("guide: ",);
+    const existValue = typeCash?.some(
+        (item) => item.valor === guide?.pedidos?.[0]?.canal
+    );
 
     return (
         <View style={styles.overlay}>
@@ -55,7 +59,7 @@ export function TypePayment({
 
                 <View style={styles.evidenceThumbnailsContainer}>
                     <View style={styles.thumbnailsColumn}>
-                        {guide?.pedidos?.[0]?.canal != TypeConPagoEnum.PGM && (
+                        {!existValue  && (
                             <TouchableOpacity
                                 style={styles.card}
                                 onPress={onEfecty}
@@ -100,7 +104,7 @@ export function TypePayment({
                             </View>
                         </TouchableOpacity>
 
-                        {guide?.pedidos?.[0]?.canal != TypeConPagoEnum.PGM && (
+                        {!existValue  && (
                             <TouchableOpacity
                                 style={styles.card}
                                 onPress={onOthers}

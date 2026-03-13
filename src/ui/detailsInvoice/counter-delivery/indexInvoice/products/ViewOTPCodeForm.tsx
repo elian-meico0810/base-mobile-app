@@ -279,7 +279,6 @@ export function ViewOTPCodeForm({
                 setModalVisible(true);
                 return;
             }
-            
             if (!Number.isFinite(totalValue) || !Number.isFinite(totalRecauder)) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Los valores aún no están listos. Intenta nuevamente.");

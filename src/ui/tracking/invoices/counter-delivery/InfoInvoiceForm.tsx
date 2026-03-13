@@ -1007,7 +1007,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const closeButton = routeStarted;
 
     useEffect(() => {
-        if (detailsCounterDelivery || closeButton) {
+        if (showPorductData) {
             const total =
                 showPorductData?.[0]?.detalles?.reduce((suma, detalle) => {
                     return (
@@ -1036,6 +1036,14 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 (Number(guide?.facturas[0]?.valorTotal) -
                     Number(guide?.facturas[0]?.dfr)) -
                 Number(valueOrderCalculate)
+            ).toFixed(2)
+        );
+
+    const totalValueTwo =
+        Number(
+            (
+                (Number(guide?.facturas[0]?.valorTotal) -
+                    Number(guide?.facturas[0]?.dfr))
             ).toFixed(2)
         );
     const totalRecauder = Math.max(0, Number(totalValue) - Number(totalAproved));
@@ -1369,7 +1377,13 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                 <View style={styles.row}>
                                     <Text style={styles.labelTotal}>Valor total</Text>
                                     <Text style={[styles.value, { color: '#141D32', fontWeight: '800' }]}>
-                                        {'$ ' + Number(totalValue || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                                        {'$ ' + (
+                                            Number(
+                                                (detailsCounterDelivery || closeButton)
+                                                    ? (totalValueTwo - valueOrderCalculate)
+                                                    : totalValueTwo || 0
+                                            ).toLocaleString('es-CO', { minimumFractionDigits: 0 })
+                                        )}                                    
                                     </Text>
                                 </View>
 

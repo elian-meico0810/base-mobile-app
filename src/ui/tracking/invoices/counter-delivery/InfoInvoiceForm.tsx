@@ -4,10 +4,12 @@ import { TopSuccessAlert } from '@/components/alerts/TopSuccessAlert';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
+import { ExecptionModalValidate } from '@/components/generals/ExecptionModalValidate';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { TypePayment } from '@/components/generals/TypePayment';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
+import { UploadPhotoOTP } from '@/components/photo/uploadPhotoOTP';
 import { OrderDetailSkeleton } from '@/components/skeleton/OrderDetailSkeleton ';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
@@ -71,6 +73,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
+    const [modalVisibleValidate, setModalVisibleValidate,] = useState(false);
+    const [modalTitleValidate, setModalTitleValidate] = useState("");
+    const [modalMessageValidate, setModalMessageValidate] = useState("");
+    const [modalButtonLabelValidate, setModalButtonLabelValidate] = useState("Entendido");
+    const [highlightText, setHighlightText] = useState("");
+
     const [showChangePhone, setShowChangePhone] = useState(false);
     const [modalgenerateQR, setModalgenerateQR] = useState(false);
     const [typeQRSendWhatsApp, setTypeQRSendWhatsApp] = useState(false);
@@ -121,6 +129,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [uploadPhotoNoDelivery, setUploadPhotoNoDelivery] = useState(false);
     const [noDeliveryFiles, setNoDeliveryFiles] = useState<string[]>([]);
     const [confirmNoDelivery, setConfirmNoDelivery] = useState(false);
+    const [uploadPhotoTwo, setUploadPhotoTwo] = useState(false);
 
 
     useEffect(() => {
@@ -280,6 +289,33 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setModalVisible(true);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const submitFile = async (newPhoto: EvidencePhoto[]) => {
+        try {
+            setLoading(true);
+
+            // Pequeña pausa para que se muestre el loading (opcional)
+            await new Promise(resolve => setTimeout(resolve, 100));
+            router.push({
+                pathname: '/views/IndexDetailsInvoice',
+                params: {
+                    guide: JSON.stringify(guide),
+                    numberGuide: numberGuide,
+                    token: token ?? "",
+                    isFileView: "true",
+                    sasToken: sasToken,
+                    multiplePhotos: JSON.stringify(newPhoto),
+                    isSelectInvocies: isSelectInvocies ? 'true' : undefined,
+                }
+            });
+            setLoading(false);
+
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
         }
     };
 
@@ -1148,6 +1184,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 setModalVisible(true);
                 return;
             }
+
             // if (Number(totalRecauder) > 0) {
             //     btnRef.current?.reset();
             //     setModalTitle("¡Alerta!");
@@ -1156,13 +1193,15 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             //     return;
             // }
 
-            // if (!guide?.whatsapp || guide?.whatsapp != "") {
-            //     btnRef.current?.reset();
-            //     setModalTitle("¡Alerta!");
-            //     setModalMessage("El numero de telefono es requerido.");
-            //     setModalVisible(true);
-            //     return;
-            // }
+            if (!guide?.whatsapp || guide?.whatsapp != "") {
+                btnRef.current?.reset();
+                setModalTitleValidate("Evidencia requerida");
+                setModalMessageValidate("Para finalizar la entrega del pedido debes registrar una evidencia. Y el modal deberá incluir un botón de acción");
+                setHighlightText("Registrar evidencia");
+                setModalButtonLabelValidate("Registrar evidencia");
+                setModalVisibleValidate(true);
+                return;
+            }
 
             setLoading(true);
 
@@ -1172,8 +1211,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 {
                     idDireccion: Number(guide?.idDireccion),
                     numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
-                    // numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
-                    numeroDestino: "+573112187956",
+                    numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
+                    // numeroDestino: "+573112187956",
                     valorOriginal: String(totalValue),
                     valorPagado: String(totalOrderPayment),
                 },
@@ -1615,6 +1654,19 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 message={modalMessage}
                 buttonLabel={modalButtonLabel}
             />
+            
+            <ExecptionModalValidate
+                visible={modalVisibleValidate}
+                onClose={() => {
+                    setModalVisibleValidate(false);
+                    setUploadPhotoTwo(true);
+                }}
+                title={modalTitleValidate}
+                message={modalMessageValidate}
+                buttonLabel={modalButtonLabelValidate}
+                highlightText={highlightText}
+            />
+
             {showNoDeliveryModal && (
                 <NoDeliveryModal
                     token={String(token)}
@@ -1880,6 +1932,28 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     onErrorPayment={() => setShowErrorQRP(true)}
                     statusTypeQR={typeQRSendWhatsApp}
                     totalRecauder={totalRecauder}
+                />
+            )}
+
+            {(uploadPhotoTwo) && (
+                <UploadPhotoOTP
+                    onClose={() => setUploadPhotoTwo(false)}
+                    onPick={(data) => {
+                        const newPhoto: EvidencePhoto = {
+                            id: Date.now().toString(), // Generar un ID único
+                            uri: data.uri,
+                            base64: data.base64
+                        };
+
+                        submitFile([newPhoto]);
+                    }}
+                    onPermisionsPhoto={() => {
+                        setUploadPhotoTwo(false);
+                        setModalTitle("Permiso denegado ¡Alerta!");
+                        setModalMessage("No podemos acceder a la cámara. Activa el permiso en la configuración del dispositivo para continuar.");
+                        setModalVisible(true);
+                    }}
+
                 />
             )}
             {loading && <LoadingBlue />}

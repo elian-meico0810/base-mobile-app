@@ -200,31 +200,42 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
 
                     <View style={styles.secondCardTwo}>
                         <ScrollView>
-                            {guide?.details?.map((address) =>
-                                address.pedidos.map((pedido) => (
-                                    <View key={pedido.id} style={styles.secondCard}>
+                            {guide?.details?.map((address, addressIndex) =>
+                                address.pedidos.map((pedido, pedidoIndex) => (
+                                    <View
+                                        key={`${pedido.codigo || pedidoIndex}`}
+                                        style={styles.secondCard}
+                                    >
 
                                         {/* Header */}
                                         <View style={styles.orderHeader}>
                                             <Text style={styles.orderTitle}>
-                                                Pedido {pedido.id}
+                                                Pedido {pedidoIndex + 1}
                                             </Text>
 
                                             <Text style={styles.productCount}>
-                                                {pedido.detalles.length} productos
+                                                {pedido.detalles?.length || 0} productos
                                             </Text>
                                         </View>
 
                                         <View style={styles.divider} />
-                                        <View key={pedido.id} style={styles.gap}>
+
+                                        <View style={styles.gap}>
                                             {/* Productos */}
-                                            {pedido.detalles.map((item) => (
-                                                <View key={item.id} style={styles.productRow}>
+                                            {pedido.detalles?.map((item, itemIndex) => (
+                                                <View
+                                                    key={`${item.producto?.codigo || itemIndex}`}
+                                                    style={styles.productRow}
+                                                >
                                                     <Text numberOfLines={1} style={styles.productName}>
-                                                        {item.producto.nombre.charAt(0).toUpperCase() + item.producto.nombre.slice(1).toLowerCase()}                                                </Text>
+                                                        {item.producto?.nombre
+                                                            ? item.producto.nombre.charAt(0).toUpperCase() +
+                                                            item.producto.nombre.slice(1).toLowerCase()
+                                                            : ""}
+                                                    </Text>
 
                                                     <Text style={styles.units}>
-                                                        {item.unidadesSolicitadas} uds.
+                                                        {item.unidadesSolicitadas || 0} uds.
                                                     </Text>
                                                 </View>
                                             ))}

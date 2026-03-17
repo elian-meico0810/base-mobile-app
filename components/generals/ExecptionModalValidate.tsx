@@ -1,5 +1,5 @@
 import React from 'react';
-import { Linking, Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Linking, Modal, Platform, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 
 type Props = {
   visible: boolean;
@@ -10,7 +10,9 @@ type Props = {
   showSettingsButton?: boolean;
   settingsButtonLabel?: string;
   onSettingsPress?: () => void;
-  highlightText?: string; 
+  highlightText?: string;
+  onConfirmation: () => void;
+
 };
 
 export const ExecptionModalValidate: React.FC<Props> = ({
@@ -22,7 +24,8 @@ export const ExecptionModalValidate: React.FC<Props> = ({
   showSettingsButton = false,
   settingsButtonLabel = "Ir a Ajustes",
   onSettingsPress,
-  highlightText
+  highlightText,
+  onConfirmation
 }) => {
 
   const defaultSettingsPress = async () => {
@@ -43,35 +46,43 @@ export const ExecptionModalValidate: React.FC<Props> = ({
     if (showSettingsButton) {
       handleSettingsPress();
     } else {
+      onConfirmation();
       onClose();
     }
   };
 
   return (
     <Modal transparent visible={visible} animationType="fade">
-      <View style={styles.overlay}>
-        <View style={styles.modalContainer}>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.message}>
-            {message}{' '}
-            {highlightText && (
-              <Text style={styles.boldText}>
-                {highlightText}
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.overlay}>
+
+          <TouchableWithoutFeedback>
+            <View style={styles.modalContainer}>
+              <Text style={styles.title}>{title}</Text>
+
+              <Text style={styles.message}>
+                {message}{' '}
+                {highlightText && (
+                  <Text style={styles.boldText}>
+                    {highlightText}
+                  </Text>
+                )}
               </Text>
-            )}
-          </Text>
-          {/* Botón único con texto dinámico */}
-          <TouchableOpacity
-            style={[styles.button, showSettingsButton && styles.settingsButton]}
-            onPress={handleButtonPress}
-          >
-            <Text style={styles.buttonText}>
-              {showSettingsButton ? settingsButtonLabel : buttonLabel}
-            </Text>
-          </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.button, showSettingsButton && styles.settingsButton]}
+                onPress={handleButtonPress}
+              >
+                <Text style={styles.buttonText}>
+                  {showSettingsButton ? settingsButtonLabel : buttonLabel}
+                </Text>
+              </TouchableOpacity>
+
+            </View>
+          </TouchableWithoutFeedback>
 
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 

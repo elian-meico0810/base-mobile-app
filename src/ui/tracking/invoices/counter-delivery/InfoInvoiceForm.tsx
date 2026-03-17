@@ -1654,17 +1654,19 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 message={modalMessage}
                 buttonLabel={modalButtonLabel}
             />
-            
+
             <ExecptionModalValidate
                 visible={modalVisibleValidate}
                 onClose={() => {
                     setModalVisibleValidate(false);
-                    setUploadPhotoTwo(true);
                 }}
                 title={modalTitleValidate}
                 message={modalMessageValidate}
                 buttonLabel={modalButtonLabelValidate}
                 highlightText={highlightText}
+                onConfirmation={() => {
+                    setUploadPhotoTwo(true);
+                }}
             />
 
             {showNoDeliveryModal && (

@@ -1,3 +1,4 @@
+import { TopErrorAlert } from '@/components/alerts/TopErrorAlert';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LogoText } from '@/components/generals/LogoText';
@@ -10,7 +11,7 @@ import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/de
 import { decodeJWT } from '@/src/utils/jwt';
 import { heightCaldulate } from '@/src/utils/uitls';
 import NetInfo from '@react-native-community/netinfo';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from "react";
 import {
@@ -31,10 +32,21 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
   const [tokenEncode, setTokeEncode] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showErrorQRP, setShowErrorQRP] = useState(false);
+  const [showErrorQRPMessage, setShowErrorQRPMessage] = useState("");
+
+  const params = useLocalSearchParams();
   const isValid = guide.length >= 5;
   const router = useRouter();
 
   const heightValue = heightCaldulate();
+
+  useEffect(() => {
+    if (params.message) {
+      setShowErrorQRP(true);
+      setShowErrorQRPMessage(params.message as string);
+    }
+  }, [params.message]);
 
   useEffect(() => {
     const show = Keyboard.addListener("keyboardDidShow", (e) => {
@@ -249,6 +261,13 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
           </View>
         </View>
       </View>
+          {showErrorQRP && (
+                <TopErrorAlert
+                    visible={showErrorQRP}
+                    message={showErrorQRPMessage}
+                    onHide={() => setShowErrorQRP(false)}
+                />
+            )}
       {isLoading && <LoadingBlue />}
     </ThemedView>
   );

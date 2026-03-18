@@ -28,10 +28,10 @@ interface ProductItemProps {
     id?: number;
     testToken?: string;
     testUrl?: string;
-    onItemData?: (data: Detail | null) => void; // <-- Cambia aquí
+    onItemData?: (data: Detail | null) => void; 
     refreshing?: boolean;
     onRefreshing?: () => void;
-    onDataProduct?: (id: number, total: number, unidadesEntregadas?: number | null) => void; // <-- Cambia aquí
+    onDataProduct?: (id: number, total: number, unidadesEntregadas?: number | null) => void;
 
 }
 

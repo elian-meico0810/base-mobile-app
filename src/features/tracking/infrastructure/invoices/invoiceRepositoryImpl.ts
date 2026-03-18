@@ -8,6 +8,7 @@ import {
   NoDeliveryProps,
   OpneAddressesDeliveryProps, OpneAddressesProps,
   PaymentGatewayProps, ReportWhatsAppQRPorps,
+  UploadEvidenceAcceptationGuidesProps,
   WhatsappProps, WhatsappTATImageProps
 } from "../../domain/invoices/InvoicesInterFace";
 import { InvoicesRepository, } from "../../domain/invoices/InvoicesRepository";
@@ -387,6 +388,24 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
 
       return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {
+      throw error;
+    }
+  },
+
+  async uploadEvidenceAcceptationGuides(data: UploadEvidenceAcceptationGuidesProps, token: string) {
+    try {
+      const response = await authApi.post(
+        API_ROUTES.UPLOAD_EVIDENCE_ACCEPTATION_GUIDES,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error: any) {
       throw error;
     }
   },

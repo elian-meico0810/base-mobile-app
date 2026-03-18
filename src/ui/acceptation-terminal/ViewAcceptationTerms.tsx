@@ -1,7 +1,9 @@
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButtonCancel } from '@/components/buttons/SecondaryButtonCancel';
+import { ExcetptionModalProducts } from '@/components/generals/ExcetptionModalProducts';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
+import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { GuideDetailSkeleton } from '@/components/skeleton/GuideDetailSkeleton';
 import { ThemedView } from '@/components/themed-view';
 import { CustomerAddress, GuideResponse } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
@@ -10,7 +12,7 @@ import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/in
 import { useRouter } from 'expo-router';
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useRef, useState } from "react";
-import { BackHandler, Dimensions, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, Keyboard, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 const { width, height } = Dimensions.get('window');
 
 interface InfoInvoiceFormProps {
@@ -38,27 +40,43 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
     const [validateException, setValidateException] = useState(false);
     const [ejecuteData, setEjecuteData] = useState(false);
     const [showSuccessQRp, setShowSuccessQRP] = useState(false);
+    const [modalVisibleValidate, setModalVisibleValidate,] = useState(false);
+    const [modalTitleValidate, setModalTitleValidate] = useState("");
+    const [modalMessageValidate, setModalMessageValidate] = useState("");
+    const [modalButtonLabelValidate, setModalButtonLabelValidate] = useState("Entendido");
+    const [showErrorQRP, setShowErrorQRP] = useState(false);
+    const [showErrorQRPMessage, setShowErrorQRPMessage] = useState("Código OTP incorrecto");
+    const [uploadPhotoNoDelivery, setUploadPhotoNoDelivery] = useState(false);
+    const [noDeliveryFiles, setNoDeliveryFiles] = useState<string[]>([]);
+    const [confirmNoDelivery, setConfirmNoDelivery] = useState(false);
+    const [keyboardVisible, setKeyboardVisible] = useState(false);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
 
     const btnRef = useRef<any>(null);
     const router = useRouter();
 
     useEffect(() => {
-        const backAction = () => {
-            if (!allowBack) {
-                router.push(`/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`);
-                return true;
+        const keyboardDidShowListener = Keyboard.addListener(
+            Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+            (e) => {
+                setKeyboardVisible(true);
+                setKeyboardHeight(e.endCoordinates.height);
             }
-        };
-
-        const backHandler = BackHandler.addEventListener(
-            'hardwareBackPress',
-            backAction
+        );
+        const keyboardDidHideListener = Keyboard.addListener(
+            Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+            () => {
+                setKeyboardVisible(false);
+                setKeyboardHeight(0);
+            }
         );
 
-        return () => backHandler.remove();
-    }, [allowBack, numberGuide, token]);
-
-
+        return () => {
+            keyboardDidShowListener.remove();
+            keyboardDidHideListener.remove();
+        };
+    }, []);
+    
     const handleSubmitReject = async () => {
         try {
             setLoading(true);
@@ -73,7 +91,12 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
                 await SecureStore.deleteItemAsync('user_token');
                 setTimeout(() => {
                     setLoading(false);
-                    router.replace('/auth/login');
+                    router.replace({
+                        pathname: '/auth/login',
+                        params: {
+                            message: `El documento de transporte ${numberGuide} ha sido rechazado`
+                        }
+                    });
                 }, 1200);
             } else {
                 setModalTitle("¡Alerta!");
@@ -127,28 +150,12 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
     const handleSubmit = async () => {
         try {
             setLoading(true);
+            setModalTitleValidate("Aceptación de documento de transporte");
+            setModalMessageValidate("Al aceptar este despacho confirmo que recibí de parte de Meico la mercancía descrita en el documento de transporte y asumo la custodia para su traslado y entrega.");
+            setModalButtonLabelValidate("Registrar evidencia");
+            setModalVisibleValidate(true);
 
-            const response = await invoiceRepositoryImpl.apporveOrReject(
-                {
-                    guia_id: Number(numberGuide),
-                    is_acceptation: true
-                }, token);
 
-            if (response?.statusCode === 200) {
-                setShowSuccessQRP(true);
-                router.push({
-                    pathname: '/views/details',
-                    params: {
-                        guide: Number(numberGuide),
-                        token: String(token),
-                        showAlert: "true"
-                    }
-                });
-            } else {
-                setModalTitle("¡Alerta!");
-                setModalMessage(response?.message ?? "Ocurrió un error inesperado.");
-                setModalVisible(true);
-            }
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
@@ -158,7 +165,49 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
         }
     };
 
+    const uploadPhotoSubmit = async (evidences: string[]) => {
+        try {
+            setLoading(true);
+            const response = await invoiceRepositoryImpl.uploadEvidenceAcceptationGuides(
+                {
+                    codigo_guia: String(numberGuide),
+                    files: evidences
+                }, token);
 
+            if (response?.statusCode === 200) {
+                const responseData = await invoiceRepositoryImpl.apporveOrReject(
+                    {
+                        guia_id: Number(numberGuide),
+                        is_acceptation: true
+                    }, token);
+
+                if (responseData?.statusCode === 200) {
+                    setShowSuccessQRP(true);
+                    router.push({
+                        pathname: '/views/details',
+                        params: {
+                            guide: Number(numberGuide),
+                            token: String(token),
+                            showAlert: "true"
+                        }
+                    });
+                } else {
+                    setModalTitle("¡Alerta!");
+                    setModalMessage(responseData?.message ?? "Ocurrió un error inesperado.");
+                    setModalVisible(true);
+                }
+            } else {
+                setModalTitle("¡Alerta!");
+                setModalMessage(response?.message ?? "Ocurrió un error inesperado.");
+                setModalVisible(true);
+            }
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
+        }
+    };
+    const pedidosFlat = guide?.details?.flatMap(d => d.pedidos) || [];
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -200,50 +249,43 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
 
                     <View style={styles.secondCardTwo}>
                         <ScrollView>
-                            {guide?.details?.map((address, addressIndex) =>
-                                address.pedidos.map((pedido, pedidoIndex) => (
-                                    <View
-                                        key={`${pedido.codigo || pedidoIndex}`}
-                                        style={styles.secondCard}
-                                    >
+                            {pedidosFlat.map((pedido, index) => (
+                                <View key={`${pedido.codigo || index}`} style={styles.secondCard}>
 
-                                        {/* Header */}
-                                        <View style={styles.orderHeader}>
-                                            <Text style={styles.orderTitle}>
-                                                Pedido {pedidoIndex + 1}
-                                            </Text>
+                                    <View style={styles.orderHeader}>
+                                        <Text style={styles.orderTitle}>
+                                            Pedido {index + 1}
+                                        </Text>
 
-                                            <Text style={styles.productCount}>
-                                                {pedido.detalles?.length || 0} productos
-                                            </Text>
-                                        </View>
-
-                                        <View style={styles.divider} />
-
-                                        <View style={styles.gap}>
-                                            {/* Productos */}
-                                            {pedido.detalles?.map((item, itemIndex) => (
-                                                <View
-                                                    key={`${item.producto?.codigo || itemIndex}`}
-                                                    style={styles.productRow}
-                                                >
-                                                    <Text numberOfLines={1} style={styles.productName}>
-                                                        {item.producto?.nombre
-                                                            ? item.producto.nombre.charAt(0).toUpperCase() +
-                                                            item.producto.nombre.slice(1).toLowerCase()
-                                                            : ""}
-                                                    </Text>
-
-                                                    <Text style={styles.units}>
-                                                        {item.unidadesSolicitadas || 0} uds.
-                                                    </Text>
-                                                </View>
-                                            ))}
-                                        </View>
-
+                                        <Text style={styles.productCount}>
+                                            {pedido.detalles?.length || 0} productos
+                                        </Text>
                                     </View>
-                                ))
-                            )}
+
+                                    <View style={styles.divider} />
+
+                                    <View style={styles.gap}>
+                                        {pedido.detalles?.map((item, itemIndex) => (
+                                            <View
+                                                key={`${item.producto?.codigo || itemIndex}`}
+                                                style={styles.productRow}
+                                            >
+                                                <Text numberOfLines={1} style={styles.productName}>
+                                                    {item.producto?.nombre
+                                                        ? item.producto.nombre.charAt(0).toUpperCase() +
+                                                        item.producto.nombre.slice(1).toLowerCase()
+                                                        : ""}
+                                                </Text>
+
+                                                <Text style={styles.units}>
+                                                    {item.unidadesSolicitadas || 0} uds.
+                                                </Text>
+                                            </View>
+                                        ))}
+                                    </View>
+
+                                </View>
+                            ))}
                         </ScrollView>
                     </View>
 
@@ -280,6 +322,53 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
                 message={modalMessage}
                 buttonLabel={modalButtonLabel}
             />
+
+            <ExcetptionModalProducts
+                visible={modalVisibleValidate}
+                onClose={() => setModalVisibleValidate(false)}
+                title={modalTitleValidate}
+                subTitle={modalMessageValidate}
+                buttonLabel={modalButtonLabelValidate}
+                onAccept={() => {
+                    setModalVisibleValidate(false);
+                    setUploadPhotoNoDelivery(true);
+                }}
+                onReject={() => {
+                    setModalVisibleValidate(false);
+                    handleSubmitReject();
+                }}
+            />
+
+            {uploadPhotoNoDelivery && (
+                <UploadPhoto
+                    title="Cargar evidencia"
+                    subTitle="Debes tomar una foto de la guia de transporte firmada."
+                    onClose={() => setUploadPhotoNoDelivery(false)}
+                    width={width}
+                    onEvidenceComplete={async (evidences) => {
+                        const files = evidences
+                            .map(e => e.base64)
+                            .filter((b64): b64 is string => typeof b64 === "string");
+                        setNoDeliveryFiles(files);
+                        setUploadPhotoNoDelivery(false);
+                        setConfirmNoDelivery(true);
+                        await uploadPhotoSubmit(files);
+                    }}
+                    onPermisionsPhoto={() => {
+                        setUploadPhotoNoDelivery(false);
+                        setModalTitle("Permiso denegado ¡Alerta!");
+                        setModalMessage("No podemos acceder a la cámara. Activa el permiso en la configuración del dispositivo para continuar.");
+                        setModalVisible(true);
+                    }}
+                    onPermisionsGallery={() => {
+                        setUploadPhotoNoDelivery(false);
+                        setModalTitle("Permiso denegado ¡Alerta!");
+                        setModalMessage("No podemos acceder a la galería. Activa el permiso en la configuración del dispositivo para continuar.");
+                        setModalVisible(true);
+                    }}
+                    maxEvidences={1}
+                />
+            )}
 
             {loading && <LoadingBlue />}
         </ThemedView>

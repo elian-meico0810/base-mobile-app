@@ -1,5 +1,5 @@
 import { ApiResponse } from "@/src/features/auth/domain/ApiResponse";
-import { ApproveOrReject, CreateEntregaProps, CreatePaymentTypeProps, DerliveryDocument, GenerateQRPorps, GuideResponse, NoDeliveryProps, OpneAddressesDeliveryProps, OpneAddressesProps, PaymentGatewayProps, ReportWhatsAppQRPorps, SuccessOrderArrayPayment, successOrderCashPayment, successOrderPayment, TypeParameterValue, WhatsappProps, WhatsappTATImageProps } from "./InvoicesInterFace";
+import { ApproveOrReject, CreateEntregaProps, CreatePaymentTypeProps, DerliveryDocument, GenerateQRPorps, GuideResponse, NoDeliveryProps, OpneAddressesDeliveryProps, OpneAddressesProps, PaymentGatewayProps, ReportWhatsAppQRPorps, SuccessOrderArrayPayment, successOrderCashPayment, successOrderPayment, TypeParameterValue, UploadEvidenceAcceptationGuidesProps, WhatsappProps, WhatsappTATImageProps } from "./InvoicesInterFace";
 
 export interface InvoicesRepository {
   sendPaymentGetway: (data: PaymentGatewayProps, token: string) => Promise<any>;
@@ -24,5 +24,6 @@ export interface InvoicesRepository {
   listTotalsGuide: (guide: string, token: string)  => Promise<ApiResponse<GuideResponse>>;
   apporveOrReject: (data: ApproveOrReject, token: string) => Promise<any>;
   getTypeCash: (token: string)  => Promise<ApiResponse<TypeParameterValue>>;
+  uploadEvidenceAcceptationGuides: (data: UploadEvidenceAcceptationGuidesProps, token: string) => Promise<any>;
 
 }

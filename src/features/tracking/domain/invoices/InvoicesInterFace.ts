@@ -232,3 +232,9 @@ export interface ApproveOrReject {
   guia_id: number;
   is_acceptation: boolean;
 }
+
+
+export interface UploadEvidenceAcceptationGuidesProps {
+  codigo_guia: string;
+  files: string[];
+}

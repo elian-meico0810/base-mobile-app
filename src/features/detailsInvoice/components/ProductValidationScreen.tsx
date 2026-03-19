@@ -286,8 +286,8 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
         .reduce((sum, value) => sum + value, 0);
 
     // Valor a recaudar estimado: validados + por validar
-    const valueRealTotal = totalGeneralValidate + totalGeneral;
-
+    const valueRealTotal = (totalGeneralValidate + totalGeneral).toFixed(2);
+    
     // 3. Función para actualizar el estado de un producto
     const updateProductStatus = (
         id: number,
@@ -323,7 +323,6 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
             return newState;
         });
     };
-
 
     return (
         <View style={styles.mainContainer}>
@@ -373,7 +372,9 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                     onRefreshing?.();
                                 }}
                                 onDataProduct={(id, totalProducts, unidadesEntregadas) => {
-                                    updateProductStatus(id, totalProducts, 'pending');
+                                    const deliveredUnits = unidadesEntregadas ?? item?.unidadesEntregadas ?? 0;
+                                    const deliveredValue = calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, Number(deliveredUnits), undefined, Number(allProducts?.[0]?.porcentajeDFR));
+                                    updateProductStatus(id, Number(deliveredValue), 'pending', unidadesEntregadas);
 
                                     // console.log("========================================");
                                     // console.log("=========== LOS POR VALIDAR ====================");
@@ -428,9 +429,10 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                         }}
                                         onDataProduct={(id, _totalProducts, unidadesEntregadas) => {
                                             const deliveredUnits = unidadesEntregadas ?? item?.unidadesEntregadas ?? 0;
-                                            const deliveredValue = calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, Number(deliveredUnits));
+                                            const deliveredValue = calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, Number(deliveredUnits), undefined, Number(allProducts?.[0]?.porcentajeDFR));
                                             updateProductStatus(id, Number(deliveredValue), 'validated', unidadesEntregadas);
                                         }}
+                                        porcentajeDFR={Number(allProducts?.[0]?.porcentajeDFR)}
                                     />
                                 ))}
                         </>

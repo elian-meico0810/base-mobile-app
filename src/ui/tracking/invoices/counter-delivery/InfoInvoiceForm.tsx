@@ -26,7 +26,7 @@ import { Cause, Detail, Document, GuideDetails } from '@/src/features/tracking/d
 import { CreateEntregaProps, DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
-import { calculateVlueByPorducts, capitalizeFirst, cleanSpaces, getDeviceDateTime, getDistanceInMeters, heightCaldulate, toUpperCase, uriToBase64 } from '@/src/utils/uitls';
+import { calculateValuesDFRArray, calculateVlueByPorducts, capitalizeFirst, cleanSpaces, getDeviceDateTime, getDistanceInMeters, heightCaldulate, toUpperCase, uriToBase64 } from '@/src/utils/uitls';
 import * as Location from "expo-location";
 import { useRouter } from 'expo-router';
 import * as SecureStore from "expo-secure-store";
@@ -85,6 +85,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [isInicilizationApi, setInicilizationApi] = useState(false);
     const [showOptionRefused, setShowOptionRefused] = useState<OptionsRefusedPorps>(null);
     const [valueOrderCalculate, setValueOrderCalculate] = useState(0);
+    const [newTotalValue, setNewTotalValue] = useState(0);
     const [valueOrderPaymentByType, setValuePaymentByType] = useState(0);
     const [newValue, setNewValue] = useState(0);
     const [showPorductData, setPorductData] = useState<Document[]>([]);
@@ -988,7 +989,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         ?.filter(pago => pago.estado === "APPROVED")
         .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0);
 
-
     var value = '';
     switch (guide?.facturas[0]?.tipo) {
         case TypeInvoiceEnum.CONTADO_EFECTIVO:
@@ -1014,7 +1014,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         suma +
                         calculateVlueByPorducts(
                             detalle as Detail,
-                            TypeCaculateValueEnum.ACTION_5
+                            TypeCaculateValueEnum.ACTION_3,
+                            undefined,
+                            undefined,
+                            Number(showPorductData?.[0]?.porcentajeDFR)
                         )
                     );
                 }, 0) || 0;
@@ -1029,6 +1032,11 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     ]);
 
     const totalOrderPayment = Number(totalAproved);
+    // const totalImpuestos = showPorductData
+    //     ?.flatMap(p => p.detalles || [])
+    //     .reduce((acc, detalle) => acc + Number(detalle?.totalImpuestos || 0), 0);
+
+    // const totalImpuestoValues = Number(totalImpuestos);
 
     const totalValue =
         Number(
@@ -1046,7 +1054,18 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     Number(guide?.facturas[0]?.dfr))
             ).toFixed(2)
         );
-    const totalRecauder = Math.max(0, Number(totalValue) - Number(totalAproved));
+
+
+    const condition = detailsCounterDelivery || closeButton;
+
+    const baseTotal = condition
+        ? Number(newTotalValue || 0) - Number(totalAproved)
+        : Number(totalValueTwo || 0);
+
+    const totalRecauder = condition
+        ? baseTotal
+        : baseTotal;
+
 
     const listInfOTByDirection = async () => {
         try {
@@ -1153,8 +1172,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 {
                     idDireccion: Number(guide?.idDireccion),
                     numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
-                    numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
-                    // numeroDestino: "+573112187956",
+                    // numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
+                    numeroDestino: "+573112187956",
                     valorOriginal: String(totalValue),
                     valorPagado: String(totalOrderPayment),
                 },
@@ -1195,6 +1214,22 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setModalVisible(true);
         }
     };
+    useEffect(() => {
+
+        const hasRejected = showPorductData?.some(pedido =>
+            pedido?.detalles?.some(detalle => detalle?.unidadesRechazadas > 0)
+        );
+
+        if (!hasRejected) {
+            setNewTotalValue(totalValue);
+            return;
+        }
+
+        const result = calculateValuesDFRArray(showPorductData);
+
+        setNewTotalValue(result);
+
+    }, [showPorductData]);
 
     const discount = Number(guide?.facturas[0]?.dfr ?? 0);
     const isZero = discount === 0;
@@ -1380,10 +1415,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                         {'$ ' + (
                                             Number(
                                                 (detailsCounterDelivery || closeButton)
-                                                    ? (totalValueTwo - valueOrderCalculate)
+                                                    ? (newTotalValue)
                                                     : totalValueTwo || 0
                                             ).toLocaleString('es-CO', { minimumFractionDigits: 0 })
-                                        )}                                    
+                                        )}
                                     </Text>
                                 </View>
 
@@ -1400,12 +1435,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                     <Text style={[
                                         styles.value,
                                         {
-                                            color: Number(totalRecauder) === 0 ? '#1F9144' : '#C62828',
+                                            color: Math.max(0, baseTotal) === 0 ? '#1F9144' : '#C62828',
                                             fontWeight: '800',
                                             fontSize: 16
                                         }
                                     ]}>
-                                        {'$ ' + (Number(totalRecauder) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                                        {'$ ' + (Math.max(0, baseTotal) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                                     </Text>
                                 </View>
 

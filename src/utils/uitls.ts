@@ -1,6 +1,6 @@
 import { Dimensions } from "react-native";
 import { TypeCaculateValueEnum } from "../constants/GuideStates";
-import { Detail, Novelty } from "../features/tracking/domain/details/DetailsGuide";
+import { Detail, Document, Novelty } from "../features/tracking/domain/details/DetailsGuide";
 
 export function cleanSpaces(text: string = "") {
     return text.replace(/\s+/g, " ").trim();
@@ -100,22 +100,22 @@ export function getDistanceInMeters(lat1: number, lon1: number, lat2: number, lo
 }
 
 export function capitalizeFirst(text?: string) {
-  return text
-    ? text.charAt(0).toUpperCase() + text.slice(1).toLowerCase()
-    : "";
+    return text
+        ? text.charAt(0).toUpperCase() + text.slice(1).toLowerCase()
+        : "";
 }
 
 
 export function heightCaldulate(heightValue = 853.3333333333334) {
     const { width, height } = Dimensions.get('window');
-    return  height < heightValue;
+    return height < heightValue;
 }
 
 export function toUpperCase(text?: string) {
     return text ? text.toUpperCase() : '';
 }
 
-export function calculateVlueByPorducts(data: Detail, action: string, unitRefusedValue?: number, novelty?: Novelty[]) {
+export function calculateVlueByPorducts(data: Detail, action: string, unitRefusedValue?: number, novelty?: Novelty[], porcentajeDFR?: number): number {
     const baseValue = Number(data?.valorBaseProducto ?? 0);
     const totalTaxes = Number(data?.totalImpuestos ?? 0);
     const unit = Number(data?.unidadesSolicitadas ?? 0);
@@ -123,7 +123,7 @@ export function calculateVlueByPorducts(data: Detail, action: string, unitRefuse
     const unitEntry = Number(data?.unidadesEntregadas ?? 0);
     const form_1 = (totalTaxes / unit) + baseValue
     let valueUnit = 0;
-    
+
     switch (action) {
         case TypeCaculateValueEnum.ACTION_1:
             return (form_1 * unit);
@@ -132,16 +132,34 @@ export function calculateVlueByPorducts(data: Detail, action: string, unitRefuse
             return form_1;
 
         case TypeCaculateValueEnum.ACTION_3:
-            var value = unitRefused > 0 ? unit - unitRefused : unit;
-            return (form_1 * value);
+            let valueImpuestoTwo = 0;
+            const porcentajeDFRValueTwo = Number(porcentajeDFR || 0) / 100;
+            console.log("porcentajeDFRValueTwo: ",porcentajeDFRValueTwo);
+            
+            const valueCalculatedImpuestoTwo = Number(totalTaxes) / Number(unit || 0);
+            valueImpuestoTwo = valueCalculatedImpuestoTwo * Number(unitRefused || 0);
+
+            const totalValueNetoTwo = Number(baseValue || 0) * Number(unitRefused || 0);
+            const valueCalcualtedLineTwo = totalValueNetoTwo * porcentajeDFRValueTwo;
+            return (totalValueNetoTwo + valueImpuestoTwo) - valueCalcualtedLineTwo;
+
 
         case TypeCaculateValueEnum.ACTION_4:
             return totalTaxes / unit;
 
         case TypeCaculateValueEnum.ACTION_5:
-            valueUnit = unitRefusedValue ? (form_1 * unitRefusedValue) : (form_1 * unitRefused);
-            return valueUnit;
+            let valueImpuesto = 0;
+            const porcentajeDFRValue = Number(porcentajeDFR || 0) / 100;
 
+            const valueCalculatedImpuesto = Number(totalTaxes) / Number(unit || 0);
+            valueImpuesto = valueCalculatedImpuesto * Number(unitRefusedValue ? unitRefusedValue : unitEntry || 0);
+
+            const totalValueNeto = Number(baseValue || 0) * Number(unitRefusedValue ? unitRefusedValue : unitEntry || 0);
+            const valueCalcualtedLine = totalValueNeto * porcentajeDFRValue;
+            return ((totalValueNeto + valueImpuesto) - valueCalcualtedLine);
+
+
+            
         case TypeCaculateValueEnum.ACTION_6:
             return unitRefusedValue ? unitRefusedValue : unit;
 
@@ -164,6 +182,33 @@ export function calculateVlueByPorducts(data: Detail, action: string, unitRefuse
             return 0;
     }
 
+}
+
+export function calculateValuesDFRArray(data: Document[]) {
+    let totalGeneral = 0;
+
+    data?.forEach((pedido) => {
+
+        const porcentajeDFR = Number(pedido?.porcentajeDFR || 0) / 100;
+        pedido?.detalles?.forEach((detalle) => {
+
+            let valueImpuesto = 0;
+
+            const valueCalculatedImpuesto = Number(detalle?.totalImpuestos) / Number(detalle?.unidadesSolicitadas || 1);
+            valueImpuesto = valueCalculatedImpuesto * Number(detalle?.unidadesEntregadas || 0);
+
+            const totalValueNeto = Number(detalle?.valorBaseProducto || 0) * Number(detalle?.unidadesEntregadas || 0);
+            const valueCalcualtedLine = totalValueNeto * porcentajeDFR;
+
+            const sumTotalOrder = (totalValueNeto + valueImpuesto) - valueCalcualtedLine;
+
+            totalGeneral += sumTotalOrder;
+
+     
+        });
+    });
+
+    return totalGeneral;
 }
 
 export function capitalizeWords(text?: string) {
@@ -215,7 +260,7 @@ export function calculateNewValues<T, U extends HasUnidadesEntregadas & Detail>(
             for (let e = 0; e < obj.detalles.length; e++) {
                 const detail = obj.detalles[e];
 
-            
+
 
                 valueRealTotal += calculateVlueByPorducts(
                     detail,
@@ -260,27 +305,27 @@ export function formatTimeByMinutes(totalSeconds: number): string {
 }
 
 export const uriToBase64 = async (uri: string): Promise<string> => {
-  try {
-    const response = await fetch(uri);
-    const blob = await response.blob();
+    try {
+        const response = await fetch(uri);
+        const blob = await response.blob();
 
-    return await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
+        return await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
 
-      reader.onloadend = () => {
-        resolve(reader.result as string); 
-      };
+            reader.onloadend = () => {
+                resolve(reader.result as string);
+            };
 
-      reader.onerror = (error) => {
-        reject(error);
-      };
+            reader.onerror = (error) => {
+                reject(error);
+            };
 
-      reader.readAsDataURL(blob);
-    });
+            reader.readAsDataURL(blob);
+        });
 
-  } catch (error) {
-    console.error("Error convirtiendo URI a base64:", error);
-    throw error;
-  }
+    } catch (error) {
+        console.error("Error convirtiendo URI a base64:", error);
+        throw error;
+    }
 };
 

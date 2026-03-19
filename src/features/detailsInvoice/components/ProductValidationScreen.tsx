@@ -372,10 +372,9 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                     onRefreshing?.();
                                 }}
                                 onDataProduct={(id, _totalProducts, unidadesEntregadas) => {
-                                    const deliveredUnits =  item?.unidadesSolicitadas;
+                                    const deliveredUnits =  unidadesEntregadas ? unidadesEntregadas : item?.unidadesSolicitadas;
                                     const deliveredValue = calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, Number(deliveredUnits), undefined, Number(allProducts?.[0]?.porcentajeDFR));
                                     updateProductStatus(id, Number(deliveredValue), 'pending', unidadesEntregadas);
-
 
                                     // console.log("========================================");
                                     // console.log("=========== LOS POR VALIDAR ====================");

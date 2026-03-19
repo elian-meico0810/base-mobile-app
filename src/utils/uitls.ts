@@ -134,7 +134,6 @@ export function calculateVlueByPorducts(data: Detail, action: string, unitRefuse
         case TypeCaculateValueEnum.ACTION_3:
             let valueImpuestoTwo = 0;
             const porcentajeDFRValueTwo = Number(porcentajeDFR || 0) / 100;
-            console.log("porcentajeDFRValueTwo: ",porcentajeDFRValueTwo);
             
             const valueCalculatedImpuestoTwo = Number(totalTaxes) / Number(unit || 0);
             valueImpuestoTwo = valueCalculatedImpuestoTwo * Number(unitRefused || 0);

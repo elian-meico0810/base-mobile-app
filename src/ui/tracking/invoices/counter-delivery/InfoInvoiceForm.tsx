@@ -834,7 +834,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             canal: pago.canal,
                             numeroDocumento: pago.numeroDocumento,
                             estado: pago.estado,
-                            referencia: pago.referencia
+                            referencia: pago.referencia,
+                            descripcion: pago.descripcion ?? null,
                         }))
                     });
 

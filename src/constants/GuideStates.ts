@@ -112,3 +112,8 @@ export enum TypeDetailsEnum {
 }
 
 
+export enum TypePaymentEnum {
+    CONTIGENCIA = "Pagos contingencia",
+    PASARELA = "Pasarela de pago",
+    OTRO = "Otro",
+}

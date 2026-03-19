@@ -1,4 +1,4 @@
-import { PaymentStatus } from "@/src/constants/GuideStates";
+import { PaymentStatus, TypePaymentEnum } from "@/src/constants/GuideStates";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Payment } from "../../domain/invoices/InvoicesInterFace";
 
@@ -56,7 +56,11 @@ export function InfoPayments({
         }
     };
 
-    const getEstadoTexto = (estado: string): string => {
+    const getEstadoTexto = (estado: string, canal?: string): string => {
+        if (canal === TypePaymentEnum.CONTIGENCIA) {
+            return "Pago validado por contingencia";
+        }
+
         switch (estado) {
             case PaymentStatus.COMPLETED: return "Aprobado";
             case PaymentStatus.PENDING: return "Pendiente";
@@ -65,18 +69,29 @@ export function InfoPayments({
         }
     };
 
-    const getBadgeStyle = (estado: string) => {
+    const getBadgeStyle = (estado: string, canal?: string) => {
+        if (canal === TypePaymentEnum.CONTIGENCIA) {
+            return styles.badgeContingencia;
+        }
         switch (estado) {
             case PaymentStatus.COMPLETED: return styles.badgeSuccess;
             case PaymentStatus.PENDING: return styles.badgePending;
             case PaymentStatus.FAILED: return styles.badgeError;
+            case PaymentStatus.FAILED: return styles.badgeError;
+            case TypePaymentEnum.CONTIGENCIA: return styles.badgeContingencia;
             default: return styles.badge;
         }
     };
 
+    const getBadgeTextStyle = (estado: string, canal?: string) => {
+        if (canal === TypePaymentEnum.CONTIGENCIA) {
+            return styles.badgeTextContingencia;
+        }
+    };
+    
     const cardHeight = 180;
     const dynamicHeight = Math.min(726, Math.max(250, payments.length * cardHeight + 120));
-    
+
     return (
         <View style={styles.overlay}>
             {/* Fondo gris semi-transparente */}
@@ -123,8 +138,16 @@ export function InfoPayments({
                                 {/* Estado */}
                                 <View style={styles.row}>
                                     <Text style={styles.cardLabel}>Estado</Text>
-                                    <View style={[styles.badge, getBadgeStyle(item.estado as string)]}>
-                                        <Text style={styles.badgeText}>{getEstadoTexto(item.estado as string)}</Text>
+                                    <View style={[
+                                        styles.badge,
+                                        getBadgeStyle(item.estado as string, item.canal as string)
+                                    ]}>
+                                        <Text style={[
+                                            styles.badgeText,
+                                            getBadgeTextStyle(item.estado as string, item.canal as string)
+                                        ]}>
+                                            {getEstadoTexto(item.estado as string, item.canal as string)}
+                                        </Text>
                                     </View>
                                 </View>
 
@@ -133,12 +156,14 @@ export function InfoPayments({
                                     <Text style={styles.cardLabel}>ID del pago</Text>
                                     <Text style={styles.cardValue}>{item.id}</Text>
                                 </View>
-
                                 {/* ID del pago */}
-                                <View style={styles.row}>
-                                    <Text style={styles.cardLabel}>Método de pago</Text>
-                                    <Text style={styles.cardValue}>{item.canal}</Text>
-                                </View>
+
+                                {(item.canal != TypePaymentEnum.CONTIGENCIA) && (
+                                    <View style={styles.row}>
+                                        <Text style={styles.cardLabel}>Método de pago</Text>
+                                        <Text style={styles.cardValue}>{item.canal}</Text>
+                                    </View>
+                                )}
 
                                 {/* Valor pagado */}
                                 <View style={styles.row}>
@@ -152,9 +177,9 @@ export function InfoPayments({
                                     <Text style={styles.cardValue}>{formatFecha(item.fechaDeposito as string)}</Text>
                                 </View>
 
-                                {(item?.descripcion && item.canal == "Otro")&& (
+                                {(item?.descripcion && item.canal == TypePaymentEnum.OTRO) && (
                                     <View style={styles.row}>
-                                        <Text style={styles.cardLabel}>Descripción</Text>   
+                                        <Text style={styles.cardLabel}>Descripción</Text>
                                         <Text style={styles.cardValue}>{item.descripcion}</Text>
                                     </View>
                                 )}
@@ -164,7 +189,7 @@ export function InfoPayments({
                 )}
                 {/* <View style={styles.bottomSpacer} /> */}
             </View>
-        </View>
+        </View >
     );
 }
 
@@ -178,6 +203,18 @@ const styles = StyleSheet.create({
         justifyContent: "flex-end",
         alignItems: "center",
         zIndex: 9999,
+    },
+    badgeContingencia: {
+        paddingVertical: 4,
+        paddingHorizontal: 10,
+        borderRadius: 12,
+        backgroundColor: "#FDE9D9", 
+    },
+    badgeTextContingencia: {
+        fontFamily: "Rubik",
+        fontWeight: "400",
+        fontSize: 12,
+        color: "#B45309"
     },
     backgroundOverlay: {
         position: "absolute",

@@ -382,6 +382,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                     // console.log("TOTAL ACUMULADO:", totalGeneral);
                                     // console.log("========================================");
                                 }}
+                                porcentajeDFR={Number(allProducts?.[0]?.porcentajeDFR)}
 
                             />
                         ))

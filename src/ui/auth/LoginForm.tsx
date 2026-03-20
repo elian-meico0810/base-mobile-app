@@ -169,9 +169,9 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
       if (token !== "" && token !== null) {
         const response = await detailsRepositoryImpl.listAceptationGuide(guide ? guide : tokenData?.numeroGuia, token ?? "");
         const data = response.data as ListAceptationGuide[]
-
+        
         if (response?.statusCode == 200) {
-          if (data?.[0]?.codigo_guia && !data?.[0]?.estado_aceptacion) {
+          if ((data?.[0]?.codigo_guia && !data?.[0]?.estado_aceptacion) || !data?.[0]) {
             router.push({
               pathname: '/views/AcceptanceTerms' as any,
               params: {

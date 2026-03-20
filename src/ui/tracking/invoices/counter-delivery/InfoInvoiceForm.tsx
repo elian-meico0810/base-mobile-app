@@ -880,15 +880,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     />
                 </View>
             </ScrollView>
-            
+
             {guide?.estado === 'Pendiente' && (
-                <View style={[styles.redBackground, { height:  heightValue ? 100: 90 }]} />
+                <View style={[styles.redBackground, { height: heightValue ? 100 : 90 }]} />
             )}
 
-            <View style={[styles.footer, {
-                marginBottom: isSmallScreen ? 0 : heightValue ? 0 : 20,
-                bottom: isSmallScreen ? 12 : heightValue ? 60 : 30
-            }]}>
+            <View style={[styles.footer, { marginBottom: 10 }]}>
                 {isSelectInvocies ? (
                     <PrimaryButton
                         title="Entregar"

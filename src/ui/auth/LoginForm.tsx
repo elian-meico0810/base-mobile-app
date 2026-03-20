@@ -144,10 +144,10 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
 
       {/* <NetworkStatus /> */}
 
-      <View style={[styles.backgroundFill, { width, height }]} pointerEvents="none">
+      <View style={[styles.backgroundFill, { width, height:'100%' }]} pointerEvents="none">
         <Image
           source={require('@/assets/icons/Welcome.png')}
-          style={[styles.backgroundImage, { width, height }]}
+          style={[styles.backgroundImage, { width, height:'100%' }]}
           resizeMode="cover"
         />
       </View>

@@ -288,10 +288,10 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
         <ThemedView style={styles.container}>
             <NetworkStatus />
 
-            <View style={[styles.backgroundFill, ]} >
+            <View style={[styles.backgroundFill,]} >
                 <Image
                     source={require('@/assets/icons/Welcome.png')}
-                    style={[styles.backgroundImage, { width, height }]}
+                    style={[styles.backgroundImage, { width, height: '100%' }]}
                     resizeMode="cover"
                 />
             </View>
@@ -346,7 +346,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                                 ) : (
                                     filteredGuides.map((item) => (
                                         <GuideCard
-                                            key={item.codigoCliente}
+                                            key={item.idDireccion}
                                             guide={item}
                                             onPress={() => console.log('Ir a dirección')}
                                             routeStarted={statusValue != StatusInvoice.PENDING ? true : routeStarted}

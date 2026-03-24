@@ -129,6 +129,10 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                         if (hasInCourse) {
                             await finshRoute();
                         }
+                        // Asignar la variable según el resultado
+                        setData(sortedData as GuideDetails[]);
+                        setFilteredGuides(sortedData as GuideDetails[]);
+
                         const responseData = await detailsRepositoryImpl.paymentsByGuide(
                             {
                                 id_guia: String(guide),
@@ -138,9 +142,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
 
                         setDataResult(responseData?.data?.resumen);
 
-                        // Asignar la variable según el resultado
-                        setData(sortedData as GuideDetails[]);
-                        setFilteredGuides(sortedData as GuideDetails[]);
+
                         await getStatusStyle();
                     }
 
@@ -283,7 +285,9 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
             setLoading(false);
         }
     };
-
+    useEffect(() => {
+        setFilteredGuides(data);
+    }, [data]);
     return (
         <ThemedView style={styles.container}>
             <NetworkStatus />

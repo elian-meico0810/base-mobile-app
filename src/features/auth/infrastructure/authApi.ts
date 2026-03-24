@@ -6,6 +6,7 @@ export const authApi = axios.create({
   // baseURL: "http://192.168.72.30:8080/api/",
   // baseURL: "https://qa-portal.meico.co/meicotrack/back/api/"
   baseURL:"https://portal.meico.com.co/meitruck/back/api/"
+  // baseURL: "http://192.168.72.144:8000/api/", 
 
 });
 

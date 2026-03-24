@@ -1032,7 +1032,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     ]);
 
     const totalOrderPayment = Number(totalAproved);
-    console.log("totalOrderPayment: ", totalAproved);
     // const totalImpuestos = showPorductData
     //     ?.flatMap(p => p.detalles || [])
     //     .reduce((acc, detalle) => acc + Number(detalle?.totalImpuestos || 0), 0);

@@ -1032,6 +1032,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     ]);
 
     const totalOrderPayment = Number(totalAproved);
+    console.log("totalOrderPayment: ", totalAproved);
     // const totalImpuestos = showPorductData
     //     ?.flatMap(p => p.detalles || [])
     //     .reduce((acc, detalle) => acc + Number(detalle?.totalImpuestos || 0), 0);
@@ -1105,24 +1106,18 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     };
 
     useEffect(() => {
+        const totalApprovedPayments = paymentSuccessful?.pagos
+            ?.filter(pago => pago.estado === "APPROVED")
+            .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0) || 0;
+
         if (buttonValueOTP) return;
 
         const executeLogic = async () => {
-
-            if (!Number.isFinite(totalValue) || !Number.isFinite(totalRecauder) || !Number.isFinite(totalOrderPayment)) {
-                // setModalTitle("Cargando...");
-                // setModalMessage("Los valores aún no están listos, espere un momento.");
-                // setModalVisible(true);
-                return;
-            } else {
-                if (Number(totalOrderPayment) > 0) {
-                    setModalVisible(false);
-                    await listInfOTByDirection();
-                }
+            if (totalApprovedPayments > 0) {
+                setModalVisible(false);
+                await listInfOTByDirection();
             }
-
         };
-
         executeLogic();
 
         const interval = setInterval(() => {
@@ -1133,8 +1128,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             clearInterval(interval);
         };
 
-    }, [totalValue, totalRecauder, buttonValueOTP]);
-
+    }, [paymentSuccessful, buttonValueOTP]);
 
     const handleSubmitConfirmation = async () => {
         try {

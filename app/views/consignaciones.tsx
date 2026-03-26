@@ -265,7 +265,7 @@ export default function ConsignacionesScreen() {
       setShowSuccess(true);
       setViewConsignment(false);
       setUploadPhoto(false);
-      setValueInput("");
+      // setValueInput("");
       setMultiplePhotos([]);
 
       // Refresh summary
@@ -462,7 +462,10 @@ export default function ConsignacionesScreen() {
             titleTwo="Comprobante de la consignación"
             onUploadFile={handleUploadFile}
             evidencePhotos={multiplePhotos}
-            onValue={(value) => setValueInput(value)}
+            onValue={(value) => {
+              console.log("value", value);
+              setValueInput(value)
+            }}
             value={valueInput}
             onConfirmation={consignmentSubmit}
             isLoading={isSubmitting}
@@ -606,7 +609,10 @@ export default function ConsignacionesScreen() {
           <TopSuccessAlert
             visible={showSuccess}
             message="Consignación registrada"
-            onHide={() => setShowSuccess(false)}
+            onHide={() => {
+              setShowSuccess(false);
+              setValueInput("");
+            }}
             subtitle={`Se registró una consignación por el valor de $${valueInput}.`}
           />
         )}

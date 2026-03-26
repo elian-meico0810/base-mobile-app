@@ -43,6 +43,7 @@ export const API_ROUTES = {
   DELETE_REPORT_PAYMENT_BY_ORDER: "reporte-pago/eliminar-by-pedido-id/",
   // Consignaciones
   CONSIGNACIONES_RESUMEN: "consignaciones/resumen/",
+  CONSIGNACIONES_RESUMEN_BY_CODE: "consignaciones/resumen-by-codigo-guia/",
   CONSIGNACIONES_REGISTRAR: "consignaciones/registrar/",
   CONSIGNACIONES_EDITAR: "consignaciones/editar/",
   CONSIGNACIONES_ELIMINAR: "consignaciones/eliminar/",

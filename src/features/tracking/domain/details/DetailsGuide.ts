@@ -260,3 +260,7 @@ export interface DataUploadFIlePprops {
   direccion_id: number;
   files: string[];
 }
+
+export interface ReportePagoTotal {
+  valorTotal: number;
+}

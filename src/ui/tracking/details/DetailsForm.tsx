@@ -53,6 +53,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const [tokenUser, setToken] = useState<string | null>(null);
     const [data, setData] = useState<GuideDetails[]>([]);
     const [dataResult, setDataResult] = useState<PaymentsByInvoice | null>(null);
+    const [vluePayment, setValuePayment] = useState<number | 0>(0);
     const [filteredGuides, setFilteredGuides] = useState(data);
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(false);
@@ -186,18 +187,17 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     // Función para verificar permisos
     const listReportPaymentByCOideGuide = async (authToken: string) => {
         try {
-            
+
             const responseQueryData = await invoiceRepositoryImpl.successTypeCashPayment(
                 String(initialGuide),
                 authToken
             );
             let total = 0;
-            
+
             if (responseQueryData?.statusCode === 200) {
                 const data = responseQueryData.data as any;
                 total = data?.totalEfectivo
 
-                // setValuePaymentByType(total);
                 if (total) {
                     const response = await invoiceRepositoryImpl.typeParameterValue(
                         TypeDetailsEnum.MAXIMUM_AMOUNT,
@@ -206,8 +206,8 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
 
                     if (Array.isArray(response?.data)) {
                         const parameterToalas = response.data.reduce((acc: number, item: any) => {
-                          const numero = Number(item.valor);
-                          return !isNaN(numero) ? acc + numero : acc;
+                            const numero = Number(item.valor);
+                            return !isNaN(numero) ? acc + numero : acc;
                         }, 0);
 
                         if (total >= parameterToalas) {
@@ -317,7 +317,17 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                             ENV_DEV.KEY_APP
                         );
 
+
+                        const reportData = await detailsRepositoryImpl.getReportPayment(String(guide), tokenUser || token);
+                        const data = reportData.data;
+
+                        let total = 0;
+
+                        if (typeof data === 'object' && !Array.isArray(data) && data !== null) {
+                            total = data.valorTotal ?? 0;
+                        }
                         setDataResult(responseData?.data?.resumen);
+                        setValuePayment(total);
 
                         // Asignar la variable según el resultado
                         setData(sortedData as GuideDetails[]);
@@ -546,6 +556,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                                 routeStarted={routeStarted}
                                 waitingForPermission={waitingForPermission || !checkUbication}
                                 dataResult={dataResult}
+                                valuePayment={vluePayment}
                             />
 
                             {((data.length != 0)) && (

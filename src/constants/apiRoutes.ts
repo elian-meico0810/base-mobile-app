@@ -47,6 +47,8 @@ export const API_ROUTES = {
   CONSIGNACIONES_REGISTRAR: "consignaciones/registrar/",
   CONSIGNACIONES_EDITAR: "consignaciones/editar/",
   CONSIGNACIONES_ELIMINAR: "consignaciones/eliminar/",
+  GET_REPORTS_PAYMENT_BY_GUIDE: "direcciones/obtener-reportes-pago-by-guide/",
+
 };
 
 

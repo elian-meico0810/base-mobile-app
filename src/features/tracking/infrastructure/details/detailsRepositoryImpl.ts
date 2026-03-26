@@ -365,7 +365,7 @@ export const detailsRepositoryImpl: DetailsRepository = {
 
   async dataUploadFIle(data: DataUploadFIlePprops, token: string) {
     try {
-      
+
       const response = await authApi.post(`${API_ROUTES.POST_EVIDENCE_OTP}`, data, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -373,6 +373,20 @@ export const detailsRepositoryImpl: DetailsRepository = {
       });
 
       return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async getReportPayment(guide: string, token: string) {
+    try {
+      const { data } = await authApi.get(`${API_ROUTES.GET_REPORTS_PAYMENT_BY_GUIDE}${guide}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return data
     } catch (error) {
       throw error;
     }

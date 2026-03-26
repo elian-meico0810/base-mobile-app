@@ -38,7 +38,7 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
     const TotalAmountToCollect =
         Number(dataResult?.total_pagado ?? 0) +
         Number(valuePayment ?? 0);
-    
+
     const totalPerRecaudar = Math.max(
         Math.round(Number(totalValueTotal) - Number(TotalAmountToCollect)),
         0
@@ -56,7 +56,7 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
     const isCompleteVisits = progressVisits === 1;
 
     const circlePosition = Math.min(progressVisits * 100, 100);
-
+   
     // Animación del círculo de progreso
     useEffect(() => {
         if (showSummary && !isAnimating) {

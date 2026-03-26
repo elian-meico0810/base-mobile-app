@@ -577,7 +577,7 @@ export default function ConsignacionesScreen() {
         {uploadPhoto && (
           <UploadPhotoItem
             title="Cargar evidencia"
-            subTitle="Toma fotos de la mercancía ubicada en el cliente. Podrás asociar un máximo de 1 imágenes por entrega."
+            subTitle="Toma foto del comprobante entregado en el punto de recaudo. Podrás adjuntar un máximo de 1 imagen."
             onClose={() => {
               setUploadPhoto(false);
               if (uploadContext === "register") {

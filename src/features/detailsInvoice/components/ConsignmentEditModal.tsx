@@ -278,6 +278,7 @@ export function ConsignmentEditModal({
                                     <PrimaryButton
                                         title={"Guardar cambios"}
                                         onPress={() => {
+                                            if(!isValid || !hasChanges) return;
                                             onSave(amount, evidences);
                                         }}
                                         disabled={!(isValid && hasChanges)} 

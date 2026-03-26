@@ -121,6 +121,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [uploadPhotoNoDelivery, setUploadPhotoNoDelivery] = useState(false);
     const [noDeliveryFiles, setNoDeliveryFiles] = useState<string[]>([]);
     const [confirmNoDelivery, setConfirmNoDelivery] = useState(false);
+    const [currentQRType, setCurrentQRType] = useState(qrType || undefined);
+    const [currentQRData, setCurrentQRData] = useState(qrBase64 || undefined);
 
     useEffect(() => {
         const backAction = () => {
@@ -211,8 +213,14 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setModalgenerateQR(true);
             setShowDetailInvoiceQR(false);
             setShowPayment(false);
-            if (qr) setQrBase64(qr);
-            if (type) setQrType(type);
+            if (qr) {
+                setQrBase64(qr);
+                setCurrentQRData(qr);
+            }
+            if (type) {
+                setQrType(type);
+                setCurrentQRType(type);
+            }
         }
 
     };
@@ -233,8 +241,14 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         setModalgenerateQR(true);
         setShowDetailInvoiceQR(false);
         setShowPayment(false);
-        if (qr) setQrBase64(qr);
-        if (type) setQrType(type);
+        if (qr) {
+            setQrBase64(qr);
+            setCurrentQRData(qr);
+        }
+        if (type) {
+            setQrType(type);
+            setCurrentQRType(type);
+        }
     };
 
 
@@ -340,6 +354,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
 
     const condPago = guide?.facturas[0]?.condPago == TypeConPagoEnum.TAT;
+
     // const condPagoFalse = guide?.facturasx0]?.condPago != TypeConPagoEnum.TAT;
 
     const handlSendWhatsApp = async () => {
@@ -349,6 +364,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             let response;
 
             if (qrType === TypeQr.PASARELA) {
+                console.log();
+                
                 response = await invoiceRepositoryImpl.whatsappProps(
                     {
                         whatsapp: String(phone),
@@ -550,7 +567,19 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         }
     };
 
+    const handleChangeQRType = async () => {
+        try {
 
+            // Cambiar el tipo (alternar entre tipos disponibles)
+            const newType = currentQRType === 'Aplicación Bancaria' ? 'Pasarela' : 'Aplicación Bancaria';
+            setCurrentQRType(newType);
+            // Limpiar datos anteriores
+            setCurrentQRData(undefined);
+
+        } catch (error) {
+            console.error('Error al cambiar tipo de QR:', error);
+        }
+    };
 
     const getDataProduct = async () => {
         try {
@@ -1683,6 +1712,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     data={guide}
                     onClose={() => {
                         setModalgenerateQR(false);
+                        setCurrentQRData(undefined);
                     }}
                     onChangePhone={() => {
                         setShowDetailInvoiceQR(false);
@@ -1691,9 +1721,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     }}
                     width={width}
                     phone={phone}
-                    qrData={qrBase64}
+                    qrData={currentQRData}
                     qrType={qrType}
                     onChangeQRType={() => {
+                        handleChangeQRType();
                         setShowDetailInvoiceQR(true);
                         setModalgenerateQR(false);
                     }}

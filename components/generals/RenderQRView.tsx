@@ -74,12 +74,20 @@ export default function RenderQRView({
     }, [localQRData, qrType]);
 
     const handleChangeTypeWithClean = () => {
+        // Limpiar todos los estados relacionados con el QR
+        setSvgBase64(null);
+        setPngBase64(null);
         setLocalQRData(undefined);
         setIsQRGenerating(true);
+        setChangingTypeLoading(true);
 
+        // Pequeño delay para asegurar que la UI se actualice antes de cambiar el tipo
         setTimeout(() => {
             handleChangeQRType();
-        }, 100);
+            setTimeout(() => {
+                setChangingTypeLoading(false);
+            }, 500);
+        }, 50);
     };
 
     const getQRType = () => {

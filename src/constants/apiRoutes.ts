@@ -26,7 +26,7 @@ export const API_ROUTES = {
   VALIDATE_OTP: "otp/verificar/",
   WS_ALL_PAYMENT_SUCCESS_FUL: "reporte-pago/ws-pagos-registrados/",
   GET_INFO_BY_DIRECTION_OF_OTP: "otp/info-otp-by-direccion-id/",
-  GET_REPRORT__APYMENT_BY_CODE_GUIDE: "reporte-pago/por-guia/",
+  GET_REPRORT__APYMENT_BY_CODE_GUIDE: "reporte-pago/por-guia-in-efecty/",
   GET_PARAMETER_VALUE_BY_TYPE: "valores-parametrizados/get-valores-parametrizados/",
   GET_REPORT_PAYMENT_IN_APP_BY_ARRAY_ID_ORDERS: "reporte-pago/por-array-of-pedido/",
   WS_ALL_PAYMENT_SUCCESS_FUL_ARRAY: "reporte-pago/ws-pagos-registrados-array/",

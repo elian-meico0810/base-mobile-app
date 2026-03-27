@@ -111,7 +111,11 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
 
             setToken(savedToken);
 
-            await listReportPaymentByCOideGuide(savedToken);
+            const currentGuide = guide || initialGuide;
+
+            if (currentGuide) {
+                await listReportPaymentByCOideGuide(savedToken, initialGuide);
+            }
         };
 
         fetchToken();
@@ -186,14 +190,15 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     };
 
     // Función para verificar permisos
-    const listReportPaymentByCOideGuide = async (authToken: string) => {
+    const listReportPaymentByCOideGuide = async (authToken: string, guide: string) => {
         try {
 
             const responseQueryData = await invoiceRepositoryImpl.successTypeCashPayment(
-                String(initialGuide),
+                String(guide),
                 authToken
             );
             let total = 0;
+
 
             if (responseQueryData?.statusCode === 200) {
                 const data = responseQueryData.data as any;
@@ -213,6 +218,8 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
 
                         if (total >= parameterToalas) {
                             setValueParameterized(true);
+                        } else {
+                            setValueParameterized(false);
                         }
                     }
 

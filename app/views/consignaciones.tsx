@@ -383,7 +383,11 @@ export default function ConsignacionesScreen() {
           headerTitleAlign: 'left',
           headerLeft: () => (
             <TouchableOpacity
-              onPress={() => router.back()}
+              onPress={() => {
+                router.push(
+                  `/views/details?guide=${codigoGuia}&token=${encodeURIComponent(sasToken ?? "")}`
+                );
+              }}
               style={{ paddingHorizontal: 12 }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >

@@ -356,6 +356,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                                             routeStarted={statusValue != StatusInvoice.PENDING ? true : routeStarted}
                                             numberGuide={String(guide)}
                                             token={token}
+                                            statusValue={statusValue}
                                         />
                                     ))
                                 )

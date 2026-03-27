@@ -685,7 +685,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         ?.filter(pago => pago.estado === "APPROVED")
         .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0);
     const totalValue = Number(guide?.facturas[0]?.valorTotal) - Number(guide?.facturas[0]?.dfr);
-    const totalRecauder = Math.max(0, Number(totalValue) - Number(totalAproved));
+    const totalRecauder = Math.max(0, Number(guide?.facturas[0]?.valorRecaudar) - Number(totalAproved));
 
     // const isSmallScreen = height <= 757.3333333333334;
     const isSmallScreen = height <= 780;
@@ -804,7 +804,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         <View style={styles.row}>
                             <Text style={styles.labelTotal}>Total</Text>
                             <Text style={[styles.value, { color: '#141D32', fontWeight: '800' }]}>
-                                {'$ ' + Number(totalValue || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                                {'$ ' + Number(guide?.facturas[0]?.valorRecaudar || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
                             </Text>
                         </View>
 

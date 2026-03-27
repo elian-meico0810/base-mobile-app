@@ -517,9 +517,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const totalFacturas = guide?.facturas
         ?.filter(factura => factura?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO)
         .reduce((sum, factura) => {
-            const valorTotal = Number(factura?.valorTotal || 0);
+            const valorTotal = Number(factura?.valorRecaudar || 0);
             const dfr = Number(factura?.dfr || 0);
-            return sum + (valorTotal - dfr);
+            return sum + valorTotal;
         }, 0) || 0;
 
     const totalRecauder = Math.max(0, totalFacturas - totalAproved);
@@ -650,7 +650,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                                 '$ ' +
                                 guide?.facturas
                                     ?.filter(factura => factura?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO)
-                                    ?.reduce((sum, f) => sum + (Number(f.valorTotal) || 0), 0)
+                                    ?.reduce((sum, f) => sum + (Number(f.valorRecaudar) || 0), 0)
                                     ?.toLocaleString('es-CO', { minimumFractionDigits: 0 }) || '0'
                             }
                         </Text>
@@ -726,11 +726,11 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
             </ScrollView>
             {guide?.estado === 'Pendiente' && (
-                <View style={[styles.redBackground, { height:  heightValue ? 100: 90 }]} />
+                <View style={[styles.redBackground, { height: heightValue ? 100 : 90 }]} />
             )}
 
             <View style={[styles.footer, {
-              marginBottom: isSmallScreen ? 0 : heightValue ? 0 : 20,
+                marginBottom: isSmallScreen ? 0 : heightValue ? 0 : 20,
                 bottom: isSmallScreen ? 12 : heightValue ? 60 : 30
             }]}>
 

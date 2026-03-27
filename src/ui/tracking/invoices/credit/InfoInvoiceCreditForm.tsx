@@ -715,12 +715,12 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
                     />
                 </View>
             </ScrollView>
-               {guide?.estado === 'Pendiente' && (
-                         <View style={[styles.redBackground, { height:  heightValue ? 100: 90 }]} />
-                     )}
+            {guide?.estado === 'Pendiente' && (
+                <View style={[styles.redBackground, { height: heightValue ? 100 : 90 }]} />
+            )}
 
             <View style={[styles.footer, {
-              marginBottom: isSmallScreen ? 0 : heightValue ? 0 : 20,
+                marginBottom: isSmallScreen ? 0 : heightValue ? 0 : 20,
                 bottom: isSmallScreen ? 12 : heightValue ? 60 : 30
             }]}>
 

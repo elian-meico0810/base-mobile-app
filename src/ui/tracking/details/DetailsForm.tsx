@@ -75,6 +75,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const [waitingForPermission, setWaitingForPermission] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [date, setDate] = useState<string | null>(null);
+    const [retryScan, setRetryScan] = useState(false);
     const btnRef = useRef<any>(null);
     const router = useRouter();
 
@@ -799,6 +800,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                         });
 
                     } catch (e) {
+                        setRetryScan(true);
                         setModalTitle("¡Atención!");
                         setModalMessage("El QR escaneado no es válido");
                         setModalVisible(true);
@@ -808,7 +810,15 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
 
             <ExceptionModal
                 visible={modalVisible}
-                onClose={() => setModalVisible(false)}
+                onClose={() => {
+                    setModalVisible(false);
+                    if (retryScan) {
+                        setRetryScan(false);
+                        setTimeout(() => {
+                            setShowScanner(true);
+                        }, 300);
+                    }
+                }}
                 title={modalTitle}
                 message={modalMessage}
                 buttonLabel={modalButtonLabel}

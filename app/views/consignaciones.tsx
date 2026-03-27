@@ -59,9 +59,7 @@ export default function ConsignacionesScreen() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  useEffect(() => {
-    setToken(String(token));
-  }, [token]);
+
 
   useEffect(() => {
     const loadToken = async () => {
@@ -339,7 +337,15 @@ export default function ConsignacionesScreen() {
             headerTitleAlign: 'left',
             headerLeft: () => (
               <TouchableOpacity
-                onPress={() => router.back()}
+                onPress={() => {
+                  router.push({
+                    pathname: '/views/details',
+                    params: {
+                      guide: Number(codigoGuia),
+                      token: String(token)
+                    }
+                  });
+                }}
                 style={{ paddingHorizontal: 12 }}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
@@ -394,7 +400,7 @@ export default function ConsignacionesScreen() {
                   pathname: '/views/details',
                   params: {
                     guide: Number(codigoGuia),
-                    token: String(tokenData)
+                    token: String(token)
                   }
                 });
               }}
@@ -477,7 +483,6 @@ export default function ConsignacionesScreen() {
             onUploadFile={handleUploadFile}
             evidencePhotos={multiplePhotos}
             onValue={(value) => {
-              console.log("value", value);
               setValueInput(value)
             }}
             value={valueInput}

@@ -92,6 +92,19 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     const [qrToken, setQrToken] = useState<string | null>(null);
 
     useEffect(() => {
+        const initializeToken = async () => {
+            // Si hay token en params, úsalo primero
+            if (token) {
+                setToken(token);
+                return;
+            }
+
+        };
+
+        initializeToken();
+    }, [token]);
+
+    useEffect(() => {
         const totalVisits = data.length;
 
         const completedVisits = data.filter(
@@ -228,7 +241,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
             }
         } catch (error: any) {
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 1.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -291,66 +304,70 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await detailsRepositoryImpl.listGuide(Number(guide), tokenUser || token);
-                if (response?.statusCode == 200) {
-                    if (response?.data) {
-                        const arrayData = Array.isArray(response.data) ? response.data : [response.data];
+                if (tokenUser || token) {
+                    const response = await detailsRepositoryImpl.listGuide(Number(guide), tokenUser || token);
 
-                        const sortedData = arrayData
-                            .filter(item => typeof item !== 'string')
-                            .sort((a, b) => {
-                                const aIsPending = (a as GuideDetails).estado?.toLowerCase() === "pendiente";
-                                const bIsPending = (b as GuideDetails).estado?.toLowerCase() === "pendiente";
+                    if (response?.statusCode == 200) {
+                        if (response?.data) {
+                            const arrayData = Array.isArray(response.data) ? response.data : [response.data];
 
-                                if (aIsPending && !bIsPending) {
-                                    return -1;
-                                } else if (!aIsPending && bIsPending) {
-                                    return 1;
-                                } else {
-                                    return 0;
-                                }
-                            });
+                            const sortedData = arrayData
+                                .filter(item => typeof item !== 'string')
+                                .sort((a, b) => {
+                                    const aIsPending = (a as GuideDetails).estado?.toLowerCase() === "pendiente";
+                                    const bIsPending = (b as GuideDetails).estado?.toLowerCase() === "pendiente";
 
-                        const hasInCourse = sortedData.every(
-                            item => (item as GuideDetails).estado?.toLowerCase() === StatusInvoice.CLOSE_TWO.toLowerCase()
-                        );
+                                    if (aIsPending && !bIsPending) {
+                                        return -1;
+                                    } else if (!aIsPending && bIsPending) {
+                                        return 1;
+                                    } else {
+                                        return 0;
+                                    }
+                                });
 
-                        if (hasInCourse) {
-                            //await finshRoute();
+                            const hasInCourse = sortedData.every(
+                                item => (item as GuideDetails).estado?.toLowerCase() === StatusInvoice.CLOSE_TWO.toLowerCase()
+                            );
+
+                            if (hasInCourse) {
+                                //await finshRoute();
+                            }
+                            const responseData = await detailsRepositoryImpl.paymentsByGuide(
+                                {
+                                    id_guia: String(guide),
+                                },
+                                ENV_DEV.KEY_APP
+                            );
+
+                            console.log("total: ", responseData);
+
+                            const reportData = await detailsRepositoryImpl.getReportPayment(String(guide), tokenUser || token);
+                            const data = reportData.data;
+
+                            let total = 0;
+
+                            if (typeof data === 'object' && !Array.isArray(data) && data !== null) {
+                                total = data.valorTotal ?? 0;
+                            }
+                            setDataResult(responseData?.data?.resumen);
+                            setValuePayment(total);
+
+                            // Asignar la variable según el resultado
+                            setData(sortedData as GuideDetails[]);
+                            setFilteredGuides(sortedData as GuideDetails[]);
+                            await getStatusStyle();
                         }
-                        const responseData = await detailsRepositoryImpl.paymentsByGuide(
-                            {
-                                id_guia: String(guide),
-                            },
-                            ENV_DEV.KEY_APP
-                        );
 
-
-                        const reportData = await detailsRepositoryImpl.getReportPayment(String(guide), tokenUser || token);
-                        const data = reportData.data;
-
-                        let total = 0;
-
-                        if (typeof data === 'object' && !Array.isArray(data) && data !== null) {
-                            total = data.valorTotal ?? 0;
-                        }
-                        setDataResult(responseData?.data?.resumen);
-                        setValuePayment(total);
-
-                        // Asignar la variable según el resultado
-                        setData(sortedData as GuideDetails[]);
-                        setFilteredGuides(sortedData as GuideDetails[]);
-                        await getStatusStyle();
+                    } else {
+                        setData([]);
+                        setFilteredGuides([]);
                     }
-
-                } else {
-                    setData([]);
-                    setFilteredGuides([]);
                 }
 
             } catch (error: any) {
                 setModalTitle("¡Error!");
-                setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+                setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 2.");
                 setModalVisible(true);
             } finally {
                 setLoading(false);
@@ -361,7 +378,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
 
     const getStatusStyle = async () => {
         try {
-            const responseQuery = await detailsRepositoryImpl.listRouteByCodeGuide(Number(guide), tokenUser || token);
+            const responseQuery = await detailsRepositoryImpl.listRouteByCodeGuide(Number(guide), tokenUser ? tokenUser : token);
             if (responseQuery?.statusCode == 200) {
                 if (typeof responseQuery.data === "object" && !Array.isArray(responseQuery.data)) {
                     switch (responseQuery?.data?.estado_id) {
@@ -397,7 +414,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
             }
         } catch (error: any) {
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 3.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -422,12 +439,12 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
             );
             if (responseData?.statusCode != 200) {
                 setModalTitle("¡Alerta!");
-                setModalMessage(responseData?.message ?? "Ocurrio un error inesperado.");
+                setModalMessage(responseData?.message ?? "Ocurrio un error inesperado 4.");
                 setModalVisible(true);
             }
         } catch (error: any) {
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 5.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -471,13 +488,13 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");
-                setModalMessage(response?.data?.message ?? "Ocurrio un error inesperado.");
+                setModalMessage(response?.data?.message ?? "Ocurrio un error inesperado 6.");
                 setModalVisible(true);
             }
 
         } catch (error: any) {
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 7.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -503,7 +520,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
 
         } catch (error: any) {
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 8.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -574,7 +591,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                                         <TouchableOpacity style={styles.cardConsignment} onPress={() => {
                                             router.push({
                                                 pathname: '/views/consignaciones',
-                                                params: { codigoGuia: guide, token: tokenUser}
+                                                params: { codigoGuia: guide, token: tokenUser }
                                             });
                                         }}>
                                             <View style={styles.leftContent}>

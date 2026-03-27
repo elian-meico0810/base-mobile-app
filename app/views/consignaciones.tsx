@@ -338,7 +338,7 @@ export default function ConsignacionesScreen() {
             headerLeft: () => (
               <TouchableOpacity
                 onPress={() => {
-                  router.push({
+                  router.replace({
                     pathname: '/views/details',
                     params: {
                       guide: Number(codigoGuia),
@@ -396,7 +396,7 @@ export default function ConsignacionesScreen() {
           headerLeft: () => (
             <TouchableOpacity
               onPress={() => {
-                router.push({
+                router.replace({
                   pathname: '/views/details',
                   params: {
                     guide: Number(codigoGuia),

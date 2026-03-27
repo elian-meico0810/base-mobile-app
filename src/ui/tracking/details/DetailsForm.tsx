@@ -304,8 +304,10 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     useEffect(() => {
         const fetchData = async () => {
             try {
-                if (tokenUser || token) {
-                    const response = await detailsRepositoryImpl.listGuide(Number(guide), tokenUser || token);
+                const finalToken = token;
+
+                if (finalToken && Number(guide)) {
+                    const response = await detailsRepositoryImpl.listGuide(Number(guide), finalToken);
 
                     if (response?.statusCode == 200) {
                         if (response?.data) {
@@ -340,8 +342,6 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                                 ENV_DEV.KEY_APP
                             );
 
-                            console.log("total: ", responseData);
-
                             const reportData = await detailsRepositoryImpl.getReportPayment(String(guide), tokenUser || token);
                             const data = reportData.data;
 
@@ -366,9 +366,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                 }
 
             } catch (error: any) {
-                setModalTitle("¡Error!");
-                setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 2.");
-                setModalVisible(true);
+                console.log("Error al obtener detalles de la guía:", error);
             } finally {
                 setLoading(false);
             }
@@ -618,7 +616,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                                                 buttonLabel="Registrar consignación"
                                                 onPress={() => router.push({
                                                     pathname: '/views/consignaciones',
-                                                    params: { codigoGuia: guide, statusConsignment: 'true' }
+                                                    params: { codigoGuia: guide, statusConsignment: 'true', token: tokenUser}
                                                 })}
                                             />
                                         )}

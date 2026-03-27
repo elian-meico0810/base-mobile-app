@@ -574,7 +574,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
                                         <TouchableOpacity style={styles.cardConsignment} onPress={() => {
                                             router.push({
                                                 pathname: '/views/consignaciones',
-                                                params: { codigoGuia: guide }
+                                                params: { codigoGuia: guide, token: tokenUser}
                                             });
                                         }}>
                                             <View style={styles.leftContent}>

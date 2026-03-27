@@ -30,6 +30,7 @@ export default function ConsignacionesScreen() {
   const router = useRouter();
   const { codigoGuia } = useLocalSearchParams();
   const { statusConsignment } = useLocalSearchParams();
+  const { token } = useLocalSearchParams();
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<ConsignmentSummary | null>(null);
   const [rutaId, setRutaId] = useState<number | null>(null);
@@ -54,8 +55,13 @@ export default function ConsignacionesScreen() {
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [receiptEvidenceUrl, setReceiptEvidenceUrl] = useState<string | null>(null);
   const [sasToken, setSasToken] = useState("");
+  const [tokenData, setToken] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    setToken(String(token));
+  }, [token]);
 
   useEffect(() => {
     const loadToken = async () => {
@@ -384,9 +390,13 @@ export default function ConsignacionesScreen() {
           headerLeft: () => (
             <TouchableOpacity
               onPress={() => {
-                router.push(
-                  `/views/details?guide=${codigoGuia}&token=${encodeURIComponent(sasToken ?? "")}`
-                );
+                router.push({
+                  pathname: '/views/details',
+                  params: {
+                    guide: Number(codigoGuia),
+                    token: String(tokenData)
+                  }
+                });
               }}
               style={{ paddingHorizontal: 12 }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}

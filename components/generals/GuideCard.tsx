@@ -128,7 +128,7 @@ export function GuideCard({ guide, onPress, routeStarted, numberGuide, token, st
                 title={routeStarted ? "Sin ubicación disponible" : "¡Alerta!"}
                 message={
                     (routeStarted)
-                        ? "Esta guía no contiene coordenadas válidas para navegar."
+                        ? "Esta dirección no contiene coordenadas válidas para navegar."
                         : "Debe comenzar ruta para realizar esta acción."
                 }
                 buttonLabel="Entendido"

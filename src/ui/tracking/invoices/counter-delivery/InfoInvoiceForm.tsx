@@ -8,6 +8,7 @@ import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
+import { DeliveryOrderSkeleton } from '@/components/skeleton/DeliveryOrderSkeleton';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
 import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeConPagoEnum, TypeDelivery, TypeInvoiceEnum, TypeQr } from '@/src/constants/GuideStates';
@@ -706,6 +707,9 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     }
 
     const closeButton = routeStarted || buttonValue;
+    if (totalRecauder == 0 || !totalRecauder) {
+        return <DeliveryOrderSkeleton />;
+    }
 
     return (
         <ThemedView style={styles.container}>

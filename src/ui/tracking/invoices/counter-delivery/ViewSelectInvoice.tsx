@@ -130,7 +130,6 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 );
                 if (clienteFiltrado.length > 0) {
                     const clienteEncontrado = clienteFiltrado[0];
-
                     setGuide({
                         idDireccion: clienteEncontrado.idDireccion,
                         direccion: clienteEncontrado.direccion,
@@ -377,8 +376,12 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         return sum + (valorTotal - dfr);
     }, 0) || 0;
 
+    const totalvalorRecaudar =
+        guide?.facturas
+            ?.reduce((sum, f) => sum + (Number(f?.valorRecaudar) || 0), 0) || 0;
 
-    const totalRecauder = Math.max(0, totalFacturas - totalAproved);
+
+    const totalRecauder = Math.max(0, totalvalorRecaudar - totalAproved);
     const conditionButton = conceptDeliverySelect.length == guide?.facturas?.length;
     const validateCheckboxlength = conceptDeliverySelect.length == guide?.facturas?.length;
     const isSmallScreen = height <= 780;
@@ -467,9 +470,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                                     <Text style={[styles.value, { color: '#141D32', fontWeight: '800' }]}>
                                         {
                                             '$ ' +
-                                            guide?.facturas
-                                                ?.reduce((sum, f) => sum + (f.valorRecaudar ?? 0), 0)
-                                                .toLocaleString('es-CO', { minimumFractionDigits: 0 })
+                                            totalvalorRecaudar.toLocaleString('es-CO', { minimumFractionDigits: 0 })
                                         }
                                     </Text>
                                 </View>

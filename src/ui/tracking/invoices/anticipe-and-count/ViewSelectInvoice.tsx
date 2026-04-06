@@ -167,18 +167,18 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 setCheckUbication(true);
             }
         } catch (error: any) {
-        
+
         }
     };
 
     useEffect(() => {
-        if (checkUbication) return; 
+        if (checkUbication) return;
 
         const interval = setInterval(() => {
             checkUnicationPermissions();
-        }, 10); 
+        }, 10);
 
-        return () => clearInterval(interval); 
+        return () => clearInterval(interval);
     }, [checkUbication]);
 
 
@@ -552,7 +552,11 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             return sum + (valorTotal - dfr);
         }, 0) || 0;
 
-    const totalRecauder = Math.max(0, totalFacturas - totalAproved);
+    const totalvalorRecaudar =
+        guide?.facturas?.filter(factura => factura?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO)
+            ?.reduce((sum, f) => sum + (Number(f?.valorRecaudar) || 0), 0) || 0;
+
+    const totalRecauder = Math.max(0, totalvalorRecaudar - totalAproved);
 
     const validateCondition = showCheckbox &&
         selectedMultipleInvoices.length <= 1 &&
@@ -680,7 +684,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                                 '$ ' +
                                 guide?.facturas
                                     ?.filter(factura => factura?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO)
-                                    ?.reduce((sum, f) => sum + (Number(f.valorTotal) || 0), 0)
+                                    ?.reduce((sum, f) => sum + (Number(f.valorRecaudar) || 0), 0)
                                     ?.toLocaleString('es-CO', { minimumFractionDigits: 0 }) || '0'
                             }
                         </Text>
@@ -756,11 +760,11 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
             </ScrollView>
             {guide?.estado === 'Pendiente' && (
-                <View style={[styles.redBackground, { height:  heightValue ? 100: 90 }]} />
+                <View style={[styles.redBackground, { height: heightValue ? 100 : 90 }]} />
             )}
 
             <View style={[styles.footer, {
-              marginBottom: isSmallScreen ? 0 : heightValue ? 0 : 20,
+                marginBottom: isSmallScreen ? 0 : heightValue ? 0 : 20,
                 bottom: isSmallScreen ? 12 : heightValue ? 60 : 30
             }]}>
 

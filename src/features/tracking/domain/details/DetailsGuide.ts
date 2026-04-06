@@ -271,3 +271,7 @@ export interface ListAceptationGuide {
   fecha_aceptacion: string;
   fecha_rechazo: string;
 }
+
+export interface ReportePagoTotal {
+  valorTotal: number;
+}

@@ -14,9 +14,11 @@ interface TodayDeliveriesProps {
     routeStarted?: boolean;
     waitingForPermission?: boolean;
     dataResult?: PaymentsByInvoice | null;
+    valuePayment?: number | null;
 }
 
-export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermission, dataResult }: TodayDeliveriesProps) => {
+
+export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermission, dataResult, valuePayment }: TodayDeliveriesProps) => {
     const [showSummary, setShowSummary] = useState(false);
     const [circleAngle, setCircleAngle] = useState(0);
     const [isAnimating, setIsAnimating] = useState(false);
@@ -33,7 +35,10 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
         return sum + subtotal;
     }, 0) : 0;
 
-    const TotalAmountToCollect = dataResult?.total_pagado ?? 0;
+    const TotalAmountToCollect =
+        Number(dataResult?.total_pagado ?? 0) +
+        Number(valuePayment ?? 0);
+
     const totalPerRecaudar = Math.max(
         Math.round(Number(totalValueTotal) - Number(TotalAmountToCollect)),
         0
@@ -51,15 +56,15 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
     const isCompleteVisits = progressVisits === 1;
 
     const circlePosition = Math.min(progressVisits * 100, 100);
-    
+   
     // Animación del círculo de progreso
     useEffect(() => {
         if (showSummary && !isAnimating) {
             setIsAnimating(true);
-            
+
             // Usar el progreso de lo RECAUDADO para la animación
             let finalAngle = Math.min(progressRecaudo * 360, 360);
-            
+
             const duration = 1000;
             const steps = 60;
             const increment = finalAngle / steps;
@@ -238,7 +243,7 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
                                             </Text>
                                             {/* Mostrar porcentaje de LO RECAUDADO */}
                                             <Text style={styles.percentageText}>
-                                                {Math.round(progressRecaudo * 100)}% 
+                                                {Math.round(progressRecaudo * 100)}%
                                             </Text>
                                         </View>
                                     </View>

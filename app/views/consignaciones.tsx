@@ -30,6 +30,7 @@ export default function ConsignacionesScreen() {
   const router = useRouter();
   const { codigoGuia } = useLocalSearchParams();
   const { statusConsignment } = useLocalSearchParams();
+  const { token } = useLocalSearchParams();
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<ConsignmentSummary | null>(null);
   const [rutaId, setRutaId] = useState<number | null>(null);
@@ -54,8 +55,11 @@ export default function ConsignacionesScreen() {
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [receiptEvidenceUrl, setReceiptEvidenceUrl] = useState<string | null>(null);
   const [sasToken, setSasToken] = useState("");
+  const [tokenData, setToken] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+
 
   useEffect(() => {
     const loadToken = async () => {
@@ -265,7 +269,7 @@ export default function ConsignacionesScreen() {
       setShowSuccess(true);
       setViewConsignment(false);
       setUploadPhoto(false);
-      setValueInput("");
+      // setValueInput("");
       setMultiplePhotos([]);
 
       // Refresh summary
@@ -333,7 +337,15 @@ export default function ConsignacionesScreen() {
             headerTitleAlign: 'left',
             headerLeft: () => (
               <TouchableOpacity
-                onPress={() => router.back()}
+                onPress={() => {
+                  router.replace({
+                    pathname: '/views/details',
+                    params: {
+                      guide: Number(codigoGuia),
+                      token: String(token)
+                    }
+                  });
+                }}
                 style={{ paddingHorizontal: 12 }}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
@@ -383,7 +395,15 @@ export default function ConsignacionesScreen() {
           headerTitleAlign: 'left',
           headerLeft: () => (
             <TouchableOpacity
-              onPress={() => router.back()}
+              onPress={() => {
+                router.replace({
+                  pathname: '/views/details',
+                  params: {
+                    guide: Number(codigoGuia),
+                    token: String(token)
+                  }
+                });
+              }}
               style={{ paddingHorizontal: 12 }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
@@ -462,7 +482,9 @@ export default function ConsignacionesScreen() {
             titleTwo="Comprobante de la consignación"
             onUploadFile={handleUploadFile}
             evidencePhotos={multiplePhotos}
-            onValue={(value) => setValueInput(value)}
+            onValue={(value) => {
+              setValueInput(value)
+            }}
             value={valueInput}
             onConfirmation={consignmentSubmit}
             isLoading={isSubmitting}
@@ -577,7 +599,7 @@ export default function ConsignacionesScreen() {
         {uploadPhoto && (
           <UploadPhotoItem
             title="Cargar evidencia"
-            subTitle="Toma fotos de la mercancía ubicada en el cliente. Podrás asociar un máximo de 1 imágenes por entrega."
+            subTitle="Toma foto del comprobante entregado en el punto de recaudo. Podrás adjuntar un máximo de 1 imagen."
             onClose={() => {
               setUploadPhoto(false);
               if (uploadContext === "register") {
@@ -606,7 +628,10 @@ export default function ConsignacionesScreen() {
           <TopSuccessAlert
             visible={showSuccess}
             message="Consignación registrada"
-            onHide={() => setShowSuccess(false)}
+            onHide={() => {
+              setShowSuccess(false);
+              setValueInput("");
+            }}
             subtitle={`Se registró una consignación por el valor de $${valueInput}.`}
           />
         )}

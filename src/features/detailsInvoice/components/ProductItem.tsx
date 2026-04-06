@@ -31,8 +31,8 @@ interface ProductItemProps {
     onItemData?: (data: Detail | null) => void; 
     refreshing?: boolean;
     onRefreshing?: () => void;
-    onDataProduct?: (id: number, total: number, unidadesEntregadas?: number | null) => void;
-
+    onDataProduct?: (id: number, total: number, unidadesEntregadas?: number | null) => void; 
+    porcentajeDFR?: number;
 }
 
 export const ProductItem = ({
@@ -49,6 +49,7 @@ export const ProductItem = ({
     refreshing,
     onRefreshing,
     onDataProduct,
+    porcentajeDFR
 }: ProductItemProps) => {
     const isValidated = item?.estado?.codigo === 'EST_DET_VALIDADO';
     const deliveredUnits = Number(item?.unidadesEntregadas ?? 0);
@@ -74,10 +75,10 @@ export const ProductItem = ({
     }
     const totalValueDisplay = isValidated
         ? (deliveredUnits > 0
-            ? calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, deliveredUnits)
+            ? calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, deliveredUnits, undefined, porcentajeDFR)
             : 0)
         : (deliveredEstimateCalc > 0
-            ? calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, deliveredEstimateCalc)
+            ? calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, deliveredEstimateCalc, undefined, porcentajeDFR)
             : 0);
     const swipePosition = useRef(new Animated.Value(0)).current;
     const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
@@ -117,10 +118,10 @@ export const ProductItem = ({
             const deliveredEstimate = Math.max(Number(item.unidadesSolicitadas) - noveltySum, 0);
             const totalValue = isValidated
                 ? (deliveredUnits > 0
-                    ? calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, deliveredUnits)
+                    ? calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, deliveredUnits, undefined, porcentajeDFR)
                     : 0)
                 : (deliveredEstimate > 0
-                    ? calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, deliveredEstimate)
+                    ? calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, deliveredEstimate, undefined, porcentajeDFR)
                     : 0);
             onDataProduct(item.id, totalValue, item?.unidadesEntregadas);
         }

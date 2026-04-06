@@ -279,13 +279,12 @@ export function ViewOTPCodeForm({
     const reentryCodeOTP = async () => {
         try {
 
-            // if (!guide?.whatsapp || guide?.whatsapp != "") {
-            //     setModalTitle("¡Alerta!");
-            //     setModalMessage("El numero de telefono es requerido.");
-            //     setModalVisible(true);
-            //     return;
-            // }
-
+            if (!guide?.whatsapp || guide?.whatsapp == "") {
+                setModalTitle("¡Alerta!");
+                setModalMessage("El numero de telefono es requerido.");
+                setModalVisible(true);
+                return;
+            }
             if (!Number.isFinite(totalValue) || !Number.isFinite(totalRecauder)) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Los valores aún no están listos. Intenta nuevamente.");
@@ -294,7 +293,6 @@ export function ViewOTPCodeForm({
             }
 
             setLoading(true);
-
             const responseData = await detailsRepositoryImpl.reentryOTP(
                 {
                     idDireccion: Number(guide?.idDireccion),

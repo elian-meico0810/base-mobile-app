@@ -4,7 +4,7 @@ import RenderQRView from "@/components/generals/RenderQRView";
 import { Row } from "@/components/generals/Row";
 import { TypeConPagoEnum } from "@/src/constants/GuideStates";
 import { formatNumber } from "@/src/utils/uitls";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface ViewQrModalQRProps {
@@ -55,7 +55,8 @@ export function ViewQrModal({
     const [modalMessage, setModalMessage] = useState("");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [modalVisible, setModalVisible] = useState(false);
-    
+    const [localQRData, setLocalQRData] = useState(qrData);
+
     const dataInvoice: Invoice = data?.facturas?.[0] ?? {
         dfr: 0,
         numeroFactura: "",
@@ -64,18 +65,20 @@ export function ViewQrModal({
         condPago: "",
     };
 
-    
+
     const condPago = dataInvoice?.condPago == TypeConPagoEnum.TAT;
+    const cleanWhatsapp = data?.whatsapp?.replace(/\D/g, '');
 
     const handleSendWhatsApp = () => {
         try {
-            
-            if (!phone || !/^\d{10}$/.test(phone)) {
+
+            if ((!phone || !/^\d{10}$/.test(phone)) && Number(cleanWhatsapp?.length) != 10) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Debe ingresar un número de teléfono válido de 10 dígitos.");
                 setModalVisible(true);
                 return;
             }
+
             if (onSendWhatsApp && typeof onSendWhatsApp === 'function') {
                 onSendWhatsApp();
             }
@@ -85,10 +88,15 @@ export function ViewQrModal({
 
     };
 
+    useEffect(() => {
+        setLocalQRData(qrData);
+    }, [qrData]);
+
     const handleChangeQRType = () => {
         if (onChangeQRType) {
             onChangeQRType();
         }
+        setLocalQRData(undefined);
     };
 
     return (
@@ -120,7 +128,7 @@ export function ViewQrModal({
                     phone={phone ? phone : data?.whatsapp?.replace(/\D/g, '') ?? ""}
                     onChangePhone={onChangePhone}
                     qrType={qrType}
-                    qrData={qrData}
+                    qrData={localQRData}
                     disabled={disabled}
                     handleSendWhatsApp={handleSendWhatsApp}
                     handleChangeQRType={handleChangeQRType}

@@ -52,6 +52,8 @@ export function ConsignmentEditModal({
     const [evidences, setEvidences] = useState<EvidencePhoto[]>([]);
     const [currentEvidenceIndex, setCurrentEvidenceIndex] = useState(0);
     const [sasToken, setSasToken] = useState("");
+    const [initialAmount, setInitialAmount] = useState("");
+    const [initialEvidences, setInitialEvidences] = useState<EvidencePhoto[]>([]);
 
     useEffect(() => {
         const loadToken = async () => {
@@ -64,8 +66,11 @@ export function ConsignmentEditModal({
     useEffect(() => {
         if (visible && consignment) {
             const val = consignment.valorConsignado.toString();
+
             setAmount(val);
             setDisplayAmount(Number(val).toLocaleString("es-CO"));
+
+            setInitialAmount(val); 
 
             if (!evidencePhotos || evidencePhotos.length === 0) {
                 const existingEvidences: EvidencePhoto[] = consignment.evidencias.map(e => ({
@@ -74,6 +79,7 @@ export function ConsignmentEditModal({
                 }));
 
                 setEvidences(existingEvidences);
+                setInitialEvidences(existingEvidences);
             }
         }
     }, [visible, consignment, sasToken, evidencePhotos]);
@@ -145,6 +151,24 @@ export function ConsignmentEditModal({
 
     const numericValue = Number(displayAmount.replace(/\D/g, ""));
     const isValid = displayAmount != "" && numericValue > 0;
+    const hasAmountChanged = amount !== initialAmount;
+    
+    const getEvidenceKey = (e?: EvidencePhoto) => {
+        if (!e) return "";
+
+        // prioridad: base64 (imagen nueva)
+        if (e.base64) return e.base64;
+
+        // luego id (backend)
+        if (e.id) return e.id;
+
+        // fallback
+        return e.uri;
+    };
+
+    const hasEvidenceChanged = getEvidenceKey(evidences[0]) !== getEvidenceKey(initialEvidences[0]);
+
+    const hasChanges = hasAmountChanged || hasEvidenceChanged;
 
     return (
         <Modal
@@ -254,9 +278,10 @@ export function ConsignmentEditModal({
                                     <PrimaryButton
                                         title={"Guardar cambios"}
                                         onPress={() => {
+                                            if(!isValid || !hasChanges) return;
                                             onSave(amount, evidences);
                                         }}
-                                        disabled={!isValid}
+                                        disabled={!(isValid && hasChanges)} 
                                         width={328}
                                         height={43}
                                     />

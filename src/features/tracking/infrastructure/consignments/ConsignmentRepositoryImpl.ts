@@ -6,7 +6,7 @@ import { ConsignmentRepository } from "../../domain/consignments/ConsignmentRepo
 export const consignmentRepositoryImpl: ConsignmentRepository = {
     async getSummary(codigoGuia: string, token: string): Promise<ConsignmentSummary> {
         try {
-            const { data } = await authApi.get(`${API_ROUTES.CONSIGNACIONES_RESUMEN}${codigoGuia}/`, {
+            const { data } = await authApi.get(`${API_ROUTES.CONSIGNACIONES_RESUMEN_BY_CODE}${codigoGuia}/`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },

@@ -275,10 +275,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 timeZone: 'America/Bogota',
                 hour12: false
             }).replace('T', ' ');
+            const payload = token.split('.')[1];
+            const decoded = JSON.parse(atob(payload));
 
             const response = await invoiceRepositoryImpl.createPaymentType([
                 {
-                    usuario: "jnaranjo@meico.com.co",
+                    usuario: decoded.transportador ? decoded.transportador : "N/A",
                     momento: date,
                     valorRegistrado: value,
                     tipoPago: "TIP_PAG_EFECTIVO",
@@ -382,9 +384,13 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 hour12: false
             }).replace('T', ' ');
 
+            const payload = token.split('.')[1];
+            const decoded = JSON.parse(atob(payload));
+
+
             const response = await invoiceRepositoryImpl.createPaymentType([
                 {
-                    usuario: "jnaranjo@meico.com.co",
+                    usuario: decoded.transportador ? decoded.transportador : "N/A",
                     momento: date,
                     valorRegistrado: value,
                     tipoPago: "TIP_PAG_OTRO",
@@ -425,8 +431,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             let response;
 
             if (qrType === TypeQr.PASARELA) {
-                console.log();
-
                 response = await invoiceRepositoryImpl.whatsappProps(
                     {
                         whatsapp: String(phone),
@@ -1292,8 +1296,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             if (!guide?.whatsapp || guide?.whatsapp == "") {
                 btnRef.current?.reset();
                 setModalTitleValidate("Evidencia requerida");
-                setModalMessageValidate("Para finalizar la entrega del pedido debes registrar una evidencia. Y el modal deberá incluir un botón de acción");
-                setHighlightText("Registrar evidencia");
+                setModalMessageValidate("Para finalizar la entrega del pedido debes");
+                setHighlightText("Registrar evidencia.");
                 setModalButtonLabelValidate("Registrar evidencia");
                 setModalVisibleValidate(true);
                 return;

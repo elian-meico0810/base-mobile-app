@@ -18,6 +18,8 @@ interface InvoiceItemProps {
   activeView: boolean;
   showCheckbox?: boolean;
   conceptDeliverySelect?: NovletyOrder | NovletyOrder[] | null;
+  disabledInvoices?: Set<string>;
+
 }
 
 const InvoiceItem = ({
@@ -31,7 +33,8 @@ const InvoiceItem = ({
   isSelect,
   activeView,
   showCheckbox = false,
-  conceptDeliverySelect
+  conceptDeliverySelect,
+  disabledInvoices
 }: InvoiceItemProps) => {
   const hasEvidence = (numeroFactura: string) => {
 
@@ -65,6 +68,9 @@ const InvoiceItem = ({
 
   const evidence = hasEvidence(invoice.numeroFactura);
 
+
+  const isDisabled = disabledInvoices?.has(String(invoice.numeroFactura));
+  
   const canShowCheckbox =
     showCheckbox &&
     (!evidence);
@@ -85,22 +91,22 @@ const InvoiceItem = ({
 
   }
   const validation = evidence && invoice?.tipo != TypeInvoiceEnum.CONTADO_EFECTIVO;
-  
+
   return (
     <TouchableOpacity
-      disabled={(validation ) ? false : false}
+      disabled={(validation || isDisabled) ? false : false}
 
       style={[
         styles.invoiceContainer,
         isSelected && styles.selectedContainer,
-        (!activeView || validation) && {
+        (!activeView || validation || isDisabled) && {
           backgroundColor: '#FFFFFF',
           opacity: 0.6,
           borderColor: '#F0F1F5',
           borderWidth: 1,
         }
       ]}
-      onPress={() => onSelect(invoice, parentGuide)}
+      onPress={() => !isDisabled && onSelect(invoice, parentGuide)}
       activeOpacity={0.7}
     >
       <View style={styles.rowBetween}>

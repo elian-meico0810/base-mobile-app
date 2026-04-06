@@ -54,6 +54,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [activeView, setActiveView] = useState(true);
     const [buttonValue, setButtonValue] = useState(false);
     const [allowBack, setAllowBack] = useState(false);
+    const [disabledInvoices, setDisabledInvoices] = useState<Set<string>>(new Set());
     const btnRef = useRef<any>(null);
     const router = useRouter();
     const heightValue = heightCaldulate();
@@ -80,6 +81,42 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
         );
     };
+
+    const listInfOTByDirection = async (data?: GuideDetails) => {
+        try {
+
+            if (!data?.facturas?.length) return;
+
+            const disabledSet: Set<string> = new Set();
+
+            for (const factura of data.facturas) {
+                const numeroFactura = factura.numeroFactura;
+
+                const response = await detailsRepositoryImpl.listInfOTP(
+                    String(data?.idDireccion),
+                    String(numeroFactura),
+                    token
+                );
+
+                if (
+                    response.success &&
+                    response.data &&
+                    typeof response.data !== "string" &&
+                    !Array.isArray(response.data)
+                ) {
+                    if (response.data?.estado_envio && response.data.estado_envio === 37) {
+                        disabledSet.add(String(numeroFactura));
+                    }
+                }
+            }
+            setDisabledInvoices(disabledSet);
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrió un error inesperado.");
+            setModalVisible(true);
+        }
+    };
+
     const listGuideData = async () => {
         try {
             setLoading(true);
@@ -108,7 +145,20 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         pedidos: clienteEncontrado.pedidos
                     });
                     listDocumentQuery(clienteEncontrado);
-                    
+                    listInfOTByDirection({
+                        idDireccion: clienteEncontrado.idDireccion,
+                        direccion: clienteEncontrado.direccion,
+                        poblacion: clienteEncontrado.poblacion,
+                        codigoCliente: clienteEncontrado.codigoCliente,
+                        nombreCliente: clienteEncontrado.nombreCliente,
+                        latitud: clienteEncontrado.latitud,
+                        longitud: clienteEncontrado.longitud,
+                        estado: clienteEncontrado.estado,
+                        fecha_apertura: clienteEncontrado.fecha_apertura,
+                        facturas: clienteEncontrado.facturas,
+                        pedidos: clienteEncontrado.pedidos
+                    });
+
                 }
             }
         } catch (error: any) {
@@ -120,7 +170,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
     const listDocumentQuery = async (guide?: GuideDetails) => {
         try {
-            
+
             if (guide?.pedidos && guide.pedidos.length > 0) {
                 const ids = guide?.pedidos?.map(p => p.id).join(",") ?? "";
 
@@ -153,6 +203,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     useEffect(() => {
         if (conceptDeliverySelect?.length > (guide?.facturas?.length ?? 0)) {
             listDocumentQuery();
+            listInfOTByDirection(initialGuide);
+
         }
     }, [token]);
 
@@ -325,6 +377,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         return sum + (valorTotal - dfr);
     }, 0) || 0;
 
+
     const totalRecauder = Math.max(0, totalFacturas - totalAproved);
     const conditionButton = conceptDeliverySelect.length == guide?.facturas?.length;
     const validateCheckboxlength = conceptDeliverySelect.length == guide?.facturas?.length;
@@ -332,7 +385,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const conceptDeliveryValue = conceptDeliverySelect.length > 0;
     const conditionEntryVisible = !conditionButton && conceptDeliveryValue || EntryVisible;
     const conditionEntryVisibleTwo = !conditionButton && conceptDeliveryValue;
-    
+
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -456,7 +509,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                                     token={token}
                                     conceptDelivery={conceptDelivery}
                                     activeView={activeView}
-                                    conceptDeliverySelect={conceptDeliverySelect} />
+                                    conceptDeliverySelect={conceptDeliverySelect}
+                                    disabledInvoices={disabledInvoices}
+                                />
                             </View>
                         )}
 
@@ -474,9 +529,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                             <PrimaryButtonDetails
                                 ref={btnRef}
                                 autoReset={validateException}
-                                key={conditionEntryVisible || EntryVisible || conditionButton? "cerrar" : "llegue"}
-                                title={conditionEntryVisible || EntryVisible || conditionButton? "Cerrar pedido" : "Ya llegué"}
-                                onPress={conditionEntryVisible || EntryVisible || conditionButton? submitData : handleSubmit}
+                                key={conditionEntryVisible || EntryVisible || conditionButton ? "cerrar" : "llegue"}
+                                title={conditionEntryVisible || EntryVisible || conditionButton ? "Cerrar pedido" : "Ya llegué"}
+                                onPress={conditionEntryVisible || EntryVisible || conditionButton ? submitData : handleSubmit}
                                 disabled={false}
                                 width={328}
                                 height={43}

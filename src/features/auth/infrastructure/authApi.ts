@@ -6,7 +6,7 @@ export const authApi = axios.create({
   // baseURL: "https://8870-190-71-185-106.ngrok-free.app/api/",
   // baseURL: "https://qa-portal.meico.co/meicotrack/back/api/"
   // baseURL: "http://40.124.182.81:8080/api/",
-  baseURL: "http://192.168.72.189:8000/api/",
+  baseURL: "http://192.168.72.47:8000/api/",
   // baseURL: "https://qa-portal.meico.co/meicotrack/back/api/"
   // baseURL: "http://192.168.72.144:8000/api/",
   // baseURL: "https://qa-portal.meico.co/meicotrack/back/api/"

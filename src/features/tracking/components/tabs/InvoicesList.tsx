@@ -19,6 +19,8 @@ interface InvoicesListProps {
     activeView?: boolean;
     showCheckboxes?: boolean; // Nuevo prop para mostrar checkboxes
     conceptDeliverySelect?: NovletyOrder | NovletyOrder[] | null;
+    disabledInvoices?: Set<string>;
+
 }
 
 
@@ -35,7 +37,8 @@ const InvoicesList = ({
     isSelect = false,
     activeView = false,
     showCheckboxes = false,
-    conceptDeliverySelect
+    conceptDeliverySelect,
+    disabledInvoices
 }: InvoicesListProps) => {
     const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
     const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<Set<string>>(new Set());
@@ -155,7 +158,7 @@ const InvoicesList = ({
                     const selectedGuide: GuideDetails = {
                         ...item.parentGuide,
                         facturas: [item.invoice],
-                        pedidos: item.pedidos 
+                        pedidos: item.pedidos
                     };
                     facturaMap.set(facturaId, selectedGuide);
                 }
@@ -263,6 +266,7 @@ const InvoicesList = ({
                     activeView={activeView}
                     showCheckbox={showCheckboxes}
                     conceptDeliverySelect={conceptDeliverySelect}
+                    disabledInvoices={disabledInvoices}
                 />
             ))}
         </View>

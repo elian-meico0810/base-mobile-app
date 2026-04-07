@@ -313,6 +313,15 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 return;
             }
 
+            if (disabledInvoices?.size != guide?.facturas?.length) {
+                setValidateException(true);
+                btnRef.current?.reset();
+                setModalTitle("¡Alerta!");
+                setModalMessage("Debes enviar los códigos OTP de todas las facturas..");
+                setModalVisible(true);
+                return;
+            }
+
             setLoading(true);
             const response = await invoiceRepositoryImpl.closeAddresses(
                 guide?.idDireccion || 0,

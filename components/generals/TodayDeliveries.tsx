@@ -146,7 +146,7 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
     ];
 
     // Mostrar skeleton mientras se carga
-    if (!data || data.length === 0 || waitingForPermission) {
+    if (!dataResult || waitingForPermission) {
         return (
             <View style={[styles.card, style]}>
                 <TodayDeliveriesSkeleton />

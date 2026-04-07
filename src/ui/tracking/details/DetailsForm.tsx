@@ -107,6 +107,79 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
     }, [token]);
 
     useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const finalToken = token;
+
+                if (finalToken && Number(guide)) {
+                    const response = await detailsRepositoryImpl.listGuide(Number(guide), finalToken);
+
+                    if (response?.statusCode == 200) {
+                        if (response?.data) {
+                            const arrayData = Array.isArray(response.data) ? response.data : [response.data];
+
+                            const sortedData = arrayData
+                                .filter(item => typeof item !== 'string')
+                                .sort((a, b) => {
+                                    const aIsPending = (a as GuideDetails).estado?.toLowerCase() === "pendiente";
+                                    const bIsPending = (b as GuideDetails).estado?.toLowerCase() === "pendiente";
+
+                                    if (aIsPending && !bIsPending) {
+                                        return -1;
+                                    } else if (!aIsPending && bIsPending) {
+                                        return 1;
+                                    } else {
+                                        return 0;
+                                    }
+                                });
+
+                            const hasInCourse = sortedData.every(
+                                item => (item as GuideDetails).estado?.toLowerCase() === StatusInvoice.CLOSE_TWO.toLowerCase()
+                            );
+
+                            if (hasInCourse) {
+                                //await finshRoute();
+                            }
+                            const responseData = await detailsRepositoryImpl.paymentsByGuide(
+                                {
+                                    id_guia: String(guide),
+                                },
+                                ENV_DEV.KEY_APP
+                            );
+
+                            const reportData = await detailsRepositoryImpl.getReportPayment(String(guide), tokenUser || token);
+                            const data = reportData.data;
+
+                            let total = 0;
+
+                            if (typeof data === 'object' && !Array.isArray(data) && data !== null) {
+                                total = data.valorTotal ?? 0;
+                            }
+                            setDataResult(responseData?.data?.resumen);
+                            setValuePayment(total);
+
+                            // Asignar la variable según el resultado
+                            setData(sortedData as GuideDetails[]);
+                            setFilteredGuides(sortedData as GuideDetails[]);
+                            await getStatusStyle();
+                        }
+
+                    } else {
+                        setData([]);
+                        setFilteredGuides([]);
+                    }
+                }
+
+            } catch (error: any) {
+                console.log("Error al obtener detalles de la guía:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, [guide, tokenUser || token]);
+
+    useEffect(() => {
         const totalVisits = data.length;
 
         const completedVisits = data.filter(
@@ -302,78 +375,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
     }, [checkUbication]);
 
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const finalToken = token;
 
-                if (finalToken && Number(guide)) {
-                    const response = await detailsRepositoryImpl.listGuide(Number(guide), finalToken);
-
-                    if (response?.statusCode == 200) {
-                        if (response?.data) {
-                            const arrayData = Array.isArray(response.data) ? response.data : [response.data];
-
-                            const sortedData = arrayData
-                                .filter(item => typeof item !== 'string')
-                                .sort((a, b) => {
-                                    const aIsPending = (a as GuideDetails).estado?.toLowerCase() === "pendiente";
-                                    const bIsPending = (b as GuideDetails).estado?.toLowerCase() === "pendiente";
-
-                                    if (aIsPending && !bIsPending) {
-                                        return -1;
-                                    } else if (!aIsPending && bIsPending) {
-                                        return 1;
-                                    } else {
-                                        return 0;
-                                    }
-                                });
-
-                            const hasInCourse = sortedData.every(
-                                item => (item as GuideDetails).estado?.toLowerCase() === StatusInvoice.CLOSE_TWO.toLowerCase()
-                            );
-
-                            if (hasInCourse) {
-                                //await finshRoute();
-                            }
-                            const responseData = await detailsRepositoryImpl.paymentsByGuide(
-                                {
-                                    id_guia: String(guide),
-                                },
-                                ENV_DEV.KEY_APP
-                            );
-
-                            const reportData = await detailsRepositoryImpl.getReportPayment(String(guide), tokenUser || token);
-                            const data = reportData.data;
-
-                            let total = 0;
-
-                            if (typeof data === 'object' && !Array.isArray(data) && data !== null) {
-                                total = data.valorTotal ?? 0;
-                            }
-                            setDataResult(responseData?.data?.resumen);
-                            setValuePayment(total);
-
-                            // Asignar la variable según el resultado
-                            setData(sortedData as GuideDetails[]);
-                            setFilteredGuides(sortedData as GuideDetails[]);
-                            await getStatusStyle();
-                        }
-
-                    } else {
-                        setData([]);
-                        setFilteredGuides([]);
-                    }
-                }
-
-            } catch (error: any) {
-                console.log("Error al obtener detalles de la guía:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
-    }, [guide, tokenUser || token]);
 
     const getStatusStyle = async () => {
         try {
@@ -617,7 +619,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                                                 buttonLabel="Registrar consignación"
                                                 onPress={() => router.push({
                                                     pathname: '/views/consignaciones',
-                                                    params: { codigoGuia: guide, statusConsignment: 'true', token: tokenUser}
+                                                    params: { codigoGuia: guide, statusConsignment: 'true', token: tokenUser }
                                                 })}
                                             />
                                         )}
@@ -846,7 +848,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                 message={modalMessage}
                 buttonLabel={modalButtonLabel}
             />
-            
+
             {viewshowAlert && (
                 <TopSuccessAlert
                     visible={viewshowAlert}

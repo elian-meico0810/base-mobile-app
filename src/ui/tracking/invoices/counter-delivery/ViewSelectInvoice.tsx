@@ -380,9 +380,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
     // Calcular la suma de todos los valorTotal y dfr de todas las facturas
     const totalFacturas = guide?.facturas?.reduce((sum, factura) => {
-        const valorTotal = Number(factura?.valorTotal || 0);
+        const valorTotal = Number(factura?.valorRecaudar || 0);
         const dfr = Number(factura?.dfr || 0);
-        return sum + (valorTotal - dfr);
+        return sum + valorTotal;
     }, 0) || 0;
 
     const totalvalorRecaudar =

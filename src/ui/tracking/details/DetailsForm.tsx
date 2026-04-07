@@ -527,7 +527,9 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
             setLoading(false);
         }
     };
-
+    useEffect(() => {
+        setFilteredGuides(data);
+    }, [data]);
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -697,6 +699,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                                             routeStarted={statusValue != StatusInvoice.PENDING ? true : routeStarted}
                                             numberGuide={String(guide)}
                                             token={token}
+                                            statusValue={statusValue}
                                         />
                                     ))
                                 )

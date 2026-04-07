@@ -547,9 +547,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const totalFacturas = guide?.facturas
         ?.filter(factura => factura?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO)
         .reduce((sum, factura) => {
-            const valorTotal = Number(factura?.valorTotal || 0);
+            const valorTotal = Number(factura?.valorRecaudar || 0);
             const dfr = Number(factura?.dfr || 0);
-            return sum + (valorTotal - dfr);
+            return sum + valorTotal;
         }, 0) || 0;
 
     const totalvalorRecaudar =

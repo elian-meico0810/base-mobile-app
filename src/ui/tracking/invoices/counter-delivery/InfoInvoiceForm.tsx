@@ -14,7 +14,6 @@ import { OrderDetailSkeleton } from '@/components/skeleton/OrderDetailSkeleton '
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
 import { OptionsRefusedEnum, StatusDelivery, TypeCaculateValueEnum, TypeConPagoEnum, TypeInvoiceEnum, TypeQr } from '@/src/constants/GuideStates';
-import { DeliveryStatus } from '@/src/features/tracking/components/checkbox/DeliveryStatus';
 import { DeliveryStatusAction } from '@/src/features/tracking/components/checkbox/DeliveryStatusAction';
 import { NoDeliveryModal } from '@/src/features/tracking/components/checkbox/NoDeliveryModal';
 import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
@@ -79,7 +78,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [modalMessageValidate, setModalMessageValidate] = useState("");
     const [modalButtonLabelValidate, setModalButtonLabelValidate] = useState("Entendido");
     const [highlightText, setHighlightText] = useState("");
-
     const [showChangePhone, setShowChangePhone] = useState(false);
     const [modalgenerateQR, setModalgenerateQR] = useState(false);
     const [typeQRSendWhatsApp, setTypeQRSendWhatsApp] = useState(false);
@@ -1415,7 +1413,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             >
 
                 {/* Card blanco centrado */}
-
                 {!guide || !Number.isFinite(totalValue) || !Number.isFinite(totalRecauder) || !Number.isFinite(totalOrderPayment) ? (
                     <OrderDetailSkeleton />
                 ) : (

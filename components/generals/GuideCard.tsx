@@ -14,9 +14,10 @@ interface GuideCardProps {
     routeStarted: boolean;
     numberGuide?: string;
     token?: string;
+    statusValue?: string;
 }
 
-export function GuideCard({ guide, onPress, routeStarted, numberGuide, token }: GuideCardProps) {
+export function GuideCard({ guide, onPress, routeStarted, numberGuide, token, statusValue }: GuideCardProps) {
     const cleanAddress = `${cleanSpaces(guide.direccion)}, ${cleanSpaces(guide.poblacion)}`;
     const [modalVisible, setModalVisible] = useState(false);
     const router = useRouter();
@@ -42,10 +43,10 @@ export function GuideCard({ guide, onPress, routeStarted, numberGuide, token }: 
     
     return (
         <TouchableOpacity
-            disabled={guide.estado !== 'Pendiente' ? true : false}
+            disabled={(!statusValue || guide.estado !== 'Pendiente') ? true : false}
             style={[
                 styles.card,
-                guide.estado !== 'Pendiente' && {
+                (!statusValue|| guide.estado !== 'Pendiente') && {
                     backgroundColor: '#F9F9FA',
                     opacity: 0.6,
                     borderColor: '#F9F9FA',
@@ -128,7 +129,7 @@ export function GuideCard({ guide, onPress, routeStarted, numberGuide, token }: 
                 title={routeStarted ? "Sin ubicación disponible" : "¡Alerta!"}
                 message={
                     (routeStarted)
-                        ? "Esta guía no contiene coordenadas válidas para navegar."
+                        ? "Esta dirección no contiene coordenadas válidas para navegar."
                         : "Debe comenzar ruta para realizar esta acción."
                 }
                 buttonLabel="Entendido"

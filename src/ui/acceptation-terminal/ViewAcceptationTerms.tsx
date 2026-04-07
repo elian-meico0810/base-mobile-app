@@ -254,7 +254,7 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
 
                                     <View style={styles.orderHeader}>
                                         <Text style={styles.orderTitle}>
-                                            Pedido {index + 1}
+                                            Pedido {pedido.codigo || ""}
                                         </Text>
 
                                         <Text style={styles.productCount}>

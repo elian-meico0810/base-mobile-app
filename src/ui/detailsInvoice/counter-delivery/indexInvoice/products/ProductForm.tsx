@@ -91,7 +91,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
     const handleGoBack = () => {
         router.push(
-            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${isSelectInvocies}`
         );
     };
 
@@ -150,7 +150,6 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 };
                 const response = await detailsRepositoryImpl.reportNoveltyFileArray(payload, token);
                 if (response) {
-
                     setUploadPhotoFile(false);
                     setModalTitle("¡Procesado!");
                     setModalMessage(`Soporte(s) procesados exitosamente.`);

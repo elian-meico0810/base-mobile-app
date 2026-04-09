@@ -161,11 +161,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     guide: JSON.stringify(guide),
                     numberGuide: numberGuide,
                     token: token ?? "",
+                    isSelectInvocies: isSelectInvocies,
                 }
             });
         } else {
             router.push(
-                `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+                `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${isSelectInvocies}`
             );
         }
     };
@@ -1713,7 +1714,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             width={328}
                             height={43}
                         />
-                    ) : (!isViewDetailsPorducts && isSelectInvocies) ? (
+                    ) : (!isViewDetailsPorducts && isSelectInvocies === 'true') ? (
                         <PrimaryButton
                             title="Entregar"
                             onPress={handleSubmitData}

@@ -871,6 +871,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             estado: pago.estado,
                             referencia: pago.referencia,
                             descripcion: pago.descripcion ?? null,
+                            contingencia: pago.contingencia,
                         }))
                     });
 
@@ -1125,7 +1126,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     }, [condPago || buttonValue]);
 
     const totalAproved = paymentSuccessful?.pagos
-        ?.filter(pago => pago.estado === "APPROVED")
+        ?.filter(pago => pago.estado === "APPROVED" || pago.contingencia === true)
         .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0);
 
     var value = '';
@@ -1198,7 +1199,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const condition = detailsCounterDelivery || closeButton;
 
     const baseTotal = condition
-        ? Number(newTotalValue || 0) - Number(totalAproved)
+        ? Math.max(0, Number(newTotalValue || 0) - Number(totalAproved))
         : Number(totalValueTwo || 0);
 
     const totalRecauder = condition

@@ -375,7 +375,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
 
     const totalAproved = paymentSuccessful?.pagos
-        ?.filter(pago => pago.estado === "APPROVED")
+        ?.filter(pago => pago.estado === "APPROVED" || pago.contingencia === true)
         .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0) || 0;
 
     // Calcular la suma de todos los valorTotal y dfr de todas las facturas

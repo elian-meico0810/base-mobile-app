@@ -40,6 +40,7 @@ export interface Payment {
   estado?: string | null  | undefined;
   referencia?: string | null  | undefined;
   descripcion?: string | null  | undefined;
+  contingencia?: boolean | null  | undefined;
 }
 
 export interface Invoice {

@@ -250,7 +250,7 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
                     <View style={styles.secondCardTwo}>
                         <ScrollView>
                             {pedidosFlat.map((pedido, index) => (
-                                <View key={`${pedido.codigo || index}`} style={styles.secondCard}>
+                                <View key={`${pedido.codigo + index}`} style={styles.secondCard}>
 
                                     <View style={styles.orderHeader}>
                                         <Text style={styles.orderTitle}>
@@ -267,7 +267,7 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
                                     <View style={styles.gap}>
                                         {pedido.detalles?.map((item, itemIndex) => (
                                             <View
-                                                key={`${item.producto?.codigo || itemIndex}`}
+                                                key={`${item.producto?.codigo + itemIndex}`}
                                                 style={styles.productRow}
                                             >
                                                 <Text numberOfLines={1} style={styles.productName}>

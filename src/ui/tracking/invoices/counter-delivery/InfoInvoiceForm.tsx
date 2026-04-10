@@ -47,6 +47,7 @@ interface InfoInvoiceFormProps {
     routeStartedBotton?: string;
     detailsCounterDelivery?: boolean;
     isViewDetailsPorducts?: boolean;
+    isAnticipe?: string;
 }
 
 interface EvidencePhoto {
@@ -58,7 +59,7 @@ interface EvidencePhoto {
 type DeliveryStatus = "total" | "parcial" | "rechazo" | null;
 type OptionsRefusedPorps = 'Dinero' | 'Dueño' | 'Tienda' | 'Productos' | null;
 
-export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton, detailsCounterDelivery, isViewDetailsPorducts }: InfoInvoiceFormProps) {
+export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton, detailsCounterDelivery, isViewDetailsPorducts, isAnticipe }: InfoInvoiceFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [guideAny, setGuideAny] = useState<GuideDetails[]>([]);
     const [guideByProduct, setGuideByPorduct] = useState<GuideDetails[]>([]);
@@ -133,6 +134,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [currentQRType, setCurrentQRType] = useState(qrType || undefined);
     const [currentQRData, setCurrentQRData] = useState(qrBase64 || undefined);
 
+
     useEffect(() => {
         const backAction = () => {
             if (!allowBack) {
@@ -162,6 +164,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     numberGuide: numberGuide,
                     token: token ?? "",
                     isSelectInvocies: isSelectInvocies,
+                    isAnticipe: isAnticipe,
                 }
             });
         } else {
@@ -311,7 +314,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const submitFile = async (newPhoto: EvidencePhoto[]) => {
         try {
             setLoading(true);
-
             // Pequeña pausa para que se muestre el loading (opcional)
             await new Promise(resolve => setTimeout(resolve, 100));
             router.push({
@@ -324,6 +326,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     sasToken: sasToken,
                     multiplePhotos: JSON.stringify(newPhoto),
                     isSelectInvocies: isSelectInvocies ? 'true' : undefined,
+                    isAnticipe: isAnticipe,
+                    isAnticipeInvoice: isAnticipe
                 }
             });
             setLoading(false);
@@ -542,7 +546,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             guide: JSON.stringify(initialGuide),
                             numberGuide: numberGuide,
                             token: token ?? "",
-                            isSelectInvocies: isSelectInvocies
+                            isSelectInvocies: isSelectInvocies,
+                            isAnticipe: isAnticipe
 
                         }
                     });
@@ -616,6 +621,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         guide: JSON.stringify(guide),
                         numberGuide: numberGuide,
                         token: token ?? "",
+                        isAnticipe: isAnticipe,
+
                     }
                 });
 
@@ -1232,7 +1239,9 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             totalRecauder: Number(totalRecauder) ?? 0,
                             totalOrderPayment: Number(totalOrderPayment) ?? 0,
                             expireDate: 'true',
-                            isSelectInvocies: isSelectInvocies
+                            isSelectInvocies: isSelectInvocies,
+                            isAnticipe: isAnticipe,
+
                         }
 
                     });
@@ -1333,7 +1342,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         totalRecauder: String(totalRecauder) ?? 0,
                         totalOrderPayment: String(totalOrderPayment) ?? 0,
                         isViewDetailsPorducts: 'true',
-                        isSelectInvocies: isSelectInvocies
+                        isSelectInvocies: isSelectInvocies,
+                        isAnticipe: isAnticipe
                     }
 
                 });

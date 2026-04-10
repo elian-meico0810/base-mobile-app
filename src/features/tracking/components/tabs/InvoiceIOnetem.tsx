@@ -19,6 +19,8 @@ interface InvoiceOneItemProps {
     activeView: boolean;
     showCheckbox?: boolean;
     hasAnySelected: boolean; // Nuevo prop
+    disabledInvoices?: Set<string>;
+
 }
 
 const InvoiceOneItem = ({
@@ -32,15 +34,20 @@ const InvoiceOneItem = ({
     isSelect,
     activeView,
     showCheckbox = false,
-    hasAnySelected // Nuevo prop
+    hasAnySelected,
+    disabledInvoices
 }: InvoiceOneItemProps) => {
     const hasEvidence = (numeroFactura: string): boolean => {
-        if (Array.isArray(conceptDelivery)) {
-            return conceptDelivery.some(
+        const inConceptDelivery =
+            Array.isArray(conceptDelivery) &&
+            conceptDelivery.some(
                 (doc) => String(doc.documentMeico) === String(numeroFactura)
             );
-        }
-        return false;
+
+        const inDisabledSet =
+            disabledInvoices?.has(String(numeroFactura)) ?? false;
+
+        return inConceptDelivery || inDisabledSet;
     };
     var value = '';
     switch (invoice?.tipo) {
@@ -177,6 +184,7 @@ interface InvoicesOneListProps {
     isSelect?: boolean;
     activeView?: boolean;
     showCheckboxes?: boolean;
+    disabledInvoices?: Set<string>;
 }
 
 const InvoicesOneList = ({
@@ -191,7 +199,8 @@ const InvoicesOneList = ({
     conceptDelivery,
     isSelect = false,
     activeView = false,
-    showCheckboxes = false
+    showCheckboxes = false,
+    disabledInvoices
 }: InvoicesOneListProps) => {
     const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
     const [selectedGuideData, setSelectedGuideData] = useState<GuideDetails | null>(null);
@@ -313,6 +322,7 @@ const InvoicesOneList = ({
                     activeView={activeView}
                     showCheckbox={showCheckboxes}
                     hasAnySelected={hasAnySelected} // Pasar este nuevo prop
+                    disabledInvoices={disabledInvoices}
                 />
             ))}
         </View>

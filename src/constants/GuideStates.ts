@@ -117,3 +117,8 @@ export enum TypePaymentEnum {
     PASARELA = "Pasarela de pago",
     OTRO = "Otro",
 }
+
+export enum TipeCodeOTP {
+    EST_OTP_ENVIADO = "EST_OTP_ENVIADO",
+    EST_OTP_VALIDADO = "EST_OTP_VALIDADO"
+}

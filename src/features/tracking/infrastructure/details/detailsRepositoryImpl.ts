@@ -1,7 +1,7 @@
 import { API_ROUTES } from "@/src/constants/apiRoutes";
 import { ApiResponse } from "@/src/features/auth/domain/ApiResponse";
 import { authApi, authDevApi } from "@/src/features/auth/infrastructure/authApi";
-import { ConciliationRouteResponse, DataUploadFIlePprops, ListInfOTP, NoveltyRefusedProps, PaymentsByInvoicePorps, ReentryOTPProps, ReportNoveltyFileArrayProps, RuteInitPorps, SendOrderArrayProps, SendOrderProps, SendOTOPProps, ValidateCediQRResponse, ValidateCodeOTPProps } from "../../domain/details/DetailsGuide";
+import { ConciliationRouteResponse, DataUploadFIlePprops, EvidenciaOTPItemOTP, ListInfOTP, NoveltyRefusedProps, PaymentsByInvoicePorps, ReentryOTPProps, ReportNoveltyFileArrayProps, RuteInitPorps, SendOrderArrayProps, SendOrderProps, SendOTOPProps, ValidateCediQRResponse, ValidateCodeOTPProps } from "../../domain/details/DetailsGuide";
 import { DetailsRepository } from "../../domain/details/DetailsRepository";
 
 export const detailsRepositoryImpl: DetailsRepository = {
@@ -421,4 +421,37 @@ export const detailsRepositoryImpl: DetailsRepository = {
       throw error;
     }
   },
+
+  async evidenciaOTPItem(
+    direccion_id: string,
+    numberInvoice: string,
+    token: string
+  ): Promise<ApiResponse<EvidenciaOTPItemOTP[]>> {
+    try {
+
+      const response = await authApi.get(
+        `${API_ROUTES.GET_EVIDENCE_OTP_BY_DIRECTION}?direccion_id=${direccion_id}&numero_factura=${numberInvoice}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      return typeof response.data === "string"
+        ? JSON.parse(response.data)
+        : response.data;
+
+    } catch (error: any) {
+      return {
+        success: false,
+        data: null,
+        message:
+          error.response?.data?.message ??
+          "Ocurrió un error inesperado",
+        statusCode: error.response?.status ?? 500,
+      };
+    }
+  },
+
 }

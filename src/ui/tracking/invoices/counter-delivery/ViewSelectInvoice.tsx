@@ -6,6 +6,7 @@ import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { OrderDetailSkeletonSelect } from '@/components/skeleton/OrderDetailSkeletonSelect';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
+import { TipeCodeOTP } from '@/src/constants/GuideStates';
 import InvoicesList from '@/src/features/tracking/components/tabs/InvoicesList';
 import { GuideDetails, NovletyOrder } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
@@ -55,6 +56,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [buttonValue, setButtonValue] = useState(false);
     const [allowBack, setAllowBack] = useState(false);
     const [disabledInvoices, setDisabledInvoices] = useState<Set<string>>(new Set());
+    const [disabledOTPInvoices, setDisabledOTPInvoices] = useState<Set<string>>(new Set());
+    const [disabledFileInvoices, setDisabledFileInvoices] = useState<Set<string>>(new Set());
     const btnRef = useRef<any>(null);
     const router = useRouter();
     const heightValue = heightCaldulate();
@@ -104,18 +107,53 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                     typeof response.data !== "string" &&
                     !Array.isArray(response.data)
                 ) {
-                    if (response.data?.estado_envio && response.data.estado_envio === 37) {
+                    if (response.data?.estado_envio && response.data.estado_envio === TipeCodeOTP.EST_OTP_VALIDADO) {
                         disabledSet.add(String(numeroFactura));
                     }
                 }
             }
-            setDisabledInvoices(disabledSet);
+            setDisabledOTPInvoices(disabledSet);
         } catch (error: any) {
             setModalTitle("¡Error!");
             setModalMessage(error?.data?.message ?? "Ocurrió un error inesperado.");
             setModalVisible(true);
         }
     };
+
+
+    const listInfOTPFileByDirection = async (data?: GuideDetails) => {
+        try {
+
+            if (!data?.facturas?.length) return;
+
+            const disabledFileSet: Set<string> = new Set();
+
+            for (const factura of data.facturas) {
+                const numeroFactura = factura.numeroFactura;
+
+                const response = await detailsRepositoryImpl.evidenciaOTPItem(
+                    String(data?.idDireccion),
+                    String(numeroFactura),
+                    token
+                );
+
+                if (
+                    response.success &&
+                    Array.isArray(response.data) &&
+                    response.data.length > 0
+                ) {
+                    disabledFileSet.add(String(numeroFactura));
+                }
+            }
+
+            setDisabledFileInvoices(disabledFileSet);
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrió un error inesperado.");
+            setModalVisible(true);
+        }
+    };
+
 
     const listGuideData = async () => {
         try {
@@ -157,6 +195,19 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         facturas: clienteEncontrado.facturas,
                         pedidos: clienteEncontrado.pedidos
                     });
+                    listInfOTPFileByDirection({
+                        idDireccion: clienteEncontrado.idDireccion,
+                        direccion: clienteEncontrado.direccion,
+                        poblacion: clienteEncontrado.poblacion,
+                        codigoCliente: clienteEncontrado.codigoCliente,
+                        nombreCliente: clienteEncontrado.nombreCliente,
+                        latitud: clienteEncontrado.latitud,
+                        longitud: clienteEncontrado.longitud,
+                        estado: clienteEncontrado.estado,
+                        fecha_apertura: clienteEncontrado.fecha_apertura,
+                        facturas: clienteEncontrado.facturas,
+                        pedidos: clienteEncontrado.pedidos
+                    })
 
                 }
             }
@@ -166,6 +217,14 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             setModalVisible(true);
         }
     };
+
+    useEffect(() => {
+        const merged = new Set<string>([
+            ...disabledOTPInvoices,
+            ...disabledFileInvoices
+        ]);
+        setDisabledInvoices(merged);
+    }, [disabledOTPInvoices, disabledFileInvoices]);
 
     const listDocumentQuery = async (guide?: GuideDetails) => {
         try {
@@ -203,6 +262,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         if (conceptDeliverySelect?.length > (guide?.facturas?.length ?? 0)) {
             listDocumentQuery();
             listInfOTByDirection(initialGuide);
+            listInfOTPFileByDirection(initialGuide);
 
         }
     }, [token]);
@@ -317,7 +377,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");
-                setModalMessage("Debes enviar los códigos OTP de todas las facturas..");
+                setModalMessage("Debes enviar los códigos OTP de todas las facturas.");
                 setModalVisible(true);
                 return;
             }

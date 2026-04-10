@@ -44,7 +44,9 @@ export default function IndexInvoiceScreen() {
     const isCountryDelivery = params.isCountryDelivery as string;
     const IsGoBack = params.IsGoBack as string;
     const isViewDetailsPorducts = params.isViewDetailsPorducts as string;
-
+    const isAnticipe = params.isAnticipe as string;
+    const isAnticipeInvoice = params.isAnticipeInvoice as string;
+    
     return (
         <>
             <Stack.Screen
@@ -57,7 +59,7 @@ export default function IndexInvoiceScreen() {
             {/* Mas de una facuta y tiene que ser CONTADO_EFECTIVO */}
             {(() => {
                 // Condición 1
-                if (shouldShowViewSelectInvoice && areAllInvoicesConutreDlivery) {
+                if (shouldShowViewSelectInvoice && areAllInvoicesConutreDlivery && !isAnticipe) {
                     return (
                         <ViewSelectInvoice
                             initialGuide={guideObj}
@@ -71,7 +73,7 @@ export default function IndexInvoiceScreen() {
                     );
                 }
                 // Condición 2
-                if (areAllInvoicesConutreDlivery && guideObj.facturas.length < 2 || isCountryDelivery) {
+                if ((areAllInvoicesConutreDlivery && guideObj.facturas.length < 2 || isCountryDelivery) && !isAnticipeInvoice) {
                     return (
                         <InfoInvoiceForm
                             initialGuide={guideObj}
@@ -85,6 +87,7 @@ export default function IndexInvoiceScreen() {
                             routeStartedBotton={routeStartedBotton}
                             detailsCounterDelivery={detailsCounterDelivery ? true : false}
                             isViewDetailsPorducts={isViewDetailsPorducts ? true : false}
+                            isAnticipe={isAnticipe}
 
                         />
                     );
@@ -134,7 +137,7 @@ export default function IndexInvoiceScreen() {
                     );
 
                 } else {
-                    if (areAllInvoicesAnticipe) {
+                    if (areAllInvoicesAnticipe || isAnticipe) {
                         return (
                             <AnticipateAndCountViewSelectInvoice
                                 initialGuide={guideObj}

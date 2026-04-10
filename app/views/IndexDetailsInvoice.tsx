@@ -29,6 +29,7 @@ export default function IndexDetailsInvoiceScreen() {
     const sasToken = params.sasToken as string;
     const data = params.multiplePhotos as string;
     const multiplePhotos: EvidencePhoto[] = data ? JSON.parse(data) : [];
+    const isAnticipe = params.isAnticipe as string;
 
     return (
         <>
@@ -52,6 +53,7 @@ export default function IndexDetailsInvoiceScreen() {
                             documentMeico={documentMeico}
                             routeStartedBotton={routeStartedBotton}
                             isViewDetailsPorducts={isViewDetailsPorducts ? true : false}
+                            isAnticipe={isAnticipe}
                         />
                     );
                 }
@@ -72,6 +74,7 @@ export default function IndexDetailsInvoiceScreen() {
                             totalOrderPayment={totalOrderPayment}
                             expireDate={expireDate ? true : false}
                             isViewDetailsPorducts={isViewDetailsPorducts ? true : false}
+                            isAnticipe={isAnticipe}
 
                         />
                     );
@@ -88,6 +91,7 @@ export default function IndexDetailsInvoiceScreen() {
                             numberGuide={Number(numberGuide)}
                             isViewDetailsPorducts={isViewDetailsPorducts ? true : false}
                             isSelectInvocies={isSelectInvocies}
+                            isAnticipe={isAnticipe}
 
                         />
                     );

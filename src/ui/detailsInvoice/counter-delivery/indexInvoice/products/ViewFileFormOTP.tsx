@@ -42,6 +42,8 @@ interface UploadPhotosProps {
     numberGuide?: number;
     isViewDetailsPorducts?: boolean;
     isSelectInvocies?: string;
+    isAnticipe?: string;
+
 }
 
 const { width, height } = Dimensions.get('window');
@@ -58,7 +60,8 @@ export function ViewFileFormOTP({
     token = "",
     numberGuide,
     isViewDetailsPorducts,
-    isSelectInvocies
+    isSelectInvocies,
+    isAnticipe
 }: UploadPhotosProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [evidences, setEvidences] = useState<EvidencePhoto[]>([]);
@@ -313,9 +316,15 @@ export function ViewFileFormOTP({
 
                 if (responseData?.statusCode === 200) {
                     if (isSelectInvocies) {
-                        router.push(
-                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}`
-                        );
+                        if (isAnticipe == 'true') {
+                            router.push(
+                                `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}&isAnticipe=${'true'}&isCountryDelivery=${'true'}&isAnticipeInvoice=${'true'}`
+                            );
+                        } else {
+                            router.push(
+                                `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}`
+                            );
+                        }
                     } else {
                         const response = await invoiceRepositoryImpl.closeAddresses(
                             guide?.idDireccion || 0,

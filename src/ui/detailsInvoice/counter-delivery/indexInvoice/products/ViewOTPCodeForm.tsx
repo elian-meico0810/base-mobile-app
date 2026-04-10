@@ -45,6 +45,8 @@ interface ViewOTPCodeFormProps {
     totalOrderPayment?: number;
     expireDate?: boolean;
     isViewDetailsPorducts?: boolean;
+    isAnticipe?: string;
+
 }
 
 interface EvidencePhoto {
@@ -68,7 +70,8 @@ export function ViewOTPCodeForm({
     totalValue,
     totalOrderPayment,
     expireDate,
-    isViewDetailsPorducts
+    isViewDetailsPorducts,
+    isAnticipe
 }: ViewOTPCodeFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [guideOTP, setGuideOTP] = useState<ResponseOTPInitPorps | undefined>(responseOTPInit);
@@ -218,9 +221,15 @@ export function ViewOTPCodeForm({
 
             if (responseData?.statusCode === 200) {
                 if (isSelectInvocies) {
-                    router.push(
-                        `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}`
-                    );
+                    if (isAnticipe == 'true') {
+                        router.push(
+                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}&isAnticipe=${'true'}&isCountryDelivery=${'true'}&isAnticipeInvoice=${'true'}`
+                        );
+                    } else {
+                        router.push(
+                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}`
+                        );
+                    }
                 } else {
                     const response = await invoiceRepositoryImpl.closeAddresses(
                         guide?.idDireccion || 0,
@@ -252,7 +261,7 @@ export function ViewOTPCodeForm({
 
     useEffect(() => {
         if (
-            guideOTP?.expiraEn &&   
+            guideOTP?.expiraEn &&
             guideOTP?.momentoEnvio &&
             !timerRef.current && !dataBack
         ) {
@@ -285,7 +294,7 @@ export function ViewOTPCodeForm({
                 setModalVisible(true);
                 return;
             }
-            
+
             if (!Number.isFinite(totalValue) || !Number.isFinite(totalRecauder)) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Los valores aún no están listos. Intenta nuevamente.");

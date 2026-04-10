@@ -209,7 +209,7 @@ export interface ResponseOTPInitTwoPorps {
   codigo?: string,
   momento_envio?: string,
   canal?: string,
-  estado_envio?: number,
+  estado_envio?: string,
   numero_reenvio?: number,
   numero_validacion_conductor?: number,
   transportador?: string,
@@ -244,7 +244,7 @@ export interface ListInfOTP {
   codigo: string;
   momento_envio: string;
   canal: string;
-  estado_envio: number;
+  estado_envio: string;
   numero_reenvio: number;
   numero_validacion_conductor: number;
   transportador: string;
@@ -274,4 +274,19 @@ export interface ListAceptationGuide {
 
 export interface ReportePagoTotal {
   valorTotal: number;
+}
+
+export interface EvidenciaOTP {
+  id: number;
+  nombre: string;
+  extension_archivo: string;
+  url: string;
+  fecha: string;
+}
+
+export interface EvidenciaOTPItemOTP {
+  id: number;
+  evidencia: EvidenciaOTP;
+  direccion: number;
+  eliminado: boolean;
 }

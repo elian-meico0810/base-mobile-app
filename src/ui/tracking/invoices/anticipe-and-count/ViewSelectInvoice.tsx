@@ -5,13 +5,15 @@ import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
+import { OrderDetailSkeletonSelect } from '@/components/skeleton/OrderDetailSkeletonSelect';
 import { ThemedView } from '@/components/themed-view';
-import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeDelivery, TypeInvoiceEnum } from '@/src/constants/GuideStates';
+import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TipeCodeOTP, TypeDelivery, TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import OneSelectedOrder from '@/src/features/tracking/components/checkbox/OneSelectedOrder';
 import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
 import InvoicesOneList from '@/src/features/tracking/components/tabs/InvoiceIOnetem';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { CreateEntregaProps, DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
+import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
 import { cleanSpaces, getDeviceDateTime, getDistanceInMeters, heightCaldulate } from '@/src/utils/uitls';
 import * as Location from "expo-location";
@@ -39,7 +41,7 @@ interface EvidencePhoto {
 type OptionsRefusedPorps = 'Dinero' | 'Dueño' | 'Tienda' | 'Productos' | null;
 
 export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, routeStartedBotton }: ViewSelectInvoiceProps) {
-    const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
+    const [guide, setGuide] = useState<GuideDetails>();
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
     const [showPayment, setShowPayment] = useState(false);
@@ -76,7 +78,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const prevSelectedCountRef = useRef<number>(0);
     const [allowBack, setAllowBack] = useState(false);
     const [isValidData, setIsValidData] = useState(false);
-
+    const [disabledInvoices, setDisabledInvoices] = useState<Set<string>>(new Set());
+    const [disabledOTPInvoices, setDisabledOTPInvoices] = useState<Set<string>>(new Set());
+    const [disabledFileInvoices, setDisabledFileInvoices] = useState<Set<string>>(new Set());
     const btnRef = useRef<any>(null);
     const [checkUbication, setCheckUbication] = useState(false);
     const router = useRouter();
@@ -104,12 +108,79 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
         );
     };
+    const listInfOTByDirection = async (data?: GuideDetails) => {
+        try {
 
+            if (!data?.facturas?.length) return;
+
+            const disabledSet: Set<string> = new Set();
+
+            for (const factura of data.facturas) {
+                const numeroFactura = factura.numeroFactura;
+
+                const response = await detailsRepositoryImpl.listInfOTP(
+                    String(data?.idDireccion),
+                    String(numeroFactura),
+                    token
+                );
+
+                if (
+                    response.success &&
+                    response.data &&
+                    typeof response.data !== "string" &&
+                    !Array.isArray(response.data)
+                ) {
+                    if (response.data?.estado_envio && response.data.estado_envio === TipeCodeOTP.EST_OTP_VALIDADO) {
+                        disabledSet.add(String(numeroFactura));
+                    }
+                }
+            }
+            setDisabledOTPInvoices(disabledSet);
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrió un error inesperado.");
+            setModalVisible(true);
+        }
+    };
+
+
+    const listInfOTPFileByDirection = async (data?: GuideDetails) => {
+        try {
+
+            if (!data?.facturas?.length) return;
+
+            const disabledFileSet: Set<string> = new Set();
+
+            for (const factura of data.facturas) {
+                const numeroFactura = factura.numeroFactura;
+
+                const response = await detailsRepositoryImpl.evidenciaOTPItem(
+                    String(data?.idDireccion),
+                    String(numeroFactura),
+                    token
+                );
+
+                if (
+                    response.success &&
+                    Array.isArray(response.data) &&
+                    response.data.length > 0
+                ) {
+                    disabledFileSet.add(String(numeroFactura));
+                }
+            }
+
+            setDisabledFileInvoices(disabledFileSet);
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrió un error inesperado.");
+            setModalVisible(true);
+        }
+    };
 
 
     useEffect(() => {
         if (guide?.fecha_apertura && !buttonValue) {
-            listDocumentQuery();
+            listDocumentQuery(guide);
             setButtonValue(true);
         }
     }, [token]);
@@ -211,6 +282,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 token
             );
             if (response?.statusCode === 200) {
+                btnRef.current?.reset();
                 setvalidateIsBotton(true);
                 setEntryVisible(true);
                 setRouteStarted(true);
@@ -229,7 +301,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             setValidateException(true);
             btnRef.current?.reset();
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 1.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -238,15 +310,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
     const submitData = async () => {
         try {
-            if (conceptDelivery?.length != guide?.facturas?.length) {
-                setValidateException(true);
-                btnRef.current?.reset();
-                setModalTitle("¡Alerta!");
-                setModalMessage("Debe especificar un estado de entrega1111.");
-                setModalVisible(true);
-                return;
-            }
-            if (!isEquals) {
+
+            if ((conceptDelivery.length + disabledInvoices.size) != guide?.facturas.length) {
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");
@@ -254,13 +319,20 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 setModalVisible(true);
                 return;
             }
+            // if (!isEquals) {
+            //     setValidateException(true);
+            //     btnRef.current?.reset();
+            //     setModalTitle("¡Alerta!");
+            //     setModalMessage("Debe especificar los estados de entrega por factura.");
+            //     setModalVisible(true);
+            //     return;
+            // }
             setLoading(true);
             const response = await invoiceRepositoryImpl.closeAddresses(
                 guide?.idDireccion || 0,
                 token
             );
             if (response?.statusCode === 200) {
-                setEntryVisible(true);
                 setRouteStarted(true);
                 router.push(
                     `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
@@ -274,7 +346,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             }
         } catch (error: any) {
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 2.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -317,7 +389,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
         } catch (error: any) {
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado. 3");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -331,16 +403,17 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             );
         } catch (error: any) {
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 4.");
             setModalVisible(true);
         } finally {
             setLoading(false);
         }
     };
 
-    const listDocumentQuery = async () => {
+    const listDocumentQuery = async (guide?: GuideDetails) => {
         try {
             setLoading(true);
+
             const responseQuery = await invoiceRepositoryImpl.listDocument(
                 null,
                 Number(guide?.idDireccion),
@@ -364,17 +437,108 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 if (isValid) {
                     setIsValidData(true);
                 }
+
                 setConceptDelivery(conceptList)
                 setLoading(false);
             }
+
         } catch (error) {
             setModalTitle("¡Error!");
-            setModalMessage("Ocurrio un error inesperado.");
+            setModalMessage("Ocurrio un error inesperado 6.");
             setModalVisible(true);
         } finally {
             setLoading(false);
         }
     };
+
+
+    const listGuideData = async () => {
+        try {
+            setLoading(true);
+            const response = await detailsRepositoryImpl.listGuide(
+                Number(numberGuide),
+                token
+            );
+            if (response?.statusCode === 200 && response?.data && Array.isArray(response.data)) {
+                const clienteFiltrado = response.data.filter(item =>
+                    item.codigoCliente === initialGuide?.codigoCliente
+                );
+                if (clienteFiltrado.length > 0) {
+                    const clienteEncontrado = clienteFiltrado[0];
+                    setGuide({
+                        idDireccion: clienteEncontrado.idDireccion,
+                        direccion: clienteEncontrado.direccion,
+                        poblacion: clienteEncontrado.poblacion,
+                        codigoCliente: clienteEncontrado.codigoCliente,
+                        nombreCliente: clienteEncontrado.nombreCliente,
+                        latitud: clienteEncontrado.latitud,
+                        longitud: clienteEncontrado.longitud,
+                        estado: clienteEncontrado.estado,
+                        fecha_apertura: clienteEncontrado.fecha_apertura,
+                        facturas: clienteEncontrado.facturas,
+                        pedidos: clienteEncontrado.pedidos
+                    });
+                    listInfOTByDirection({
+                        idDireccion: clienteEncontrado.idDireccion,
+                        direccion: clienteEncontrado.direccion,
+                        poblacion: clienteEncontrado.poblacion,
+                        codigoCliente: clienteEncontrado.codigoCliente,
+                        nombreCliente: clienteEncontrado.nombreCliente,
+                        latitud: clienteEncontrado.latitud,
+                        longitud: clienteEncontrado.longitud,
+                        estado: clienteEncontrado.estado,
+                        fecha_apertura: clienteEncontrado.fecha_apertura,
+                        facturas: clienteEncontrado.facturas,
+                        pedidos: clienteEncontrado.pedidos
+                    });
+                    listInfOTPFileByDirection({
+                        idDireccion: clienteEncontrado.idDireccion,
+                        direccion: clienteEncontrado.direccion,
+                        poblacion: clienteEncontrado.poblacion,
+                        codigoCliente: clienteEncontrado.codigoCliente,
+                        nombreCliente: clienteEncontrado.nombreCliente,
+                        latitud: clienteEncontrado.latitud,
+                        longitud: clienteEncontrado.longitud,
+                        estado: clienteEncontrado.estado,
+                        fecha_apertura: clienteEncontrado.fecha_apertura,
+                        facturas: clienteEncontrado.facturas,
+                        pedidos: clienteEncontrado.pedidos
+                    })
+                    listDocumentQuery({
+                        idDireccion: clienteEncontrado.idDireccion,
+                        direccion: clienteEncontrado.direccion,
+                        poblacion: clienteEncontrado.poblacion,
+                        codigoCliente: clienteEncontrado.codigoCliente,
+                        nombreCliente: clienteEncontrado.nombreCliente,
+                        latitud: clienteEncontrado.latitud,
+                        longitud: clienteEncontrado.longitud,
+                        estado: clienteEncontrado.estado,
+                        fecha_apertura: clienteEncontrado.fecha_apertura,
+                        facturas: clienteEncontrado.facturas,
+                        pedidos: clienteEncontrado.pedidos
+                    });
+                }
+            }
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 8.");
+            setModalVisible(true);
+        }
+    };
+
+    useEffect(() => {
+        if (!guide) {
+            listGuideData();
+        }
+    }, []);
+
+    useEffect(() => {
+        const merged = new Set<string>([
+            ...disabledOTPInvoices,
+            ...disabledFileInvoices
+        ]);
+        setDisabledInvoices(merged);
+    }, [disabledOTPInvoices, disabledFileInvoices]);
 
     useEffect(() => {
         if (conceptDelivery.length > 0 && guide) {
@@ -388,12 +552,6 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             setIsEquals(equals)
         }
     }, [conceptDelivery, guide]);
-
-    useEffect(() => {
-        if (token) {
-            listDocumentQuery();
-        }
-    }, [token]);
 
     const uploadPhotoSubmit = async () => {
         try {
@@ -513,7 +671,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                     );
                     if (success) {
                         setNextPages(true);
-                        listDocumentQuery();
+                        listDocumentQuery(guide);
                         setModalTitle("¡Procesado!");
                         setModalMessage(`Soporte(s) procesados exitosamente.`);
                         setModalVisible(true);
@@ -561,11 +719,12 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const validateCondition = showCheckbox &&
         selectedMultipleInvoices.length <= 1 &&
         selectedMultipleInvoices[0]?.facturas[0]?.tipo !== TypeInvoiceEnum.CONTADO_EFECTIVO;
-    const conditionButton = routeStarted || conceptDelivery.length === guide?.facturas?.length && conceptDelivery.length === guide.facturas.length;
-    const validateCheckbox = conceptDelivery.length != (guide?.facturas?.length ?? 0) && conceptDelivery.length != 0;
+    const conditionButton = routeStarted || (conceptDelivery.length + disabledInvoices.size) === (guide?.facturas?.length ?? 0);
+    const validateCheckbox = (conceptDelivery.length + disabledInvoices.size) != (guide?.facturas?.length ?? 0);
     const validateCheckboxConturyDelivery = showCheckbox && selectedMultipleInvoices.length <= 1 && selectedMultipleInvoices[0]?.facturas[0]?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO
     const conditionData = showCheckbox && selectedMultipleInvoices.length > 1;
     const validateCheckboxlength = conceptDelivery.length == guide?.facturas?.length;
+    const conditionButtonDate = (conceptDelivery.length + disabledInvoices.size) === (guide?.facturas?.length ?? 0) || guide?.fecha_apertura || EntryVisible;
 
     useEffect(() => {
         const processPhotos = async () => {
@@ -605,13 +764,13 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         if (validateCheckboxConturyDelivery) {
             // Navegar a la nueva pantalla con los parámetros necesarios
             router.push(
-                `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(selectedMultipleInvoices[0]))}&token=${encodeURIComponent(token ?? "")}&numberGuide=${numberGuide}&isCountryDelivery=${true}&routeStarted=${'true'}`
+                `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(selectedMultipleInvoices[0]))}&token=${encodeURIComponent(token ?? "")}&numberGuide=${numberGuide}&isSelectInvocies=${'true'}&isAnticipe=${'true'}`
             );
         }
     }, [showCheckbox, selectedMultipleInvoices]);
     const isSmallScreen = height <= 780;
     const closeButton = routeStarted || buttonValue;
-
+    
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -631,181 +790,188 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
             {/* Alert de pago pendiente */}
 
-            <ScrollView
-                style={[styles.scrollView, { marginTop: RefreshingOnPress ? 90 : 8 }]}
-                contentContainerStyle={[
-                    styles.scrollContent,
-                    // Ajustar el padding cuando no hay alerta
-                ]}
-                showsVerticalScrollIndicator={false}
-            >
+            {!guide ? (
+                <OrderDetailSkeletonSelect />
 
-                {/* Card blanco centrado */}
-                <View style={styles.card}>
-                    {/* Encabezado */}
-                    <View style={styles.cardHeader}>
-                        <View
-                            style={[
-                                styles.statusContainer,
-                                validateCheckboxlength && { backgroundColor: '#DFF5E1' },
-                            ]}
-                        >
-                            <Text
-                                style={[
-                                    styles.status,
-                                    validateCheckboxlength && { color: '#1F9144' },
-                                ]}
-                            >
-                                {validateCheckboxlength ? 'Pago realizado' : 'Pendiente'}
-                            </Text>
+            ) : (
+                <>
+                    <ScrollView
+                        style={[styles.scrollView, { marginTop: RefreshingOnPress ? 90 : 8 }]}
+                        contentContainerStyle={[
+                            styles.scrollContent,
+                            // Ajustar el padding cuando no hay alerta
+                        ]}
+                        showsVerticalScrollIndicator={false}
+                    >
+
+                        {/* Card blanco centrado */}
+                        <View style={styles.card}>
+                            {/* Encabezado */}
+                            <View style={styles.cardHeader}>
+                                <View
+                                    style={[
+                                        styles.statusContainer,
+                                        validateCheckboxlength && { backgroundColor: '#DFF5E1' },
+                                    ]}
+                                >
+                                    <Text
+                                        style={[
+                                            styles.status,
+                                            validateCheckboxlength && { color: '#1F9144' },
+                                        ]}
+                                    >
+                                        {validateCheckboxlength ? 'Pago realizado' : 'Pendiente'}
+                                    </Text>
+                                </View>
+                            </View>
+
+                            {/* Información del minimercado */}
+                            <View style={styles.merchantInfo}>
+                                <Text style={styles.merchantName}>{guide?.nombreCliente ?? ''}</Text>
+                                <Text style={styles.documentNumber}>{guide?.codigoCliente ?? '0'}</Text>
+                                <Text style={styles.address}>{cleanSpaces(guide?.direccion)}, {cleanSpaces(guide?.poblacion)}</Text>
+                            </View>
+
+                            {/* Línea divisoria */}
+                            <View style={styles.orderInfo}>
+                                <View style={styles.divider} />
+                                <View style={styles.row}>
+                                    <Text style={styles.label}>Ordenes a entregar</Text>
+                                    <Text style={styles.value}> {Number(guide?.facturas?.length) - Number(conceptDelivery.length)}</Text>
+                                </View>
+                            </View>
+
+                            <View style={styles.row}>
+                                <Text style={styles.labelTotal}>Valor total del pedido</Text>
+                                <Text style={[styles.value, { color: '#141D32', fontWeight: '800' }]}>
+                                    {
+                                        '$ ' +
+                                        guide?.facturas
+                                            ?.filter(factura => factura?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO)
+                                            ?.reduce((sum, f) => sum + (Number(f.valorRecaudar) || 0), 0)
+                                            ?.toLocaleString('es-CO', { minimumFractionDigits: 0 }) || '0'
+                                    }
+                                </Text>
+                            </View>
+                            <View style={styles.divider} />
+                            <View style={styles.row}>
+                                <Text style={styles.label}>Valor recaudado</Text>
+                                <Text style={styles.value}>{'$ ' + Number(totalAproved || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
+
+                            </View>
+                            <View style={styles.row}>
+                                <Text style={styles.labelTotal}>Valor a recaudar</Text>
+                                <Text style={[
+                                    styles.value,
+                                    {
+                                        color: Number(totalRecauder) === 0 ? '#1F9144' : '#C62828',
+                                        fontWeight: '800',
+                                        fontSize: 16
+                                    }
+                                ]}>
+                                    {'$ ' + (Number(totalRecauder) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                                </Text>
+                            </View>
                         </View>
-                    </View>
 
-                    {/* Información del minimercado */}
-                    <View style={styles.merchantInfo}>
-                        <Text style={styles.merchantName}>{guide?.nombreCliente ?? ''}</Text>
-                        <Text style={styles.documentNumber}>{guide?.codigoCliente ?? '0'}</Text>
-                        <Text style={styles.address}>{cleanSpaces(guide?.direccion)}, {cleanSpaces(guide?.poblacion)}</Text>
-                    </View>
-
-                    {/* Línea divisoria */}
-                    <View style={styles.orderInfo}>
-                        <View style={styles.divider} />
-                        <View style={styles.row}>
-                            <Text style={styles.label}>Ordenes a entregar</Text>
-                            <Text style={styles.value}> {Number(guide?.facturas?.length) - Number(conceptDelivery.length)}</Text>
+                        <View style={styles.headerContainerTwo}>
+                            <View style={{ width: '100%' }}>
+                                <Text style={styles.headerTitleTWO}>Ordenes a entregar</Text>
+                                {/* Solo mostrar espacio y alerta cuando se cumpla la condición */}
+                                {(validateCheckbox) && (
+                                    <View style={styles.alertSpacer}>
+                                        <PaymentPendingAlert
+                                            visible={true}
+                                            title="Evidencia pendiente"
+                                            subtitle="Para cerrar el pedido, debes cargar la evidencia de todas las ordenes."
+                                            onHide={() => setShowPaymentPending(false)}
+                                        />
+                                    </View>
+                                )}
+                            </View>
                         </View>
-                    </View>
 
-                    <View style={styles.row}>
-                        <Text style={styles.labelTotal}>Valor total del pedido</Text>
-                        <Text style={[styles.value, { color: '#141D32', fontWeight: '800' }]}>
-                            {
-                                '$ ' +
-                                guide?.facturas
-                                    ?.filter(factura => factura?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO)
-                                    ?.reduce((sum, f) => sum + (Number(f.valorRecaudar) || 0), 0)
-                                    ?.toLocaleString('es-CO', { minimumFractionDigits: 0 }) || '0'
-                            }
-                        </Text>
-                    </View>
-                    <View style={styles.divider} />
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Valor recaudado</Text>
-                        <Text style={styles.value}>{'$ ' + Number(totalAproved || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
-
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.labelTotal}>Valor a recaudar</Text>
-                        <Text style={[
-                            styles.value,
-                            {
-                                color: Number(totalRecauder) === 0 ? '#1F9144' : '#C62828',
-                                fontWeight: '800',
-                                fontSize: 16
-                            }
-                        ]}>
-                            {'$ ' + (Number(totalRecauder) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
-                        </Text>
-                    </View>
-                </View>
-
-                <View style={styles.headerContainerTwo}>
-                    <View style={{ width: '100%' }}>
-                        <Text style={styles.headerTitleTWO}>Ordenes a entregar</Text>
-                        {/* Solo mostrar espacio y alerta cuando se cumpla la condición */}
-                        {(validateCheckbox && selectedMultipleInvoices.length <= 1 && !openPayment) && (
-                            <View style={styles.alertSpacer}>
-                                <PaymentPendingAlert
-                                    visible={true}
-                                    title="Evidencia pendiente"
-                                    subtitle="Para cerrar el pedido, debes cargar la evidencia de todas las ordenes."
-                                    onHide={() => setShowPaymentPending(false)}
+                        {(!showCheckbox || activateSelect) && (
+                            <View style={{ flex: 1, padding: 16 }}>
+                                <InvoicesOneList guide={guide}
+                                    onInvoicesMultiSelect={handleMultiSelect}
+                                    documentMeico={documentMeico}
+                                    numberGuide={numberGuide}
+                                    isSelectInvocies={isSelectInvocies}
+                                    token={token}
+                                    conceptDelivery={conceptDelivery}
+                                    activeView={(guide?.fecha_apertura || EntryVisible) ? true : false}
+                                    showCheckboxes={(guide?.fecha_apertura || EntryVisible) ? true : false}
+                                    disabledInvoices={disabledInvoices}
                                 />
                             </View>
                         )}
-                    </View>
-                </View>
 
-                {(!showCheckbox || activateSelect) && (
-                    <View style={{ flex: 1, padding: 16 }}>
-                        <InvoicesOneList guide={guide}
-                            onInvoicesMultiSelect={handleMultiSelect}
-                            documentMeico={documentMeico}
-                            numberGuide={numberGuide}
-                            isSelectInvocies={isSelectInvocies}
-                            token={token}
-                            conceptDelivery={conceptDelivery}
-                            activeView={validateCheckbox ? true : buttonValue ? true : activeView}
-                            showCheckboxes={validateCheckbox ? true : buttonValue ? true : showCheckboxes}
-                        />
-                    </View>
-                )}
-
-                {(showCheckbox && selectedMultipleInvoices.length <= 1 && selectedMultipleInvoices[0]?.facturas[0]?.tipo != TypeInvoiceEnum.CONTADO_EFECTIVO) && (
-                    <OneSelectedOrder
-                        data={selectedMultipleInvoices[0] ? [selectedMultipleInvoices[0]] : undefined}
-                        conceptDelivery={conceptDelivery}
-                        onSelectionChange={(isSelected, selectedData) => {
-                            if (!isSelected) setShowCheckbox(false);
-                        }}
-                        uploadPhoto={() => setUploadPhoto(true)}
-                        onOpenRefusedModal={() => setShowModalRefused(true)}
-                        onStatusChange={(status) => { }}
-                        selectedStatus={showStatusDelivery}
-                        setShowStatusDelivery={setShowStatusDelivery}
-                    />
-                )}
-
-
-            </ScrollView>
-            {guide?.estado === 'Pendiente' && (
-                <View style={[styles.redBackground, { height: heightValue ? 100 : 90 }]} />
-            )}
-
-            <View style={[styles.footer, {
-                marginBottom: isSmallScreen ? 0 : heightValue ? 0 : 20,
-                bottom: isSmallScreen ? 12 : heightValue ? 60 : 30
-            }]}>
-
-                {(() => {
-                    if (guide?.estado !== 'Pendiente') return null;
-                    if (selectedMultipleInvoices.length > 0 || validateCheckbox) {
-                        return (
-                            <PrimaryButton
-                                title={"Continuar"}
-                                onPress={nextPages ? handleNextPage : handleSubmitData}
-                                disabled={false}
-                                width={328}
-                                height={43}
+                        {(showCheckbox && selectedMultipleInvoices.length <= 1 && selectedMultipleInvoices[0]?.facturas[0]?.tipo != TypeInvoiceEnum.CONTADO_EFECTIVO) && (
+                            <OneSelectedOrder
+                                data={selectedMultipleInvoices[0] ? [selectedMultipleInvoices[0]] : undefined}
+                                conceptDelivery={conceptDelivery}
+                                onSelectionChange={(isSelected, selectedData) => {
+                                    if (!isSelected) setShowCheckbox(false);
+                                }}
+                                uploadPhoto={() => setUploadPhoto(true)}
+                                onOpenRefusedModal={() => setShowModalRefused(true)}
+                                onStatusChange={(status) => { }}
+                                selectedStatus={showStatusDelivery}
+                                setShowStatusDelivery={setShowStatusDelivery}
                             />
-                        );
-                    } else {
+                        )}
 
-                        if (selectedMultipleInvoices.length === 0) {
-                            return (
-                                <PrimaryButtonDetails
-                                    ref={btnRef}
-                                    autoReset={validateException}
-                                    key={conditionButton || buttonValue ? "cerrar" : "llegue"}
-                                    title={conditionButton || buttonValue ? "Cerrar pedido" : "Ya llegué"}
-                                    onPress={conditionButton || buttonValue ? submitData : handleSubmit}
-                                    disabled={false}
-                                    width={328}
-                                    height={43}
-                                    buttonColor={isValidData ? undefined : closeButton || conditionButton ? "#DDDFE8" : validateCheckboxlength ? undefined : undefined}
-                                    buttonColorEnd={isValidData ? undefined : closeButton || conditionButton ? "#DDDFE8" : validateCheckboxlength ? undefined : undefined}
-                                    titleColor={isValidData ? undefined : closeButton || conditionButton ? "#FFFFFF" : undefined}
-                                    circleColor={isValidData ? undefined : closeButton || conditionButton ? "#788095" : validateCheckboxlength ? undefined : undefined}
-                                />
-                            );
-                        }
-                    }
 
-                    return null;
-                })()}
-            </View>
+                    </ScrollView>
+                    {guide?.estado === 'Pendiente' && (
+                        <View style={[styles.redBackground, { height: heightValue ? 100 : 90 }]} />
+                    )}
 
+                    <View style={[styles.footer, {
+                        marginBottom: isSmallScreen ? 0 : heightValue ? 0 : 20,
+                        bottom: isSmallScreen ? 12 : heightValue ? 60 : 30
+                    }]}>
+
+                        {(() => {
+                            if (guide?.estado !== 'Pendiente') return null;
+                            if (selectedMultipleInvoices.length > 0) {
+                                return (
+                                    <PrimaryButton
+                                        title={"Continuar"}
+                                        onPress={nextPages ? handleNextPage : handleSubmitData}
+                                        disabled={false}
+                                        width={328}
+                                        height={43}
+                                    />
+                                );
+                            } else {
+
+                                if (selectedMultipleInvoices.length === 0) {
+                                    return (
+                                        <PrimaryButtonDetails
+                                            ref={btnRef}
+                                            autoReset={validateException}
+                                            key={conditionButtonDate || buttonValue ? "cerrar" : "llegue"}
+                                            title={conditionButtonDate || buttonValue ? "Cerrar pedido" : "Ya llegué"}
+                                            onPress={conditionButtonDate || buttonValue ? submitData : handleSubmit}
+                                            disabled={false}
+                                            width={328}
+                                            height={43}
+                                            buttonColor={isValidData ? undefined : closeButton || conditionButtonDate ? "#DDDFE8" : validateCheckboxlength ? undefined : undefined}
+                                            buttonColorEnd={isValidData ? undefined : closeButton || conditionButtonDate ? "#DDDFE8" : validateCheckboxlength ? undefined : undefined}
+                                            titleColor={isValidData ? undefined : closeButton || conditionButtonDate ? "#FFFFFF" : undefined}
+                                            circleColor={isValidData ? undefined : closeButton || conditionButtonDate ? "#788095" : validateCheckboxlength ? undefined : undefined}
+                                        />
+                                    );
+                                }
+                            }
+
+                            return null;
+                        })()}
+                    </View>
+                </>
+            )}
             <ExceptionModal
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}

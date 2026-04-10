@@ -28,6 +28,7 @@ interface ProductFormFormProps {
     IsGoBack?: boolean;
     routeStartedBotton?: string;
     isViewDetailsPorducts?: boolean;
+    isAnticipe?: string;
 
 }
 
@@ -57,7 +58,7 @@ interface FinalizedData {
         warningCount: number;
     };
 }
-export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton, isViewDetailsPorducts }: ProductFormFormProps) {
+export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton, isViewDetailsPorducts, isAnticipe }: ProductFormFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
@@ -156,7 +157,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     setModalVisible(true);
                     if (isSelectInvocies) {
                         router.push(
-                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&detailsCounterDelivery=${true}&isSelectInvocies=${'true'}&isViewDetailsPorducts=${'true'}`
+                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&detailsCounterDelivery=${true}&isSelectInvocies=${'true'}&isViewDetailsPorducts=${'true'}&isAnticipe=${isAnticipe}`
                         );
                     } else {
                         router.push(

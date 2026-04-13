@@ -52,6 +52,7 @@ interface ProductValidationSectionProps {
     onRefreshing?: () => void;
     onItemProductsPending?: (data: Detail[]) => void;
     notDetails?: string;
+    onValueInvocie?: (value: number) => void;
 }
 
 export const ProductValidationSection = ({
@@ -70,7 +71,8 @@ export const ProductValidationSection = ({
     refreshing,
     onRefreshing,
     onItemProductsPending,
-    notDetails
+    notDetails,
+    onValueInvocie
 }: ProductValidationSectionProps) => {
     const [allProducts, setAllProducts] = useState<Document[]>(dataPorduct || []);
     const [validatedProducts, setValidatedProducts] = useState<Document[]>([]);
@@ -87,8 +89,6 @@ export const ProductValidationSection = ({
     const [productsSold, setProductsSold] = useState<Detail[]>([]);
     const [productsPending, setProductsPending] = useState<Detail[]>([]);
     const [activeSwipeId, setActiveSwipeId] = useState<string | null>(null);
-
-    console.log("notDetails: ", notDetails);
 
     useEffect(() => {
         if (showDirection) {
@@ -234,6 +234,7 @@ export const ProductValidationSection = ({
         try {
             if (productsPending.length == 0) {
                 onFinalize?.();
+                onValueInvocie?.(valueRealTotal)
                 setShowValidatedModal(true);
             }
         } catch (error) {
@@ -306,7 +307,9 @@ export const ProductValidationSection = ({
         .reduce((sum, value) => sum + value, 0);
 
     // Valor a recaudar estimado: validados + por validar
-    const valueRealTotal = totalGeneralValidate + totalGeneral
+    const valueRealTotal = totalGeneralValidate + totalGeneral;
+
+
 
     // 3. Función para actualizar el estado de un producto
     const updateProductStatus = (
@@ -497,11 +500,11 @@ export const ProductValidationSection = ({
                 {/* {(allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CREDITO ||
                     allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CONTADO_EFECTIVO ? ( */}
                 {!notDetails ? (
-                        <View style={styles.valueRow}>
-                            <Text style={styles.valueLabel}>Valor a recaudar:</Text>
-                            <Text style={styles.valueAmount}>$ {formatNumber(Number(valueRealTotal))}</Text>
-                        </View>
-                    ) : null
+                    <View style={styles.valueRow}>
+                        <Text style={styles.valueLabel}>Valor a recaudar:</Text>
+                        <Text style={styles.valueAmount}>$ {formatNumber(Number(valueRealTotal))}</Text>
+                    </View>
+                ) : null
                 }
 
                 {/* // ) : null

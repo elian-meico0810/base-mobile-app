@@ -1,6 +1,7 @@
 import { ActionAllData } from '@/components/generals/ActionAllData';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
+import { RedeliveryQuestionModal } from '@/components/generals/RedeliveryQuestionModa';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { CausalRefusedEnum, TyepeCausalRefusedEnum, TypeCaculateValueEnum, TypeDetailsEnum } from '@/src/constants/GuideStates';
@@ -59,17 +60,17 @@ interface FinalizedData {
         warningCount: number;
     };
 }
-export function ProductForm({ 
-    initialGuide, 
-    token = "", 
-    onSubmit, 
-    numberGuide, 
-    isSelectInvocies, 
-    documentMeico, 
-    isCountryDelivery = false, 
-    IsGoBack = false, 
-    routeStartedBotton, 
-    isViewDetailsPorducts, 
+export function ProductForm({
+    initialGuide,
+    token = "",
+    onSubmit,
+    numberGuide,
+    isSelectInvocies,
+    documentMeico,
+    isCountryDelivery = false,
+    IsGoBack = false,
+    routeStartedBotton,
+    isViewDetailsPorducts,
     isAnticipe,
     notDetails }: ProductFormFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
@@ -81,6 +82,7 @@ export function ProductForm({
     const [successButton, setSuccessButton] = useState(false);
     const [alertButton, setAlertButton] = useState(false);
     const [uploadPhotoFile, setUploadPhotoFile] = useState(false);
+    const [showModal, setShowModal] = useState(false);
     const [showViewModal, setViewModal] = useState(false);
     const [showViewModalActionRefused, setViewModalActionRefused] = useState(false);
     const [showViewModalActionSuccess, setViewModalActionSuccess] = useState(false);
@@ -643,8 +645,12 @@ export function ProductForm({
                 {/** Listado de productos */}
                 <ProductValidationSection
                     onFinalize={() => {
-                        handleSubmit;
-                        setUploadPhoto(true);
+                        if (!notDetails) {
+                            console.log("No vino notDetails", notDetails);
+
+                            handleSubmit;
+                            setUploadPhoto(true);
+                        }
                     }}
                     onSuccessAlet={successButton}
                     onErrorAlert={alertButton}
@@ -678,6 +684,13 @@ export function ProductForm({
                         }
                     }}
                     notDetails={notDetails}
+                    onValueInvocie={(value) => {
+                        if (notDetails) {
+                            console.log("Si vino notDetails", notDetails);
+                            console.log("datos: ", value);
+                            setShowModal(true);
+                        }
+                    }}
                 />
             </ScrollView>
 
@@ -711,6 +724,22 @@ export function ProductForm({
                     }}
                 />
             )}
+
+            {(showModal) && (
+                <RedeliveryQuestionModal
+                    onClose={() => setShowModal(false)}
+                    onConfirm={(response) => {
+                        if (response === "yes") {
+                            console.log("Entro aca  en el if ");
+                            // El cliente quiere otro día
+                        } else {
+                            console.log("Entro en el else")
+                            // El cliente NO quiere reprogramar
+                        }
+                    }}
+                />
+            )}
+
 
             {modalStatusNovelty == 'right' && (
                 <ReportNoveltyScreen

@@ -28,11 +28,12 @@ interface ProductItemProps {
     id?: number;
     testToken?: string;
     testUrl?: string;
-    onItemData?: (data: Detail | null) => void; 
+    onItemData?: (data: Detail | null) => void;
     refreshing?: boolean;
     onRefreshing?: () => void;
-    onDataProduct?: (id: number, total: number, unidadesEntregadas?: number | null) => void; 
+    onDataProduct?: (id: number, total: number, unidadesEntregadas?: number | null) => void;
     porcentajeDFR?: number;
+    notDetails?: string;
 }
 
 export const ProductItem = ({
@@ -49,7 +50,8 @@ export const ProductItem = ({
     refreshing,
     onRefreshing,
     onDataProduct,
-    porcentajeDFR
+    porcentajeDFR,
+    notDetails
 }: ProductItemProps) => {
     const isValidated = item?.estado?.codigo === 'EST_DET_VALIDADO';
     const deliveredUnits = Number(item?.unidadesEntregadas ?? 0);
@@ -468,11 +470,11 @@ export const ProductItem = ({
                                     style={styles.productImage}
                                     resizeMode="cover"
                                 />
-                                {(statusIcon === 'success' && item.estado?.codigo === 'EST_DET_VALIDADO')? (
+                                {(statusIcon === 'success' && item.estado?.codigo === 'EST_DET_VALIDADO') ? (
                                     <View style={styles.statusDot}>
                                         <MaterialIcons name="check" size={9} color="#FFFFFF" />
                                     </View>
-                                ) :( statusIcon === 'error'&& item.estado?.codigo === 'EST_DET_VALIDADO') ? (
+                                ) : (statusIcon === 'error' && item.estado?.codigo === 'EST_DET_VALIDADO') ? (
                                     <View style={styles.errorDot}>
                                         <MaterialIcons name="close" size={9} color="#FFFFFF" />
                                     </View>
@@ -484,11 +486,11 @@ export const ProductItem = ({
                             </View>
                         ) : (
                             <View style={styles.imagePlaceholder}>
-                                   {(statusIcon === 'success' && item.estado?.codigo === 'EST_DET_VALIDADO')? (
+                                {(statusIcon === 'success' && item.estado?.codigo === 'EST_DET_VALIDADO') ? (
                                     <View style={styles.statusDot}>
                                         <MaterialIcons name="check" size={9} color="#FFFFFF" />
                                     </View>
-                                ) :( statusIcon === 'error'&& item.estado?.codigo === 'EST_DET_VALIDADO') ? (
+                                ) : (statusIcon === 'error' && item.estado?.codigo === 'EST_DET_VALIDADO') ? (
                                     <View style={styles.errorDot}>
                                         <MaterialIcons name="close" size={9} color="#FFFFFF" />
                                     </View>
@@ -523,15 +525,17 @@ export const ProductItem = ({
                                 <Text style={styles.productSku}>
                                     {item.producto.codigo.trim()}
                                 </Text>
-                                
+
                             </View>
 
-                            <View style={styles.priceRow}>
-                                <Text style={styles.totalPrice}>
-                                    ${formatNumber(totalValueDisplay ?? 0)}
-                                </Text>
-                                <Text style={styles.unitPrice}>$ {formatNumber(calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_2) ?? 0)} c/u</Text>
-                            </View>
+                            {!notDetails ? (
+                                <View style={styles.priceRow}>
+                                    <Text style={styles.totalPrice}>
+                                        ${formatNumber(totalValueDisplay ?? 0)}
+                                    </Text>
+                                    <Text style={styles.unitPrice}>$ {formatNumber(calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_2) ?? 0)} c/u</Text>
+                                </View>
+                            ) : null}
                         </View>
                     </View>
                 </View>

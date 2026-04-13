@@ -29,6 +29,7 @@ interface ProductFormFormProps {
     routeStartedBotton?: string;
     isViewDetailsPorducts?: boolean;
     isAnticipe?: string;
+    notDetails?: string;
 
 }
 
@@ -58,7 +59,19 @@ interface FinalizedData {
         warningCount: number;
     };
 }
-export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton, isViewDetailsPorducts, isAnticipe }: ProductFormFormProps) {
+export function ProductForm({ 
+    initialGuide, 
+    token = "", 
+    onSubmit, 
+    numberGuide, 
+    isSelectInvocies, 
+    documentMeico, 
+    isCountryDelivery = false, 
+    IsGoBack = false, 
+    routeStartedBotton, 
+    isViewDetailsPorducts, 
+    isAnticipe,
+    notDetails }: ProductFormFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
@@ -92,7 +105,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
     const handleGoBack = () => {
         router.push(
-            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${isSelectInvocies}`
+            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${isSelectInvocies}&notDetails=${notDetails}`
         );
     };
 
@@ -157,11 +170,11 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     setModalVisible(true);
                     if (isSelectInvocies) {
                         router.push(
-                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&detailsCounterDelivery=${true}&isSelectInvocies=${'true'}&isViewDetailsPorducts=${'true'}&isAnticipe=${isAnticipe}`
+                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&detailsCounterDelivery=${true}&isSelectInvocies=${'true'}&isViewDetailsPorducts=${'true'}&isAnticipe=${isAnticipe}&notDetails=${notDetails}`
                         );
                     } else {
                         router.push(
-                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&detailsCounterDelivery=${true}`
+                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&detailsCounterDelivery=${true}&notDetails=${notDetails}`
                         );
                     }
 
@@ -436,6 +449,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         try {
             setLoading(true);
             const responseQuery = await detailsRepositoryImpl.listPorductData(token, Number(orderId));
+            console.log("responseQuery: ", responseQuery);
             if (responseQuery?.statusCode == 200) {
                 if (typeof responseQuery.data === "object" && !Array.isArray(responseQuery.data)) {
                     setPorductData(responseQuery.data ? [responseQuery.data] : []);
@@ -664,6 +678,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                             setProductItemDataPending(data);
                         }
                     }}
+                    notDetails={notDetails}
                 />
             </ScrollView>
 

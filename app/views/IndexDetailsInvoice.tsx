@@ -30,7 +30,7 @@ export default function IndexDetailsInvoiceScreen() {
     const data = params.multiplePhotos as string;
     const multiplePhotos: EvidencePhoto[] = data ? JSON.parse(data) : [];
     const isAnticipe = params.isAnticipe as string;
-
+    const notDetails = params.notDetails as string;
     return (
         <>
             <Stack.Screen
@@ -54,6 +54,7 @@ export default function IndexDetailsInvoiceScreen() {
                             routeStartedBotton={routeStartedBotton}
                             isViewDetailsPorducts={isViewDetailsPorducts ? true : false}
                             isAnticipe={isAnticipe}
+                            notDetails={notDetails}
                         />
                     );
                 }

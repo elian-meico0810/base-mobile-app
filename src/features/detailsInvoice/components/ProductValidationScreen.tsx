@@ -51,9 +51,27 @@ interface ProductValidationSectionProps {
     refreshing?: boolean;
     onRefreshing?: () => void;
     onItemProductsPending?: (data: Detail[]) => void;
+    notDetails?: string;
 }
 
-export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAlet, onStatusNovelty, shouldAutoValidate, modalStatusNovelty, onCloseReportPorduct, data, messages, dataPorduct, token, onItemData, refreshing, onRefreshing, onItemProductsPending }: ProductValidationSectionProps) => {
+export const ProductValidationSection = ({
+    onFinalize,
+    onErrorAlert,
+    onSuccessAlet,
+    onStatusNovelty,
+    shouldAutoValidate,
+    modalStatusNovelty,
+    onCloseReportPorduct,
+    data,
+    messages,
+    dataPorduct,
+    token,
+    onItemData,
+    refreshing,
+    onRefreshing,
+    onItemProductsPending,
+    notDetails
+}: ProductValidationSectionProps) => {
     const [allProducts, setAllProducts] = useState<Document[]>(dataPorduct || []);
     const [validatedProducts, setValidatedProducts] = useState<Document[]>([]);
     const [showValidatedModal, setShowValidatedModal] = useState(false);
@@ -69,6 +87,8 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     const [productsSold, setProductsSold] = useState<Detail[]>([]);
     const [productsPending, setProductsPending] = useState<Detail[]>([]);
     const [activeSwipeId, setActiveSwipeId] = useState<string | null>(null);
+
+    console.log("notDetails: ", notDetails);
 
     useEffect(() => {
         if (showDirection) {
@@ -287,7 +307,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
 
     // Valor a recaudar estimado: validados + por validar
     const valueRealTotal = totalGeneralValidate + totalGeneral
-    
+
     // 3. Función para actualizar el estado de un producto
     const updateProductStatus = (
         id: number,
@@ -372,7 +392,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                     onRefreshing?.();
                                 }}
                                 onDataProduct={(id, _totalProducts, unidadesEntregadas) => {
-                                    const deliveredUnits =  unidadesEntregadas ? unidadesEntregadas : item?.unidadesSolicitadas;
+                                    const deliveredUnits = unidadesEntregadas ? unidadesEntregadas : item?.unidadesSolicitadas;
                                     const deliveredValue = calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, Number(deliveredUnits), undefined, Number(allProducts?.[0]?.porcentajeDFR));
                                     updateProductStatus(id, Number(deliveredValue), 'pending', unidadesEntregadas);
 
@@ -383,7 +403,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                     // console.log("========================================");
                                 }}
                                 porcentajeDFR={Number(allProducts?.[0]?.porcentajeDFR)}
-
+                                notDetails={notDetails}
                             />
                         ))
                     ) : (
@@ -434,6 +454,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                             updateProductStatus(id, Number(deliveredValue), 'validated', unidadesEntregadas);
                                         }}
                                         porcentajeDFR={Number(allProducts?.[0]?.porcentajeDFR)}
+                                        notDetails={notDetails}
                                     />
                                 ))}
                         </>
@@ -475,10 +496,14 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
 
                 {/* {(allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CREDITO ||
                     allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CONTADO_EFECTIVO ? ( */}
-                    <View style={styles.valueRow}>
-                        <Text style={styles.valueLabel}>Valor a recaudar:</Text>
-                        <Text style={styles.valueAmount}>$ {formatNumber(Number(valueRealTotal))}</Text>
-                    </View>
+                {!notDetails ? (
+                        <View style={styles.valueRow}>
+                            <Text style={styles.valueLabel}>Valor a recaudar:</Text>
+                            <Text style={styles.valueAmount}>$ {formatNumber(Number(valueRealTotal))}</Text>
+                        </View>
+                    ) : null
+                }
+
                 {/* // ) : null
                 // )} */}
 

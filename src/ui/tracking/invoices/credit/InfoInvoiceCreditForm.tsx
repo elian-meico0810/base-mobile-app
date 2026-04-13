@@ -16,7 +16,6 @@ import { DeliveryStatus } from '@/src/features/tracking/components/checkbox/Deli
 import { DeliveryStatusAction } from '@/src/features/tracking/components/checkbox/DeliveryStatusAction';
 import { NoDeliveryModal } from '@/src/features/tracking/components/checkbox/NoDeliveryModal';
 import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
-import { ChangePhoneModal } from '@/src/features/tracking/components/screens/ChangePhoneModal';
 import { Cause, GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { CreateEntregaProps, DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
@@ -39,7 +38,8 @@ interface InfoInvoiceCreditFormProps {
     isCountryDelivery?: boolean;
     isViewDetailsPorducts?: boolean;
     detailsCounterDelivery?: boolean;
-
+    isAnticipe?: string;
+    routeStartedBotton?: string;
 }
 
 interface EvidencePhoto {
@@ -51,12 +51,22 @@ interface EvidencePhoto {
 type DeliveryStatus = "total" | "parcial" | "rechazo" | null;
 type OptionsRefusedPorps = 'Dinero' | 'Dueño' | 'Tienda' | 'Productos' | null;
 
-export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isViewDetailsPorducts, isCountryDelivery, detailsCounterDelivery }: InfoInvoiceCreditFormProps) {
+export function InfoInvoiceCreditForm({
+    initialGuide,
+    token = "",
+    onSubmit,
+    numberGuide,
+    isSelectInvocies,
+    documentMeico,
+    isViewDetailsPorducts,
+    isCountryDelivery,
+    detailsCounterDelivery,
+    isAnticipe,
+    routeStartedBotton
+}: InfoInvoiceCreditFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [loading, setLoading] = useState(false);
-    const [routeStarted, setRouteStarted] = useState(false);
-    const [showPayment, setShowPayment] = useState(false);
-    const [showDetailInvoiceQR, setShowDetailInvoiceQR] = useState(false);
+    const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
     const [modalVisible, setModalVisible] = useState(false);
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
@@ -108,7 +118,7 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
     const [multiplePhotosTwo, setMultiplePhotosTwo] = useState<EvidencePhoto[]>([]);
 
 
-    const closeButton = routeStarted || buttonValue;
+    const closeButton = routeStarted;
 
     useEffect(() => {
         const backAction = () => {
@@ -132,13 +142,6 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
             `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
         );
     };
-
-    useEffect(() => {
-        if (modalRefused) {
-            setShowDetailInvoiceQR(false);
-            setModalgenerateQR(false);
-        }
-    }, [modalRefused]);
 
     useEffect(() => {
         if (isSelectInvocies) {
@@ -176,13 +179,6 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
         fetchGuide();
     }, [Number(initialGuide?.facturas[0]?.numeroFactura), token]);
 
-    const handleGenerateQR = (type: string, qr?: string) => {
-        setModalgenerateQR(true);
-        setShowDetailInvoiceQR(false);
-        setShowPayment(false);
-        if (qr) setQrBase64(qr);
-        if (type) setQrType(type);
-    };
 
     const handlSendWhatsApp = async () => {
         try {
@@ -320,11 +316,9 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
 
     const handleSubmit = async () => {
         try {
+            setLoading(true);
             setvalidateIsBotton(true);
             setEntryVisible(true);
-            setLoading(true);
-            setShowDetailInvoiceQR(false);
-            setShowPayment(false);
             const location = await Location.getCurrentPositionAsync({
                 accuracy: Location.Accuracy.Highest,
             });
@@ -353,8 +347,19 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
             if (response?.statusCode === 200) {
                 setvalidateIsBotton(true);
                 setEntryVisible(true);
-                setRouteStarted(true);
                 listDocumentQuery();
+                btnRef.current?.reset();
+                router.push({
+                    pathname: '/views/IndexDetailsInvoice',
+                    params: {
+                        guide: JSON.stringify(guide),
+                        numberGuide: numberGuide,
+                        token: token ?? "",
+                        isAnticipe: isAnticipe,
+                        notDetails: 'true',
+
+                    }
+                });
             } else {
                 setValidateException(true);
                 btnRef.current?.reset();
@@ -368,8 +373,6 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
             setModalTitle("¡Error!");
             setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -405,25 +408,6 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
         } catch (error: any) {
             setModalTitle("¡Error!");
             setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
-            setModalVisible(true);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const validateButton = async () => {
-        try {
-            setShowDetailInvoiceQR(false);
-            setShowPayment(false);
-            if (!routeStarted && !isSelectInvocies) {
-                setModalTitle("¡Alerta!");
-                setModalMessage("Debe indicar que ya llegó al lugar de la dirección para poder ejecutar esta acción.");
-                setModalVisible(true);
-                return;
-            }
-        } catch (error) {
-            setModalTitle("¡Error!");
-            setModalMessage("Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -1007,16 +991,16 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
                                 <PrimaryButtonDetails
                                     ref={btnRef}
                                     autoReset={validateException}
-                                    key={closeButton ? "cerrar" : "llegue"}
-                                    title={closeButton ? "Cerrar pedido" : "Ya llegué"}
-                                    onPress={closeButton ? submitData : handleSubmit}
+                                    key={"llegue"}
+                                    title={"Ya llegué"}
+                                    onPress={handleSubmit}
                                     disabled={false}
                                     width={328}
                                     height={43}
-                                    buttonColor={conceptDelivery ? undefined : closeButton ? "#DDDFE8" : undefined}
-                                    buttonColorEnd={conceptDelivery ? undefined : closeButton ? "#DDDFE8" : undefined}
-                                    titleColor={conceptDelivery ? undefined : closeButton ? "#FFFFFF" : undefined}
-                                    circleColor={conceptDelivery ? undefined : closeButton ? "#788095" : undefined}
+                                    buttonColor={undefined}
+                                    buttonColorEnd={undefined}
+                                    titleColor={undefined}
+                                    circleColor={undefined}
                                 />
                             )}
                         </>
@@ -1129,21 +1113,6 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
                     }}
                 />
             )}
-
-            <ChangePhoneModal
-                visible={showChangePhone}
-                onClose={() => setShowChangePhone(false)}
-                onConfirm={(newPhone) => {
-                    setPhone(newPhone);
-                    setShowChangePhone(false);
-                    setShowDetailInvoiceQR(true);
-                }}
-                onAlert={() => {
-                    setTimeout(() => {
-                        setShowSuccess(true);
-                    }, 100);
-                }}
-            />
 
             {showSuccess && (
                 <TopSuccessAlert

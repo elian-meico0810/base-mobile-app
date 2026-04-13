@@ -449,7 +449,6 @@ export function ProductForm({
         try {
             setLoading(true);
             const responseQuery = await detailsRepositoryImpl.listPorductData(token, Number(orderId));
-            console.log("responseQuery: ", responseQuery);
             if (responseQuery?.statusCode == 200) {
                 if (typeof responseQuery.data === "object" && !Array.isArray(responseQuery.data)) {
                     setPorductData(responseQuery.data ? [responseQuery.data] : []);

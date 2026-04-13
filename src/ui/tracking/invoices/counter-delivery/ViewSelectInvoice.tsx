@@ -288,7 +288,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             };
 
 
-            if (!guide?.fecha_apertura && !EntryVisible || conceptDeliverySelect?.length == 0 && !EntryVisible) {
+            if (conceptDeliverySelect?.length == 0 && !guide?.fecha_apertura && !EntryVisible) {
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");

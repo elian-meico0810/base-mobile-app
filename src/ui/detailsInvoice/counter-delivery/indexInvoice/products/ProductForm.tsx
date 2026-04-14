@@ -161,7 +161,6 @@ export function ProductForm({
                     setModalVisible(true);
                     return;
                 }
-                console.log("Estado actualizado:", selectedOption);
 
                 const payload = {
                     id_pedido: Number(orderId),
@@ -734,9 +733,7 @@ export function ProductForm({
                     onClose={() => setShowModal(false)}
                     onConfirm={(response) => {
                         if (response) {
-                            console.log("ANTES:", selectedOption);
                             setSelectedOption(response);
-                            console.log("DESPUÉS (pero aún viejo):", selectedOption);
                             setUploadPhoto(true);
                         }
                     }}

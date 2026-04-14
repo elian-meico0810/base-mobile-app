@@ -297,8 +297,6 @@ export const ProductValidationSection = ({
         unidadesEntregadas: new Map(),
     });
 
-    // console.log("productsByStatus: ",productsByStatus);
-
     // 2. Calcula los totales basados en los Maps
     const totalGeneral = Array.from(productsByStatus.pending.values())
         .reduce((sum, value) => sum + value, 0);

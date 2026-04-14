@@ -595,7 +595,7 @@ export function InfoInvoiceCreditForm({
                         totalOrderPayment: '0',
                         isViewDetailsPorducts: 'true',
                         isSelectInvocies: isSelectInvocies,
-                        notDetails: notDetails
+                        notDetails: "true"
                     }
 
                 });

@@ -40,7 +40,7 @@ export function TypePayment({
 }: TypePaymentProps) {
     const [isLoading, setIsLoading] = useState(false);
     const existValue = typeCash?.some(
-        (item) => item.valor === guide?.pedidos?.[0]?.canal
+        (item) => item.valor === guide?.facturas?.[0]?.tipo
     );
 
     return (

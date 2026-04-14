@@ -11,7 +11,7 @@ import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { OrderDetailSkeleton } from '@/components/skeleton/OrderDetailSkeleton ';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
-import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeDelivery, TypeInvoiceEnum, TypeQr } from '@/src/constants/GuideStates';
+import { OptionsRefusedEnum, StatusDelivery, TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import { DeliveryStatus } from '@/src/features/tracking/components/checkbox/DeliveryStatus';
 import { DeliveryStatusAction } from '@/src/features/tracking/components/checkbox/DeliveryStatusAction';
 import { NoDeliveryModal } from '@/src/features/tracking/components/checkbox/NoDeliveryModal';
@@ -20,10 +20,11 @@ import { Cause, GuideDetails } from '@/src/features/tracking/domain/details/Deta
 import { CreateEntregaProps, DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
-import { capitalizeFirst, cleanSpaces, getDeviceDateTime, getDistanceInMeters, heightCaldulate, toUpperCase } from '@/src/utils/uitls';
+import { capitalizeFirst, cleanSpaces, getDeviceDateTime, getDistanceInMeters, heightCaldulate, toUpperCase, uriToBase64 } from '@/src/utils/uitls';
 import { Image } from 'expo-image';
 import * as Location from "expo-location";
 import { useRouter } from 'expo-router';
+import * as SecureStore from "expo-secure-store";
 import { useEffect, useRef, useState } from "react";
 import { BackHandler, Dimensions, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 const { width, height } = Dimensions.get('window');
@@ -40,6 +41,8 @@ interface InfoInvoiceCreditFormProps {
     detailsCounterDelivery?: boolean;
     isAnticipe?: string;
     routeStartedBotton?: string;
+    selectedOption?: string;
+    notDetails?: string;
 }
 
 interface EvidencePhoto {
@@ -62,7 +65,9 @@ export function InfoInvoiceCreditForm({
     isCountryDelivery,
     detailsCounterDelivery,
     isAnticipe,
-    routeStartedBotton
+    routeStartedBotton,
+    selectedOption,
+    notDetails
 }: InfoInvoiceCreditFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [loading, setLoading] = useState(false);
@@ -116,7 +121,7 @@ export function InfoInvoiceCreditForm({
     const [modalButtonLabelValidate, setModalButtonLabelValidate] = useState("Entendido");
     const [highlightText, setHighlightText] = useState("");
     const [multiplePhotosTwo, setMultiplePhotosTwo] = useState<EvidencePhoto[]>([]);
-
+    const orderId = initialGuide?.pedidos?.[0]?.id;
 
     const closeButton = routeStarted;
 
@@ -136,11 +141,37 @@ export function InfoInvoiceCreditForm({
         return () => backHandler.remove();
     }, [allowBack, numberGuide, token]);
 
-    const handleGoBack = () => {
+    useEffect(() => {
+        const init = async () => {
+            const token = await SecureStore.getItemAsync("service_token");
+            setSasToken(token || "");
+
+        };
+        init();
+
+    }, []);
+
+
+
+    const handleGoBack = async () => {
         // router.back();
-        router.push(
-            `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
-        );
+        if (detailsCounterDelivery) {
+            router.push({
+                pathname: '/views/IndexDetailsInvoice',
+                params: {
+                    guide: JSON.stringify(guide),
+                    numberGuide: numberGuide,
+                    token: token ?? "",
+                    isSelectInvocies: isSelectInvocies,
+                    isAnticipe: isAnticipe,
+                    notDetails: notDetails,
+                }
+            });
+        } else {
+            router.push(
+                `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${isSelectInvocies}`
+            );
+        }
     };
 
     useEffect(() => {
@@ -156,81 +187,6 @@ export function InfoInvoiceCreditForm({
         }
     }, [token]);
 
-    useEffect(() => {
-
-        const fetchGuide = async () => {
-            try {
-                const respones = await invoiceRepositoryImpl.successfulBillPayment(
-                    Number(initialGuide?.facturas[0]?.numeroFactura),
-                    ENV_DEV.KEY_APP
-                );
-                if (respones?.statusCode === 200) {
-                    setPaymentSuccessful(respones.data as Invoice);
-                }
-            } catch (error) {
-                setModalTitle("¡Error!");
-                setModalMessage("Ocurrio un error inesperado.");
-                setModalVisible(true);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchGuide();
-    }, [Number(initialGuide?.facturas[0]?.numeroFactura), token]);
-
-
-    const handlSendWhatsApp = async () => {
-        try {
-            setLoading(true);
-
-            let response;
-
-            if (qrType === TypeQr.PASARELA) {
-                response = await invoiceRepositoryImpl.whatsappProps(
-                    {
-                        whatsapp: String(phone),
-                        nombre_cliente: String(guide?.nombreCliente),
-                        link_pago: String(qrBase64),
-                    },
-                    ENV_DEV.KEY_APP
-                );
-            } else {
-                response = await invoiceRepositoryImpl.WhatsappTATImage(
-                    {
-                        cus_no: String(guide?.codigoCliente),
-                        numdoc: String(guide?.facturas?.[0]?.numeroFactura),
-                        tipodoc: "TD_FACTURA",
-                        tipoCliente: String(guide?.facturas?.[0]?.tipoCliente),
-                        cliente: String(guide?.nombreCliente),
-                        numeroWhatsapp: "57" + String(phone),
-                    },
-                    token
-                );
-            }
-
-            if (response?.statusCode === 200) {
-                setShowSuccessQRP(true);
-                setModalgenerateQR(false);
-
-                setTimeout(() => {
-                    setShowPaymentPending(true);
-                }, 3000);
-            } else {
-                setModalTitle("¡Alerta!");
-                setModalMessage(response?.message ?? "Ocurrió un error inesperado.");
-                setModalVisible(true);
-            }
-
-            setLoading(false);
-        } catch (error: any) {
-            setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
-            setModalVisible(true);
-        } finally {
-            setLoading(false);
-        }
-    }
 
     const checkUnicationPermissions = async () => {
         try {
@@ -295,8 +251,10 @@ export function InfoInvoiceCreditForm({
                 }
                 setvalidateIsBotton(true);
                 setEntryVisible(true);
+                setLoading(false);
 
             } else {
+                setLoading(false);
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");
@@ -304,13 +262,12 @@ export function InfoInvoiceCreditForm({
                 setModalVisible(true);
             }
         } catch (error: any) {
+            setLoading(false);
             setValidateException(true);
             btnRef.current?.reset();
             setModalTitle("¡Error!");
             setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -360,7 +317,9 @@ export function InfoInvoiceCreditForm({
 
                     }
                 });
+                setLoading(false);
             } else {
+                setLoading(false);
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");
@@ -368,49 +327,12 @@ export function InfoInvoiceCreditForm({
                 setModalVisible(true);
             }
         } catch (error: any) {
+            setLoading(false);
             setValidateException(true);
             btnRef.current?.reset();
             setModalTitle("¡Error!");
             setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
-        }
-    };
-
-    const submitData = async () => {
-        try {
-            if (!conceptDelivery?.tipoEntrega?.codigo) {
-                setValidateException(true);
-                btnRef.current?.reset();
-                setModalTitle("¡Alerta!");
-                setModalMessage("Debe especificar un estado de entrega.");
-                setModalVisible(true);
-                return;
-            }
-            setLoading(true);
-            const response = await invoiceRepositoryImpl.closeAddresses(
-                guide?.idDireccion || 0,
-                token
-            );
-
-            if (response?.statusCode === 200) {
-                setEntryVisible(true);
-                setRouteStarted(true);
-                router.push(
-                    `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
-                );
-            } else {
-                setValidateException(true);
-                btnRef.current?.reset();
-                setModalTitle("¡Alerta!");
-                setModalMessage(response?.message || "No se pudo iniciar la ruta. Intente nuevamente.");
-                setModalVisible(true);
-            }
-        } catch (error: any) {
-            setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
-            setModalVisible(true);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -474,100 +396,65 @@ export function InfoInvoiceCreditForm({
                 setRefreshing(false);
             }, 2000);
         } catch (error) {
+            setLoading(false);
             setRefreshing(false);
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
             setModalVisible(true);
-        } finally {
-            setLoading(false);
         }
     };
 
     const uploadPhotoSubmit = async () => {
         try {
+
             if (showStatusDelivery && isInicilizationApi || showOptionRefused != OptionsRefusedEnum.TIENDA && showOptionRefused) {
-                setLoading(true);
                 setDeliveryStatus(true);
                 const facturasArray: CreateEntregaProps[] = [];
                 let responses: any[] = [];
-                setInicilizationApi(false);
-                if (guide?.facturas && guide.facturas.length > 0) {
-                    guide.facturas.forEach((factura, index) => {
-                        facturasArray.push({
-                            ruta: String(numberGuide),
-                            documentMeico: String(factura.numeroFactura),
-                            direccion: Number(guide?.idDireccion),
-                            causal: showOptionRefused === OptionsRefusedEnum.DINERO
-                                ? CausalDelivery.DINERO_INSUFICIENTE
-                                : showOptionRefused === OptionsRefusedEnum.DUEÑO
-                                    ? CausalDelivery.DUENO_NO_CONTESTA
-                                    : showOptionRefused === OptionsRefusedEnum.TIENDA
-                                        ? CausalDelivery.TIENDA_CERRADA
-                                        : showOptionRefused === OptionsRefusedEnum.PRODUCTOS
-                                            ? CausalDelivery.PRODUCTOS_DANADOS
-                                            : null,
-                            estado: "ACT_EST_ENTREGA",
-                            files:
-                                showStatusDelivery === StatusDelivery.RECHAZADO
-                                    ?
-                                    showOptionRefused === OptionsRefusedEnum.TIENDA
-                                        ? multiplePhotos.map((item) => ({
-                                            tipoEntrega: TypeDelivery.RECHAZADO,
-                                            rutaArchivo: item.base64 ?? null,
-                                        }))
-                                        : []
-                                    :
-                                    multiplePhotos.map((item) => ({
-                                        tipoEntrega:
-                                            showStatusDelivery === StatusDelivery.TOTAL
-                                                ? TypeDelivery.ENT_TOTAL
-                                                : showStatusDelivery === StatusDelivery.PARCIAL
-                                                    ? TypeDelivery.ENT_PARCIAL
-                                                    : TypeDelivery.RECHAZADO,
-                                        rutaArchivo: item.base64 ?? null,
-                                    })),
+                setLoading(true);
 
-                        });
-                    });
-                    setShowOptionRefused(null);
+                await new Promise(resolve => setTimeout(resolve, 50));
+
+                setInicilizationApi(false);
+                const validBase64 = multiplePhotos
+                    .filter(photo => photo.base64 && photo.base64.trim() !== '')
+                    .map(photo => photo.base64!);
+
+                if (validBase64.length === 0) {
+                    setModalTitle("Alerta");
+                    setModalMessage(`Ninguna foto tiene datos base64 válidos`);
+                    setModalVisible(true);
+                    setLoading(false);
+
+                    return;
                 }
 
-                if (facturasArray.length > 0) {
-                    responses = await Promise.all(
-                        facturasArray.map(facturaData =>
-                            invoiceRepositoryImpl.createDelivery(facturaData, token)
-                        )
-                    );
+                const payload = {
+                    id_pedido: Number(orderId),
+                    files: validBase64
+                };
+                const response = await detailsRepositoryImpl.reportNoveltyFileArray(payload, token);
 
-                    // Verificar si todas las respuestas fueron exitosas
-                    const success = responses.every((resp: any) =>
-                        resp?.statusCode === 200 || resp?.success === true
-                    );
-                    if (success) {
-                        listDocumentQuery();
-                        setLoading(false);
-                        setModalTitle("¡Procesado!");
-                        setModalMessage(`Soporte(s) procesados exitosamente.`);
-                        setModalVisible(true);
-                        setvalidateIsBotton(false);
-                    } else {
-                        setLoading(false);
-                        // Opcional: mostrar detalles del primer error
-                        const oneError = responses.find((resp: any) =>
-                            !(resp?.statusCode === 200 || resp?.success === true)
-                        );
-                        setModalTitle("Alerta");
-                        setModalMessage(oneError?.message || "Error inesperado.");
-                        setModalVisible(true);
-                    }
+                if (response?.success) {
+                    setLoading(false);
+                    listDocumentQuery();
+                    setModalTitle("¡Procesado!");
+                    setModalMessage(`Soporte(s) procesados exitosamente.`);
+                    setModalVisible(true);
+                    setvalidateIsBotton(false);
+                } else {
+                    setLoading(false);
+
+                    setModalTitle("Alerta");
+                    setModalMessage("Error inesperado.");
+                    setModalVisible(true);
                 }
             }
         } catch (error) {
-            setModalTitle("¡Error!");
-            setModalMessage("Ocurrio un error inesperado.");
-            setModalVisible(true);
-        } finally {
             setLoading(false);
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado 9.");
+            setModalVisible(true);
         }
     };
 
@@ -584,26 +471,38 @@ export function InfoInvoiceCreditForm({
     const listDocumentQuery = async () => {
         try {
             setLoading(true);
-
-            const responseQuery = await invoiceRepositoryImpl.listDocument(
-                String(guide?.facturas[0]?.numeroFactura),
-                Number(guide?.idDireccion),
+            const response = await detailsRepositoryImpl.novletyOrderByParams(
+                Number(orderId),
                 token
-            );
-            let concept: DerliveryDocument | null = null;
-            if (responseQuery?.statusCode == 200) {
-                if (Array.isArray(responseQuery.data)) {
-                    concept = responseQuery.data[0] ?? null;
-                } else if (responseQuery.data && typeof responseQuery.data === "object") {
-                    concept = responseQuery.data;
-                }
-                setConceptDelivery(concept);
+            )
+
+            if (response?.data && Array.isArray(response.data) && response.data.length > 0) {
+
+                const evidences: EvidencePhoto[] = await Promise.all(
+                    response.data.map(async (item: any) => {
+
+                        const fullUri = item.ruta_novedad + sasToken;
+
+                        const base64 = await uriToBase64(fullUri);
+
+                        return {
+                            id: Date.now().toString() + Math.random(),
+                            uri: fullUri,
+                            base64: base64,
+                        };
+                    })
+                );
+
                 setLoading(false);
+                setMultiplePhotosTwo(evidences);
+                setStatusDOcument(true);
+
             }
 
         } catch (error) {
+            setLoading(false);
             setModalTitle("¡Error!");
-            setModalMessage("Ocurrio un error inesperado.");
+            setModalMessage("Ocurrio un error inesperado 10.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -626,26 +525,25 @@ export function InfoInvoiceCreditForm({
                 );
             }
         } catch (error) {
+            setLoading(false);
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado 11.");
             setModalVisible(true);
-        } finally {
-            setLoading(false);
         }
     };
 
     const handleSubmitConfirmation = async () => {
         try {
 
-            if (!guide?.whatsapp || guide?.whatsapp == "") {
-                btnRef.current?.reset();
-                setModalTitleValidate("Evidencia requerida");
-                setModalMessageValidate("Para finalizar la entrega del pedido debes");
-                setHighlightText("Registrar evidencia.");
-                setModalButtonLabelValidate("Registrar evidencia");
-                setModalVisibleValidate(true);
-                return;
-            }
+            // if (!guide?.whatsapp || guide?.whatsapp == "") {
+            //     btnRef.current?.reset();
+            //     setModalTitleValidate("Evidencia requerida");
+            //     setModalMessageValidate("Para finalizar la entrega del pedido debes");
+            //     setHighlightText("Registrar evidencia.");
+            //     setModalButtonLabelValidate("Registrar evidencia");
+            //     setModalVisibleValidate(true);
+            //     return;
+            // }
 
             setLoading(true);
 
@@ -655,16 +553,35 @@ export function InfoInvoiceCreditForm({
                 {
                     idDireccion: Number(guide?.idDireccion),
                     numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
-                    numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
-                    // numeroDestino: "+573112187956",
+                    // numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
+                    numeroDestino: "+573112187956",
                     valorOriginal: '0',
                     valorPagado: '0',
                 },
                 token
             );
             if (responseData?.statusCode === 200) {
+
+                if (notDetails && String(selectedOption) != "null") {
+                    const responseQuery = await detailsRepositoryImpl.reEntryDelivery(
+                        {
+                            id_pedido: Number(orderId),
+                            reporgrmacion: String(selectedOption)
+                        },
+                        token
+                    );
+                    if (responseQuery?.statusCode != 200) {
+                        setLoading(false);
+                        setValidateException(true);
+                        btnRef.current?.reset();
+                        setModalTitle("¡Alerta!");
+                        setModalMessage(responseQuery?.message || "No se pudo iniciar la ruta. Intente nuevamente.");
+                        setModalVisible(true);
+                        return;
+                    }
+                }
+
                 btnRef.current?.reset();
-                setLoading(true);
                 router.push({
                     pathname: '/views/IndexDetailsInvoice',
                     params: {
@@ -678,9 +595,11 @@ export function InfoInvoiceCreditForm({
                         totalOrderPayment: '0',
                         isViewDetailsPorducts: 'true',
                         isSelectInvocies: isSelectInvocies,
+                        notDetails: notDetails
                     }
 
                 });
+                setLoading(false);
             } else {
                 setValidateException(true);
                 btnRef.current?.reset();
@@ -689,11 +608,14 @@ export function InfoInvoiceCreditForm({
                 setModalVisible(true);
             }
         } catch (error: any) {
+            setLoading(false);
             setValidateException(true);
             btnRef.current?.reset();
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 222.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -848,7 +770,7 @@ export function InfoInvoiceCreditForm({
                             </View>
                         </View>
 
-                        {(!detailsCounterDelivery && !closeButton) && (
+                        {(!notDetails) && (
                             <TouchableOpacity
                                 style={styles.qrButtonDetailTwo}
                                 onPress={() => {
@@ -867,8 +789,8 @@ export function InfoInvoiceCreditForm({
                                 </Text>
                             </TouchableOpacity>
 
-
                         )}
+
                         {(detailsCounterDelivery) && (
                             <View>
                                 <DeliveryStatusAction
@@ -930,6 +852,7 @@ export function InfoInvoiceCreditForm({
                                         setModalTitle("¡Procesado!");
                                         setModalMessage("No entrega registrada exitosamente");
                                         setModalVisible(true);
+                                        setLoading(false);
                                         await invoiceRepositoryImpl.closeAddresses(guide?.idDireccion || 0, String(token));
                                         router.push(
                                             `/views/details?guide=${numberGuide}&token=${encodeURIComponent(String(token ?? ""))}`
@@ -944,7 +867,6 @@ export function InfoInvoiceCreditForm({
                                     setModalMessage(error?.data?.message ?? "Ocurrió un error inesperado.");
                                     setModalVisible(true);
                                 } finally {
-                                    setLoading(false);
                                     setConfirmNoDelivery(false);
                                     setSelectedNoDeliveryCause(null);
                                     setNoDeliveryFiles([]);
@@ -962,7 +884,7 @@ export function InfoInvoiceCreditForm({
                             width={328}
                             height={43}
                         />
-                    ) : detailsCounterDelivery ? (
+                    ) : notDetails ? (
                         <PrimaryButtonDetails
                             ref={btnRef}
                             autoReset={validateException}
@@ -1111,6 +1033,7 @@ export function InfoInvoiceCreditForm({
                         setModalMessage("No podemos acceder a la galería. Activa el permiso en la configuración del dispositivo para continuar.");
                         setModalVisible(true);
                     }}
+
                 />
             )}
 

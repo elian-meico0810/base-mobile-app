@@ -46,7 +46,9 @@ export default function IndexInvoiceScreen() {
     const isViewDetailsPorducts = params.isViewDetailsPorducts as string;
     const isAnticipe = params.isAnticipe as string;
     const isAnticipeInvoice = params.isAnticipeInvoice as string;
-    
+    const selectedOption = params.selectedOption as string;
+    const notDetails = params.notDetails as string;
+
     return (
         <>
             <Stack.Screen
@@ -103,6 +105,10 @@ export default function IndexInvoiceScreen() {
                             numberGuide={Number(numberGuide)}
                             isSelectInvocies={isSelectInvocies}
                             documentMeico={documentMeico}
+                            selectedOption={selectedOption}
+                            notDetails={notDetails}
+                            detailsCounterDelivery={detailsCounterDelivery ? true : false}
+
                         />
                     );
                 }

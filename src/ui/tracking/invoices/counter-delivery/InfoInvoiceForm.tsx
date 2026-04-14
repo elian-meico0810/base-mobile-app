@@ -123,7 +123,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const router = useRouter();
     const heightValue = heightCaldulate();
     const [sasToken, setSasToken] = useState("");
-    const orderId = initialGuide?.pedidos?.[0]?.id;
     const [checkUbication, setCheckUbication] = useState(false);
     const [showNoDeliveryModal, setShowNoDeliveryModal] = useState(false);
     const [selectedNoDeliveryCause, setSelectedNoDeliveryCause] = useState<Cause | null>(null);
@@ -134,6 +133,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [currentQRType, setCurrentQRType] = useState(qrType || undefined);
     const [currentQRData, setCurrentQRData] = useState(qrBase64 || undefined);
 
+    const orderId = initialGuide?.pedidos?.[0]?.id;
 
     useEffect(() => {
         const backAction = () => {

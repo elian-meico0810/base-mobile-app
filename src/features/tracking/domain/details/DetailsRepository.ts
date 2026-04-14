@@ -1,5 +1,5 @@
 import { ApiResponse } from "@/src/features/auth/domain/ApiResponse";
-import { Cause, DataUploadFIlePprops, Document, EvidenciaOTPItemOTP, GuideDetails, ListAceptationGuide, ListInfOTP, NoveltyRefusedProps, NovletyOrder, PaymentsByInvoicePorps, ReentryOTPProps, ReportePagoTotal, ReportNoveltyFileArrayProps, RuteByCodeGuide, RuteInitPorps, SendOrderArrayProps, SendOrderProps, SendOTOPProps, TokenProducts, ValidateCediQRResponse, ValidateCodeOTPProps } from "./DetailsGuide";
+import { Cause, DataUploadFIlePprops, Document, EvidenciaOTPItemOTP, GuideDetails, ListAceptationGuide, ListInfOTP, NoveltyRefusedProps, NovletyOrder, PaymentsByInvoicePorps, ReEntryDeliveryProps, ReentryOTPProps, ReportePagoTotal, ReportNoveltyFileArrayProps, RuteByCodeGuide, RuteInitPorps, SendOrderArrayProps, SendOrderProps, SendOTOPProps, TokenProducts, ValidateCediQRResponse, ValidateCodeOTPProps } from "./DetailsGuide";
 
 export interface DetailsRepository {
   listGuide: (guide: number, token: string) => Promise<ApiResponse<GuideDetails>>;
@@ -28,4 +28,6 @@ export interface DetailsRepository {
   getReportPayment: (guide: string, token: string) => Promise<ApiResponse<ReportePagoTotal>>;
   listInfOTP: (direccion_id: string, numberInvoice: string, token: string) => Promise<ApiResponse<ListInfOTP>>;
   evidenciaOTPItem: (direccion_id: string, numberInvoice: string, token: string) => Promise<ApiResponse<EvidenciaOTPItemOTP[]>>;
+  reEntryDelivery: (data: ReEntryDeliveryProps, token: string) => Promise<any>;
+
 }

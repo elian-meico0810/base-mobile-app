@@ -1,7 +1,7 @@
 import { API_ROUTES } from "@/src/constants/apiRoutes";
 import { ApiResponse } from "@/src/features/auth/domain/ApiResponse";
 import { authApi, authDevApi } from "@/src/features/auth/infrastructure/authApi";
-import { ConciliationRouteResponse, DataUploadFIlePprops, EvidenciaOTPItemOTP, ListInfOTP, NoveltyRefusedProps, PaymentsByInvoicePorps, ReentryOTPProps, ReportNoveltyFileArrayProps, RuteInitPorps, SendOrderArrayProps, SendOrderProps, SendOTOPProps, ValidateCediQRResponse, ValidateCodeOTPProps } from "../../domain/details/DetailsGuide";
+import { ConciliationRouteResponse, DataUploadFIlePprops, EvidenciaOTPItemOTP, ListInfOTP, NoveltyRefusedProps, PaymentsByInvoicePorps, ReEntryDeliveryProps, ReentryOTPProps, ReportNoveltyFileArrayProps, RuteInitPorps, SendOrderArrayProps, SendOrderProps, SendOTOPProps, ValidateCediQRResponse, ValidateCodeOTPProps } from "../../domain/details/DetailsGuide";
 import { DetailsRepository } from "../../domain/details/DetailsRepository";
 
 export const detailsRepositoryImpl: DetailsRepository = {
@@ -453,5 +453,28 @@ export const detailsRepositoryImpl: DetailsRepository = {
       };
     }
   },
+
+  async reEntryDelivery(data: ReEntryDeliveryProps, token: string) {
+    try {
+      const response = await authApi.post(API_ROUTES.SEND_REENTRY_DELIVERY, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        data: null,
+        message:
+          error.response?.data?.message ??
+          "Ocurrió un error inesperado",
+        statusCode: error.response?.status ?? 500,
+      };
+    }
+  },
+
 
 }

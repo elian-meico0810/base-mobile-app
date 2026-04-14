@@ -4,7 +4,7 @@ import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { RedeliveryQuestionModal } from '@/components/generals/RedeliveryQuestionModa';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { ThemedView } from '@/components/themed-view';
-import { CausalRefusedEnum, TyepeCausalRefusedEnum, TypeCaculateValueEnum, TypeDetailsEnum } from '@/src/constants/GuideStates';
+import { CausalRefusedEnum, TyepeCausalRefusedEnum, TypeCaculateValueEnum, TypeDetailsEnum, TypeEntry } from '@/src/constants/GuideStates';
 import { ProductValidationSection } from '@/src/features/detailsInvoice/components/ProductValidationScreen';
 import { ReportMassiveRejectScreen } from '@/src/features/detailsInvoice/components/ReportMassiveRejectScreen';
 import { ReportNoveltyScreen } from '@/src/features/detailsInvoice/components/ReportNoveltyScreen';
@@ -102,12 +102,14 @@ export function ProductForm({
     const [shoyStatusAlert, setStatusAlert] = useState(false);
     const [showMassiveReject, setShowMassiveReject] = useState(false);
     const [selectedCause, setSelectedCause] = useState<Cause | null>(null);
+    const [selectedOption, setSelectedOption] = useState<TypeEntry.ENTREGA_OTRO_DIA | TypeEntry.NO_ENTREGADO | null>(null);
+
     const router = useRouter();
     const orderId = initialGuide?.pedidos?.[0]?.id;
 
     const handleGoBack = () => {
         router.push(
-            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${isSelectInvocies}&notDetails=${notDetails}`
+            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${isSelectInvocies}`
         );
     };
 
@@ -159,6 +161,7 @@ export function ProductForm({
                     setModalVisible(true);
                     return;
                 }
+                console.log("Estado actualizado:", selectedOption);
 
                 const payload = {
                     id_pedido: Number(orderId),
@@ -176,7 +179,7 @@ export function ProductForm({
                         );
                     } else {
                         router.push(
-                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&detailsCounterDelivery=${true}&notDetails=${notDetails}`
+                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&detailsCounterDelivery=${true}&notDetails=${notDetails}&selectedOption=${selectedOption}`
                         );
                     }
 
@@ -646,8 +649,6 @@ export function ProductForm({
                 <ProductValidationSection
                     onFinalize={() => {
                         if (!notDetails) {
-                            console.log("No vino notDetails", notDetails);
-
                             handleSubmit;
                             setUploadPhoto(true);
                         }
@@ -686,9 +687,12 @@ export function ProductForm({
                     notDetails={notDetails}
                     onValueInvocie={(value) => {
                         if (notDetails) {
-                            console.log("Si vino notDetails", notDetails);
-                            console.log("datos: ", value);
-                            setShowModal(true);
+                            if (value == 0) {
+                                setShowModal(true);
+                            } else {
+                                handleSubmit;
+                                setUploadPhoto(true);
+                            }
                         }
                     }}
                 />
@@ -729,12 +733,11 @@ export function ProductForm({
                 <RedeliveryQuestionModal
                     onClose={() => setShowModal(false)}
                     onConfirm={(response) => {
-                        if (response === "yes") {
-                            console.log("Entro aca  en el if ");
-                            // El cliente quiere otro día
-                        } else {
-                            console.log("Entro en el else")
-                            // El cliente NO quiere reprogramar
+                        if (response) {
+                            console.log("ANTES:", selectedOption);
+                            setSelectedOption(response);
+                            console.log("DESPUÉS (pero aún viejo):", selectedOption);
+                            setUploadPhoto(true);
                         }
                     }}
                 />

@@ -290,3 +290,8 @@ export interface EvidenciaOTPItemOTP {
   direccion: number;
   eliminado: boolean;
 }
+
+export interface ReEntryDeliveryProps {
+  id_pedido: number;
+  reporgrmacion: string;
+}

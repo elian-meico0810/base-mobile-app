@@ -122,3 +122,8 @@ export enum TipeCodeOTP {
     EST_OTP_ENVIADO = "EST_OTP_ENVIADO",
     EST_OTP_VALIDADO = "EST_OTP_VALIDADO"
 }
+
+export enum TypeEntry {
+    ENTREGA_OTRO_DIA = "ENTREGA_OTRO_DIA",
+    NO_ENTREGADO = "NO_ENTREGADO"
+}

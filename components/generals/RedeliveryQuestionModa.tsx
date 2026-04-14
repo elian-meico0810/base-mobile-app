@@ -1,3 +1,4 @@
+import { TypeEntry } from "@/src/constants/GuideStates";
 import { useState } from "react";
 import {
     StyleSheet,
@@ -9,14 +10,14 @@ import { PrimaryButton } from "../buttons/PrimaryButton";
 
 interface RedeliveryQuestionModalProps {
     onClose?: () => void;
-    onConfirm?: (response: "yes" | "no") => void;
+    onConfirm?: (response: TypeEntry.ENTREGA_OTRO_DIA | TypeEntry.NO_ENTREGADO) => void;
 }
 
 export function RedeliveryQuestionModal({
     onClose,
     onConfirm,
 }: RedeliveryQuestionModalProps) {
-    const [selectedOption, setSelectedOption] = useState<"yes" | "no" | null>(null);
+    const [selectedOption, setSelectedOption] = useState<TypeEntry.ENTREGA_OTRO_DIA | TypeEntry.NO_ENTREGADO | null>(null);
 
     const handleConfirm = () => {
         if (selectedOption) {
@@ -51,17 +52,17 @@ export function RedeliveryQuestionModal({
                         style={[
                             styles.optionCard,
                             styles.optionCardLeft,
-                            selectedOption === "yes" && styles.optionCardSelected
+                            selectedOption === TypeEntry.ENTREGA_OTRO_DIA && styles.optionCardSelected
                         ]}
-                        onPress={() => setSelectedOption("yes")}
+                        onPress={() => setSelectedOption(TypeEntry.ENTREGA_OTRO_DIA)}
                         activeOpacity={0.7}
                     >
                         <View style={styles.radioContainer}>
                             <View style={[
                                 styles.radioOuter,
-                                selectedOption === "yes" && styles.radioOuterSelected
+                                selectedOption ===TypeEntry.ENTREGA_OTRO_DIA && styles.radioOuterSelected
                             ]}>
-                                {selectedOption === "yes" && (
+                                {selectedOption ===TypeEntry.ENTREGA_OTRO_DIA && (
                                     <View style={styles.radioInner} />
                                 )}
                             </View>
@@ -74,17 +75,17 @@ export function RedeliveryQuestionModal({
                         style={[
                             styles.optionCard,
                             styles.optionCardRight,
-                            selectedOption === "no" && styles.optionCardSelected
+                            selectedOption === TypeEntry.NO_ENTREGADO && styles.optionCardSelected
                         ]}
-                        onPress={() => setSelectedOption("no")}
+                        onPress={() => setSelectedOption(TypeEntry.NO_ENTREGADO)}
                         activeOpacity={0.7}
                     >
                         <View style={styles.radioContainer}>
                             <View style={[
                                 styles.radioOuter,
-                                selectedOption === "no" && styles.radioOuterSelected
+                                selectedOption === TypeEntry.NO_ENTREGADO && styles.radioOuterSelected
                             ]}>
-                                {selectedOption === "no" && (
+                                {selectedOption === TypeEntry.NO_ENTREGADO && (
                                     <View style={styles.radioInner} />
                                 )}
                             </View>

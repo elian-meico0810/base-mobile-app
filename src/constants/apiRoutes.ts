@@ -36,6 +36,7 @@ export const API_ROUTES = {
   GET_TYPE_CASH_CONDITIONS:"valores-parametrizados/get-valores-parametrizados/TYPE_CASH_CONDITIONS/",
   UPLOAD_EVIDENCE_ACCEPTATION_GUIDES: "evidencias-aceptacion-guias/upload-file/",
   GET_EVIDENCE_OTP_BY_DIRECTION:"evidencias-otp/get-all/",
+  SEND_REENTRY_DELIVERY:"pedidos/send-pedidos/reprogramados/",
   // Back contado anticipado
   SEND_PAYMENT_GATEWAY: "pagos/generar-link-pasarela/",
   GENERATE_QR: "pagos/generar_qr_bancolombia/",

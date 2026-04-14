@@ -1021,6 +1021,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     useEffect(() => {
         const init = async () => {
             const token = await SecureStore.getItemAsync("service_token");
+            const tokenProdct = await SecureStore.getItemAsync("service_token_product");
             setSasToken(token || "");
 
         };

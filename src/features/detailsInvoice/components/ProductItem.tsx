@@ -114,7 +114,7 @@ export const ProductItem = ({
     const formattedImagUrl = imagUrl
         ? imagUrl.replace(/\s+/g, '')
         : null;
-
+    
     useEffect(() => {
         if (onDataProduct) {
             const deliveredEstimate = Math.max(Number(item.unidadesSolicitadas) - noveltySum, 0);

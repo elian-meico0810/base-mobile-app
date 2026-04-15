@@ -142,6 +142,25 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
             const formatted = inicializateToken.toLocaleString('sv-SE').replace('T', ' ');
             await SecureStore.setItemAsync('date_token', formatted);
           }
+
+          const responseData = await detailsRepositoryImpl.tokenPorducts(tokenString);
+          if (responseData?.statusCode == 200 && responseData?.data &&
+            !Array.isArray(responseData.data) &&
+            typeof responseData.data !== "string") {
+
+            await SecureStore.setItemAsync('service_token_product', responseData.data.token);
+            await SecureStore.setItemAsync('base_url_product', responseData.data.base_url);
+            const inicializateToken = new Date();
+            const formatted = inicializateToken.toLocaleString('sv-SE').replace('T', ' ');
+
+            // Opción 1: Guardar como timestamp (recomendado)
+            await SecureStore.setItemAsync('date_token_product', formatted);
+
+            const testToken = await SecureStore.getItemAsync('service_token_product');
+            const testUrl = await SecureStore.getItemAsync('base_url_product');
+            const dateToken = await SecureStore.getItemAsync('date_token_product');
+
+          }
         } catch (error) {
         }
 
@@ -169,7 +188,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
       if (token !== "" && token !== null) {
         const response = await detailsRepositoryImpl.listAceptationGuide(guide ? guide : tokenData?.numeroGuia, token ?? "");
         const data = response.data as ListAceptationGuide[]
-        
+
         if (response?.statusCode == 200) {
           if ((data?.[0]?.codigo_guia && !data?.[0]?.estado_aceptacion) || !data?.[0]) {
             router.push({
@@ -261,13 +280,13 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
           </View>
         </View>
       </View>
-          {showErrorQRP && (
-                <TopErrorAlert
-                    visible={showErrorQRP}
-                    message={showErrorQRPMessage}
-                    onHide={() => setShowErrorQRP(false)}
-                />
-            )}
+      {showErrorQRP && (
+        <TopErrorAlert
+          visible={showErrorQRP}
+          message={showErrorQRPMessage}
+          onHide={() => setShowErrorQRP(false)}
+        />
+      )}
       {isLoading && <LoadingBlue />}
     </ThemedView>
   );

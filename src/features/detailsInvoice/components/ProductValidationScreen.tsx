@@ -263,15 +263,21 @@ export const ProductValidationSection = ({
         return validatedDetails;
     };
 
-    useEffect(() => {
+  useEffect(() => {
         // if (serviceUrl == "" || serviceToken == "") {
         const loadSecureData = async () => {
 
+            const testTokenProduct = await SecureStore.getItemAsync('service_token_product');
+            const testUrlProduct = await SecureStore.getItemAsync('base_url_product');
+
             const testToken = await SecureStore.getItemAsync('service_token');
             const testUrl = await SecureStore.getItemAsync('base_url');
-
-            setServiceToken(testToken || "");
-            setBaseUrl(testUrl || "");
+            
+            // console.log("testTokenProduct: ",testTokenProduct);
+            // console.log("testUrlProduct: ",testUrlProduct);
+            
+            setServiceToken(testTokenProduct || "");
+            setBaseUrl(testUrlProduct || "");
 
         };
         loadSecureData();

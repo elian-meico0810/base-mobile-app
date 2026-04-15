@@ -467,9 +467,9 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     midnightOfSavedDay.setHours(23, 59, 59, 999); // Exactamente antes de medianoche
 
                     // Verificar si AHORA es después de medianoche del día guardado
-                    if (now > midnightOfSavedDay) {
+                    // if (now > midnightOfSavedDay) {
                         tokenData();
-                    }
+                    // }
                 } else {
                     tokenData();
                 }
@@ -492,7 +492,8 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         }
     }, [modalStatusNovelty, productItemData?.id, successButton]);
 
-    const tokenData = async () => {
+
+        const tokenData = async () => {
         try {
 
             const responseData = await detailsRepositoryImpl.tokenPorducts(token);
@@ -500,18 +501,17 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 !Array.isArray(responseData.data) &&
                 typeof responseData.data !== "string") {
 
-                await SecureStore.setItemAsync('service_token', responseData.data.token);
-                await SecureStore.setItemAsync('base_url', responseData.data.base_url);
+                await SecureStore.setItemAsync('service_token_product', responseData.data.token);
+                await SecureStore.setItemAsync('base_url_product', responseData.data.base_url);
                 const inicializateToken = new Date();
                 const formatted = inicializateToken.toLocaleString('sv-SE').replace('T', ' ');
 
                 // Opción 1: Guardar como timestamp (recomendado)
-                await SecureStore.setItemAsync('date_token', formatted);
+                await SecureStore.setItemAsync('date_token_product', formatted);
 
-
-                const testToken = await SecureStore.getItemAsync('service_token');
-                const testUrl = await SecureStore.getItemAsync('base_url');
-                const dateToken = await SecureStore.getItemAsync('date_token');
+                const testToken = await SecureStore.getItemAsync('service_token_product');
+                const testUrl = await SecureStore.getItemAsync('base_url_product');
+                const dateToken = await SecureStore.getItemAsync('date_token_product');
 
 
             }
@@ -615,7 +615,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 message={modalMessage}
                 buttonLabel={modalButtonLabel}
             />
-<ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+            <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
 
                 {/** Listado de productos */}
                 <ProductValidationSection

@@ -467,9 +467,9 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     midnightOfSavedDay.setHours(23, 59, 59, 999); // Exactamente antes de medianoche
 
                     // Verificar si AHORA es después de medianoche del día guardado
-                    if (now > midnightOfSavedDay) {
+                    // if (now > midnightOfSavedDay) {
                         tokenData();
-                    }
+                    // }
                 } else {
                     tokenData();
                 }
@@ -497,6 +497,8 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         try {
 
             const responseData = await detailsRepositoryImpl.tokenPorducts(token);
+            console.log("responseData: ",responseData);
+            
             if (responseData?.statusCode == 200 && responseData?.data &&
                 !Array.isArray(responseData.data) &&
                 typeof responseData.data !== "string") {

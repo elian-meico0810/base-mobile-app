@@ -102,8 +102,12 @@ export const ProductItem = ({
         token?: string | null,
         code?: string
     ): string | null => {
+        console.log("baseUrl: ",baseUrl);
+        console.log("token",token);
+        console.log("code: ",code);
+        
         if (!baseUrl || !token || !code) return null;
-        // console.log("web: ", `${baseUrl}/${code}.webp${token}`);
+        console.log("web: ", `${baseUrl}/${code}.webp${token}`);
         return `${baseUrl}/${code}.webp${token}`;
     };
 
@@ -112,7 +116,8 @@ export const ProductItem = ({
     const formattedImagUrl = imagUrl
         ? imagUrl.replace(/\s+/g, '')
         : null;
-
+    console.log("formattedImagUrl: ", formattedImagUrl);
+    
     useEffect(() => {
         if (onDataProduct) {
             const deliveredEstimate = Math.max(Number(item.unidadesSolicitadas) - noveltySum, 0);

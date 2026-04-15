@@ -292,7 +292,6 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
 
     useEffect(() => {
         const backAction = () => {
-            handleExit();
             return true; 
         };
 
@@ -302,7 +301,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
         );
 
         return () => backHandler.remove();
-    }, []); // Agrega las dependencias que necesites
+    }, []); 
 
     return (
         <ThemedView style={styles.container}>

@@ -1,4 +1,5 @@
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import { ExitAppModal } from '@/components/generals/ExitAppModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LogoText } from '@/components/generals/LogoText';
 import { TokenExpiredModal } from '@/components/generals/TokenExpiredModal';
@@ -30,6 +31,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
   const [tokenEncode, setTokeEncode] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [exitModalVisible, setExitModalVisible] = useState(false);
   const isValid = guide.length >= 5;
   const router = useRouter();
 
@@ -141,6 +143,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
 
   useEffect(() => {
     const backAction = () => {
+      setExitModalVisible(true);
       return true;
     };
 
@@ -155,7 +158,10 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
   return (
     <ThemedView style={styles.container}>
       <TokenExpiredModal visible={showModal} onClose={() => setShowModal(false)} />
-
+      <ExitAppModal
+        visible={exitModalVisible}
+        onClose={() => setExitModalVisible(false)}
+      />
       {/* <NetworkStatus /> */}
 
       <View style={[styles.backgroundFill, { width, height: '100%' }]} pointerEvents="none">

@@ -69,6 +69,8 @@ export function InfoInvoiceCreditForm({
     selectedOption,
     notDetails
 }: InfoInvoiceCreditFormProps) {
+    console.log("detailsCounterDelivery: ",detailsCounterDelivery);
+    
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
@@ -492,8 +494,8 @@ export function InfoInvoiceCreditForm({
                         };
                     })
                 );
-
-                setLoading(false);
+                console.log("evidences_ ",evidences);
+                
                 setMultiplePhotosTwo(evidences);
                 setStatusDOcument(true);
 
@@ -549,7 +551,7 @@ export function InfoInvoiceCreditForm({
 
             setButtonValueOTP(true);
 
-            const responseData = await detailsRepositoryImpl.sendOTP(
+            const responseData = await detailsRepositoryImpl.sendOTPNotPayment(
                 {
                     idDireccion: Number(guide?.idDireccion),
                     numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
@@ -620,10 +622,10 @@ export function InfoInvoiceCreditForm({
     };
 
     useEffect(() => {
-        if (isSelectInvocies) {
+        if (detailsCounterDelivery) {
             listDocumentQuery();
         }
-    }, [isSelectInvocies]);
+    }, [detailsCounterDelivery]);
 
     var value = '';
     switch (guide?.facturas[0]?.tipo) {

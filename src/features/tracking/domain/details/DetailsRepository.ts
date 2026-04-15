@@ -29,5 +29,6 @@ export interface DetailsRepository {
   listInfOTP: (direccion_id: string, numberInvoice: string, token: string) => Promise<ApiResponse<ListInfOTP>>;
   evidenciaOTPItem: (direccion_id: string, numberInvoice: string, token: string) => Promise<ApiResponse<EvidenciaOTPItemOTP[]>>;
   reEntryDelivery: (data: ReEntryDeliveryProps, token: string) => Promise<any>;
+  sendOTPNotPayment: (data: SendOTOPProps, token: string) => Promise<any>;
 
 }

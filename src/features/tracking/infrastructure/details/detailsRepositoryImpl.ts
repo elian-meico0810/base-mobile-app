@@ -476,5 +476,17 @@ export const detailsRepositoryImpl: DetailsRepository = {
     }
   },
 
+  async sendOTPNotPayment(data: SendOTOPProps, token: string) {
+    try {
+      const response = await authApi.post(`${API_ROUTES.CREATE_OTP_NOT_PAYMENT}`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
 }

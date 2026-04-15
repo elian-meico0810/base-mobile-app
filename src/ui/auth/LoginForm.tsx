@@ -1,5 +1,6 @@
 import { TopErrorAlert } from '@/components/alerts/TopErrorAlert';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import { ExitAppModal } from '@/components/generals/ExitAppModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LogoText } from '@/components/generals/LogoText';
 import { TokenExpiredModal } from '@/components/generals/TokenExpiredModal';
@@ -15,6 +16,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from "react";
 import {
+  BackHandler,
   Dimensions,
   Image, Keyboard,
   StyleSheet,
@@ -25,6 +27,7 @@ import {
 const { width, height } = Dimensions.get('window');
 
 export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Promise<void> }) {
+  const params = useLocalSearchParams();
   const [guide, setGuide] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
@@ -34,8 +37,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
   const [isLoading, setIsLoading] = useState(false);
   const [showErrorQRP, setShowErrorQRP] = useState(false);
   const [showErrorQRPMessage, setShowErrorQRPMessage] = useState("");
-
-  const params = useLocalSearchParams();
+  const [exitModalVisible, setExitModalVisible] = useState(false);
   const isValid = guide.length >= 5;
   const router = useRouter();
 
@@ -218,11 +220,27 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
     }
   };
 
+  useEffect(() => {
+    const backAction = () => {
+      setExitModalVisible(true);
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, []);
 
   return (
     <ThemedView style={styles.container}>
       <TokenExpiredModal visible={showModal} onClose={() => setShowModal(false)} />
-
+      <ExitAppModal
+        visible={exitModalVisible}
+        onClose={() => setExitModalVisible(false)}
+      />
       {/* <NetworkStatus /> */}
 
       <View style={[styles.backgroundFill, { width, height: '100%' }]} pointerEvents="none">

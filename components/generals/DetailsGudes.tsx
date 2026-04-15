@@ -2,7 +2,7 @@ import { ThemedText } from '@/components/themed-text';
 import { StatusInvoice } from '@/src/constants/GuideStates';
 import { formatTime } from '@/src/utils/uitls';
 import { Image } from 'expo-image';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export const DetailsGudes = ({ style, guide, onExit, date, routeStarted, statusName }: { style?: any, guide?: number, onExit?: () => void, date?: string, routeStarted?: boolean, statusName?: string }) => {

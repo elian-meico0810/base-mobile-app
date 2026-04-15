@@ -26,6 +26,7 @@ import { useEffect, useRef, useState } from "react";
 import {
     AppState,
     AppStateStatus,
+    BackHandler,
     Dimensions,
     Image,
     ScrollView, StyleSheet,
@@ -530,6 +531,20 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
     useEffect(() => {
         setFilteredGuides(data);
     }, [data]);
+
+    useEffect(() => {
+        const backAction = () => {
+            return true; 
+        };
+
+        const backHandler = BackHandler.addEventListener(
+            'hardwareBackPress',
+            backAction
+        );
+
+        return () => backHandler.remove();
+    }, []); 
+
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -593,7 +608,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
 
                                         <TouchableOpacity style={styles.cardConsignment} onPress={() => {
                                             router.push({
-                                                pathname: '/views/consignaciones',
+                                                pathname: '/views/consignaciones' as any,
                                                 params: { codigoGuia: guide, token: tokenUser }
                                             });
                                         }}>
@@ -620,7 +635,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                                                 subtitle="Realiza una consignación en el punto de recaudo más cercano."
                                                 buttonLabel="Registrar consignación"
                                                 onPress={() => router.push({
-                                                    pathname: '/views/consignaciones',
+                                                    pathname: '/views/consignaciones' as any,
                                                     params: { codigoGuia: guide, statusConsignment: 'true', token: tokenUser }
                                                 })}
                                             />
@@ -820,7 +835,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                         );
 
                         router.push({
-                            pathname: "/views/conciliation",
+                            pathname: "/views/conciliation" as any,
                             params: {
                                 guide,
                                 token: tokenUser,

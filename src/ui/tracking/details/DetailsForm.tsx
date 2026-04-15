@@ -18,6 +18,7 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useRef, useState } from "react";
 import {
+    BackHandler,
     Dimensions,
     Image, ScrollView, StyleSheet,
     Text,
@@ -288,6 +289,21 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit }: Details
     useEffect(() => {
         setFilteredGuides(data);
     }, [data]);
+
+    useEffect(() => {
+        const backAction = () => {
+            handleExit();
+            return true; 
+        };
+
+        const backHandler = BackHandler.addEventListener(
+            'hardwareBackPress',
+            backAction
+        );
+
+        return () => backHandler.remove();
+    }, []); // Agrega las dependencias que necesites
+
     return (
         <ThemedView style={styles.container}>
             <NetworkStatus />

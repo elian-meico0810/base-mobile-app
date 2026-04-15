@@ -12,6 +12,7 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from "react";
 import {
+  BackHandler,
   Dimensions,
   Image, Keyboard,
   StyleSheet,
@@ -138,16 +139,29 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
     }
   };
 
+  useEffect(() => {
+    const backAction = () => {
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, []);
+
   return (
     <ThemedView style={styles.container}>
       <TokenExpiredModal visible={showModal} onClose={() => setShowModal(false)} />
 
       {/* <NetworkStatus /> */}
 
-      <View style={[styles.backgroundFill, { width, height:'100%' }]} pointerEvents="none">
+      <View style={[styles.backgroundFill, { width, height: '100%' }]} pointerEvents="none">
         <Image
           source={require('@/assets/icons/Welcome.png')}
-          style={[styles.backgroundImage, { width, height:'100%' }]}
+          style={[styles.backgroundImage, { width, height: '100%' }]}
           resizeMode="cover"
         />
       </View>

@@ -506,8 +506,6 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         try {
 
             const responseData = await detailsRepositoryImpl.tokenPorducts(token);
-            console.log("responseData: ", responseData);
-            
             if (responseData?.statusCode == 200 && responseData?.data &&
                 !Array.isArray(responseData.data) &&
                 typeof responseData.data !== "string") {

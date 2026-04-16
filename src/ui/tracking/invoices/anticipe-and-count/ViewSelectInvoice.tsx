@@ -793,7 +793,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
                     <Text style={styles.backArrow}>‹</Text>
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Entrega de pedidoSSS</Text>
+                <Text style={styles.headerTitle}>Entrega de pedido</Text>
                 <View style={styles.placeholder} />
             </View>
             {(refreshing && RefreshingOnPress) && <LoadingSunburst />}

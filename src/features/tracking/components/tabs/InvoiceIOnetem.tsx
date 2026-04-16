@@ -63,6 +63,9 @@ const InvoiceOneItem = ({
             value = 'Anticipado';
             break;
 
+        case TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO:
+            value = 'Aplicativo-meico';
+            break;
     }
     const canShowCheckbox =
         showCheckbox &&
@@ -138,7 +141,10 @@ const InvoiceOneItem = ({
 
                         <View style={styles.priceRow}>
                             <Text style={styles.amountText}>
-                                {invoice?.tipo != TypeInvoiceEnum.CONTADO_EFECTIVO ? value : `$${formatNumber(invoice.valorRecaudar)}`}
+                                {(invoice?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO ||
+                                    invoice?.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO)
+                                    ? `$${formatNumber(invoice.valorRecaudar)}`
+                                    : value}
                             </Text>
 
                             {/* Icono de enviar */}
@@ -147,7 +153,7 @@ const InvoiceOneItem = ({
                     </View>
 
                     {/* Tipo de factura */}
-                    {invoice?.tipo === "CONTADO EFECTIVO" ? (
+                    {(invoice?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO || invoice?.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO) ? (
                         <Text style={styles.codText} numberOfLines={1} ellipsizeMode="tail">
                             {value}
                         </Text>

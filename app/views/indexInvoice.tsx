@@ -6,6 +6,7 @@ import { InfoInvoiceForm } from '@/src/ui/tracking/invoices/counter-delivery/Inf
 import { ViewSelectInvoice } from '@/src/ui/tracking/invoices/counter-delivery/ViewSelectInvoice';
 import { InfoInvoiceCreditForm } from '@/src/ui/tracking/invoices/credit/InfoInvoiceCreditForm';
 import { ViewSelectInvoice as CreditViewSelectInvoice } from '@/src/ui/tracking/invoices/credit/ViewSelectInvoice';
+import { ViewDefault } from '@/src/ui/tracking/view-default/ViewDefaulTForm';
 import { Stack, useLocalSearchParams } from 'expo-router';
 
 export default function IndexInvoiceScreen() {
@@ -153,7 +154,16 @@ export default function IndexInvoiceScreen() {
                     }
                 }
 
-                return;
+                return (
+                    <ViewDefault
+                        initialGuide={guideObj}
+                        token={token || ""}
+                        onSubmit={async ({ guide, token }) => { }}
+                        numberGuide={Number(numberGuide)}
+                        isSelectInvocies={isSelectInvocies}
+                        documentMeico={documentMeico}
+                    />
+                );
             })()}
 
         </>

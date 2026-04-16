@@ -29,11 +29,11 @@ export default function IndexInvoiceScreen() {
     );
 
     const areAllInvoicesConutreDlivery = guideObj.facturas.every(
-        factura => factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO ||  TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO|| 
+        factura => factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO || factura.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO ||
             factura.tipo === TypeInvoiceEnum.MIXTO
     );
     const areAllInvoicesAnticipe = guideObj.facturas.every(
-        factura => factura.tipo === TypeInvoiceEnum.ANTICIPO || TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO|| factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO
+        factura => factura.tipo === TypeInvoiceEnum.ANTICIPO || factura.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO || factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO
     );
     const areAllInvoicesSameStatus =
         guideObj.facturas.length > 0 &&
@@ -46,7 +46,7 @@ export default function IndexInvoiceScreen() {
     const isViewDetailsPorducts = params.isViewDetailsPorducts as string;
     const isAnticipe = params.isAnticipe as string;
     const isAnticipeInvoice = params.isAnticipeInvoice as string;
-    
+
     return (
         <>
             <Stack.Screen
@@ -153,8 +153,7 @@ export default function IndexInvoiceScreen() {
                     }
                 }
 
-
-                return null;
+                return;
             })()}
 
         </>

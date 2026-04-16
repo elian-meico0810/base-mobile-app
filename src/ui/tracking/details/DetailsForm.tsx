@@ -507,6 +507,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
         direccion.facturas?.some(
             (factura) =>
                 factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO ||
+                factura.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO ||
                 factura.tipoCliente === TypeConPagoEnum.TAT
         )
     );
@@ -534,7 +535,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
 
     useEffect(() => {
         const backAction = () => {
-            return true; 
+            return true;
         };
 
         const backHandler = BackHandler.addEventListener(
@@ -543,7 +544,35 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
         );
 
         return () => backHandler.remove();
-    }, []); 
+    }, []);
+
+    const validateInvoices = (invoices: any[]): boolean => {
+        try {
+            const validTypes = Object.values(TypeInvoiceEnum);
+
+            const invalidInvoices = invoices.filter(inv =>
+                !validTypes.includes(inv.tipo as TypeInvoiceEnum)
+            );
+
+            if (invalidInvoices.length > 0) {
+                setModalTitle("¡Condición no válida!");
+                setModalMessage(
+                    "La direccion contiene facturas con un tipo no permitido."
+                );
+                setModalVisible(true);
+                return false;
+            }
+
+            return true;
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(
+                error?.data?.message ?? "Ocurrió un error inesperado."
+            );
+            setModalVisible(true);
+            return false;
+        }
+    };
 
     return (
         <ThemedView style={styles.container}>
@@ -710,7 +739,18 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                                         <GuideCard
                                             key={item.idDireccion}
                                             guide={item}
-                                            onPress={() => console.log('Ir a dirección')}
+                                            onPress={() => {
+                                                const invoices = item?.facturas || [];
+
+                                                const isValid = validateInvoices(invoices);
+                                                if (!isValid) return;
+
+                                                console.log('Ir a dirección');
+                                                if (!routeStarted) return;
+                                                router.push(
+                                                    `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(item))}&numberGuide=${guide}&token=${encodeURIComponent(token ?? "")}`
+                                                );
+                                            }}
                                             routeStarted={statusValue != StatusInvoice.PENDING ? true : routeStarted}
                                             numberGuide={String(guide)}
                                             token={token}

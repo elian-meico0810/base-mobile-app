@@ -476,7 +476,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         estado: clienteEncontrado.estado,
                         fecha_apertura: clienteEncontrado.fecha_apertura,
                         facturas: clienteEncontrado.facturas,
-                        pedidos: clienteEncontrado.pedidos
+                        pedidos: clienteEncontrado.pedidos,
+                        whatsapp: clienteEncontrado.whatsapp,
+
                     });
                     listInfOTByDirection({
                         idDireccion: clienteEncontrado.idDireccion,
@@ -489,7 +491,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         estado: clienteEncontrado.estado,
                         fecha_apertura: clienteEncontrado.fecha_apertura,
                         facturas: clienteEncontrado.facturas,
-                        pedidos: clienteEncontrado.pedidos
+                        pedidos: clienteEncontrado.pedidos,
+                        whatsapp: clienteEncontrado.whatsapp,
+
                     });
                     listInfOTPFileByDirection({
                         idDireccion: clienteEncontrado.idDireccion,
@@ -502,7 +506,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         estado: clienteEncontrado.estado,
                         fecha_apertura: clienteEncontrado.fecha_apertura,
                         facturas: clienteEncontrado.facturas,
-                        pedidos: clienteEncontrado.pedidos
+                        pedidos: clienteEncontrado.pedidos,
+                        whatsapp: clienteEncontrado.whatsapp,
                     })
                     listDocumentQuery({
                         idDireccion: clienteEncontrado.idDireccion,
@@ -515,7 +520,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         estado: clienteEncontrado.estado,
                         fecha_apertura: clienteEncontrado.fecha_apertura,
                         facturas: clienteEncontrado.facturas,
-                        pedidos: clienteEncontrado.pedidos
+                        pedidos: clienteEncontrado.pedidos,
+                        whatsapp: clienteEncontrado.whatsapp,
                     });
                 }
             }
@@ -770,7 +776,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     }, [showCheckbox, selectedMultipleInvoices]);
     const isSmallScreen = height <= 780;
     const closeButton = routeStarted || buttonValue;
-    
+
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}

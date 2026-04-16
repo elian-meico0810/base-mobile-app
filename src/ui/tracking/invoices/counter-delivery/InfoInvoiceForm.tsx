@@ -1150,6 +1150,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         case TypeInvoiceEnum.ANTICIPO:
             value = 'Anticipado';
             break;
+
+        case TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO:
+            value = 'Aplicativo-meico';
+            break;
     }
 
     const closeButton = routeStarted;

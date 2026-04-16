@@ -230,7 +230,7 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
                 setCheckUbication(true);
             }
         } catch (error: any) {
-       
+
         }
     };
 
@@ -623,6 +623,10 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
 
         case TypeInvoiceEnum.ANTICIPO:
             value = 'Anticipado';
+            break;
+            
+        case TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO:
+            value = 'Aplicativo-meico';
             break;
     }
 

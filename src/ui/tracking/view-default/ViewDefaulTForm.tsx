@@ -3,7 +3,7 @@ import { ThemedView } from '@/components/themed-view';
 import { TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import { DeliveryStatus } from '@/src/features/tracking/components/checkbox/DeliveryStatus';
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
-import { capitalizeFirst, cleanSpaces } from '@/src/utils/uitls';
+import { cleanSpaces } from '@/src/utils/uitls';
 import { useRouter } from 'expo-router';
 import { useState } from "react";
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -90,20 +90,6 @@ export function ViewDefault({ initialGuide, token = "", onSubmit, numberGuide, i
                     <Text style={styles.address}>{cleanSpaces(guide?.direccion)}, {cleanSpaces(guide?.poblacion)}</Text>
                 </View>
 
-                {/* Línea divisoria */}
-                <View style={styles.orderInfo}>
-                    <View style={styles.divider} />
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Método de pago</Text>
-                        <Text style={styles.value}>
-                            {capitalizeFirst(value)}
-                        </Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>N° de factura</Text>
-                        <Text style={styles.value}>{guide?.facturas[0]?.numeroFactura ?? '0'}</Text>
-                    </View>
-                </View>
             </View>
 
             <View style={styles.headerContainerTwo}>

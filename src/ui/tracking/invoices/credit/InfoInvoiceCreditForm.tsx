@@ -540,8 +540,6 @@ export function InfoInvoiceCreditForm({
     useEffect(() => {
         if (buttonValueOTP || isSelectInvocies === 'true') return;
 
-        console.log("paso por aca 1");
-
         const executeLogic = async () => {
             setModalVisible(false);
             await listInfOTByDirection();
@@ -643,17 +641,17 @@ export function InfoInvoiceCreditForm({
                 setModalVisibleValidate(true);
                 return;
             }
+            setButtonValueOTP(true);
 
             setLoading(true);
 
-            setButtonValueOTP(true);
 
             const responseData = await detailsRepositoryImpl.sendOTPNotPayment(
                 {
                     idDireccion: Number(guide?.idDireccion),
                     numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
-                    // numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
-                    numeroDestino: "+573112187956",
+                    numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
+                    // numeroDestino: "+573112187956",
                     valorOriginal: '0',
                     valorPagado: '0',
                 },

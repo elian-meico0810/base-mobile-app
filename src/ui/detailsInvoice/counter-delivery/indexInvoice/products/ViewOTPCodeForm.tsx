@@ -46,6 +46,7 @@ interface ViewOTPCodeFormProps {
     expireDate?: boolean;
     isViewDetailsPorducts?: boolean;
     isAnticipe?: string;
+    notDetails?: string;
 
 }
 
@@ -71,7 +72,8 @@ export function ViewOTPCodeForm({
     totalOrderPayment,
     expireDate,
     isViewDetailsPorducts,
-    isAnticipe
+    isAnticipe,
+    notDetails
 }: ViewOTPCodeFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [guideOTP, setGuideOTP] = useState<ResponseOTPInitPorps | undefined>(responseOTPInit);
@@ -223,11 +225,11 @@ export function ViewOTPCodeForm({
                 if (isSelectInvocies) {
                     if (isAnticipe == 'true') {
                         router.push(
-                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}&isAnticipe=${'true'}&isCountryDelivery=${'true'}&isAnticipeInvoice=${'true'}`
+                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}&isAnticipe=${'true'}&isCountryDelivery=${'true'}&isAnticipeInvoice=${'true'}&notDetails=${notDetails}`
                         );
                     } else {
                         router.push(
-                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}`
+                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}&notDetails=${notDetails}`
                         );
                     }
                 } else {
@@ -288,12 +290,12 @@ export function ViewOTPCodeForm({
     const reentryCodeOTP = async () => {
         try {
 
-            if (!guide?.whatsapp || guide?.whatsapp == "") {
-                setModalTitle("¡Alerta!");
-                setModalMessage("El numero de telefono es requerido.");
-                setModalVisible(true);
-                return;
-            }
+            // if (!guide?.whatsapp || guide?.whatsapp == "") {
+            //     setModalTitle("¡Alerta!");
+            //     setModalMessage("El numero de telefono es requerido.");
+            //     setModalVisible(true);
+            //     return;
+            // }
 
             if (!Number.isFinite(totalValue) || !Number.isFinite(totalRecauder)) {
                 setModalTitle("¡Alerta!");
@@ -301,19 +303,33 @@ export function ViewOTPCodeForm({
                 setModalVisible(true);
                 return;
             }
-
+            let responseData = null;
             setLoading(true);
-            const responseData = await detailsRepositoryImpl.reentryOTP(
-                {
-                    idDireccion: Number(guide?.idDireccion),
-                    numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
-                    numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
-                    // numeroDestino: "+573112187956",
-                    valorOriginal: String(totalValue),
-                    valorPagado: String(totalOrderPayment),
-                },
-                token
-            );
+            if (notDetails == "true") {
+                responseData = await detailsRepositoryImpl.reentryOTPNotPayment(
+                    {
+                        idDireccion: Number(guide?.idDireccion),
+                        numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
+                        // numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
+                        numeroDestino: "+573112187956",
+                        valorOriginal: '0',
+                        valorPagado: '0'
+                    },
+                    token
+                );
+            } else {
+                responseData = await detailsRepositoryImpl.reentryOTP(
+                    {
+                        idDireccion: Number(guide?.idDireccion),
+                        numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
+                        // numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
+                        numeroDestino: "+573112187956",
+                        valorOriginal: String(totalValue),
+                        valorPagado: String(totalOrderPayment),
+                    },
+                    token
+                );
+            }
 
             if (responseData?.statusCode === 200) {
                 setDataBack(true);

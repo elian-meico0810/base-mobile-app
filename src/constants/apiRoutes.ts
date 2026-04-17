@@ -23,6 +23,7 @@ export const API_ROUTES = {
   GET_REPORT_PAYMENT_IN_APP: "reporte-pago/por-pedido/",
   CREATE_OTP: "otp/direccion/crear/",
   REENTRY_OTP: "otp/direccion/reenviar/",
+  REENTRY_OTP_NOT_PAYMENT: "otp/direccion/reenviar-sin-pago/",
   VALIDATE_OTP: "otp/verificar/",
   WS_ALL_PAYMENT_SUCCESS_FUL: "reporte-pago/ws-pagos-registrados/",
   GET_INFO_BY_DIRECTION_OF_OTP: "otp/info-otp-by-direccion-id/",

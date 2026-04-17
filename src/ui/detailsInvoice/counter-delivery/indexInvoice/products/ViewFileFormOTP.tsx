@@ -43,7 +43,7 @@ interface UploadPhotosProps {
     isViewDetailsPorducts?: boolean;
     isSelectInvocies?: string;
     isAnticipe?: string;
-
+    notDetails?: string;
 }
 
 const { width, height } = Dimensions.get('window');
@@ -61,7 +61,8 @@ export function ViewFileFormOTP({
     numberGuide,
     isViewDetailsPorducts,
     isSelectInvocies,
-    isAnticipe
+    isAnticipe,
+    notDetails
 }: UploadPhotosProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [evidences, setEvidences] = useState<EvidencePhoto[]>([]);
@@ -318,11 +319,11 @@ export function ViewFileFormOTP({
                     if (isSelectInvocies) {
                         if (isAnticipe == 'true') {
                             router.push(
-                                `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}&isAnticipe=${'true'}&isCountryDelivery=${'true'}&isAnticipeInvoice=${'true'}`
+                                `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}&isAnticipe=${'true'}&isCountryDelivery=${'true'}&isAnticipeInvoice=${'true'}&notDetails=${notDetails}`
                             );
                         } else {
                             router.push(
-                                `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}`
+                                `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}&notDetails=${notDetails}`
                             );
                         }
                     } else {

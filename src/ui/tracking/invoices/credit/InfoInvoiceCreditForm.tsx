@@ -8,6 +8,7 @@ import { ExecptionModalValidate } from '@/components/generals/ExecptionModalVali
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
+import { UploadPhotoOTP } from '@/components/photo/uploadPhotoOTP';
 import { OrderDetailSkeleton } from '@/components/skeleton/OrderDetailSkeleton ';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
@@ -69,8 +70,6 @@ export function InfoInvoiceCreditForm({
     selectedOption,
     notDetails
 }: InfoInvoiceCreditFormProps) {
-    console.log("detailsCounterDelivery: ",detailsCounterDelivery);
-    
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
@@ -222,6 +221,11 @@ export function InfoInvoiceCreditForm({
 
     const handleSubmitData = async () => {
         try {
+
+            const existOtp = await listInfOTByDirection();
+            if (existOtp) {
+                return;
+            }
 
             if (!deliveryStatus) {
                 setModalTitle("¡Alerta!");
@@ -494,8 +498,7 @@ export function InfoInvoiceCreditForm({
                         };
                     })
                 );
-                console.log("evidences_ ",evidences);
-                
+
                 setMultiplePhotosTwo(evidences);
                 setStatusDOcument(true);
 
@@ -534,18 +537,112 @@ export function InfoInvoiceCreditForm({
         }
     };
 
+    useEffect(() => {
+        if (buttonValueOTP || isSelectInvocies === 'true') return;
+
+        console.log("paso por aca 1");
+
+        const executeLogic = async () => {
+            setModalVisible(false);
+            await listInfOTByDirection();
+        };
+        executeLogic();
+
+        const interval = setInterval(() => {
+            executeLogic();
+        }, 5000);
+
+        return () => {
+            clearInterval(interval);
+        };
+
+    }, [paymentSuccessful, buttonValueOTP]);
+
+    const listInfOTByDirection = async () => {
+        try {
+            if (buttonValueOTP) return;
+
+            const response = await detailsRepositoryImpl.listInfOTP(String(guide?.idDireccion), String(initialGuide?.facturas[0]?.numeroFactura), token);
+            if (
+                response.success &&
+                response.data &&
+                typeof response.data !== "string" &&
+                !Array.isArray(response.data)
+            ) {
+                if (response.data.expira_en && response.data.momento_envio && guide) {
+                    setButtonValueOTP(true);
+                    router.push({
+                        pathname: '/views/IndexDetailsInvoice',
+                        params: {
+                            guide: JSON.stringify(guide),
+                            numberGuide: numberGuide,
+                            token: token ?? "",
+                            confirmationStatus: 'true',
+                            responseOTPInit: JSON.stringify(response.data),
+                            totalValue: 0,
+                            totalRecauder: 0,
+                            totalOrderPayment: 0,
+                            expireDate: 'true',
+                            isSelectInvocies: isSelectInvocies,
+                            isAnticipe: isAnticipe,
+                            notDetails: "true"
+                        }
+
+                    });
+                    return true;
+                }
+            }
+            return false;
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        }
+    };
+
+
+    const submitFile = async (newPhoto: EvidencePhoto[]) => {
+        try {
+            setLoading(true);
+            // Pequeña pausa para que se muestre el loading (opcional)
+            await new Promise(resolve => setTimeout(resolve, 100));
+            router.push({
+                pathname: '/views/IndexDetailsInvoice',
+                params: {
+                    guide: JSON.stringify(guide),
+                    numberGuide: numberGuide,
+                    token: token ?? "",
+                    isFileView: "true",
+                    sasToken: sasToken,
+                    multiplePhotos: JSON.stringify(newPhoto),
+                    isSelectInvocies: isSelectInvocies ? 'true' : undefined,
+                    isAnticipe: isAnticipe,
+                    isAnticipeInvoice: isAnticipe,
+                    notDetails: "true"
+
+                }
+            });
+            setLoading(false);
+
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
+        }
+    };
+
     const handleSubmitConfirmation = async () => {
         try {
 
-            // if (!guide?.whatsapp || guide?.whatsapp == "") {
-            //     btnRef.current?.reset();
-            //     setModalTitleValidate("Evidencia requerida");
-            //     setModalMessageValidate("Para finalizar la entrega del pedido debes");
-            //     setHighlightText("Registrar evidencia.");
-            //     setModalButtonLabelValidate("Registrar evidencia");
-            //     setModalVisibleValidate(true);
-            //     return;
-            // }
+            if (!guide?.whatsapp || guide?.whatsapp == "") {
+                btnRef.current?.reset();
+                setModalTitleValidate("Evidencia requerida");
+                setModalMessageValidate("Para finalizar la entrega del pedido debes");
+                setHighlightText("Registrar evidencia.");
+                setModalButtonLabelValidate("Registrar evidencia");
+                setModalVisibleValidate(true);
+                return;
+            }
 
             setLoading(true);
 
@@ -1081,6 +1178,27 @@ export function InfoInvoiceCreditForm({
                 />
             )}
 
+            {(uploadPhotoTwo) && (
+                <UploadPhotoOTP
+                    onClose={() => setUploadPhotoTwo(false)}
+                    onPick={(data) => {
+                        const newPhoto: EvidencePhoto = {
+                            id: Date.now().toString(), 
+                            uri: data.uri,
+                            base64: data.base64
+                        };
+
+                        submitFile([newPhoto]);
+                    }}
+                    onPermisionsPhoto={() => {
+                        setUploadPhotoTwo(false);
+                        setModalTitle("Permiso denegado ¡Alerta!");
+                        setModalMessage("No podemos acceder a la cámara. Activa el permiso en la configuración del dispositivo para continuar.");
+                        setModalVisible(true);
+                    }}
+
+                />
+            )}
             {loading && <LoadingBlue />}
         </ThemedView>
     );

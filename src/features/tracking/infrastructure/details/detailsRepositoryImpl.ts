@@ -489,4 +489,26 @@ export const detailsRepositoryImpl: DetailsRepository = {
       throw error;
     }
   },
+
+  async reentryOTPNotPayment(data: ReentryOTPProps, token: string) {
+    try {
+      const response = await authApi.post(`${API_ROUTES.REENTRY_OTP_NOT_PAYMENT}`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error: any) {
+      return {
+        statusCode: error.response?.status ?? 500,
+        message:
+          error.response?.data?.message ??
+          "Ocurrió un error inesperado",
+        success: false,
+        data: null,
+      };
+    }
+  },
+
 }

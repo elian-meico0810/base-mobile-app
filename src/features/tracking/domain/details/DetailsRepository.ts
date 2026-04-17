@@ -30,5 +30,6 @@ export interface DetailsRepository {
   evidenciaOTPItem: (direccion_id: string, numberInvoice: string, token: string) => Promise<ApiResponse<EvidenciaOTPItemOTP[]>>;
   reEntryDelivery: (data: ReEntryDeliveryProps, token: string) => Promise<any>;
   sendOTPNotPayment: (data: SendOTOPProps, token: string) => Promise<any>;
+  reentryOTPNotPayment: (data: ReentryOTPProps, token: string) => Promise<any>;
 
 }

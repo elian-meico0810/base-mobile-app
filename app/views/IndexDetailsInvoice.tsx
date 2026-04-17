@@ -76,6 +76,7 @@ export default function IndexDetailsInvoiceScreen() {
                             expireDate={expireDate ? true : false}
                             isViewDetailsPorducts={isViewDetailsPorducts ? true : false}
                             isAnticipe={isAnticipe}
+                            notDetails={notDetails}
 
                         />
                     );
@@ -93,7 +94,7 @@ export default function IndexDetailsInvoiceScreen() {
                             isViewDetailsPorducts={isViewDetailsPorducts ? true : false}
                             isSelectInvocies={isSelectInvocies}
                             isAnticipe={isAnticipe}
-
+                            notDetails={notDetails}
                         />
                     );
                 }

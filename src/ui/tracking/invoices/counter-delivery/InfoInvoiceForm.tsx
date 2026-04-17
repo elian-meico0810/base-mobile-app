@@ -175,8 +175,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     };
 
     useEffect(() => {
-        setPhone(phone);
-    }, [phone]);
+        if (guide?.whatsapp) {
+            setPhone(guide.whatsapp);
+        }
+    }, [guide?.whatsapp]);
 
     useEffect(() => {
         if (modalRefused) {
@@ -1949,7 +1951,13 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 visible={showChangePhone}
                 onClose={() => setShowChangePhone(false)}
                 onConfirm={(newPhone) => {
-                    setPhone(newPhone);
+
+                    if (guide) {
+                        setGuide({
+                            ...guide,
+                            whatsapp: newPhone
+                        });
+                    }
                     setShowChangePhone(false);
                     setShowDetailInvoiceQR(true);
                 }}

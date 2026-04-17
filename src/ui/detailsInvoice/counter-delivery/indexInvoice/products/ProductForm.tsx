@@ -203,6 +203,8 @@ export function ProductForm({
         }
     }, [successButton, alertButton]);
 
+    const conticion = notDetails == 'true';
+
     const submitDataByActionsAlert = async () => {
         try {
             if (modalVisible) return;
@@ -213,11 +215,11 @@ export function ProductForm({
             if (successButton) {
                 const payload = detalles.map((productItemData: any) => ({
                     idPedidoDetalle: productItemData.id, // opcional
-                    totalEntregado: String(
+                    totalEntregado: conticion ? '0' : String(
                         Number(productItemData.unidadesSolicitadas) *
                         Number(productItemData.valorBaseProducto)
                     ),
-                    totalImpuestoEntrega: String(
+                    totalImpuestoEntrega: conticion ? '0' : String(
                         Number(productItemData.totalImpuestos)
                     ),
                 }));
@@ -310,6 +312,7 @@ export function ProductForm({
         }
     };
 
+
     const submitDataByActions = async (data?: ReasonData[]) => {
         try {
 
@@ -331,8 +334,8 @@ export function ProductForm({
 
                 const response = await detailsRepositoryImpl.sendOrder(
                     {
-                        totalEntregado: String(Number(productItemData.unidadesSolicitadas) * Number(productItemData.valorBaseProducto)),
-                        totalImpuestoEntrega: String(productItemData?.totalImpuestos),
+                        totalEntregado: conticion ? '0 ': String(Number(productItemData.unidadesSolicitadas) * Number(productItemData.valorBaseProducto)),
+                        totalImpuestoEntrega:  conticion ? '0 ': String(productItemData?.totalImpuestos),
                     }
                     , String(productItemData?.id), token);
 
@@ -387,8 +390,8 @@ export function ProductForm({
                             pedidoDetalleId: Number(productItemData?.id),
                             unidadesRechazadas: Number(totalUnits),
                             unidadesEntregadas: Number(productItemData?.unidadesSolicitadas) - Number(totalUnits),
-                            totalEntregado: calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_5, totalUnits),
-                            totalImpuestoEntrega: calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_7, totalUnits),
+                            totalEntregado: conticion ? 0 : calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_5, totalUnits),
+                            totalImpuestoEntrega:  conticion ? 0 :  calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_7, totalUnits),
                             novedades: novedadesArray
                         };
 

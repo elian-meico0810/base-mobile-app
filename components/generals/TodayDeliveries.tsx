@@ -31,7 +31,7 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
         const facturas = item.facturas || [];
         const subtotal = facturas
             .filter(f => f.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO)
-            .reduce((fSum, f) => fSum + (f.valorTotal || 0), 0);
+            .reduce((fSum, f) => fSum + (f.valorRecaudar || 0), 0);
         return sum + subtotal;
     }, 0) : 0;
 

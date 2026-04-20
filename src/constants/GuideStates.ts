@@ -71,7 +71,8 @@ export enum TypeInvoiceEnum {
     CREDITO = "CREDITO",
     CONTADO_EFECTIVO = "CONTADO EFECTIVO",
     ANTICIPO = "CONTADO ANTICIPADO",
-    MIXTO = "MIXTO"
+    MIXTO = "MIXTO",
+    PAGOS_APLICATIVO_MEICO ="PAGOS APLICATIVO MEICO"
 }
 
 export enum TypeConPagoEnum {

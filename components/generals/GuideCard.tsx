@@ -57,9 +57,9 @@ export function GuideCard({ guide, onPress, routeStarted, numberGuide, token, st
             onPress={() => {
                 onPress?.();
                 if (!routeStarted) return;
-                router.push(
-                    `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
-                );
+                // router.push(
+                //     `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+                // );
             }}
         >
             <View style={styles.header}>

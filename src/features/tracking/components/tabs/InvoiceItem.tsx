@@ -70,7 +70,7 @@ const InvoiceItem = ({
 
 
   const isDisabled = disabledInvoices?.has(String(invoice.numeroFactura));
-  
+
   const canShowCheckbox =
     showCheckbox &&
     (!evidence);
@@ -89,8 +89,11 @@ const InvoiceItem = ({
       value = 'Anticipado';
       break;
 
+    case TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO:
+      value = 'Aplicativo-meico';
+      break;
   }
-  const validation = evidence && invoice?.tipo != TypeInvoiceEnum.CONTADO_EFECTIVO;
+  const validation = evidence && (invoice?.tipo != TypeInvoiceEnum.CONTADO_EFECTIVO || invoice?.tipo != TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO);
 
   return (
     <TouchableOpacity
@@ -149,13 +152,19 @@ const InvoiceItem = ({
 
             <View style={styles.priceRow}>
               <Text style={styles.amountText}>
-                {invoice?.tipo != TypeInvoiceEnum.CONTADO_EFECTIVO ? value : `$${formatNumber(invoice.valorRecaudar)}`}
+                {(
+                  invoice?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO ||
+                  invoice?.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO
+                )
+                  ? `$${formatNumber(invoice.valorRecaudar)}`
+                  : value
+                }
               </Text>
 
             </View>
           </View>
 
-          {invoice?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO ? (
+          {(invoice?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO || invoice?.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO) ? (
             <Text style={styles.codText} numberOfLines={1} ellipsizeMode="tail">
               {value}
             </Text>

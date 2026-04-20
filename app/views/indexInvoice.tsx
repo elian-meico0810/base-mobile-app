@@ -6,6 +6,7 @@ import { InfoInvoiceForm } from '@/src/ui/tracking/invoices/counter-delivery/Inf
 import { ViewSelectInvoice } from '@/src/ui/tracking/invoices/counter-delivery/ViewSelectInvoice';
 import { InfoInvoiceCreditForm } from '@/src/ui/tracking/invoices/credit/InfoInvoiceCreditForm';
 import { ViewSelectInvoice as CreditViewSelectInvoice } from '@/src/ui/tracking/invoices/credit/ViewSelectInvoice';
+import { ViewDefault } from '@/src/ui/tracking/view-default/ViewDefaulTForm';
 import { Stack, useLocalSearchParams } from 'expo-router';
 
 export default function IndexInvoiceScreen() {
@@ -29,11 +30,11 @@ export default function IndexInvoiceScreen() {
     );
 
     const areAllInvoicesConutreDlivery = guideObj.facturas.every(
-        factura => factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO ||
+        factura => factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO || factura.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO ||
             factura.tipo === TypeInvoiceEnum.MIXTO
     );
     const areAllInvoicesAnticipe = guideObj.facturas.every(
-        factura => factura.tipo === TypeInvoiceEnum.ANTICIPO || factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO
+        factura => factura.tipo === TypeInvoiceEnum.ANTICIPO || factura.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO || factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO
     );
     const areAllInvoicesSameStatus =
         guideObj.facturas.length > 0 &&
@@ -159,8 +160,16 @@ export default function IndexInvoiceScreen() {
                     }
                 }
 
-
-                return null;
+                return (
+                    <ViewDefault
+                        initialGuide={guideObj}
+                        token={token || ""}
+                        onSubmit={async ({ guide, token }) => { }}
+                        numberGuide={Number(numberGuide)}
+                        isSelectInvocies={isSelectInvocies}
+                        documentMeico={documentMeico}
+                    />
+                );
             })()}
 
         </>

@@ -476,7 +476,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         estado: clienteEncontrado.estado,
                         fecha_apertura: clienteEncontrado.fecha_apertura,
                         facturas: clienteEncontrado.facturas,
-                        pedidos: clienteEncontrado.pedidos
+                        pedidos: clienteEncontrado.pedidos,
+                        whatsapp: clienteEncontrado.whatsapp,
+
                     });
                     listInfOTByDirection({
                         idDireccion: clienteEncontrado.idDireccion,
@@ -489,7 +491,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         estado: clienteEncontrado.estado,
                         fecha_apertura: clienteEncontrado.fecha_apertura,
                         facturas: clienteEncontrado.facturas,
-                        pedidos: clienteEncontrado.pedidos
+                        pedidos: clienteEncontrado.pedidos,
+                        whatsapp: clienteEncontrado.whatsapp,
+
                     });
                     listInfOTPFileByDirection({
                         idDireccion: clienteEncontrado.idDireccion,
@@ -502,7 +506,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         estado: clienteEncontrado.estado,
                         fecha_apertura: clienteEncontrado.fecha_apertura,
                         facturas: clienteEncontrado.facturas,
-                        pedidos: clienteEncontrado.pedidos
+                        pedidos: clienteEncontrado.pedidos,
+                        whatsapp: clienteEncontrado.whatsapp,
                     })
                     listDocumentQuery({
                         idDireccion: clienteEncontrado.idDireccion,
@@ -515,7 +520,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         estado: clienteEncontrado.estado,
                         fecha_apertura: clienteEncontrado.fecha_apertura,
                         facturas: clienteEncontrado.facturas,
-                        pedidos: clienteEncontrado.pedidos
+                        pedidos: clienteEncontrado.pedidos,
+                        whatsapp: clienteEncontrado.whatsapp,
                     });
                 }
             }
@@ -703,7 +709,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
     // Calcular la suma de todos los valorTotal y dfr de todas las facturas
     const totalFacturas = guide?.facturas
-        ?.filter(factura => factura?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO)
+        ?.filter(factura => factura?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO || factura?.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO)
         .reduce((sum, factura) => {
             const valorTotal = Number(factura?.valorRecaudar || 0);
             const dfr = Number(factura?.dfr || 0);
@@ -711,17 +717,21 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         }, 0) || 0;
 
     const totalvalorRecaudar =
-        guide?.facturas?.filter(factura => factura?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO)
+        guide?.facturas?.filter(factura => factura?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO || factura?.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO)
             ?.reduce((sum, f) => sum + (Number(f?.valorRecaudar) || 0), 0) || 0;
 
     const totalRecauder = Math.max(0, totalvalorRecaudar - totalAproved);
 
-    const validateCondition = showCheckbox &&
+    const validateCondition =
+        showCheckbox &&
         selectedMultipleInvoices.length <= 1 &&
-        selectedMultipleInvoices[0]?.facturas[0]?.tipo !== TypeInvoiceEnum.CONTADO_EFECTIVO;
+        (
+            selectedMultipleInvoices[0]?.facturas[0]?.tipo !== TypeInvoiceEnum.CONTADO_EFECTIVO &&
+            selectedMultipleInvoices[0]?.facturas[0]?.tipo !== TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO
+        );
     const conditionButton = routeStarted || (conceptDelivery.length + disabledInvoices.size) === (guide?.facturas?.length ?? 0);
     const validateCheckbox = (conceptDelivery.length + disabledInvoices.size) != (guide?.facturas?.length ?? 0);
-    const validateCheckboxConturyDelivery = showCheckbox && selectedMultipleInvoices.length <= 1 && selectedMultipleInvoices[0]?.facturas[0]?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO
+    const validateCheckboxConturyDelivery = showCheckbox && selectedMultipleInvoices.length <= 1 && (selectedMultipleInvoices[0]?.facturas[0]?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO || selectedMultipleInvoices[0]?.facturas[0]?.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO)
     const conditionData = showCheckbox && selectedMultipleInvoices.length > 1;
     const validateCheckboxlength = conceptDelivery.length == guide?.facturas?.length;
     const conditionButtonDate = (conceptDelivery.length + disabledInvoices.size) === (guide?.facturas?.length ?? 0) || guide?.fecha_apertura || EntryVisible;
@@ -770,7 +780,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     }, [showCheckbox, selectedMultipleInvoices]);
     const isSmallScreen = height <= 780;
     const closeButton = routeStarted || buttonValue;
-    
+
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -847,7 +857,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                                     {
                                         '$ ' +
                                         guide?.facturas
-                                            ?.filter(factura => factura?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO)
+                                            ?.filter(factura => factura?.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO || factura?.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO)
                                             ?.reduce((sum, f) => sum + (Number(f.valorRecaudar) || 0), 0)
                                             ?.toLocaleString('es-CO', { minimumFractionDigits: 0 }) || '0'
                                     }
@@ -907,20 +917,21 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                             </View>
                         )}
 
-                        {(showCheckbox && selectedMultipleInvoices.length <= 1 && selectedMultipleInvoices[0]?.facturas[0]?.tipo != TypeInvoiceEnum.CONTADO_EFECTIVO) && (
-                            <OneSelectedOrder
-                                data={selectedMultipleInvoices[0] ? [selectedMultipleInvoices[0]] : undefined}
-                                conceptDelivery={conceptDelivery}
-                                onSelectionChange={(isSelected, selectedData) => {
-                                    if (!isSelected) setShowCheckbox(false);
-                                }}
-                                uploadPhoto={() => setUploadPhoto(true)}
-                                onOpenRefusedModal={() => setShowModalRefused(true)}
-                                onStatusChange={(status) => { }}
-                                selectedStatus={showStatusDelivery}
-                                setShowStatusDelivery={setShowStatusDelivery}
-                            />
-                        )}
+                        {(showCheckbox && selectedMultipleInvoices.length <= 1 && selectedMultipleInvoices[0]?.facturas[0]?.tipo !== TypeInvoiceEnum.CONTADO_EFECTIVO &&
+                            selectedMultipleInvoices[0]?.facturas[0]?.tipo !== TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO) && (
+                                <OneSelectedOrder
+                                    data={selectedMultipleInvoices[0] ? [selectedMultipleInvoices[0]] : undefined}
+                                    conceptDelivery={conceptDelivery}
+                                    onSelectionChange={(isSelected, selectedData) => {
+                                        if (!isSelected) setShowCheckbox(false);
+                                    }}
+                                    uploadPhoto={() => setUploadPhoto(true)}
+                                    onOpenRefusedModal={() => setShowModalRefused(true)}
+                                    onStatusChange={(status) => { }}
+                                    selectedStatus={showStatusDelivery}
+                                    setShowStatusDelivery={setShowStatusDelivery}
+                                />
+                            )}
 
 
                     </ScrollView>

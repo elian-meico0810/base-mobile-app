@@ -735,6 +735,10 @@ export function InfoInvoiceCreditForm({
         case TypeInvoiceEnum.ANTICIPO:
             value = 'Anticipado';
             break;
+            
+        case TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO:
+            value = 'Aplicativo-meico';
+            break;
     }
 
     return (

@@ -44,6 +44,7 @@ interface UploadPhotosProps {
     isSelectInvocies?: string;
     isAnticipe?: string;
     notDetails?: string;
+    notEntry?: string;
 }
 
 const { width, height } = Dimensions.get('window');
@@ -62,7 +63,8 @@ export function ViewFileFormOTP({
     isViewDetailsPorducts,
     isSelectInvocies,
     isAnticipe,
-    notDetails
+    notDetails,
+    notEntry
 }: UploadPhotosProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [evidences, setEvidences] = useState<EvidencePhoto[]>([]);

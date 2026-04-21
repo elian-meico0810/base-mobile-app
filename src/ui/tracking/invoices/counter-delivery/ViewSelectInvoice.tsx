@@ -325,12 +325,9 @@ export function ViewSelectInvoice({
                                 guide: JSON.stringify(guideFilter),
                                 numberGuide: numberGuide,
                                 token: token ?? "",
-                                totalValue: '0',
-                                totalRecauder: '0',
-                                totalOrderPayment: '0',
-                                isViewDetailsPorducts: 'true',
+                                notDetails:"true",
                                 isSelectInvocies: "true",
-                                notDetails: "true"
+                                notEntry: "true"
                             }
                         });
                         break;

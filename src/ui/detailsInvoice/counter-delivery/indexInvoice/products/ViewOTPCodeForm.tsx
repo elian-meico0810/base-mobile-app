@@ -47,7 +47,7 @@ interface ViewOTPCodeFormProps {
     isViewDetailsPorducts?: boolean;
     isAnticipe?: string;
     notDetails?: string;
-
+    notEntry?: string;
 }
 
 interface EvidencePhoto {
@@ -73,7 +73,8 @@ export function ViewOTPCodeForm({
     expireDate,
     isViewDetailsPorducts,
     isAnticipe,
-    notDetails
+    notDetails,
+    notEntry
 }: ViewOTPCodeFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [guideOTP, setGuideOTP] = useState<ResponseOTPInitPorps | undefined>(responseOTPInit);

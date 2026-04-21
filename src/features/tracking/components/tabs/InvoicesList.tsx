@@ -80,6 +80,7 @@ const InvoicesList = ({
     });
 
     const handleInvoiceSelect = (invoice: any, parentGuide: GuideDetails) => {
+
         if (showCheckboxes) {
             // Modo selección múltiple con checkboxes
             const invoiceId = invoice.numeroFactura;
@@ -226,6 +227,28 @@ const InvoicesList = ({
         );
     }
 
+    const selectableInvoices = allInvoicesWithParent.filter(item => {
+        const id = String(item.invoice.numeroFactura);
+
+        if (disabledInvoices?.has(id)) return false;
+
+        if (conceptDelivery) {
+            const deliveryArray = Array.isArray(conceptDelivery)
+                ? conceptDelivery
+                : [conceptDelivery];
+
+            const existingDocumentMeicos = deliveryArray
+                .map((doc: DerliveryDocument) => doc.documentMeico?.toString())
+                .filter(Boolean);
+
+            if (existingDocumentMeicos.includes(id)) return false;
+        }
+
+        return true;
+    });
+    
+    const allSelected = selectableInvoices.length > 0 &&
+        selectedInvoiceIds.size === selectableInvoices.length;
     const renderInvoices = () => (
         <View>
             {/* Checkbox "Seleccionar todas" */}
@@ -236,7 +259,7 @@ const InvoicesList = ({
                 >
                     <View style={[
                         styles.checkbox,
-                        selectedInvoiceIds.size >= 1 && styles.checkboxSelected
+                        allSelected && styles.checkboxSelected
                     ]}>
                         {selectedInvoiceIds.size === selectedGuidesData.length && (
                             <Text style={styles.checkboxIcon}>✓</Text>

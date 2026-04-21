@@ -460,7 +460,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const isSmallScreen = height <= 780;
     const conceptDeliveryValue = conceptDeliverySelect.length > 0;
     const conditionEntryVisible = !conditionButton && conceptDeliveryValue || EntryVisible;
-    const conditionEntryVisibleTwo = !conditionButton && conceptDeliveryValue;
+    const conditionEntryVisibleTwo = conditionEntryVisible || guide?.fecha_apertura || EntryVisible || conditionButton;
 
     return (
         <ThemedView style={styles.container}>
@@ -603,9 +603,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                             <PrimaryButtonDetails
                                 ref={btnRef}
                                 autoReset={validateException}
-                                key={conditionEntryVisible || EntryVisible || conditionButton ? "cerrar" : "llegue"}
-                                title={conditionEntryVisible || EntryVisible || conditionButton ? "Cerrar pedido" : "Ya llegué"}
-                                onPress={conditionEntryVisible || EntryVisible || conditionButton ? submitData : handleSubmit}
+                                key={conditionEntryVisibleTwo ? "cerrar" : "llegue"}
+                                title={conditionEntryVisibleTwo ? "Cerrar pedido" : "Ya llegué"}
+                                onPress={conditionEntryVisibleTwo ? submitData : handleSubmit}
                                 disabled={false}
                                 width={328}
                                 height={43}

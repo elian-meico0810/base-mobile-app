@@ -59,7 +59,20 @@ interface EvidencePhoto {
 type DeliveryStatus = "total" | "parcial" | "rechazo" | null;
 type OptionsRefusedPorps = 'Dinero' | 'Dueño' | 'Tienda' | 'Productos' | null;
 
-export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton, detailsCounterDelivery, isViewDetailsPorducts, isAnticipe }: InfoInvoiceFormProps) {
+export function InfoInvoiceForm({ 
+    initialGuide, 
+    token = "", 
+    onSubmit, 
+    numberGuide, 
+    isSelectInvocies, 
+    documentMeico, 
+    isCountryDelivery = false, 
+    IsGoBack = false, 
+    routeStartedBotton, 
+    detailsCounterDelivery, 
+    isViewDetailsPorducts, 
+    isAnticipe 
+}: InfoInvoiceFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [guideAny, setGuideAny] = useState<GuideDetails[]>([]);
     const [guideByProduct, setGuideByPorduct] = useState<GuideDetails[]>([]);
@@ -931,60 +944,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 };
                 const response = await detailsRepositoryImpl.reportNoveltyFileArray(payload, token);
 
-                // if (guide?.facturas && guide.facturas.length > 0) {
-                //     guide.facturas.forEach((factura, index) => {
-                //         facturasArray.push({
-                //             ruta: String(numberGuide),
-                //             documentMeico: String(factura.numeroFactura),
-                //             direccion: Number(guide?.idDireccion),
-                //             causal: showOptionRefused === OptionsRefusedEnum.DINERO
-                //                 ? CausalDelivery.DINERO_INSUFICIENTE
-                //                 : showOptionRefused === OptionsRefusedEnum.DUEÑO
-                //                     ? CausalDelivery.DUENO_NO_CONTESTA
-                //                     : showOptionRefused === OptionsRefusedEnum.TIENDA
-                //                         ? CausalDelivery.TIENDA_CERRADA
-                //                         : showOptionRefused === OptionsRefusedEnum.PRODUCTOS
-                //                             ? CausalDelivery.PRODUCTOS_DANADOS
-                //                             : null,
-                //             estado: "ACT_EST_ENTREGA",
-                //             files:
-                //                 showStatusDelivery === StatusDelivery.RECHAZADO
-                //                     ?
-                //                     showOptionRefused === OptionsRefusedEnum.TIENDA
-                //                         ? multiplePhotos.map((item) => ({
-                //                             tipoEntrega: TypeDelivery.RECHAZADO,
-                //                             rutaArchivo: item.base64 ?? null,
-                //                         }))
-                //                         : []
-                //                     :
-                //                     multiplePhotos.map((item) => ({
-                //                         tipoEntrega:
-                //                             showStatusDelivery === StatusDelivery.TOTAL
-                //                                 ? TypeDelivery.ENT_TOTAL
-                //                                 : showStatusDelivery === StatusDelivery.PARCIAL
-                //                                     ? TypeDelivery.ENT_PARCIAL
-                //                                     : TypeDelivery.RECHAZADO,
-                //                         rutaArchivo: item.base64 ?? null,
-                //                     })),
-
-                //         });
-                //     });
-                //     setShowOptionRefused(null);
-                // }
-
-                // if (facturasArray.length > 0) {
-                //     responses = await Promise.all(
-                //         facturasArray.map(facturaData =>
-                //             invoiceRepositoryImpl.createDelivery(facturaData, token)
-                //         )
-                //     );
-                //     console.log("responses: ",responses);
-
-                //     // Verificar si todas las respuestas fueron exitosas
-                //     const success = responses.every((resp: any) =>
-                //         resp?.statusCode === 200 || resp?.success === true
-                //     );
-
+        
                 if (response?.success) {
                     listDocumentQuery();
                     setModalTitle("¡Procesado!");
@@ -993,10 +953,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     setvalidateIsBotton(false);
                 } else {
                     setLoading(false);
-                    // Opcional: mostrar detalles del primer error
-                    // const oneError = responses.find((resp: any) =>
-                    //     !(resp?.statusCode === 200 || resp?.success === true)
-                    // );
                     setModalTitle("Alerta");
                     setModalMessage("Error inesperado.");
                     setModalVisible(true);
@@ -1300,24 +1256,24 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 return;
             }
 
-            if (Number(totalRecauder) > 0) {
-                btnRef.current?.reset();
-                setModalTitle("¡Alerta!");
-                setModalMessage("El valor a recaudar debe ser 0 para continuar con la confirmación.");
-                setModalVisible(true);
-                return;
-            }
+            // if (Number(totalRecauder) > 0) {
+            //     btnRef.current?.reset();
+            //     setModalTitle("¡Alerta!");
+            //     setModalMessage("El valor a recaudar debe ser 0 para continuar con la confirmación.");
+            //     setModalVisible(true);
+            //     return;
+            // }
 
 
-            if (!guide?.whatsapp || guide?.whatsapp == "") {
-                btnRef.current?.reset();
-                setModalTitleValidate("Evidencia requerida");
-                setModalMessageValidate("Para finalizar la entrega del pedido debes");
-                setHighlightText("Registrar evidencia.");
-                setModalButtonLabelValidate("Registrar evidencia");
-                setModalVisibleValidate(true);
-                return;
-            }
+            // if (!guide?.whatsapp || guide?.whatsapp == "") {
+            //     btnRef.current?.reset();
+            //     setModalTitleValidate("Evidencia requerida");
+            //     setModalMessageValidate("Para finalizar la entrega del pedido debes");
+            //     setHighlightText("Registrar evidencia.");
+            //     setModalButtonLabelValidate("Registrar evidencia");
+            //     setModalVisibleValidate(true);
+            //     return;
+            // }
 
             setLoading(true);
 
@@ -1327,8 +1283,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 {
                     idDireccion: Number(guide?.idDireccion),
                     numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
-                    numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
-                    // numeroDestino: "+573112187956",
+                    // numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
+                    numeroDestino: "+573112187956",
                     valorOriginal: String(totalValue),
                     valorPagado: String(totalOrderPayment),
                 },

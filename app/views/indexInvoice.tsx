@@ -1,11 +1,8 @@
 import { TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import { GuideDetails, PaymentsByInvoice } from '@/src/features/tracking/domain/details/DetailsGuide';
-import { ViewSelectAllAnticipe } from '@/src/ui/tracking/invoices/anticipe-and-count/ViewSelectAllAnticipe';
-import { ViewSelectInvoice as AnticipateAndCountViewSelectInvoice } from '@/src/ui/tracking/invoices/anticipe-and-count/ViewSelectInvoice';
 import { InfoInvoiceForm } from '@/src/ui/tracking/invoices/counter-delivery/InfoInvoiceForm';
 import { ViewSelectInvoice } from '@/src/ui/tracking/invoices/counter-delivery/ViewSelectInvoice';
 import { InfoInvoiceCreditForm } from '@/src/ui/tracking/invoices/credit/InfoInvoiceCreditForm';
-import { ViewSelectInvoice as CreditViewSelectInvoice } from '@/src/ui/tracking/invoices/credit/ViewSelectInvoice';
 import { ViewDefault } from '@/src/ui/tracking/view-default/ViewDefaulTForm';
 import { Stack, useLocalSearchParams } from 'expo-router';
 
@@ -33,9 +30,6 @@ export default function IndexInvoiceScreen() {
         factura => factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO || factura.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO ||
             factura.tipo === TypeInvoiceEnum.MIXTO
     );
-    const areAllInvoicesAnticipe = guideObj.facturas.every(
-        factura => factura.tipo === TypeInvoiceEnum.ANTICIPO || factura.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO || factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO
-    );
     const areAllInvoicesSameStatus =
         guideObj.facturas.length > 0 &&
         guideObj.facturas.every(
@@ -62,7 +56,7 @@ export default function IndexInvoiceScreen() {
             {/* Mas de una facuta y tiene que ser CONTADO_EFECTIVO */}
             {(() => {
                 // Condición 1
-                if (shouldShowViewSelectInvoice && areAllInvoicesConutreDlivery && !isAnticipe) {
+                if (shouldShowViewSelectInvoice && !isAnticipe) {
                     return (
                         <ViewSelectInvoice
                             initialGuide={guideObj}
@@ -114,51 +108,6 @@ export default function IndexInvoiceScreen() {
                     );
                 }
 
-                // Condición 3
-                if (areAllInvoicesCredito && guideObj.facturas.length >= 2) {
-                    return (
-                        <CreditViewSelectInvoice
-                            initialGuide={guideObj}
-                            token={token || ""}
-                            onSubmit={async ({ guide, token }) => { }}
-                            numberGuide={Number(numberGuide)}
-                            isSelectInvocies={isSelectInvocies}
-                            documentMeico={documentMeico}
-                            routeStartedBotton={routeStartedBotton}
-                        />
-                    );
-
-                }
-
-                if (areAllInvoicesSameStatus && guideObj.facturas.length >= 2) {
-                    return (
-                        <ViewSelectAllAnticipe
-                            initialGuide={guideObj}
-                            token={token || ""}
-                            onSubmit={async ({ guide, token }) => { }}
-                            numberGuide={Number(numberGuide)}
-                            isSelectInvocies={isSelectInvocies}
-                            documentMeico={documentMeico}
-                            routeStartedBotton={routeStartedBotton}
-                        />
-                    );
-
-                } else {
-                    if (areAllInvoicesAnticipe || isAnticipe) {
-                        return (
-                            <AnticipateAndCountViewSelectInvoice
-                                initialGuide={guideObj}
-                                token={token || ""}
-                                onSubmit={async ({ guide, token }) => { }}
-                                numberGuide={Number(numberGuide)}
-                                isSelectInvocies={isSelectInvocies}
-                                documentMeico={documentMeico}
-                                routeStartedBotton={routeStartedBotton}
-                            />
-                        );
-
-                    }
-                }
 
                 return (
                     <ViewDefault

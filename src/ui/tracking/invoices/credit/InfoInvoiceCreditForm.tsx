@@ -22,12 +22,11 @@ import { CreateEntregaProps, DerliveryDocument, Invoice } from '@/src/features/t
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
 import { capitalizeFirst, cleanSpaces, getDeviceDateTime, getDistanceInMeters, heightCaldulate, toUpperCase, uriToBase64 } from '@/src/utils/uitls';
-import { Image } from 'expo-image';
 import * as Location from "expo-location";
 import { useRouter } from 'expo-router';
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useRef, useState } from "react";
-import { BackHandler, Dimensions, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BackHandler, Dimensions, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 const { width, height } = Dimensions.get('window');
 
 interface InfoInvoiceCreditFormProps {
@@ -227,13 +226,6 @@ export function InfoInvoiceCreditForm({
                 return;
             }
 
-            if (!deliveryStatus) {
-                setModalTitle("¡Alerta!");
-                setModalMessage("Debe especificar un estado de entrega.");
-                setModalVisible(true);
-                return;
-            }
-
             setLoading(true);
             const location = await Location.getCurrentPositionAsync({
                 accuracy: Location.Accuracy.Highest,
@@ -251,9 +243,16 @@ export function InfoInvoiceCreditForm({
             if (response?.statusCode === 200) {
                 setRouteStarted(true);
                 if (isSelectInvocies) {
-                    router.push(
-                        `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}`
-                    );
+                    router.push({
+                        pathname: '/views/IndexDetailsInvoice',
+                        params: {
+                            guide: JSON.stringify(initialGuide),
+                            numberGuide: numberGuide,
+                            token: token ?? "",
+                            isSelectInvocies: "true",
+                            notDetails: "true",
+                        }
+                    });
                 }
                 setvalidateIsBotton(true);
                 setEntryVisible(true);
@@ -318,7 +317,6 @@ export function InfoInvoiceCreditForm({
                         guide: JSON.stringify(guide),
                         numberGuide: numberGuide,
                         token: token ?? "",
-                        isAnticipe: isAnticipe,
                         notDetails: 'true',
 
                     }
@@ -358,7 +356,7 @@ export function InfoInvoiceCreditForm({
                     if (clienteFiltrado.length > 0) {
                         const clienteEncontrado = clienteFiltrado[0];
 
-                        setGuide({
+                       setGuide({
                             idDireccion: clienteEncontrado.idDireccion,
                             direccion: clienteEncontrado.direccion,
                             poblacion: clienteEncontrado.poblacion,
@@ -367,9 +365,10 @@ export function InfoInvoiceCreditForm({
                             latitud: clienteEncontrado.latitud,
                             longitud: clienteEncontrado.longitud,
                             estado: clienteEncontrado.estado,
-                            facturas: clienteEncontrado.facturas
+                            facturas: clienteEncontrado.facturas,
+                            whatsapp: clienteEncontrado.whatsapp,
+                            pedidos: clienteEncontrado.pedidos
                         });
-
                     }
                 }
 
@@ -650,16 +649,20 @@ export function InfoInvoiceCreditForm({
                 {
                     idDireccion: Number(guide?.idDireccion),
                     numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
-                    numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
-                    // numeroDestino: "+573112187956",
+                    // numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
+                    numeroDestino: "+573112187956",
                     valorOriginal: '0',
                     valorPagado: '0',
                 },
                 token
             );
             if (responseData?.statusCode === 200) {
-
+                console.log("notDetails: ",notDetails);
+                console.log("selectedOption: ",selectedOption);
+                
                 if (notDetails && String(selectedOption) != "null") {
+                    console.log("entro aca: ");
+                    
                     const responseQuery = await detailsRepositoryImpl.reEntryDelivery(
                         {
                             id_pedido: Number(orderId),
@@ -735,7 +738,7 @@ export function InfoInvoiceCreditForm({
         case TypeInvoiceEnum.ANTICIPO:
             value = 'Anticipado';
             break;
-            
+
         case TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO:
             value = 'Aplicativo-meico';
             break;
@@ -1185,7 +1188,7 @@ export function InfoInvoiceCreditForm({
                     onClose={() => setUploadPhotoTwo(false)}
                     onPick={(data) => {
                         const newPhoto: EvidencePhoto = {
-                            id: Date.now().toString(), 
+                            id: Date.now().toString(),
                             uri: data.uri,
                             base64: data.base64
                         };

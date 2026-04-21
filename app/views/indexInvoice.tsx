@@ -44,6 +44,7 @@ export default function IndexInvoiceScreen() {
     const selectedOption = params.selectedOption as string;
     const notDetails = params.notDetails as string;
 
+
     return (
         <>
             <Stack.Screen

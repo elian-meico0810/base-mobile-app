@@ -131,15 +131,15 @@ const InvoiceItem = ({
           {/* Estado */}
           <View style={[
             styles.statusContainer,
-            (evidence || isDisabled)
+            evidence 
               ? { backgroundColor: '#DFF5E1' }
               : {}]}>
             <Text style={[
               styles.status,
-              (evidence || isDisabled)
+              evidence 
                 ? { color: '#1F9144' }
                 : {}]}>
-              {(evidence || isDisabled) ? "Entregado" : "Pendiente"}
+              {evidence  ? "Entregado" : "Pendiente"}
             </Text>
           </View>
 
@@ -172,7 +172,7 @@ const InvoiceItem = ({
         </View>
       </View>
 
-      {(evidence || isDisabled) && (
+      {evidence  && (
         <AddEvidenceButton
           title="Evidencias cargadas"
           backgroundColor="#EAF7ED"

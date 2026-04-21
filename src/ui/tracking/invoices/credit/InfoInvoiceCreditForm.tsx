@@ -358,7 +358,7 @@ export function InfoInvoiceCreditForm({
                     if (clienteFiltrado.length > 0) {
                         const clienteEncontrado = clienteFiltrado[0];
 
-                       setGuide({
+                        setGuide({
                             idDireccion: clienteEncontrado.idDireccion,
                             direccion: clienteEncontrado.direccion,
                             poblacion: clienteEncontrado.poblacion,
@@ -411,7 +411,7 @@ export function InfoInvoiceCreditForm({
             setModalVisible(true);
         }
     };
-    
+
     const uploadPhotoSubmit = async () => {
         try {
 
@@ -660,7 +660,9 @@ export function InfoInvoiceCreditForm({
                 token
             );
             if (responseData?.statusCode === 200) {
-                if (notDetails && String(selectedOption) != "null"  ) {
+                if (notDetails &&
+                    selectedOption != null &&
+                    String(selectedOption) !== "null") {
                     const responseQuery = await detailsRepositoryImpl.reEntryDelivery(
                         {
                             id_pedido: Number(orderId),

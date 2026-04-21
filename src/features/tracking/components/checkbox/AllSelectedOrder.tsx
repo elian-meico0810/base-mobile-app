@@ -160,7 +160,7 @@ const AllSelectedOrder: React.FC<AllSelectedOrderProps> = ({
     return (
         <View >
             <View style={styles.headerContainerTwo}>
-                <Text style={styles.headerTitleTWO}>Estado de entregasss</Text>
+                <Text style={styles.headerTitleTWO}>Estado de entrega</Text>
             </View>
             <ScrollView
                 style={styles.scrollView}

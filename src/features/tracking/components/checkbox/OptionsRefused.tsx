@@ -1,6 +1,6 @@
 import { PrimaryButton } from "@/components/buttons/PrimaryButton";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import { useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface OptionsRefusedProps {
@@ -15,12 +15,12 @@ export function OptionsRefused({
     onClose,
     disabled = false,
     width = 360,
-    height = 510, 
+    height = 510,
     onPress
 }: OptionsRefusedProps) {
     const [selectedStatus, setSelectedStatus] = useState<'Dinero' | 'Dueño' | 'Tienda' | 'Productos' | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
-    
+
     // Usar el prop height como valor inicial, pero luego controlarlo dinámicamente
     const [dynamicHeight, setDynamicHeight] = useState(height);
 
@@ -36,8 +36,10 @@ export function OptionsRefused({
     };
 
     const handleSubmit = () => {
+        if (selectedStatus) {
+            onPress?.(selectedStatus);
+        }
         onClose?.();
-        onPress?.(selectedStatus); // Pasar el estado seleccionado al padre
     }
 
     return (

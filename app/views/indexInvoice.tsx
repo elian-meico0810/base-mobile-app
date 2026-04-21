@@ -43,7 +43,7 @@ export default function IndexInvoiceScreen() {
     const isAnticipeInvoice = params.isAnticipeInvoice as string;
     const selectedOption = params.selectedOption as string;
     const notDetails = params.notDetails as string;
-
+    const notEntry = params.notEntry as string;
 
     return (
         <>
@@ -104,7 +104,8 @@ export default function IndexInvoiceScreen() {
                             selectedOption={selectedOption}
                             notDetails={notDetails}
                             detailsCounterDelivery={detailsCounterDelivery ? true : false}
-
+                            notEntry={notEntry}
+                            isViewDetailsPorducts={isViewDetailsPorducts ? true : false}
                         />
                     );
                 }

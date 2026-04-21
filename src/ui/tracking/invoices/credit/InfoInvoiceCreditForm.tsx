@@ -43,6 +43,7 @@ interface InfoInvoiceCreditFormProps {
     routeStartedBotton?: string;
     selectedOption?: string;
     notDetails?: string;
+    notEntry?: string;
 }
 
 interface EvidencePhoto {
@@ -67,7 +68,8 @@ export function InfoInvoiceCreditForm({
     isAnticipe,
     routeStartedBotton,
     selectedOption,
-    notDetails
+    notDetails,
+    notEntry
 }: InfoInvoiceCreditFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [loading, setLoading] = useState(false);
@@ -408,7 +410,7 @@ export function InfoInvoiceCreditForm({
             setModalVisible(true);
         }
     };
-
+    
     const uploadPhotoSubmit = async () => {
         try {
 
@@ -631,15 +633,15 @@ export function InfoInvoiceCreditForm({
     const handleSubmitConfirmation = async () => {
         try {
 
-            if (!guide?.whatsapp || guide?.whatsapp == "") {
-                btnRef.current?.reset();
-                setModalTitleValidate("Evidencia requerida");
-                setModalMessageValidate("Para finalizar la entrega del pedido debes");
-                setHighlightText("Registrar evidencia.");
-                setModalButtonLabelValidate("Registrar evidencia");
-                setModalVisibleValidate(true);
-                return;
-            }
+            // if (!guide?.whatsapp || guide?.whatsapp == "") {
+            //     btnRef.current?.reset();
+            //     setModalTitleValidate("Evidencia requerida");
+            //     setModalMessageValidate("Para finalizar la entrega del pedido debes");
+            //     setHighlightText("Registrar evidencia.");
+            //     setModalButtonLabelValidate("Registrar evidencia");
+            //     setModalVisibleValidate(true);
+            //     return;
+            // }
             setButtonValueOTP(true);
 
             setLoading(true);
@@ -657,12 +659,7 @@ export function InfoInvoiceCreditForm({
                 token
             );
             if (responseData?.statusCode === 200) {
-                console.log("notDetails: ",notDetails);
-                console.log("selectedOption: ",selectedOption);
-                
-                if (notDetails && String(selectedOption) != "null") {
-                    console.log("entro aca: ");
-                    
+                if (notDetails && String(selectedOption) != "null"  ) {
                     const responseQuery = await detailsRepositoryImpl.reEntryDelivery(
                         {
                             id_pedido: Number(orderId),
@@ -874,7 +871,7 @@ export function InfoInvoiceCreditForm({
                             </View>
                         </View>
 
-                        {(!notDetails) && (
+                        {(!notDetails || notEntry) && (
                             <TouchableOpacity
                                 style={styles.qrButtonDetailTwo}
                                 onPress={() => {

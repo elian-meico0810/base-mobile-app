@@ -31,6 +31,7 @@ interface ProductFormFormProps {
     isViewDetailsPorducts?: boolean;
     isAnticipe?: string;
     notDetails?: string;
+    notEntry?: string;
 
 }
 
@@ -72,9 +73,9 @@ export function ProductForm({
     routeStartedBotton,
     isViewDetailsPorducts,
     isAnticipe,
-    notDetails
+    notDetails,
+    notEntry
  }: ProductFormFormProps) {
-    
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
@@ -111,7 +112,7 @@ export function ProductForm({
 
     const handleGoBack = () => {
         router.push(
-            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${isSelectInvocies}`
+            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${isSelectInvocies}&notEntry=${notEntry}`
         );
     };
 
@@ -175,10 +176,13 @@ export function ProductForm({
                     setModalMessage(`Soporte(s) procesados exitosamente.`);
                     setModalVisible(true);
                     if (isSelectInvocies) {
+                        console.log("llego aca al if ", notDetails);
+                        
                         router.push(
                             `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&detailsCounterDelivery=${true}&isViewDetailsPorducts=${'true'}&isAnticipe=${isAnticipe}&notDetails=${notDetails}&isSelectInvocies=${isSelectInvocies}`
                         );
                     } else {
+                        console.log("llego aca al else ");
                         router.push(
                             `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&detailsCounterDelivery=${true}&notDetails=${notDetails}&selectedOption=${selectedOption}&isSelectInvocies=${isSelectInvocies}`
                         );

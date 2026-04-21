@@ -174,7 +174,7 @@ export function ProductForm({
                     setModalVisible(true);
                     if (isSelectInvocies) {
                         router.push(
-                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&detailsCounterDelivery=${true}&isSelectInvocies=${'true'}&isViewDetailsPorducts=${'true'}&isAnticipe=${isAnticipe}&notDetails=${notDetails}`
+                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&detailsCounterDelivery=${true}&isViewDetailsPorducts=${'true'}&isAnticipe=${isAnticipe}&notDetails=${notDetails}`
                         );
                     } else {
                         router.push(

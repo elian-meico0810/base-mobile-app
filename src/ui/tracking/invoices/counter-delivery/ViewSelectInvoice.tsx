@@ -6,7 +6,7 @@ import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { OrderDetailSkeletonSelect } from '@/components/skeleton/OrderDetailSkeletonSelect';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
-import { TipeCodeOTP } from '@/src/constants/GuideStates';
+import { TipeCodeOTP, TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import InvoicesList from '@/src/features/tracking/components/tabs/InvoicesList';
 import { GuideDetails, NovletyOrder } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
@@ -30,7 +30,15 @@ interface ViewSelectInvoiceProps {
 
 }
 
-export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, routeStartedBotton }: ViewSelectInvoiceProps) {
+export function ViewSelectInvoice({
+    initialGuide,
+    token = "",
+    onSubmit,
+    numberGuide,
+    isSelectInvocies,
+    documentMeico,
+    routeStartedBotton
+}: ViewSelectInvoiceProps) {
     const [guide, setGuide] = useState<GuideDetails>();
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
@@ -303,9 +311,43 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 return;
             }
             if (guideFilter) {
-                router.push(
-                    `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guideFilter))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}`
-                );
+
+                switch (guideFilter.facturas?.[0].tipo) {
+                    case TypeInvoiceEnum.CONTADO_EFECTIVO:
+                        router.push(
+                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guideFilter))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}`
+                        );
+                        break;
+                    case TypeInvoiceEnum.CREDITO:
+                        router.push({
+                            pathname: '/views/indexInvoice',
+                            params: {
+                                guide: JSON.stringify(guideFilter),
+                                numberGuide: numberGuide,
+                                token: token ?? "",
+                                totalValue: '0',
+                                totalRecauder: '0',
+                                totalOrderPayment: '0',
+                                isViewDetailsPorducts: 'true',
+                                isSelectInvocies: "true",
+                                notDetails: "true"
+                            }
+                        });
+                        break;
+
+                    case TypeInvoiceEnum.ANTICIPO:
+                        console.log("Llego aca al ANTICIPO");
+                        break;
+
+                    case TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO:
+                        console.log("Llego aca al PAGOS_APLICATIVO_MEICO");
+                        break;
+
+
+                }
+
+
+
             }
         } catch (error) {
             setModalTitle("¡Error!");
@@ -462,8 +504,11 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const isSmallScreen = height <= 780;
     const conceptDeliveryValue = conceptDeliverySelect.length > 0;
     const conditionEntryVisible = !conditionButton && conceptDeliveryValue || EntryVisible;
-    const conditionEntryVisibleTwo = conditionEntryVisible || guide?.fecha_apertura || EntryVisible || conditionButton;
 
+    const conditionEntryVisibleTwo = !conditionButton && conceptDeliveryValue;
+    const areAllInvoicesConutreDlivery = guide?.facturas.every(
+        factura => factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO || factura.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO
+    );
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -506,8 +551,13 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                     >
 
                         {/* Card blanco centrado */}
-                        <View style={styles.card}>
-                            {/* Encabezado */}
+                        <View
+                            style={[
+                                styles.card,
+                                areAllInvoicesConutreDlivery ? { minHeight: 240 } : null
+                            ]}
+                        >
+
                             <View style={styles.cardHeader}>
                                 <View
                                     style={[
@@ -540,34 +590,40 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                                     <Text style={styles.label}>Ordenes a entregar</Text>
                                     <Text style={styles.value}> {Number(guide?.facturas?.length) - Number(conceptDelivery.length)}</Text>
                                 </View>
-                                <View style={styles.row}>
-                                    <Text style={styles.labelTotal}>Valor total del pedido</Text>
-                                    <Text style={[styles.value, { color: '#141D32', fontWeight: '800' }]}>
-                                        {
-                                            '$ ' +
-                                            totalvalorRecaudar.toLocaleString('es-CO', { minimumFractionDigits: 0 })
-                                        }
-                                    </Text>
-                                </View>
-                                <View style={styles.divider} />
-                                <View style={styles.row}>
-                                    <Text style={styles.label}>Valor recaudado</Text>
-                                    <Text style={styles.value}>{'$ ' + Number(totalAproved || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
+                                {areAllInvoicesConutreDlivery && (
+                                    <>
+                                        <View style={styles.row}>
+                                            <Text style={styles.labelTotal}>Valor total del pedido</Text>
+                                            <Text style={[styles.value, { color: '#141D32', fontWeight: '800' }]}>
+                                                {
+                                                    '$ ' +
+                                                    totalvalorRecaudar.toLocaleString('es-CO', { minimumFractionDigits: 0 })
+                                                }
+                                            </Text>
+                                        </View>
+                                        <View style={styles.divider} />
+                                        <View style={styles.row}>
+                                            <Text style={styles.label}>Valor recaudado</Text>
+                                            <Text style={styles.value}>{'$ ' + Number(totalAproved || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</Text>
 
-                                </View>
-                                <View style={styles.row}>
-                                    <Text style={styles.labelTotal}>Valor a recaudar</Text>
-                                    <Text style={[
-                                        styles.value,
-                                        {
-                                            color: Number(totalRecauder) === 0 ? '#1F9144' : '#C62828',
-                                            fontWeight: '800',
-                                            fontSize: 16
-                                        }
-                                    ]}>
-                                        {'$ ' + (Number(totalRecauder) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
-                                    </Text>
-                                </View>
+                                        </View>
+                                        <View style={styles.row}>
+                                            <Text style={styles.labelTotal}>Valor a recaudar</Text>
+                                            <Text style={[
+                                                styles.value,
+                                                {
+                                                    color: Number(totalRecauder) === 0 ? '#1F9144' : '#C62828',
+                                                    fontWeight: '800',
+                                                    fontSize: 16
+                                                }
+                                            ]}>
+                                                {'$ ' + (Number(totalRecauder) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                                            </Text>
+                                        </View>
+                                    </>
+
+                                )}
+
                             </View>
                         </View>
 
@@ -684,7 +740,6 @@ const styles = StyleSheet.create({
     },
     card: {
         width: 360,
-        minHeight: 240,
         backgroundColor: '#FFFFFF',
         borderColor: '#F0F1F5',
         borderWidth: 1,

@@ -311,7 +311,6 @@ export function ViewSelectInvoice({
                 return;
             }
             if (guideFilter) {
-
                 switch (guideFilter.facturas?.[0].tipo) {
                     case TypeInvoiceEnum.CONTADO_EFECTIVO:
                         router.push(
@@ -325,7 +324,7 @@ export function ViewSelectInvoice({
                                 guide: JSON.stringify(guideFilter),
                                 numberGuide: numberGuide,
                                 token: token ?? "",
-                                notDetails:"true",
+                                notDetails: "true",
                                 isSelectInvocies: "true",
                                 notEntry: "true"
                             }
@@ -333,14 +332,24 @@ export function ViewSelectInvoice({
                         break;
 
                     case TypeInvoiceEnum.ANTICIPO:
-                        console.log("Llego aca al ANTICIPO");
+                        router.push({
+                            pathname: '/views/indexInvoice',
+                            params: {
+                                guide: JSON.stringify(guideFilter),
+                                numberGuide: numberGuide,
+                                token: token ?? "",
+                                notDetails: "true",
+                                isSelectInvocies: "true",
+                                notEntry: "true"
+                            }
+                        });
                         break;
 
                     case TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO:
-                        console.log("Llego aca al PAGOS_APLICATIVO_MEICO");
+                        router.push(
+                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guideFilter))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}`
+                        );
                         break;
-
-
                 }
 
 

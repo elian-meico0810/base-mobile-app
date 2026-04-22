@@ -176,13 +176,10 @@ export function ProductForm({
                     setModalMessage(`Soporte(s) procesados exitosamente.`);
                     setModalVisible(true);
                     if (isSelectInvocies) {
-                        console.log("llego aca al if ", notDetails);
-                        
                         router.push(
                             `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&detailsCounterDelivery=${true}&isViewDetailsPorducts=${'true'}&isAnticipe=${isAnticipe}&notDetails=${notDetails}&isSelectInvocies=${isSelectInvocies}`
                         );
                     } else {
-                        console.log("llego aca al else ");
                         router.push(
                             `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&detailsCounterDelivery=${true}&notDetails=${notDetails}&selectedOption=${selectedOption}&isSelectInvocies=${isSelectInvocies}`
                         );

@@ -549,7 +549,7 @@ const styles = StyleSheet.create({
     },
     scrollContainer: {
         flex: 1,
-        maxHeight: 500,
+        maxHeight: 600,
         marginTop: 12,
         backgroundColor: '#F9F9FA',
     },

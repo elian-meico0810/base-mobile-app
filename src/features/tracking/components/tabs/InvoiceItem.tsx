@@ -70,6 +70,7 @@ const InvoiceItem = ({
 
   const isDisabled = disabledInvoices?.has(String(invoice.numeroFactura));
 
+
   const canShowCheckbox =
     showCheckbox &&
     (!evidence);
@@ -92,7 +93,14 @@ const InvoiceItem = ({
       value = 'Aplicativo-meico';
       break;
   }
-  const validation = evidence && (invoice?.tipo != TypeInvoiceEnum.CONTADO_EFECTIVO || invoice?.tipo != TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO);
+  const validation = evidence && (
+    invoice?.tipo != TypeInvoiceEnum.CONTADO_EFECTIVO &&
+    invoice?.tipo != TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO
+  );
+  const isDisabledBool = Boolean(isDisabled);
+  const validationBool = Boolean(validation);
+  const shouldApplyStyle = validationBool || isDisabledBool;
+  const valueCondition = validation || isDisabled ? true : false;
 
   return (
     <TouchableOpacity
@@ -100,7 +108,7 @@ const InvoiceItem = ({
       style={[
         styles.invoiceContainer,
         isSelected && styles.selectedContainer,
-        (!activeView || validation || isDisabled) && {
+        isDisabled && {
           backgroundColor: '#FFFFFF',
           opacity: 0.6,
           borderColor: '#f3f0f5',
@@ -131,15 +139,15 @@ const InvoiceItem = ({
           {/* Estado */}
           <View style={[
             styles.statusContainer,
-            evidence 
+            evidence
               ? { backgroundColor: '#DFF5E1' }
               : {}]}>
             <Text style={[
               styles.status,
-              evidence 
+              evidence
                 ? { color: '#1F9144' }
                 : {}]}>
-              {evidence  ? "Entregado" : "Pendiente"}
+              {evidence ? "Entregado" : "Pendiente"}
             </Text>
           </View>
 
@@ -172,7 +180,7 @@ const InvoiceItem = ({
         </View>
       </View>
 
-      {evidence  && (
+      {evidence && (
         <AddEvidenceButton
           title="Evidencias cargadas"
           backgroundColor="#EAF7ED"

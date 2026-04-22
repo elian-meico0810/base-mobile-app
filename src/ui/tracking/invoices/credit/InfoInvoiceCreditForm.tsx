@@ -660,6 +660,9 @@ export function InfoInvoiceCreditForm({
                 token
             );
             if (responseData?.statusCode === 200) {
+                console.log("notDetails: ",notDetails);
+                console.log("selectedOption: ",selectedOption);
+                
                 if (notDetails &&
                     selectedOption != null &&
                     String(selectedOption) !== "null") {

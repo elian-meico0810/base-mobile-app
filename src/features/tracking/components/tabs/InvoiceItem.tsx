@@ -104,7 +104,7 @@ const InvoiceItem = ({
 
   return (
     <TouchableOpacity
-      disabled={(validation || isDisabled) ? true : false}
+      disabled={(isDisabled) ? true : false}
       style={[
         styles.invoiceContainer,
         isSelected && styles.selectedContainer,

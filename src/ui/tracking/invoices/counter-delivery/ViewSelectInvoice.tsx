@@ -500,7 +500,9 @@ export function ViewSelectInvoice({
     }, 0) || 0;
 
     const totalvalorRecaudar =
-        guide?.facturas
+        guide?.facturas.filter( factura =>
+            factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO ||
+            factura.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO)
             ?.reduce((sum, f) => sum + (Number(f?.valorRecaudar) || 0), 0) || 0;
 
 
@@ -511,9 +513,17 @@ export function ViewSelectInvoice({
     const conceptDeliveryValue = conceptDeliverySelect.length > 0;
     const conditionEntryVisible = !conditionButton && conceptDeliveryValue || EntryVisible;
 
+<<<<<<< HEAD
     const conditionEntryVisibleTwo = !conditionButton && conceptDeliveryValue;
     const areAllInvoicesConutreDlivery = guide?.facturas.every(
         factura => factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO || factura.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO
+=======
+    // const conditionEntryVisibleTwo = !conditionButton && conceptDeliveryValue;
+    const hasAnyInvoiceCounterDelivery = guide?.facturas?.some(
+        factura =>
+            factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO ||
+            factura.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO
+>>>>>>> bbcc44d (fix: enhance validation for isSelectInvocies and improve invoice handling in multiple components)
     );
     return (
         <ThemedView style={styles.container}>
@@ -560,7 +570,7 @@ export function ViewSelectInvoice({
                         <View
                             style={[
                                 styles.card,
-                                areAllInvoicesConutreDlivery ? { minHeight: 240 } : null
+                                hasAnyInvoiceCounterDelivery ? { minHeight: 240 } : null
                             ]}
                         >
 
@@ -596,7 +606,7 @@ export function ViewSelectInvoice({
                                     <Text style={styles.label}>Ordenes a entregar</Text>
                                     <Text style={styles.value}> {Number(guide?.facturas?.length) - Number(conceptDelivery.length)}</Text>
                                 </View>
-                                {areAllInvoicesConutreDlivery && (
+                                {hasAnyInvoiceCounterDelivery && (
                                     <>
                                         <View style={styles.row}>
                                             <Text style={styles.labelTotal}>Valor total del pedido</Text>

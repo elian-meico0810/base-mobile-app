@@ -615,7 +615,7 @@ export function InfoInvoiceCreditForm({
                     isFileView: "true",
                     sasToken: sasToken,
                     multiplePhotos: JSON.stringify(newPhoto),
-                    isSelectInvocies: isSelectInvocies ? 'true' : undefined,
+                    isSelectInvocies: isSelectInvocies,
                     isAnticipe: isAnticipe,
                     isAnticipeInvoice: isAnticipe,
                     notDetails: "true"

@@ -223,7 +223,12 @@ export function ViewOTPCodeForm({
             );
 
             if (responseData?.statusCode === 200) {
-                if (isSelectInvocies) {
+                const isValid =
+                    isSelectInvocies != null &&
+                    isSelectInvocies !== "undefined" &&
+                    isSelectInvocies !== "null";
+
+                if (isValid) {
                     if (isAnticipe == 'true') {
                         router.push(
                             `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}&isAnticipe=${'true'}&isCountryDelivery=${'true'}&isAnticipeInvoice=${'true'}&notDetails=${notDetails}`
@@ -537,7 +542,7 @@ export function ViewOTPCodeForm({
                     isFileView: "true",
                     sasToken: sasToken,
                     multiplePhotos: JSON.stringify(newPhoto),
-                    isSelectInvocies: isSelectInvocies ? 'true' : undefined,
+                    isSelectInvocies: isSelectInvocies
                 }
             });
             setLoading(false);

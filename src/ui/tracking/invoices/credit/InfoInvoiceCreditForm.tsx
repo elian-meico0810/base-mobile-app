@@ -614,7 +614,7 @@ export function InfoInvoiceCreditForm({
                     isFileView: "true",
                     sasToken: sasToken,
                     multiplePhotos: JSON.stringify(newPhoto),
-                    isSelectInvocies: isSelectInvocies ? 'true' : undefined,
+                    isSelectInvocies: isSelectInvocies,
                     isAnticipe: isAnticipe,
                     isAnticipeInvoice: isAnticipe,
                     notDetails: "true"
@@ -633,15 +633,15 @@ export function InfoInvoiceCreditForm({
     const handleSubmitConfirmation = async () => {
         try {
 
-            if (!guide?.whatsapp || guide?.whatsapp == "") {
-                btnRef.current?.reset();
-                setModalTitleValidate("Evidencia requerida");
-                setModalMessageValidate("Para finalizar la entrega del pedido debes");
-                setHighlightText("Registrar evidencia.");
-                setModalButtonLabelValidate("Registrar evidencia");
-                setModalVisibleValidate(true);
-                return;
-            }
+            // if (!guide?.whatsapp || guide?.whatsapp == "") {
+            //     btnRef.current?.reset();
+            //     setModalTitleValidate("Evidencia requerida");
+            //     setModalMessageValidate("Para finalizar la entrega del pedido debes");
+            //     setHighlightText("Registrar evidencia.");
+            //     setModalButtonLabelValidate("Registrar evidencia");
+            //     setModalVisibleValidate(true);
+            //     return;
+            // }
             setButtonValueOTP(true);
 
             setLoading(true);

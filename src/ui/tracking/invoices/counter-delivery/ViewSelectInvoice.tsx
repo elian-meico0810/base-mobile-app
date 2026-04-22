@@ -498,7 +498,9 @@ export function ViewSelectInvoice({
     }, 0) || 0;
 
     const totalvalorRecaudar =
-        guide?.facturas
+        guide?.facturas.filter( factura =>
+            factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO ||
+            factura.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO)
             ?.reduce((sum, f) => sum + (Number(f?.valorRecaudar) || 0), 0) || 0;
 
 
@@ -508,9 +510,12 @@ export function ViewSelectInvoice({
     const isSmallScreen = height <= 780;
     const conceptDeliveryValue = conceptDeliverySelect.length > 0;
     const conditionEntryVisible = !conditionButton && conceptDeliveryValue || EntryVisible;
+
     // const conditionEntryVisibleTwo = !conditionButton && conceptDeliveryValue;
-    const areAllInvoicesConutreDlivery = guide?.facturas.every(
-        factura => factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO || factura.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO
+    const hasAnyInvoiceCounterDelivery = guide?.facturas?.some(
+        factura =>
+            factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO ||
+            factura.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO
     );
     const conditionEntryVisibleTwo = conditionEntryVisible || guide?.fecha_apertura || EntryVisible || conditionButton;
 
@@ -559,7 +564,7 @@ export function ViewSelectInvoice({
                         <View
                             style={[
                                 styles.card,
-                                areAllInvoicesConutreDlivery ? { minHeight: 240 } : null
+                                hasAnyInvoiceCounterDelivery ? { minHeight: 240 } : null
                             ]}
                         >
 
@@ -595,7 +600,7 @@ export function ViewSelectInvoice({
                                     <Text style={styles.label}>Ordenes a entregar</Text>
                                     <Text style={styles.value}> {Number(guide?.facturas?.length) - Number(conceptDelivery.length)}</Text>
                                 </View>
-                                {areAllInvoicesConutreDlivery && (
+                                {hasAnyInvoiceCounterDelivery && (
                                     <>
                                         <View style={styles.row}>
                                             <Text style={styles.labelTotal}>Valor total del pedido</Text>

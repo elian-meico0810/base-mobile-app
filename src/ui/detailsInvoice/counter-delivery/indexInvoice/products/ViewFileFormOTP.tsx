@@ -318,7 +318,12 @@ export function ViewFileFormOTP({
                 );
 
                 if (responseData?.statusCode === 200) {
-                    if (isSelectInvocies) {
+                    const isValid =
+                        isSelectInvocies != null &&
+                        isSelectInvocies !== "undefined" &&
+                        isSelectInvocies !== "null";
+
+                    if (isValid) {
                         if (isAnticipe == 'true') {
                             router.push(
                                 `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}&isAnticipe=${'true'}&isCountryDelivery=${'true'}&isAnticipeInvoice=${'true'}&notDetails=${notDetails}`
@@ -333,6 +338,7 @@ export function ViewFileFormOTP({
                             guide?.idDireccion || 0,
                             token
                         );
+
                         if (response?.statusCode === 200) {
                             router.push(
                                 `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`

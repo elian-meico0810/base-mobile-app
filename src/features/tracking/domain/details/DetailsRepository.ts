@@ -1,5 +1,5 @@
 import { ApiResponse } from "@/src/features/auth/domain/ApiResponse";
-import { Cause, DataUploadFIlePprops, Document, EvidenciaOTPItemOTP, GuideDetails, ListAceptationGuide, ListInfOTP, NoveltyRefusedProps, NovletyOrder, OrderGroup, PaymentsByInvoicePorps, ReEntryDeliveryProps, ReentryOTPProps, ReportePagoTotal, ReportNoveltyFileArrayProps, RuteByCodeGuide, RuteInitPorps, SendOrderArrayProps, SendOrderProps, SendOTOPProps, TokenProducts, ValidateCediQRResponse, ValidateCodeOTPProps } from "./DetailsGuide";
+import { Cause, DataUploadFIlePprops, Document, EvidenciaOTPItemOTP, GuideDetails, ListAceptationGuide, ListInfOTP, Modulo, ModuloVista, NoveltyRefusedProps, NovletyOrder, PaymentsByInvoicePorps, ReEntryDeliveryProps, ReentryOTPProps, ReportePagoTotal, ReportNoveltyFileArrayProps, RuteByCodeGuide, RuteInitPorps, SendOrderArrayProps, SendOrderProps, SendOTOPProps, TokenProducts, ValidateCediQRResponse, ValidateCodeOTPProps } from "./DetailsGuide";
 
 export interface DetailsRepository {
   listGuide: (guide: number, token: string) => Promise<ApiResponse<GuideDetails>>;
@@ -32,5 +32,7 @@ export interface DetailsRepository {
   sendOTPNotPayment: (data: SendOTOPProps, token: string) => Promise<any>;
   reentryOTPNotPayment: (data: ReentryOTPProps, token: string) => Promise<any>;
   listAceptationOrderDetails: (token: string, guide: number, codigo?: string | null, codigo_cargue?: string | null,) => Promise<ApiResponse<OrderGroup[]>>;
+  listMenuViews: (token: string) => Promise<ApiResponse<ModuloVista[]>>;
+  listMenuFather: (token: string) => Promise<ApiResponse<Modulo[]>>;
 
 }

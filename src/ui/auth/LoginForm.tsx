@@ -132,7 +132,6 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
       if (response?.statusCode == 200) {
 
         const tokenString = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
-        await handleData(tokenString);
 
         await SecureStore.deleteItemAsync('user_token');
         await SecureStore.setItemAsync('user_token', tokenString);
@@ -167,8 +166,48 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
             const dateToken = await SecureStore.getItemAsync('date_token_product');
 
           }
+
+          const responseMenuOption = await detailsRepositoryImpl.listMenuViews(tokenString);
+
+          if (
+            responseMenuOption.statusCode === 200 &&
+            responseMenuOption?.data &&
+            Array.isArray(responseMenuOption.data) && responseMenuOption.data.length > 0
+          ) {
+            await SecureStore.setItemAsync(
+              'menu_views',
+              JSON.stringify(responseMenuOption.data)
+            );
+
+
+          } else {
+            setErrorMessage("Error al cargar las opciones de la app móvil.");
+            return;
+          }
+
+          const responseMenuOptionFather = await detailsRepositoryImpl.listMenuFather(tokenString);
+          if (
+            responseMenuOptionFather.statusCode === 200 &&
+            responseMenuOptionFather?.data &&
+            Array.isArray(responseMenuOptionFather.data) && responseMenuOptionFather.data.length > 0
+          ) {
+
+            console.log("responseMenuOptionFather?.data: ",responseMenuOptionFather?.data);
+            
+            await SecureStore.setItemAsync(
+              'menu_father',
+              JSON.stringify(responseMenuOptionFather.data)
+            );
+
+
+          } else {
+            setErrorMessage("Error al cargar las opciones padres de la app móvil.");
+            return;
+          }
+
         } catch (error) {
         }
+        await handleData(tokenString);
 
       } else {
         setErrorMessage(response?.message || "La guía no existe o es incorrecta.");

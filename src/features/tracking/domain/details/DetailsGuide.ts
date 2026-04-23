@@ -361,3 +361,17 @@ export interface ProductoAceptacion {
   nombre: string;
   ean: string;
 }
+export interface Modulo {
+  id: number;
+  codigo: string;
+  nombre: string;
+  estado: boolean;
+}
+
+export interface ModuloVista {
+  id: number;
+  modulo: Modulo;
+  nombre: string;
+  tipo: string;
+  estado: boolean;
+}

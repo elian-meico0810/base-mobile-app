@@ -546,7 +546,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
         return () => backHandler.remove();
     }, []);
 
-    const validateInvoices = (invoices: any[]): boolean => {
+    const validateInvoices = async (invoices: any[]): Promise<boolean> => {
         try {
             const validTypes = Object.values(TypeInvoiceEnum);
 
@@ -563,7 +563,45 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                 return false;
             }
 
+            const validate = await validateViewPermissions(invoices);
+            if (!validate) return false;
+
             return true;
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(
+                error?.data?.message ?? "Ocurrió un error inesperado."
+            );
+            setModalVisible(true);
+            return false;
+        }
+    };
+
+
+    const validateViewPermissions = async (invoices: any[]): Promise<boolean> => {
+        try {
+            const menu_views = await SecureStore.getItemAsync('menu_views');
+            const menu_father = await SecureStore.getItemAsync('menu_father');
+            const menuViewsParsed = JSON.parse(menu_views || "[]");
+            const menuFatherParsed = JSON.parse(menu_father || "[]");
+
+            const result = invoices.every(inv => {
+                const match = menuViewsParsed.some((mv: any) => {
+                    return inv.tipo === mv?.nombre;
+                });
+
+                return match;
+            });
+
+            if (!result) {
+                setModalTitle("¡Error!");
+                setModalMessage("Esta direccion tiene facturas que no tienen permisos para esta vista.");
+                setModalVisible(true);
+                return false;
+            }
+
+            return true;
+
         } catch (error: any) {
             setModalTitle("¡Error!");
             setModalMessage(
@@ -739,10 +777,10 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                                         <GuideCard
                                             key={item.idDireccion}
                                             guide={item}
-                                            onPress={() => {
+                                            onPress={async () => {
                                                 const invoices = item?.facturas || [];
 
-                                                const isValid = validateInvoices(invoices);
+                                                const isValid = await validateInvoices(invoices);
                                                 if (!isValid) return;
 
                                                 console.log('Ir a dirección');

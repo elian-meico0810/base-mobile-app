@@ -8,13 +8,14 @@ import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
 import { TipeCodeOTP, TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import InvoicesList from '@/src/features/tracking/components/tabs/InvoicesList';
-import { GuideDetails, NovletyOrder } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { GuideDetails, Modulo, ModuloVista, NovletyOrder } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
 import { cleanSpaces, getDeviceDateTime, getDistanceInMeters, heightCaldulate } from '@/src/utils/uitls';
 import * as Location from "expo-location";
 import { useRouter } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import { useEffect, useRef, useState } from "react";
 import { BackHandler, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 const { width, height } = Dimensions.get('window');
@@ -66,6 +67,8 @@ export function ViewSelectInvoice({
     const [disabledInvoices, setDisabledInvoices] = useState<Set<string>>(new Set());
     const [disabledOTPInvoices, setDisabledOTPInvoices] = useState<Set<string>>(new Set());
     const [disabledFileInvoices, setDisabledFileInvoices] = useState<Set<string>>(new Set());
+    const [menuViewsParsed, setMenuViewsParsed] = useState<ModuloVista[]>([]);
+    const [menuFatherParsed, setMenuFatherParsed] = useState<Modulo[]>([]);
     const btnRef = useRef<any>(null);
     const router = useRouter();
     const heightValue = heightCaldulate();
@@ -281,6 +284,27 @@ export function ViewSelectInvoice({
         }
     }, [token]);
 
+    useEffect(() => {
+        const loadMenus = async () => {
+            try {
+                const menu_views = await SecureStore.getItemAsync('menu_views');
+                const menu_father = await SecureStore.getItemAsync('menu_father');
+
+                setMenuViewsParsed(JSON.parse(menu_views || "[]"));
+                setMenuFatherParsed(JSON.parse(menu_father || "[]"));
+            } catch (error) {
+                console.log("Error cargando menús:", error);
+            }
+        };
+
+        loadMenus();
+    }, []);
+
+    const normalize = (text: string) =>
+        text?.toUpperCase().trim();
+
+
+
     const handleInvoiceSelect = (selectedGuide: GuideDetails | null) => {
         try {
             if (!selectedGuide) {
@@ -310,6 +334,7 @@ export function ViewSelectInvoice({
                 setModalVisible(true);
                 return;
             }
+            
             if (guideFilter) {
                 switch (guideFilter.facturas?.[0].tipo) {
                     case TypeInvoiceEnum.CONTADO_EFECTIVO:
@@ -362,8 +387,9 @@ export function ViewSelectInvoice({
         } finally {
             setLoading(false);
         }
+    };    const getModuleByFirstInvoice = () => {
+      
     };
-
     const handleSubmit = async () => {
         try {
             setLoading(true);
@@ -500,7 +526,7 @@ export function ViewSelectInvoice({
     }, 0) || 0;
 
     const totalvalorRecaudar =
-        guide?.facturas.filter( factura =>
+        guide?.facturas.filter(factura =>
             factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO ||
             factura.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO)
             ?.reduce((sum, f) => sum + (Number(f?.valorRecaudar) || 0), 0) || 0;

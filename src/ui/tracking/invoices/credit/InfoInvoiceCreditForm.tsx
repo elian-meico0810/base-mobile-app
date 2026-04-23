@@ -622,6 +622,26 @@ export function InfoInvoiceCreditForm({
 
                 }
             });
+            if (notDetails &&
+                selectedOption != null &&
+                String(selectedOption) !== "null") {
+                const responseQuery = await detailsRepositoryImpl.reEntryDelivery(
+                    {
+                        id_pedido: Number(orderId),
+                        reporgrmacion: String(selectedOption)
+                    },
+                    token
+                );
+                if (responseQuery?.statusCode != 200) {
+                    setLoading(false);
+                    setValidateException(true);
+                    btnRef.current?.reset();
+                    setModalTitle("¡Alerta!");
+                    setModalMessage(responseQuery?.message || "No se pudo iniciar la ruta. Intente nuevamente.");
+                    setModalVisible(true);
+                    return;
+                }
+            }
             setLoading(false);
 
         } catch (error) {
@@ -660,9 +680,9 @@ export function InfoInvoiceCreditForm({
                 token
             );
             if (responseData?.statusCode === 200) {
-                console.log("notDetails: ",notDetails);
-                console.log("selectedOption: ",selectedOption);
-                
+                console.log("notDetails: ", notDetails);
+                console.log("selectedOption: ", selectedOption);
+
                 if (notDetails &&
                     selectedOption != null &&
                     String(selectedOption) !== "null") {

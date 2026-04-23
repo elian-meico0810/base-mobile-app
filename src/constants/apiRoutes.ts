@@ -47,6 +47,8 @@ export const API_ROUTES = {
   VALIDATE_CODE_BY_BODEGA: "codigos-validacion-guias/validate-codigo-guia-by-bodega/",
   VALIDATE_CODE_BY_BODEGA_CARGUE: "codigos-validacion-guias/validate-codigo-guia-by-bodega-in-cargue/",
   CREATE_NOT_ACEPTATION_GUIDE: "aceptacion-pedido/crear-no-entrega/",
+  GET_MODULE_VIEWS: "modulos-parametrizados/get-modulos-by-code/",
+  GET_MODULE_FATHER: "modulos-parametrizados/get-modulos-all/",
   // Back contado anticipado
   SEND_PAYMENT_GATEWAY: "pagos/generar-link-pasarela/",
   GENERATE_QR: "pagos/generar_qr_bancolombia/",

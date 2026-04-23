@@ -39,6 +39,8 @@ export const API_ROUTES = {
   GET_EVIDENCE_OTP_BY_DIRECTION:"evidencias-otp/get-all/",
   SEND_REENTRY_DELIVERY:"pedidos/send-pedidos/reprogramados/",
   CREATE_OTP_NOT_PAYMENT: "otp/direccion/crear-sin-pago/",
+  GET_MODULE_VIEWS: "modulos-parametrizados/get-modulos-by-code/",
+  GET_MODULE_FATHER: "modulos-parametrizados/get-modulos-all/",
   // Back contado anticipado
   SEND_PAYMENT_GATEWAY: "pagos/generar-link-pasarela/",
   GENERATE_QR: "pagos/generar_qr_bancolombia/",

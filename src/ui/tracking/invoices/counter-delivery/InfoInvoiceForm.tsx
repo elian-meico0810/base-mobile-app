@@ -1265,15 +1265,15 @@ export function InfoInvoiceForm({
             // }
 
 
-            if (!guide?.whatsapp || guide?.whatsapp == "") {
-                btnRef.current?.reset();
-                setModalTitleValidate("Evidencia requerida");
-                setModalMessageValidate("Para finalizar la entrega del pedido debes");
-                setHighlightText("Registrar evidencia.");
-                setModalButtonLabelValidate("Registrar evidencia");
-                setModalVisibleValidate(true);
-                return;
-            }
+            // if (!guide?.whatsapp || guide?.whatsapp == "") {
+            //     btnRef.current?.reset();
+            //     setModalTitleValidate("Evidencia requerida");
+            //     setModalMessageValidate("Para finalizar la entrega del pedido debes");
+            //     setHighlightText("Registrar evidencia.");
+            //     setModalButtonLabelValidate("Registrar evidencia");
+            //     setModalVisibleValidate(true);
+            //     return;
+            // }
 
             setLoading(true);
 

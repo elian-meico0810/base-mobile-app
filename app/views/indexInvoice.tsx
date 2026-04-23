@@ -1,35 +1,75 @@
+import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { TypeInvoiceEnum } from '@/src/constants/GuideStates';
-import { GuideDetails, PaymentsByInvoice } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { GuideDetails, Modulo, ModuloVista, PaymentsByInvoice } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { InfoInvoiceForm } from '@/src/ui/tracking/invoices/counter-delivery/InfoInvoiceForm';
 import { ViewSelectInvoice } from '@/src/ui/tracking/invoices/counter-delivery/ViewSelectInvoice';
 import { InfoInvoiceCreditForm } from '@/src/ui/tracking/invoices/credit/InfoInvoiceCreditForm';
 import { ViewDefault } from '@/src/ui/tracking/view-default/ViewDefaulTForm';
 import { Stack, useLocalSearchParams } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
+import { useEffect, useState } from 'react';
 
 export default function IndexInvoiceScreen() {
     const params = useLocalSearchParams();
     const token = params.token as string;
     const guideParam = params.guide as string;
+    const guideObj: GuideDetails = guideParam ? JSON.parse(guideParam) : {} as GuideDetails;
+
+    const [menuViewsParsed, setMenuViewsParsed] = useState<ModuloVista[]>([]);
+    const [menuFatherParsed, setMenuFatherParsed] = useState<Modulo[]>([]);
+    const [isLoadingMenus, setIsLoadingMenus] = useState(true);
+
+
+    const validateInvoicesByModule = (moduleName: string) => {
+        return guideObj.facturas.every(factura =>
+            menuViewsParsed.some((mv: any) =>
+                mv.nombre === factura.tipo &&
+                mv.modulo?.nombre === moduleName
+            )
+        );
+    };
+
+    useEffect(() => {
+        const loadMenus = async () => {
+            try {
+                const menu_views = await SecureStore.getItemAsync('menu_views');
+                const menu_father = await SecureStore.getItemAsync('menu_father');
+               
+                setMenuViewsParsed(JSON.parse(menu_views || "[]"));
+                setMenuFatherParsed(JSON.parse(menu_father || "[]"));
+            } catch (error) {
+                console.log("Error cargando menús:", error);
+            } finally {
+                setIsLoadingMenus(false);
+            }
+        };
+
+        loadMenus();
+    }, []);
+
     const paymentByGuideParam = params.paymentByGuide as string;
     const numberGuide = params.numberGuide as string;
-    const guideObj: GuideDetails = guideParam ? JSON.parse(guideParam) : {} as GuideDetails;
     const paymentByGuide: PaymentsByInvoice = paymentByGuideParam ? JSON.parse(paymentByGuideParam) : {} as PaymentsByInvoice;
     const isSelectInvocies = params.isSelectInvocies as string;
     const routeStartedBotton = params.routeStarted as string;
     const documentMeico = params.documentMeico as string;
     const detailsCounterDelivery = params.detailsCounterDelivery as string;
     const shouldShowViewSelectInvoice = guideObj.facturas.length >= 2 || documentMeico;
-    const areAllInvoicesCredito = guideObj.facturas.every(
-        factura => factura.tipo === TypeInvoiceEnum.CREDITO
-    );
-    const areAllInvoicesAnticipeOne = guideObj.facturas.every(
-        factura => factura.tipo === TypeInvoiceEnum.ANTICIPO
-    );
+    const areAllInvoicesCredito = validateInvoicesByModule(TypeInvoiceEnum.CREDITO);
+    const areAllInvoicesAnticipeOne = validateInvoicesByModule(TypeInvoiceEnum.ANTICIPO);
 
-    const areAllInvoicesConutreDlivery = guideObj.facturas.every(
-        factura => factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO || factura.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO ||
-            factura.tipo === TypeInvoiceEnum.MIXTO
-    );
+    const areAllInvoicesConutreDlivery =
+        guideObj.facturas.every(factura =>
+            menuViewsParsed.some((mv: any) =>
+                mv.nombre === factura.tipo &&
+                [
+                    TypeInvoiceEnum.CONTADO_EFECTIVO,
+                    TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO,
+                    // TypeInvoiceEnum.MIXTO
+                ].includes(mv.modulo?.nombre)
+            )
+        );
+
     const areAllInvoicesSameStatus =
         guideObj.facturas.length > 0 &&
         guideObj.facturas.every(
@@ -44,7 +84,7 @@ export default function IndexInvoiceScreen() {
     const selectedOption = params.selectedOption as string;
     const notDetails = params.notDetails as string;
     const notEntry = params.notEntry as string;
-
+    
     return (
         <>
             <Stack.Screen
@@ -110,6 +150,11 @@ export default function IndexInvoiceScreen() {
                     );
                 }
 
+                if (menuViewsParsed.length === 0) {
+                    return (
+                        <LoadingBlue />
+                    );
+                }
 
                 return (
                     <ViewDefault

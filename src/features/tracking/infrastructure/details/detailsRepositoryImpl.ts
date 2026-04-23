@@ -511,4 +511,32 @@ export const detailsRepositoryImpl: DetailsRepository = {
     }
   },
 
+  async listMenuViews(token: string) {
+    try {
+      const response = await authApi.get(`${API_ROUTES.GET_MODULE_VIEWS}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+    async listMenuFather(token: string) {
+    try {
+      const response = await authApi.get(`${API_ROUTES.GET_MODULE_FATHER}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
 }

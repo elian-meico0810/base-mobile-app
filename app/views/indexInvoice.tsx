@@ -34,7 +34,7 @@ export default function IndexInvoiceScreen() {
             try {
                 const menu_views = await SecureStore.getItemAsync('menu_views');
                 const menu_father = await SecureStore.getItemAsync('menu_father');
-               
+
                 setMenuViewsParsed(JSON.parse(menu_views || "[]"));
                 setMenuFatherParsed(JSON.parse(menu_father || "[]"));
             } catch (error) {
@@ -60,14 +60,16 @@ export default function IndexInvoiceScreen() {
 
     const areAllInvoicesConutreDlivery =
         guideObj.facturas.every(factura =>
-            menuViewsParsed.some((mv: any) =>
-                mv.nombre === factura.tipo &&
-                [
-                    TypeInvoiceEnum.CONTADO_EFECTIVO,
-                    TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO,
-                    // TypeInvoiceEnum.MIXTO
-                ].includes(mv.modulo?.nombre)
-            )
+            menuViewsParsed.some((mv: any) => {
+                return (
+                    mv.nombre === factura.tipo &&
+                    [
+                        TypeInvoiceEnum.CONTADO_EFECTIVO,
+                        TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO,
+                        // TypeInvoiceEnum.MIXTO
+                    ].includes(mv.modulo?.nombre)
+                );
+            })
         );
 
     const areAllInvoicesSameStatus =
@@ -84,7 +86,7 @@ export default function IndexInvoiceScreen() {
     const selectedOption = params.selectedOption as string;
     const notDetails = params.notDetails as string;
     const notEntry = params.notEntry as string;
-    
+
     return (
         <>
             <Stack.Screen

@@ -300,10 +300,13 @@ export function ViewSelectInvoice({
         loadMenus();
     }, []);
 
-    const normalize = (text: string) =>
-        text?.toUpperCase().trim();
 
-
+    const validateInvoicesByModule = (moduleName: string, guide: GuideDetails) => {
+        return menuViewsParsed.some((mv: any) =>
+            mv.nombre === guide.facturas?.[0]?.tipo &&
+            mv.modulo?.nombre === moduleName
+        )
+    };
 
     const handleInvoiceSelect = (selectedGuide: GuideDetails | null) => {
         try {
@@ -334,50 +337,51 @@ export function ViewSelectInvoice({
                 setModalVisible(true);
                 return;
             }
-            
+
             if (guideFilter) {
-                switch (guideFilter.facturas?.[0].tipo) {
-                    case TypeInvoiceEnum.CONTADO_EFECTIVO:
-                        router.push(
-                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guideFilter))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}`
-                        );
-                        break;
-                    case TypeInvoiceEnum.CREDITO:
-                        router.push({
-                            pathname: '/views/indexInvoice',
-                            params: {
-                                guide: JSON.stringify(guideFilter),
-                                numberGuide: numberGuide,
-                                token: token ?? "",
-                                notDetails: "true",
-                                isSelectInvocies: "true",
-                                notEntry: "true"
-                            }
-                        });
-                        break;
-
-                    case TypeInvoiceEnum.ANTICIPO:
-                        router.push({
-                            pathname: '/views/indexInvoice',
-                            params: {
-                                guide: JSON.stringify(guideFilter),
-                                numberGuide: numberGuide,
-                                token: token ?? "",
-                                notDetails: "true",
-                                isSelectInvocies: "true",
-                                notEntry: "true"
-                            }
-                        });
-                        break;
-
-                    case TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO:
-                        router.push(
-                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guideFilter))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}`
-                        );
-                        break;
+                if (validateInvoicesByModule(TypeInvoiceEnum.CONTADO_EFECTIVO, guideFilter)) {
+                    router.push(
+                        `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guideFilter))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}`
+                    );
+                    return;
                 }
 
+                if (validateInvoicesByModule(TypeInvoiceEnum.CREDITO, guideFilter)) {
+                    router.push({
+                        pathname: '/views/indexInvoice',
+                        params: {
+                            guide: JSON.stringify(guideFilter),
+                            numberGuide: numberGuide,
+                            token: token ?? "",
+                            notDetails: "true",
+                            isSelectInvocies: "true",
+                            notEntry: "true"
+                        }
+                    });
+                    return;
+                }
+                if (validateInvoicesByModule(TypeInvoiceEnum.ANTICIPO, guideFilter)) {
 
+                    router.push({
+                        pathname: '/views/indexInvoice',
+                        params: {
+                            guide: JSON.stringify(guideFilter),
+                            numberGuide: numberGuide,
+                            token: token ?? "",
+                            notDetails: "true",
+                            isSelectInvocies: "true",
+                            notEntry: "true"
+                        }
+                    });
+                    return;
+                }
+
+                if (validateInvoicesByModule(TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO, guideFilter)) {
+                    router.push(
+                        `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guideFilter))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}`
+                    );
+                    return;
+                }
 
             }
         } catch (error) {
@@ -387,9 +391,8 @@ export function ViewSelectInvoice({
         } finally {
             setLoading(false);
         }
-    };    const getModuleByFirstInvoice = () => {
-      
     };
+
     const handleSubmit = async () => {
         try {
             setLoading(true);

@@ -70,7 +70,7 @@ export function ConsignmentEditModal({
             setAmount(val);
             setDisplayAmount(Number(val).toLocaleString("es-CO"));
 
-            setInitialAmount(val); 
+            setInitialAmount(val);
 
             if (!evidencePhotos || evidencePhotos.length === 0) {
                 const existingEvidences: EvidencePhoto[] = consignment.evidencias.map(e => ({
@@ -151,24 +151,22 @@ export function ConsignmentEditModal({
 
     const numericValue = Number(displayAmount.replace(/\D/g, ""));
     const isValid = displayAmount != "" && numericValue > 0;
-    const hasAmountChanged = amount !== initialAmount;
     
+    const hasAmountChanged = amount !== initialAmount;
+
     const getEvidenceKey = (e?: EvidencePhoto) => {
         if (!e) return "";
-
         // prioridad: base64 (imagen nueva)
         if (e.base64) return e.base64;
-
         // luego id (backend)
         if (e.id) return e.id;
-
         // fallback
         return e.uri;
     };
 
     const hasEvidenceChanged = getEvidenceKey(evidences[0]) !== getEvidenceKey(initialEvidences[0]);
 
-    const hasChanges = hasAmountChanged || hasEvidenceChanged;
+    const hasChanges = (hasAmountChanged && evidences.length > 0) || evidences.length > 0 && evidences.length !== initialEvidences.length;
 
     return (
         <Modal
@@ -278,10 +276,10 @@ export function ConsignmentEditModal({
                                     <PrimaryButton
                                         title={"Guardar cambios"}
                                         onPress={() => {
-                                            if(!isValid || !hasChanges) return;
+                                            if (!isValid || !hasChanges) return;
                                             onSave(amount, evidences);
                                         }}
-                                        disabled={!(isValid && hasChanges)} 
+                                        disabled={!(isValid && hasChanges)}
                                         width={328}
                                         height={43}
                                     />

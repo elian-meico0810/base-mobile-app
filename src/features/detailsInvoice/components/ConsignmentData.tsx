@@ -37,6 +37,8 @@ interface ConsignmentDataProps {
     value?: string;
     onConfirmation?: () => void;
     isLoading?: boolean;
+    onRemoveEvidence?: (id: string, index: number) => void;
+
 }
 
 export function ConsignmentData({
@@ -51,7 +53,8 @@ export function ConsignmentData({
     onValue,
     value,
     onConfirmation,
-    isLoading: externalLoading = false
+    isLoading: externalLoading = false,
+    onRemoveEvidence
 }: ConsignmentDataProps) {
     const [internalLoading, setInternalLoading] = useState(false);
     const isLoading = internalLoading || externalLoading;
@@ -124,15 +127,23 @@ export function ConsignmentData({
         }
     }, [visible]);
 
-    // === ELIMINAR EVIDENCIA ===
     const handleRemoveEvidence = (index: number) => {
+        const evidenceToRemove = evidences[index];
+
+        // Actualizar estado local
         const updatedEvidences = evidences.filter((_, i) => i !== index);
         setEvidences(updatedEvidences);
 
+        // Actualizar índice actual
         if (index < currentEvidenceIndex) {
             setCurrentEvidenceIndex(currentEvidenceIndex - 1);
         } else if (currentEvidenceIndex >= updatedEvidences.length && updatedEvidences.length > 0) {
             setCurrentEvidenceIndex(updatedEvidences.length - 1);
+        }
+
+        // NOTIFICAR AL PADRE
+        if (onRemoveEvidence && evidenceToRemove) {
+            onRemoveEvidence(evidenceToRemove.id, index);
         }
     };
 
@@ -143,7 +154,9 @@ export function ConsignmentData({
 
     const numericValue = Number(displayAmount.replace(/\D/g, ""));
     const isValid = displayAmount != "" && numericValue > 0;
-
+    useEffect(() => {
+        setEvidences(evidencePhotos);
+    }, [evidencePhotos]);
     return (
         <Modal
             transparent={true}
@@ -220,6 +233,7 @@ export function ConsignmentData({
                                                     />
                                                 ) : (
                                                     <Image
+                                                        key={evidence.id + evidence.uri}
                                                         source={{ uri: evidence.uri }}
                                                         style={styles.thumbnailImage}
                                                     />

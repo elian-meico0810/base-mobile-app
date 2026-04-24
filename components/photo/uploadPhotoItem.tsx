@@ -264,6 +264,7 @@ export function UploadPhotoItem({
                                                     />
                                                 ) : (
                                                     <Image
+                                                        key={evidence.id}
                                                         source={{ uri: evidence.uri }}
                                                         style={styles.thumbnailImage}
                                                     />

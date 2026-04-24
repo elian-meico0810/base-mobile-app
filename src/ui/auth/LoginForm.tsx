@@ -192,8 +192,6 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
             Array.isArray(responseMenuOptionFather.data) && responseMenuOptionFather.data.length > 0
           ) {
 
-            console.log("responseMenuOptionFather?.data: ",responseMenuOptionFather?.data);
-            
             await SecureStore.setItemAsync(
               'menu_father',
               JSON.stringify(responseMenuOptionFather.data)

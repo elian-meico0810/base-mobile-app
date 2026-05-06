@@ -1313,7 +1313,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 btnRef.current?.reset();
                 setModalTitleValidate("Evidencia requerida");
                 setModalMessageValidate("Para finalizar la entrega del pedido debes");
-                setHighlightText("Registrar evidencia.");
+                setHighlightText("registrar una foto de la factura firmada por el cliente.");
                 setModalButtonLabelValidate("Registrar evidencia");
                 setModalVisibleValidate(true);
                 return;

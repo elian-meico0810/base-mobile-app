@@ -721,8 +721,9 @@ export function ViewOTPCodeForm({
                             />
 
                             <Text style={styles.resendText}>
-                                {"Validar con captura de imagen"}
-                            </Text>
+  Toma una foto de la factura{'\n'}
+  firmada por el cliente
+</Text>
                         </TouchableOpacity>
                     )}
 
@@ -1003,6 +1004,16 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         color: '#164194',
     },
+resendTextPhoto: {
+    fontFamily: 'Rubik',
+    fontWeight: '700',
+    textAlign: 'center',
+    color: '#164194',
+
+    width: '80%',       
+    alignSelf: 'center', 
+    lineHeight: 22,     
+},
     otpExpireAlert: {
         fontFamily: 'Rubik',
         fontWeight: '400',

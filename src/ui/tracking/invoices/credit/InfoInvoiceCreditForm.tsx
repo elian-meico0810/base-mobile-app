@@ -636,7 +636,7 @@ export function InfoInvoiceCreditForm({
                 btnRef.current?.reset();
                 setModalTitleValidate("Evidencia requerida");
                 setModalMessageValidate("Para finalizar la entrega del pedido debes");
-                setHighlightText("Registrar evidencia.");
+                setHighlightText("registrar una foto de la factura firmada por el cliente.");
                 setModalButtonLabelValidate("Registrar evidencia");
                 setModalVisibleValidate(true);
                 return;
@@ -735,7 +735,7 @@ export function InfoInvoiceCreditForm({
         case TypeInvoiceEnum.ANTICIPO:
             value = 'Anticipado';
             break;
-            
+
         case TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO:
             value = 'Aplicativo-meico';
             break;
@@ -1185,7 +1185,7 @@ export function InfoInvoiceCreditForm({
                     onClose={() => setUploadPhotoTwo(false)}
                     onPick={(data) => {
                         const newPhoto: EvidencePhoto = {
-                            id: Date.now().toString(), 
+                            id: Date.now().toString(),
                             uri: data.uri,
                             base64: data.base64
                         };

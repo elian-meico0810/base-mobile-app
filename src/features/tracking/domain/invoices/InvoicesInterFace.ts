@@ -203,6 +203,7 @@ export interface Order {
   bodega: string;
   fecha: string;
   canal: string;
+  codigo_cliente: string;
   codigoCliente: string;
   codigoGuia: string;
   dfr: number;
@@ -238,4 +239,22 @@ export interface ApproveOrReject {
 export interface UploadEvidenceAcceptationGuidesProps {
   codigo_guia: string;
   files: string[];
+}
+
+export interface AceptacionProductoDetalle {
+  linea: number;
+  CodigoProducto: string;
+  DescripcionProducto?: string | null;
+  EAN?: string | null;
+  unidades_solicitadas: number;
+  unidades_rechazadas?: number | null;
+}
+
+export interface AceptationPedidoProps {
+  codigo: string;
+  bodega: string;
+  canal: string;
+  codigo_cliente?: string | null;
+  codigo_guia: string;
+  producto: AceptacionProductoDetalle[];
 }

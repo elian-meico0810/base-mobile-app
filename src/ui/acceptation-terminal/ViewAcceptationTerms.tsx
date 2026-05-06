@@ -6,7 +6,7 @@ import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { GuideDetailSkeleton } from '@/components/skeleton/GuideDetailSkeleton';
 import { ThemedView } from '@/components/themed-view';
-import { CustomerAddress, GuideResponse } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
+import { CustomerAddress, GuideResponse, Order } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
 
 import { useRouter } from 'expo-router';
@@ -182,15 +182,8 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
                     }, token);
 
                 if (responseData?.statusCode === 200) {
-                    setShowSuccessQRP(true);
-                    router.push({
-                        pathname: '/views/details',
-                        params: {
-                            guide: Number(numberGuide),
-                            token: String(token),
-                            showAlert: "true"
-                        }
-                    });
+                    setLoading(false);
+                    return;
                 } else {
                     setModalTitle("¡Alerta!");
                     setModalMessage(responseData?.message ?? "Ocurrió un error inesperado.");
@@ -205,6 +198,8 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
             setModalVisible(true);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -216,7 +211,56 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
             router.replace('/auth/login');
         }, 1200);
     };
+
+    const handleAceptataionOrder = async (pedido?: Order) => {
+        try {
+            setLoading(true);
+            
+            const response = await invoiceRepositoryImpl.aceptationOrder(
+                {
+                    codigo: String(pedido?.codigo),
+                    bodega: String(pedido?.bodega),
+                    canal: String(pedido?.canal),
+                    codigo_cliente: String(pedido?.codigo_cliente),
+                    codigo_guia: String(numberGuide),
+
+                    producto: pedido?.detalles?.map((item) => ({
+                        linea: item.linea,
+
+                        CodigoProducto: item.producto?.codigo
+                            ? String(item.producto.codigo)
+                            : '',
+
+                        DescripcionProducto: item.producto?.nombre ?? null,
+                        EAN: null,
+
+                        unidades_solicitadas: item.unidadesSolicitadas ?? 0,
+                        unidades_rechazadas: 0,
+                    })) ?? []
+                }, token);
+
+            if (response?.statusCode === 200) {
+                setModalTitle("¡Procesado!");
+                setModalMessage(`Pedido procesados exitosamente.`);
+                setModalVisible(true);
+                return;
+            } else {
+                setModalTitle("¡Alerta!");
+                setModalMessage(response?.message ?? "Ocurrió un error inesperado.");
+                setModalVisible(true);
+                return;
+            }
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const pedidosFlat = guide?.details?.flatMap(d => d.pedidos) || [];
+    
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -316,7 +360,9 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
 
                                         <PrimaryButton
                                             title="Aceptar pedido"
-                                            onPress={() => console.log('Aceptar pedido', pedido)}
+                                            onPress={async () => {
+                                                await handleAceptataionOrder(pedido)
+                                            }}
                                             disabled={false}
                                             width={160}
                                             height={40}

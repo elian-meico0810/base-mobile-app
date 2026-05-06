@@ -1,6 +1,7 @@
 import { API_ROUTES } from "@/src/constants/apiRoutes";
 import { authApi, authDevApi } from "@/src/features/auth/infrastructure/authApi";
 import {
+  AceptationPedidoProps,
   ApproveOrReject,
   CreateEntregaProps,
   CreatePaymentTypeProps,
@@ -406,6 +407,25 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
       );
       return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error: any) {
+      throw error;
+    }
+  },
+
+  async aceptationOrder(data: AceptationPedidoProps, token: string) {
+    try {
+      const response = await authApi.post(
+        `${API_ROUTES.CREATE_ACEPTATION_GUIDE}`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      // Aquí devuelves solo el JSON que envió el servidor
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
       throw error;
     }
   },

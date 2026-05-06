@@ -6,6 +6,9 @@ interface SecondaryButtonCancelProps {
   disabled?: boolean;
   width?: number;
   height?: number;
+  borderColor?: string;
+  colorButtonText?: string;
+  fontSize?: number;
 }
 
 export function SecondaryButtonCancel({
@@ -13,7 +16,10 @@ export function SecondaryButtonCancel({
   onPress,
   disabled = false,
   width = 360,
-  height = 50
+  height = 50,
+  borderColor = '#164194',
+  colorButtonText= '#164194',
+  fontSize = 16
 }: SecondaryButtonCancelProps) {
   return (
     <TouchableOpacity
@@ -24,14 +30,14 @@ export function SecondaryButtonCancel({
           width,
           height,
           borderWidth: 1.5,
-          borderColor: '#164194',
+          borderColor: borderColor,
           opacity: disabled ? 0.5 : 1
         }
       ]}
       onPress={onPress}
       disabled={disabled}
     >
-      <Text style={styles.buttonText}>{title}</Text>
+      <Text style={[styles.buttonText, {color: colorButtonText, fontSize: fontSize}]}>{title}</Text>
     </TouchableOpacity>
   );
 }
@@ -44,8 +50,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   buttonText: {
-    color: '#164194',
     fontWeight: "bold",
-    fontSize: 16,
   },
 });

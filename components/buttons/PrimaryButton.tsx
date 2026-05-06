@@ -1,4 +1,3 @@
-import React from "react";
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
 
 interface PrimaryButtonProps {
@@ -7,6 +6,7 @@ interface PrimaryButtonProps {
   disabled?: boolean;
   width?: number;
   height?: number;
+  fontSize?: number;
 }
 
 export function PrimaryButton({
@@ -14,14 +14,15 @@ export function PrimaryButton({
   onPress,
   disabled = false,
   width = 360,
-  height = 50
+  height = 50,
+  fontSize = 16
 }: PrimaryButtonProps) {
   return (
     <TouchableOpacity
-      style={[styles.button, { backgroundColor: disabled ? '#D9DCE5' : '#164194', width, height }]}
+      style={[styles.button, { backgroundColor: disabled ? '#D9DCE5' : '#164194', width, height}]}
       onPress={onPress}
     >
-      <Text style={styles.buttonText}>{title}</Text>
+      <Text style={[styles.buttonText, {fontSize: fontSize }]}>{title}</Text>
     </TouchableOpacity>
   );
 }
@@ -36,6 +37,5 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontWeight: "bold",
-    fontSize: 16,
   },
 });

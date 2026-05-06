@@ -12,7 +12,7 @@ import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/in
 import { useRouter } from 'expo-router';
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useRef, useState } from "react";
-import { Dimensions, Keyboard, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, Image, Keyboard, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 const { width, height } = Dimensions.get('window');
 
 interface InfoInvoiceFormProps {
@@ -76,7 +76,7 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
             keyboardDidHideListener.remove();
         };
     }, []);
-    
+
     const handleSubmitReject = async () => {
         try {
             setLoading(true);
@@ -207,6 +207,15 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
             setModalVisible(true);
         }
     };
+
+    const handleExit = async () => {
+        setLoading(true);
+        await SecureStore.deleteItemAsync('user_token');
+        setTimeout(() => {
+            setLoading(false);
+            router.replace('/auth/login');
+        }, 1200);
+    };
     const pedidosFlat = guide?.details?.flatMap(d => d.pedidos) || [];
     return (
         <ThemedView style={styles.container}>
@@ -216,9 +225,19 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
             <View style={styles.background} />
 
             {/* Header con título */}
+
             <View style={styles.headerContainer}>
-                <Text style={styles.headerTitle}>Validación de documento de transporte</Text>
-                <View style={styles.placeholder} />
+                <TouchableOpacity style={styles.backButton} onPress={handleExit}>
+                    <Image
+                        source={require('@/assets/icons/ExitIcon.png')}
+                        style={styles.backIcon}
+                        resizeMode="contain"
+                    />
+                </TouchableOpacity>
+
+                <Text style={styles.headerTitle}>
+                    Validación de documento de transporte
+                </Text>
             </View>
 
             {/* Card blanco centrado */}
@@ -284,6 +303,27 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
                                         ))}
                                     </View>
 
+                                    {/* BOTONES POR CARD */}
+                                    <View style={styles.buttonsRow}>
+                                        <SecondaryButtonCancel
+                                            title="Reporatar Novedad"
+                                            onPress={() => console.log('Rechazar pedido', pedido)}
+                                            disabled={false}
+                                            width={160}
+                                            height={40}
+                                            fontSize={14}
+                                        />
+
+                                        <PrimaryButton
+                                            title="Aceptar pedido"
+                                            onPress={() => console.log('Aceptar pedido', pedido)}
+                                            disabled={false}
+                                            width={160}
+                                            height={40}
+                                            fontSize={14}
+                                        />
+
+                                    </View>
                                 </View>
                             ))}
                         </ScrollView>
@@ -310,6 +350,8 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
                             disabled={false}
                             width={328}
                             height={43}
+                            borderColor={'#C62828'}
+                            colorButtonText={'#C62828'}
                         />
                     </>
                 </View>
@@ -394,7 +436,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 16,
         paddingTop: 45,
-        paddingBottom: 30,
+        paddingBottom: 28,
         backgroundColor: '#F9F9FA',
     },
     backButton: {
@@ -527,6 +569,18 @@ const styles = StyleSheet.create({
         fontWeight: '400',
         fontSize: 12,
         color: '#6B7280',
-    }
+    },
+
+    backIcon: {
+        width: 9,
+        height: 16,
+        tintColor: '#141D32',
+    },
+    buttonsRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 10,
+        gap: 10,
+    },
 });
 

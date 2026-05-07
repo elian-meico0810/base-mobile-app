@@ -256,5 +256,6 @@ export interface AceptationPedidoProps {
   canal: string;
   codigo_cliente?: string | null;
   codigo_guia: string;
+  estado?: string;
   producto: AceptacionProductoDetalle[];
 }

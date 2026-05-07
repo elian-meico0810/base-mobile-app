@@ -1,9 +1,11 @@
 import { ExcetptionModalProducts } from '@/components/generals/ExcetptionModalProducts';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
+import { ExecptionModalCancel } from '@/components/generals/ExecptionModalCancel';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { GuideDetailSkeleton } from '@/components/skeleton/GuideDetailSkeleton';
 import { ThemedView } from '@/components/themed-view';
+import { TypeStatusEnum } from '@/src/constants/GuideStates';
 import { ProductValidationOrder } from '@/src/features/detailsInvoice/components/ProductValidationOrder';
 import { AceptationOrderDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { AceptationPedidoProps, CustomerAddress, Order } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
@@ -51,6 +53,11 @@ export function ViewDetailsPorductsOrder({
     const [sasToken, setSasToken] = useState("");
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
+    const [modalVisibleCancel, setModalVisibleCancel] = useState(false);
+    const [modalTitleCancel, setModalTitleCancel] = useState("");
+    const [modalMessageCancel, setModalMessageCancel] = useState("");
+
+    const [modalButtonLabelCancel, setModalButtonLabelCancel] = useState("Entendido");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [products, setPorductData] = useState<AceptationOrderDetails[]>([]);
     const [modalVisibleValidate, setModalVisibleValidate,] = useState(false);
@@ -221,6 +228,24 @@ export function ViewDetailsPorductsOrder({
         }
     };
 
+
+    const handleSubmit = async () => {
+        try {
+            setLoading(true);
+            setModalTitleCancel("¡Alerta!");
+            setModalMessageCancel(`¿Confirmas que no recibiste el pedido?`);
+            setModalVisibleCancel(true);
+
+
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleRejectOrder = async () => {
         try {
             setLoading(true);
@@ -230,7 +255,8 @@ export function ViewDetailsPorductsOrder({
                 canal: OrderArray?.canal ?? "",
                 codigo: OrderArray?.codigo ?? "",
                 codigo_cliente: OrderArray?.codigo_cliente ?? "",
-                codigo_guia: String(numberGuide)?? "",
+                codigo_guia: String(numberGuide) ?? "",
+                estado: TypeStatusEnum.EST_PEDI_RECH,
                 producto: products.map((item) => ({
                     CodigoProducto: item?.producto?.codigo?.trim() ?? "",
                     DescripcionProducto: item?.producto?.nombre ?? "",
@@ -320,7 +346,7 @@ export function ViewDetailsPorductsOrder({
                                 <TouchableOpacity
                                     style={styles.rejectButton}
                                     onPress={async () =>
-                                        await handleRejectOrder()
+                                        handleSubmit()
                                     }
                                 >
                                     <View style={styles.errorDot}>
@@ -362,6 +388,19 @@ export function ViewDetailsPorductsOrder({
                 title={modalTitle}
                 message={modalMessage}
                 buttonLabel={modalButtonLabel}
+            />
+
+            <ExecptionModalCancel
+                visible={modalVisibleCancel}
+                onClose={() => setModalVisibleCancel(false)}
+                onAccept={async () => {
+                    await handleRejectOrder();
+                    setModalVisibleCancel(false);
+                }}
+                title={modalTitleCancel}
+                message={modalMessageCancel}
+                acceptButtonLabel="Aceptar"
+                cancelButtonLabel="Cancelar"
             />
 
             <ExcetptionModalProducts

@@ -37,6 +37,8 @@ interface ProductValidationOrderSectionProps {
     onSuccessAlet: () => void;
     dataPorduct?: AceptationOrderDetails[];
     token?: string;
+    isRejected?: boolean;
+
 }
 
 export const ProductValidationOrder = ({
@@ -44,23 +46,13 @@ export const ProductValidationOrder = ({
     onSuccessAlet,
     dataPorduct,
     token,
-
+    isRejected
 }: ProductValidationOrderSectionProps) => {
     const [allProducts, setAllProducts] = useState<AceptationOrderDetails[]>(dataPorduct || []);
-    const [validatedProducts, setValidatedProducts] = useState<Document[]>([]);
-    const [showValidatedModal, setShowValidatedModal] = useState(false);
-    const [showFinishAlert, setFinishAlert] = useState(false);
-    const [currentValidationType, setCurrentValidationType] = useState<'success' | 'warning' | 'error' | 'null'>('null');
-    const [showDirection, setDirection] = useState<'left' | 'right' | null>(null);
-    const [tatolValue, setTotal] = useState(0);
-    const [idValue, setIdValue] = useState(0);
-    const [totalUnits, setTotalUnits] = useState(0);
     const [serviceToken, setServiceToken] = useState("");
     const [serviceUrl, setBaseUrl] = useState("");
     // VARIABLES NUEVAS - Separar productos según condiciones
-    const [productsSold, setProductsSold] = useState<Detail[]>([]);
     const [productsPending, setProductsPending] = useState<Detail[]>([]);
-    const [activeSwipeId, setActiveSwipeId] = useState<string | null>(null);
 
     useEffect(() => {
         if (dataPorduct && dataPorduct.length > 0) {
@@ -121,6 +113,8 @@ export const ProductValidationOrder = ({
                                 item={item}
                                 testToken={serviceToken}
                                 testUrl={serviceUrl}
+                                isRejected={isRejected}
+
                             />
                         ))
                     ) : (

@@ -1,6 +1,7 @@
+import { TypeStatusEnum } from '@/src/constants/GuideStates';
 import { capitalizeWords } from '@/src/utils/uitls';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Animated,
     Dimensions,
@@ -18,15 +19,23 @@ interface ProductItemOrderProps {
     item: AceptationOrderDetails;
     testToken?: string;
     testUrl?: string;
+    isRejected?: boolean;
+
 }
 
 export const ProductItemOrder = ({
     item,
     testToken,
     testUrl,
+    isRejected
 }: ProductItemOrderProps) => {
+    const isOrderRejected = item?.aceptacion_pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDI_RECH;
 
-    const requestedUnits = Number(item.unidades_solicitadas ?? 0);
+    const requestedUnits = isOrderRejected
+        ? Number(item.unidades_rechazadas ?? 0)
+        : Number(item.unidades_solicitadas ?? 0);
+
+    const originalUnits = Number(item.unidades_solicitadas ?? 0);
 
     const [quantity, setQuantity] = useState(requestedUnits);
 
@@ -52,6 +61,13 @@ export const ProductItemOrder = ({
     const imageUrl = buildImageUrl(testUrl, testToken, item.producto?.codigo);
     const formattedImageUrl = imageUrl ? imageUrl.replace(/\s+/g, '') : null;
 
+
+    useEffect(() => {
+        if (isRejected && !isOrderRejected) {
+            setQuantity(originalUnits);
+        }
+    }, [isRejected]);
+
     return (
         <View style={styles.productContainer}>
             <Animated.View style={styles.productItem}>
@@ -65,10 +81,42 @@ export const ProductItemOrder = ({
                                     style={styles.productImage}
                                     resizeMode="cover"
                                 />
+
+                                {(isRejected || item.aceptacion_pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDI_RECH) ? (
+                                    <View style={styles.errorDot}>
+                                        <MaterialIcons name="close" size={9} color="#FFFFFF" />
+                                    </View>
+
+                                ) : (item.aceptacion_pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDIDO_ACEPT) ? (
+
+                                    <View style={styles.statusDot}>
+                                        <MaterialIcons name="check" size={9} color="#FFFFFF" />
+                                    </View>
+
+                                ) : (item.aceptacion_pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDI_ENT_PARC) ? (
+
+                                    <View style={styles.warningDot}>
+                                        <MaterialIcons name="warning" size={12} color="#FFA400" />
+                                    </View>
+
+                                ) : null}
                             </View>
                         ) : (
                             <View style={styles.imagePlaceholder}>
                                 <MaterialIcons name="photo" size={32} color="#D1D3D8" />
+                                {(item.aceptacion_pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDIDO_ACEPT) ? (
+                                    <View style={styles.statusDot}>
+                                        <MaterialIcons name="check" size={9} color="#FFFFFF" />
+                                    </View>
+                                ) : (isRejected || item.aceptacion_pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDI_RECH) ? (
+                                    <View style={styles.errorDot}>
+                                        <MaterialIcons name="close" size={9} color="#FFFFFF" />
+                                    </View>
+                                ) : (item.aceptacion_pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDI_ENT_PARC) ? (
+                                    <View style={styles.warningDot}>
+                                        <MaterialIcons name="warning" size={12} color="#FFA400" />
+                                    </View>
+                                ) : null}
                             </View>
                         )}
                     </View>
@@ -88,8 +136,12 @@ export const ProductItemOrder = ({
                         <View style={styles.counterContainer}>
 
                             <Pressable
-                                style={styles.button}
+                                style={[
+                                    styles.button,
+                                    (isRejected || isOrderRejected) && styles.buttonDisabled
+                                ]}
                                 onPress={decreaseQuantity}
+                                disabled={(isRejected || isOrderRejected)}
                             >
                                 <Text style={styles.buttonText}>-</Text>
                             </Pressable>
@@ -99,8 +151,12 @@ export const ProductItemOrder = ({
                             </Text>
 
                             <Pressable
-                                style={styles.button}
+                                style={[
+                                    styles.button,
+                                    (isRejected || isOrderRejected) && styles.buttonDisabled
+                                ]}
                                 onPress={increaseQuantity}
+                                disabled={(isRejected || isOrderRejected)}
                             >
                                 <Text style={styles.buttonText}>+</Text>
                             </Pressable>
@@ -209,5 +265,43 @@ const styles = StyleSheet.create({
     leftContent: {
         flex: 1,
         paddingRight: 10,
+    },
+    buttonDisabled: {
+        backgroundColor: '#A0A0A0',
+    },
+    statusDot: {
+        position: 'absolute',
+        top: 1.5,
+        left: 1.5,
+        borderRadius: 6.5,
+        backgroundColor: '#1F9144',
+        borderWidth: 2,
+        borderColor: '#1F9144',
+    },
+    errorDot: {
+        position: 'absolute',
+        top: 1.5,
+        left: 1.5,
+        width: 13,
+        height: 13,
+        borderRadius: 6.5,
+        backgroundColor: '#FF3B30',
+        borderWidth: 2,
+        borderColor: '#FF3B30',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    warningDot: {
+        position: 'absolute',
+        top: 1.5,
+        left: 1.5,
+        width: 20,
+        height: 20,
+        borderRadius: 6.5,
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        borderColor: 'transparent',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });

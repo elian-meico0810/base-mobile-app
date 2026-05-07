@@ -314,7 +314,15 @@ export interface AcepttionOrder {
   codigo_cliente: string;
   codigo_guia: string;
   fecha_validacion: string;
-  estado_pedido: number;
+  estado_pedido: statusOrder;
+}
+
+
+export interface statusOrder {
+  id: number;
+  tipo: number;
+  nombre: string;
+  codigo: string;
 }
 
 export interface ProductoAceptacion {

@@ -56,7 +56,7 @@ export function ViewDetailsPorductsOrder({
     const [modalVisibleCancel, setModalVisibleCancel] = useState(false);
     const [modalTitleCancel, setModalTitleCancel] = useState("");
     const [modalMessageCancel, setModalMessageCancel] = useState("");
-
+    const [isRejected, setIsRejected] = useState(false);
     const [modalButtonLabelCancel, setModalButtonLabelCancel] = useState("Entendido");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [products, setPorductData] = useState<AceptationOrderDetails[]>([]);
@@ -273,6 +273,7 @@ export function ViewDetailsPorductsOrder({
             );
 
             if (response?.statusCode === 200) {
+                setIsRejected(true);
                 setModalTitle("¡Procesado!");
                 setModalMessage(`Pedido procesado exitosamente.`);
                 setModalVisible(true);
@@ -379,6 +380,8 @@ export function ViewDetailsPorductsOrder({
                     }}
                     dataPorduct={products}
                     token={token}
+                    isRejected={isRejected}
+
                 />
             </ScrollView>
 

@@ -20,33 +20,56 @@ interface ProductItemOrderProps {
     testToken?: string;
     testUrl?: string;
     isRejected?: boolean;
-
+    onQuantityChange?: (id: number, quantity: number) => void;
 }
 
 export const ProductItemOrder = ({
     item,
     testToken,
     testUrl,
-    isRejected
+    isRejected,
+    onQuantityChange
 }: ProductItemOrderProps) => {
     const isOrderRejected = item?.aceptacion_pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDI_RECH;
 
     const requestedUnits = isOrderRejected
-        ? Number(item.unidades_rechazadas ?? 0)
+        ? Number(item.unidades_entregadas ?? 0) > 0
+            ? Number(item.unidades_entregadas ?? 0)
+            : Number(item.unidades_rechazadas ?? 0) > 0
+                ? Number(item.unidades_rechazadas ?? 0)
+                : Number(item.unidades_solicitadas ?? 0)
         : Number(item.unidades_solicitadas ?? 0);
 
     const originalUnits = Number(item.unidades_solicitadas ?? 0);
 
     const [quantity, setQuantity] = useState(requestedUnits);
+    const maxUnits = Number(item.unidades_solicitadas ?? 0);
 
     const increaseQuantity = () => {
-        setQuantity(prev => prev + 1);
+
+        if (quantity >= maxUnits) {
+            return;
+        }
+
+        const newQuantity = quantity + 1;
+
+        setQuantity(newQuantity);
+
+        onQuantityChange?.(item.id, newQuantity);
     };
 
+
     const decreaseQuantity = () => {
-        if (quantity > 0) {
-            setQuantity(prev => prev - 1);
+
+        if (quantity <= 0) {
+            return;
         }
+
+        const newQuantity = quantity - 1;
+
+        setQuantity(newQuantity);
+
+        onQuantityChange?.(item.id, newQuantity);
     };
 
     const buildImageUrl = (
@@ -68,7 +91,7 @@ export const ProductItemOrder = ({
         }
     }, [isRejected]);
 
-    return (    
+    return (
         <View style={styles.productContainer}>
             <Animated.View style={styles.productItem}>
                 <View style={styles.productRow}>
@@ -87,7 +110,7 @@ export const ProductItemOrder = ({
                                         <MaterialIcons name="close" size={9} color="#FFFFFF" />
                                     </View>
 
-                                ) : (item.unidades_rechazadas == 0|| item.aceptacion_pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDIDO_ACEPT) ? (
+                                ) : (item.unidades_rechazadas == 0 || item.aceptacion_pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDIDO_ACEPT) ? (
 
                                     <View style={styles.statusDot}>
                                         <MaterialIcons name="check" size={9} color="#FFFFFF" />
@@ -138,25 +161,41 @@ export const ProductItemOrder = ({
                             <Pressable
                                 style={[
                                     styles.button,
-                                    (isRejected || isOrderRejected) && styles.buttonDisabled
+                                    (
+                                        isRejected ||
+                                        isOrderRejected ||
+                                        quantity <= 0
+                                    ) && styles.buttonDisabled
                                 ]}
                                 onPress={decreaseQuantity}
-                                disabled={(isRejected || isOrderRejected)}
+                                disabled={
+                                    isRejected ||
+                                    isOrderRejected ||
+                                    quantity <= 0
+                                }
                             >
                                 <Text style={styles.buttonText}>-</Text>
                             </Pressable>
 
                             <Text style={styles.quantity}>
-                                {isRejected ?  originalUnits : quantity}
+                                {quantity}
                             </Text>
 
                             <Pressable
                                 style={[
                                     styles.button,
-                                    (isRejected || isOrderRejected) && styles.buttonDisabled
+                                    (
+                                        isRejected ||
+                                        isOrderRejected ||
+                                        quantity >= maxUnits
+                                    ) && styles.buttonDisabled
                                 ]}
                                 onPress={increaseQuantity}
-                                disabled={(isRejected || isOrderRejected)}
+                                disabled={
+                                    isRejected ||
+                                    isOrderRejected ||
+                                    quantity >= maxUnits
+                                }
                             >
                                 <Text style={styles.buttonText}>+</Text>
                             </Pressable>

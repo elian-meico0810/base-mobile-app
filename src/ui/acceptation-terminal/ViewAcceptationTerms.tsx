@@ -269,14 +269,23 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
                 return;
             } else {
                 setModalTitle("¡Alerta!");
-                setModalMessage(response?.message ?? "Ocurrió un error inesperado.");
+                setModalMessage("Problemas al guardar la novedad del pedido.");
                 setModalVisible(true);
+
+                setTimeout(() => {
+                    setModalVisible(false);
+                }, 6000);
                 return;
             }
         } catch (error) {
-            setModalTitle("¡Error!");
-            setModalMessage("Ocurrio un error inesperado.");
+            setModalTitle("¡Alerta!");
+            setModalMessage("Problemas al guardar la novedad del pedido.");
             setModalVisible(true);
+
+            setTimeout(() => {
+                setModalVisible(false);
+            }, 6000);
+            return;
         } finally {
             setLoading(false);
         }

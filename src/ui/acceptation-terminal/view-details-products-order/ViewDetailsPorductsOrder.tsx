@@ -280,17 +280,86 @@ export function ViewDetailsPorductsOrder({
                 return;
             } else {
                 setModalTitle("¡Alerta!");
-                setModalMessage(response?.message ?? "Ocurrió un error inesperado.");
+                setModalMessage("Problemas al guardar la novedad del pedido.");
                 setModalVisible(true);
+
+                setTimeout(() => {
+                    setModalVisible(false);
+                }, 6000);
                 return;
             }
 
         } catch (error: any) {
-            setModalTitle("¡Error!");
-            setModalMessage(
-                error?.data?.message ?? "Ocurrió un error inesperado."
-            );
+            setModalTitle("¡Alerta!");
+            setModalMessage("Problemas al guardar la novedad del pedido.");
             setModalVisible(true);
+
+            setTimeout(() => {
+                setModalVisible(false);
+            }, 6000);
+            return;
+
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    const handleRejectOrderTwo = async (data: AceptationOrderDetails[]) => {
+        try {
+            setLoading(true);
+            const payload: AceptationPedidoProps = {
+                bodega: OrderArray?.bodega ?? "",
+                canal: OrderArray?.canal ?? "",
+                codigo: OrderArray?.codigo ?? "",
+                codigo_cliente: OrderArray?.codigo_cliente ?? "",
+                codigo_guia: String(numberGuide) ?? "",
+                estado: TypeStatusEnum.EST_PEDIDO_ACEPT,
+                producto: data.map((item) => ({
+                    CodigoProducto: item?.producto?.codigo?.trim() ?? "",
+                    DescripcionProducto: item?.producto?.nombre ?? "",
+                    EAN: item?.producto?.ean ?? null,
+                    linea: item?.linea ?? 0,
+                    unidades_rechazadas: item?.unidades_rechazadas ?? 0,
+                    unidades_solicitadas: item?.unidades_solicitadas ?? 0,
+                }))
+            };
+
+            const response = await invoiceRepositoryImpl.aceptationOrder(
+                payload,
+                token
+            );
+
+            if (response?.statusCode === 200) {
+
+
+
+                setIsRejected(true);
+                setModalTitle("¡Procesado!");
+                setModalMessage(`Novedad registrada con éxito.`);
+                setModalVisible(true);
+                await handleExit();
+                return;
+            } else {
+                setModalTitle("¡Alerta!");
+                setModalMessage("Problemas al guardar la novedad del pedido.");
+                setModalVisible(true);
+
+                setTimeout(() => {
+                    setModalVisible(false);
+                }, 6000);
+                return;
+            }
+
+        } catch (error: any) {
+            setModalTitle("¡Alerta!");
+            setModalMessage("Problemas al guardar la novedad del pedido.");
+            setModalVisible(true);
+
+            setTimeout(() => {
+                setModalVisible(false);
+            }, 6000);
+            return;
 
         } finally {
             setLoading(false);
@@ -381,7 +450,9 @@ export function ViewDetailsPorductsOrder({
                     dataPorduct={products}
                     token={token}
                     isRejected={isRejected}
-
+                    onProductsChange={async (body) => {
+                        await handleRejectOrderTwo(body);
+                    }}
                 />
             </ScrollView>
 

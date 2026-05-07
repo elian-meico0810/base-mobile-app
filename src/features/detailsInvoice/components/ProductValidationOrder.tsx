@@ -38,6 +38,9 @@ interface ProductValidationOrderSectionProps {
     dataPorduct?: AceptationOrderDetails[];
     token?: string;
     isRejected?: boolean;
+    onProductsChange?: (
+        products: AceptationOrderDetails[]
+    ) => void;
 
 }
 
@@ -46,7 +49,8 @@ export const ProductValidationOrder = ({
     onSuccessAlet,
     dataPorduct,
     token,
-    isRejected
+    isRejected,
+    onProductsChange
 }: ProductValidationOrderSectionProps) => {
     const [allProducts, setAllProducts] = useState<AceptationOrderDetails[]>(dataPorduct || []);
     const [serviceToken, setServiceToken] = useState("");
@@ -63,14 +67,16 @@ export const ProductValidationOrder = ({
 
     const handleFinalize = () => {
         try {
-            if (productsPending.length == 0) {
+
+            if (allProducts.length > 0) {
+                onProductsChange?.(allProducts);
                 onFinalize?.();
             }
+
         } catch (error) {
             throw error;
         }
     };
-
 
     useEffect(() => {
         // if (serviceUrl == "" || serviceToken == "") {
@@ -95,6 +101,30 @@ export const ProductValidationOrder = ({
     }, []);
 
 
+    const handleQuantityChange = (
+        id: number,
+        quantity: number
+    ) => {
+
+        const updatedProducts = allProducts.map((item) => {
+
+            if (item.id === id) {
+
+                return {
+                    ...item,
+                    unidades_rechazadas:
+                        Number(quantity ?? 0),
+
+                    unidades_entregadas: quantity,
+                };
+            }
+
+            return item;
+        });
+
+        setAllProducts(updatedProducts);
+    };
+
     return (
         <View style={styles.mainContainer}>
             <ScrollView
@@ -114,6 +144,7 @@ export const ProductValidationOrder = ({
                                 testToken={serviceToken}
                                 testUrl={serviceUrl}
                                 isRejected={isRejected}
+                                onQuantityChange={handleQuantityChange}
 
                             />
                         ))
@@ -133,7 +164,7 @@ export const ProductValidationOrder = ({
                     <PrimaryButton
                         title="Finalizar"
                         onPress={handleFinalize}
-                        disabled={true}
+                        disabled={false}
                         width={348}
                         height={43}
                     />

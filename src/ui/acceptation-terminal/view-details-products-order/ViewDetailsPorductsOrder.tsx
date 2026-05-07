@@ -6,7 +6,7 @@ import { GuideDetailSkeleton } from '@/components/skeleton/GuideDetailSkeleton';
 import { ThemedView } from '@/components/themed-view';
 import { ProductValidationOrder } from '@/src/features/detailsInvoice/components/ProductValidationOrder';
 import { AceptationOrderDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
-import { CustomerAddress, Order } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
+import { AceptationPedidoProps, CustomerAddress, Order } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -52,7 +52,8 @@ export function ViewDetailsPorductsOrder({
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
-    const [products, setPorductData] = useState<AceptationOrderDetails[]>([]); const [modalVisibleValidate, setModalVisibleValidate,] = useState(false);
+    const [products, setPorductData] = useState<AceptationOrderDetails[]>([]);
+    const [modalVisibleValidate, setModalVisibleValidate,] = useState(false);
     const [modalTitleValidate, setModalTitleValidate] = useState("");
     const [modalMessageValidate, setModalMessageValidate] = useState("");
     const [modalButtonLabelValidate, setModalButtonLabelValidate] = useState("Entendido");
@@ -133,23 +134,6 @@ export function ViewDetailsPorductsOrder({
     }, []);
 
 
-    const handleSubmit = async () => {
-        try {
-            setLoading(true);
-            setModalTitleValidate("Aceptación de documento de transporte");
-            setModalMessageValidate("Al aceptar este despacho confirmo que recibí de parte de Meico la mercancía descrita en el documento de transporte y asumo la custodia para su traslado y entrega.");
-            setModalButtonLabelValidate("Registrar evidencia");
-            setModalVisibleValidate(true);
-
-
-        } catch (error) {
-            setModalTitle("¡Error!");
-            setModalMessage("Ocurrio un error inesperado.");
-            setModalVisible(true);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const uploadPhotoSubmit = async (evidences: string[]) => {
         try {
@@ -220,14 +204,14 @@ export function ViewDetailsPorductsOrder({
 
 
             const responseQuery = await detailsRepositoryImpl.listAceptationOrderDetails(token, Number(numberGuide), String(OrderArray?.codigo));
-           if (responseQuery?.statusCode === 200) {
+            if (responseQuery?.statusCode === 200) {
 
-    setPorductData(
-        Array.isArray(responseQuery.data)
-            ? responseQuery.data.flat()
-            : []
-    );
-}
+                setPorductData(
+                    Array.isArray(responseQuery.data)
+                        ? responseQuery.data.flat()
+                        : []
+                );
+            }
         } catch (error: any) {
             setModalTitle("¡Error!");
             setModalMessage(error?.data?.message ?? "Ocurrio un error inesperadoss.");
@@ -237,9 +221,59 @@ export function ViewDetailsPorductsOrder({
         }
     };
 
+    const handleRejectOrder = async () => {
+        try {
+            setLoading(true);
+
+            const payload: AceptationPedidoProps = {
+                bodega: OrderArray?.bodega ?? "",
+                canal: OrderArray?.canal ?? "",
+                codigo: OrderArray?.codigo ?? "",
+                codigo_cliente: OrderArray?.codigo_cliente ?? "",
+                codigo_guia: String(numberGuide)?? "",
+                producto: products.map((item) => ({
+                    CodigoProducto: item?.producto?.codigo?.trim() ?? "",
+                    DescripcionProducto: item?.producto?.nombre ?? "",
+                    EAN: item?.producto?.ean ?? null,
+                    linea: item?.linea ?? 0,
+                    unidades_rechazadas: item?.unidades_solicitadas ?? 0,
+                    unidades_solicitadas: item?.unidades_solicitadas ?? 0,
+                }))
+            };
+
+            const response = await invoiceRepositoryImpl.aceptationOrder(
+                payload,
+                token
+            );
+
+            if (response?.statusCode === 200) {
+                setModalTitle("¡Procesado!");
+                setModalMessage(`Pedido procesado exitosamente.`);
+                setModalVisible(true);
+                return;
+            } else {
+                setModalTitle("¡Alerta!");
+                setModalMessage(response?.message ?? "Ocurrió un error inesperado.");
+                setModalVisible(true);
+                return;
+            }
+
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(
+                error?.data?.message ?? "Ocurrió un error inesperado."
+            );
+            setModalVisible(true);
+
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         getDataProduct();
     }, [OrderArray, token]);
+
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -285,14 +319,16 @@ export function ViewDetailsPorductsOrder({
 
                                 <TouchableOpacity
                                     style={styles.rejectButton}
-                                    onPress={() => console.log("datos del console")}
+                                    onPress={async () =>
+                                        await handleRejectOrder()
+                                    }
                                 >
                                     <View style={styles.errorDot}>
                                         <MaterialIcons name="close" size={8} color="#FFFFFF" />
                                     </View>
 
                                     <Text style={styles.rejectButtonText}>
-                                        Rechazo masivo
+                                        No recibi el pedido
                                     </Text>
                                 </TouchableOpacity>
                             </View>
@@ -311,7 +347,6 @@ export function ViewDetailsPorductsOrder({
                 {/** Listado de productos */}
                 <ProductValidationOrder
                     onFinalize={() => {
-
                     }}
                     onSuccessAlet={() => {
 

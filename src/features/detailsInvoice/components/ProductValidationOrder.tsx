@@ -62,19 +62,11 @@ export const ProductValidationOrder = ({
     const [productsPending, setProductsPending] = useState<Detail[]>([]);
     const [activeSwipeId, setActiveSwipeId] = useState<string | null>(null);
 
-
-    console.log("dataPorduct_ ", dataPorduct);
-
     useEffect(() => {
         if (dataPorduct && dataPorduct.length > 0) {
             setAllProducts(dataPorduct);
         }
     }, [dataPorduct]);
-
-
-
-
-
 
 
     const handleFinalize = () => {
@@ -110,11 +102,6 @@ export const ProductValidationOrder = ({
         // }
     }, []);
 
-
-
-
-
-    console.log("allProducts.length: ", allProducts.length);
 
     return (
         <View style={styles.mainContainer}>

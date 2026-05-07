@@ -32,7 +32,7 @@ export const ProductItemOrder = ({
     const isOrderRejected = item?.aceptacion_pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDI_RECH;
 
     const requestedUnits = isOrderRejected
-        ? Number(item.unidades_entregadas ?? 0)
+        ? Number(item.unidades_solicitadas ?? 0)
         : Number(item.unidades_solicitadas ?? 0);
 
     const originalUnits = Number(item.unidades_solicitadas ?? 0);

@@ -32,7 +32,7 @@ export const ProductItemOrder = ({
     const isOrderRejected = item?.aceptacion_pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDI_RECH;
 
     const requestedUnits = isOrderRejected
-        ? Number(item.unidades_solicitadas ?? 0)
+        ? Number(item.unidades_rechazadas ?? 0)
         : Number(item.unidades_solicitadas ?? 0);
 
     const originalUnits = Number(item.unidades_solicitadas ?? 0);
@@ -87,13 +87,13 @@ export const ProductItemOrder = ({
                                         <MaterialIcons name="close" size={9} color="#FFFFFF" />
                                     </View>
 
-                                ) : (item.aceptacion_pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDIDO_ACEPT) ? (
+                                ) : (item.unidades_rechazadas == 0|| item.aceptacion_pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDIDO_ACEPT) ? (
 
                                     <View style={styles.statusDot}>
                                         <MaterialIcons name="check" size={9} color="#FFFFFF" />
                                     </View>
 
-                                ) : (item.aceptacion_pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDI_ENT_PARC) ? (
+                                ) : (item.unidades_rechazadas > 0 || item.aceptacion_pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDI_ENT_PARC) ? (
 
                                     <View style={styles.warningDot}>
                                         <MaterialIcons name="warning" size={12} color="#FFA400" />
@@ -147,7 +147,7 @@ export const ProductItemOrder = ({
                             </Pressable>
 
                             <Text style={styles.quantity}>
-                                {isRejected ? 0 : quantity}
+                                {isRejected ?  originalUnits : quantity}
                             </Text>
 
                             <Pressable

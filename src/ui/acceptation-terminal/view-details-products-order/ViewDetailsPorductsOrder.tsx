@@ -1,11 +1,11 @@
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { ExcetptionModalProducts } from '@/components/generals/ExcetptionModalProducts';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { GuideDetailSkeleton } from '@/components/skeleton/GuideDetailSkeleton';
 import { ThemedView } from '@/components/themed-view';
-import { Document } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { ProductValidationOrder } from '@/src/features/detailsInvoice/components/ProductValidationOrder';
+import { AceptationOrderDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { CustomerAddress, Order } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
@@ -52,9 +52,7 @@ export function ViewDetailsPorductsOrder({
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
-    const [ejecuteData, setEjecuteData] = useState(false);
-    const [showPorductData, setPorductData] = useState<Document[]>([]);
-    const [modalVisibleValidate, setModalVisibleValidate,] = useState(false);
+    const [products, setPorductData] = useState<AceptationOrderDetails[]>([]); const [modalVisibleValidate, setModalVisibleValidate,] = useState(false);
     const [modalTitleValidate, setModalTitleValidate] = useState("");
     const [modalMessageValidate, setModalMessageValidate] = useState("");
     const [modalButtonLabelValidate, setModalButtonLabelValidate] = useState("Entendido");
@@ -63,11 +61,9 @@ export function ViewDetailsPorductsOrder({
     const [confirmNoDelivery, setConfirmNoDelivery] = useState(false);
     const [keyboardVisible, setKeyboardVisible] = useState(false);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
-
     const btnRef = useRef<any>(null);
     const router = useRouter();
 
-    console.log("OrderArray: ", OrderArray);
 
     useEffect(() => {
         const keyboardDidShowListener = Keyboard.addListener(
@@ -204,7 +200,7 @@ export function ViewDetailsPorductsOrder({
             }
         });
     };
-    
+
     const handleAceptataionOrder = async (pedido?: Order) => {
         try {
             setLoading(true);
@@ -224,11 +220,14 @@ export function ViewDetailsPorductsOrder({
 
 
             const responseQuery = await detailsRepositoryImpl.listAceptationOrderDetails(token, Number(numberGuide), String(OrderArray?.codigo));
-            if (responseQuery?.statusCode == 200) {
-                console.log("data: ", responseQuery.data);
+           if (responseQuery?.statusCode === 200) {
 
-
-            }
+    setPorductData(
+        Array.isArray(responseQuery.data)
+            ? responseQuery.data.flat()
+            : []
+    );
+}
         } catch (error: any) {
             setModalTitle("¡Error!");
             setModalMessage(error?.data?.message ?? "Ocurrio un error inesperadoss.");
@@ -308,21 +307,19 @@ export function ViewDetailsPorductsOrder({
 
                 </>
             )}
+            <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+                {/** Listado de productos */}
+                <ProductValidationOrder
+                    onFinalize={() => {
 
-            {OrderArray && (
-                <View style={[styles.footer, { marginBottom: 10 }]}>
-                    <>
-                        <PrimaryButton
-                            title="Confirmar"
-                            onPress={handleSubmit}
-                            disabled={true}
-                            width={328}
-                            height={43}
-                        />
+                    }}
+                    onSuccessAlet={() => {
 
-                    </>
-                </View>
-            )}
+                    }}
+                    dataPorduct={products}
+                    token={token}
+                />
+            </ScrollView>
 
             <ExceptionModal
                 visible={modalVisible}
@@ -403,7 +400,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 16,
         paddingTop: 45,
-        paddingBottom: 28,
+        paddingBottom: 20,
         backgroundColor: '#F9F9FA',
     },
     backButton: {

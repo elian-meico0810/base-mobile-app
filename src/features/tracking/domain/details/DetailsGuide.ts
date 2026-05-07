@@ -300,7 +300,7 @@ export interface AceptationOrderDetails {
   id: number;
   linea: number;
   aceptacion_pedido: AcepttionOrder;
-  producto: number;
+  producto: ProductoAceptacion;
   unidades_solicitadas: number;
   unidades_rechazadas: number;
   unidades_entregadas: number;
@@ -315,4 +315,11 @@ export interface AcepttionOrder {
   codigo_guia: string;
   fecha_validacion: string;
   estado_pedido: number;
+}
+
+export interface ProductoAceptacion {
+  id: number;
+  codigo: string;
+  nombre: string;
+  ean: string;
 }

@@ -32,7 +32,7 @@ export const ProductItemOrder = ({
     const isOrderRejected = item?.aceptacion_pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDI_RECH;
 
     const requestedUnits = isOrderRejected
-        ? Number(item.unidades_rechazadas ?? 0)
+        ? Number(item.unidades_entregadas ?? 0)
         : Number(item.unidades_solicitadas ?? 0);
 
     const originalUnits = Number(item.unidades_solicitadas ?? 0);
@@ -68,7 +68,7 @@ export const ProductItemOrder = ({
         }
     }, [isRejected]);
 
-    return (
+    return (    
         <View style={styles.productContainer}>
             <Animated.View style={styles.productItem}>
                 <View style={styles.productRow}>
@@ -147,7 +147,7 @@ export const ProductItemOrder = ({
                             </Pressable>
 
                             <Text style={styles.quantity}>
-                                {quantity}
+                                {isRejected ? 0 : quantity}
                             </Text>
 
                             <Pressable

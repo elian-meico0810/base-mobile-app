@@ -5,8 +5,11 @@ import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { GuideDetailSkeleton } from '@/components/skeleton/GuideDetailSkeleton';
 import { ThemedView } from '@/components/themed-view';
-import { CustomerAddress, GuideResponse, Order } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
+import { Document } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { CustomerAddress, Order } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
+import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
+import { MaterialIcons } from '@expo/vector-icons';
 
 import { useRouter } from 'expo-router';
 import * as SecureStore from "expo-secure-store";
@@ -42,7 +45,6 @@ export function ViewDetailsPorductsOrder({
     detailsOrder,
     OrderArray
 }: InfoInvoiceFormProps) {
-    const [guide, setGuide] = useState<GuideResponse | null>(null);
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
     const [modalVisible, setModalVisible] = useState(false);
@@ -50,16 +52,12 @@ export function ViewDetailsPorductsOrder({
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
-    const [allowBack, setAllowBack] = useState(false);
-    const [validateException, setValidateException] = useState(false);
     const [ejecuteData, setEjecuteData] = useState(false);
-    const [showSuccessQRp, setShowSuccessQRP] = useState(false);
+    const [showPorductData, setPorductData] = useState<Document[]>([]);
     const [modalVisibleValidate, setModalVisibleValidate,] = useState(false);
     const [modalTitleValidate, setModalTitleValidate] = useState("");
     const [modalMessageValidate, setModalMessageValidate] = useState("");
     const [modalButtonLabelValidate, setModalButtonLabelValidate] = useState("Entendido");
-    const [showErrorQRP, setShowErrorQRP] = useState(false);
-    const [showErrorQRPMessage, setShowErrorQRPMessage] = useState("Código OTP incorrecto");
     const [uploadPhotoNoDelivery, setUploadPhotoNoDelivery] = useState(false);
     const [noDeliveryFiles, setNoDeliveryFiles] = useState<string[]>([]);
     const [confirmNoDelivery, setConfirmNoDelivery] = useState(false);
@@ -68,6 +66,8 @@ export function ViewDetailsPorductsOrder({
 
     const btnRef = useRef<any>(null);
     const router = useRouter();
+
+    console.log("OrderArray: ", OrderArray);
 
     useEffect(() => {
         const keyboardDidShowListener = Keyboard.addListener(
@@ -125,23 +125,6 @@ export function ViewDetailsPorductsOrder({
         }
     };
 
-    const listTotalsGuide = async () => {
-        try {
-            const respones = await invoiceRepositoryImpl.listTotalsGuide(String(numberGuide), token);
-            if (respones?.statusCode === 200 && respones.data) {
-
-                setEjecuteData(true);
-                setGuide(respones.data as GuideResponse);
-            }
-
-        } catch (error: any) {
-            setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
-            setModalVisible(true);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     useEffect(() => {
         const init = async () => {
@@ -153,13 +136,6 @@ export function ViewDetailsPorductsOrder({
 
     }, []);
 
-
-    useEffect(() => {
-        if (token) {
-            if (ejecuteData) return;
-            listTotalsGuide();
-        }
-    }, [token]);
 
     const handleSubmit = async () => {
         try {
@@ -217,54 +193,22 @@ export function ViewDetailsPorductsOrder({
         }
     };
 
-   const handleExit = async () => {
+    const handleExit = async () => {
         setLoading(true);
         router.push({
             pathname: '/views/AcceptanceTerms' as any,
             params: {
                 numberGuide: Number(numberGuide),
-                token: String(token)
+                token: String(token),
+                OrderArray: encodeURIComponent(JSON.stringify(OrderArray))
             }
         });
     };
+    
     const handleAceptataionOrder = async (pedido?: Order) => {
         try {
             setLoading(true);
-
-            const response = await invoiceRepositoryImpl.aceptationOrder(
-                {
-                    codigo: String(pedido?.codigo),
-                    bodega: String(pedido?.bodega),
-                    canal: String(pedido?.canal),
-                    codigo_cliente: String(pedido?.codigo_cliente),
-                    codigo_guia: String(numberGuide),
-
-                    producto: pedido?.detalles?.map((item) => ({
-                        linea: item.linea,
-
-                        CodigoProducto: item.producto?.codigo
-                            ? String(item.producto.codigo)
-                            : '',
-
-                        DescripcionProducto: item.producto?.nombre ?? null,
-                        EAN: null,
-
-                        unidades_solicitadas: item.unidadesSolicitadas ?? 0,
-                        unidades_rechazadas: 0,
-                    })) ?? []
-                }, token);
-
-            if (response?.statusCode === 200) {
-                setModalTitle("¡Procesado!");
-                setModalMessage(`Pedido procesados exitosamente.`);
-                setModalVisible(true);
-                return;
-            } else {
-                setModalTitle("¡Alerta!");
-                setModalMessage(response?.message ?? "Ocurrió un error inesperado.");
-                setModalVisible(true);
-                return;
-            }
+            console.log("handleAceptataionOrder: ", handleAceptataionOrder)
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
@@ -274,8 +218,29 @@ export function ViewDetailsPorductsOrder({
         }
     };
 
-    const pedidosFlat = guide?.details?.flatMap(d => d.pedidos) || [];
+    const getDataProduct = async () => {
+        try {
+            setLoading(true);
 
+
+            const responseQuery = await detailsRepositoryImpl.listAceptationOrderDetails(token, Number(numberGuide), String(OrderArray?.codigo));
+            if (responseQuery?.statusCode == 200) {
+                console.log("data: ", responseQuery.data);
+
+
+            }
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperadoss.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        getDataProduct();
+    }, [OrderArray, token]);
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -301,7 +266,7 @@ export function ViewDetailsPorductsOrder({
 
             {/* Card blanco centrado */}
 
-            {!guide ? (
+            {!OrderArray ? (
                 <GuideDetailSkeleton />
             ) : (
                 <>
@@ -314,70 +279,43 @@ export function ViewDetailsPorductsOrder({
                                 <Text style={styles.labelTwo}>
                                     Documento de transporte {numberGuide}
                                 </Text>
+
                                 <Text style={styles.subTitle}>
-                                    {
-                                        guide?.details?.reduce((total, address) => {
-                                            return total + (address.pedidos?.length ?? 0);
-                                        }, 0) ?? 0
-                                    } Pedidos
+                                    {OrderArray?.detalles?.length ?? 0} Productos
                                 </Text>
+
+                                <TouchableOpacity
+                                    style={styles.rejectButton}
+                                    onPress={() => console.log("datos del console")}
+                                >
+                                    <View style={styles.errorDot}>
+                                        <MaterialIcons name="close" size={8} color="#FFFFFF" />
+                                    </View>
+
+                                    <Text style={styles.rejectButtonText}>
+                                        Rechazo masivo
+                                    </Text>
+                                </TouchableOpacity>
                             </View>
                         </View>
                     </View>
 
                     <View style={styles.secondCardTwo}>
                         <ScrollView>
-                            {pedidosFlat.map((pedido, index) => (
-                                <View key={`${pedido.codigo + index}`} style={styles.secondCard}>
 
-                                    <View style={styles.orderHeader}>
-                                        <Text style={styles.orderTitle}>
-                                            Pedido {pedido.codigo || ""}
-                                        </Text>
-
-                                        <Text style={styles.productCount}>
-                                            {pedido.detalles?.length || 0} productos
-                                        </Text>
-                                    </View>
-
-                                    <View style={styles.divider} />
-
-                                    <View style={styles.gap}>
-                                        {pedido.detalles?.map((item, itemIndex) => (
-                                            <View
-                                                key={`${item.producto?.codigo + itemIndex}`}
-                                                style={styles.productRow}
-                                            >
-                                                <Text numberOfLines={1} style={styles.productName}>
-                                                    {item.producto?.nombre
-                                                        ? item.producto.nombre.charAt(0).toUpperCase() +
-                                                        item.producto.nombre.slice(1).toLowerCase()
-                                                        : ""}
-                                                </Text>
-
-                                                <Text style={styles.units}>
-                                                    {item.unidadesSolicitadas || 0} uds.
-                                                </Text>
-                                            </View>
-                                        ))}
-                                    </View>
-
-                                </View>
-                            ))}
                         </ScrollView>
                     </View>
 
                 </>
             )}
 
-            {guide && (
-
+            {OrderArray && (
                 <View style={[styles.footer, { marginBottom: 10 }]}>
                     <>
                         <PrimaryButton
-                            title="Aceptar carga"
+                            title="Confirmar"
                             onPress={handleSubmit}
-                            disabled={false}
+                            disabled={true}
                             width={328}
                             height={43}
                         />
@@ -457,7 +395,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         width: width,
         height: height,
-        backgroundColor: '#0ec70e',
+        backgroundColor: '#fafaf9',
     },
     headerContainer: {
         width: '100%',
@@ -488,7 +426,7 @@ const styles = StyleSheet.create({
     },
     card: {
         width: 360,
-        height: 69,
+        height: 113,
         backgroundColor: '#FFFFFF',
         borderColor: '#F0F1F5',
         borderWidth: 1,
@@ -546,7 +484,7 @@ const styles = StyleSheet.create({
     },
     secondCardTwo: {
         width: width,
-        maxHeight: 520,
+        maxHeight: 580,
         borderColor: 'transparent',
         padding: 10,
         gap: 15,
@@ -610,6 +548,33 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         marginTop: 10,
         gap: 10,
+    },
+    rejectButton: {
+        width: 304,
+        height: 32,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: '#C62828',
+        backgroundColor: '#FFFFFF',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 10,
+        gap: 6,
+    },
+    rejectButtonText: {
+        fontSize: 12,
+        fontWeight: '500',
+        color: '#C62828',
+
+    },
+    errorDot: {
+        width: 14,
+        height: 14,
+        borderRadius: 7,
+        backgroundColor: '#C62828',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });
 

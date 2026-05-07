@@ -295,3 +295,24 @@ export interface ReEntryDeliveryProps {
   id_pedido: number;
   reporgrmacion: string;
 }
+
+export interface AceptationOrderDetails {
+  id: number;
+  linea: number;
+  aceptacion_pedido: AcepttionOrder;
+  producto: number;
+  unidades_solicitadas: number;
+  unidades_rechazadas: number;
+  unidades_entregadas: number;
+}
+
+export interface AcepttionOrder {
+  id: number;
+  codigo: string;
+  bodega: string;
+  canal: string;
+  codigo_cliente: string;
+  codigo_guia: string;
+  fecha_validacion: string;
+  estado_pedido: number;
+}

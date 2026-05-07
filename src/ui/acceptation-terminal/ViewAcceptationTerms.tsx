@@ -222,7 +222,7 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
                     numberGuide: Number(numberGuide),
                     token: String(token),
                     orderDetails: 'true',
-                    OrderArray: encodeURIComponent(JSON.stringify(pedido))
+                    order: encodeURIComponent(JSON.stringify(pedido))
                 }
             });
             setLoading(true);

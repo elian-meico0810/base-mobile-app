@@ -18,8 +18,6 @@ export default function AcceptanceTermsScreen() {
     const orderParam = params.order as string;
     const OrderArray: Order = orderParam ? JSON.parse(orderParam) : {} as Order;
 
-    console.log("detailsOrder: ",detailsOrder);
-    
     return (
         <>
             <Stack.Screen

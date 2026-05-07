@@ -1,5 +1,5 @@
 import { ApiResponse } from "@/src/features/auth/domain/ApiResponse";
-import { Cause, DataUploadFIlePprops, Document, EvidenciaOTPItemOTP, GuideDetails, ListAceptationGuide, ListInfOTP, NoveltyRefusedProps, NovletyOrder, PaymentsByInvoicePorps, ReEntryDeliveryProps, ReentryOTPProps, ReportePagoTotal, ReportNoveltyFileArrayProps, RuteByCodeGuide, RuteInitPorps, SendOrderArrayProps, SendOrderProps, SendOTOPProps, TokenProducts, ValidateCediQRResponse, ValidateCodeOTPProps } from "./DetailsGuide";
+import { AceptationOrderDetails, Cause, DataUploadFIlePprops, Document, EvidenciaOTPItemOTP, GuideDetails, ListAceptationGuide, ListInfOTP, NoveltyRefusedProps, NovletyOrder, PaymentsByInvoicePorps, ReEntryDeliveryProps, ReentryOTPProps, ReportePagoTotal, ReportNoveltyFileArrayProps, RuteByCodeGuide, RuteInitPorps, SendOrderArrayProps, SendOrderProps, SendOTOPProps, TokenProducts, ValidateCediQRResponse, ValidateCodeOTPProps } from "./DetailsGuide";
 
 export interface DetailsRepository {
   listGuide: (guide: number, token: string) => Promise<ApiResponse<GuideDetails>>;
@@ -16,7 +16,7 @@ export interface DetailsRepository {
   sendOrderArray: (data: SendOrderArrayProps[], token: string) => Promise<any>;
   reportNoveltyFileArray: (data: ReportNoveltyFileArrayProps, token: string) => Promise<any>;
   novletyOrderByParams: (orderId: number, token: string) => Promise<ApiResponse<NovletyOrder>>;
-  listTypeDetails: (type: string, token: string) => Promise<ApiResponse<Cause>>; 
+  listTypeDetails: (type: string, token: string) => Promise<ApiResponse<Cause>>;
   novletyOrderByids: (orderId: any, token: string) => Promise<ApiResponse<NovletyOrder>>;
   sendOTP: (data: SendOTOPProps, token: string) => Promise<any>;
   reentryOTP: (data: ReentryOTPProps, token: string) => Promise<any>;
@@ -31,5 +31,6 @@ export interface DetailsRepository {
   reEntryDelivery: (data: ReEntryDeliveryProps, token: string) => Promise<any>;
   sendOTPNotPayment: (data: SendOTOPProps, token: string) => Promise<any>;
   reentryOTPNotPayment: (data: ReentryOTPProps, token: string) => Promise<any>;
+  listAceptationOrderDetails: (token: string, guide: number, codigo: string) => Promise<ApiResponse<AceptationOrderDetails[]>>;
 
 }

@@ -511,4 +511,17 @@ export const detailsRepositoryImpl: DetailsRepository = {
     }
   },
 
+  async listAceptationOrderDetails(token: string, guide: number, codigo_pedido: string) {
+    try {
+      const response = await authApi.get(`${API_ROUTES.GET_ORDER_ACEPT}?codigo_guia=${guide}&codigo_pedido=${codigo_pedido}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
 }

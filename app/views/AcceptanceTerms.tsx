@@ -1,4 +1,6 @@
 import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { Order } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
+import { ViewDetailsPorductsOrder } from '@/src/ui/acceptation-terminal/view-details-products-order/ViewDetailsPorductsOrder';
 import { ViewAcceptationTerms } from '@/src/ui/acceptation-terminal/ViewAcceptationTerms';
 import { Stack, useLocalSearchParams } from 'expo-router';
 
@@ -12,6 +14,12 @@ export default function AcceptanceTermsScreen() {
     const routeStartedBotton = params.routeStarted as string;
     const documentMeico = params.documentMeico as string;
     const detailsCounterDelivery = params.detailsCounterDelivery as string;
+    const detailsOrder = params.orderDetails as string;
+    const orderParam = params.order as string;
+    const OrderArray: Order = orderParam ? JSON.parse(orderParam) : {} as Order;
+
+    console.log("detailsOrder: ",detailsOrder);
+    
     return (
         <>
             <Stack.Screen
@@ -20,18 +28,44 @@ export default function AcceptanceTermsScreen() {
                     headerShown: false
                 }}
             />
-            
-            <ViewAcceptationTerms
-                token={token || ""}
-                onSubmit={async ({ guide, token }) => { }}
-                numberGuide={Number(numberGuide)}
-                isSelectInvocies={isSelectInvocies}
-                documentMeico={documentMeico}
-                isCountryDelivery={false}
-                IsGoBack={false}
-                detailsCounterDelivery={ false}
 
-            />
+            {(() => {
+
+                if (!detailsOrder) {
+                    return (
+                        <ViewAcceptationTerms
+                            token={token || ""}
+                            onSubmit={async ({ guide, token }) => { }}
+                            numberGuide={Number(numberGuide)}
+                            isSelectInvocies={isSelectInvocies}
+                            documentMeico={documentMeico}
+                            isCountryDelivery={false}
+                            IsGoBack={false}
+                            detailsCounterDelivery={false}
+
+                        />
+
+                    )
+                }
+
+                if (detailsOrder) {
+                    return (
+                        <ViewDetailsPorductsOrder
+                            token={token || ""}
+                            onSubmit={async ({ guide, token }) => { }}
+                            numberGuide={Number(numberGuide)}
+                            isSelectInvocies={isSelectInvocies}
+                            documentMeico={documentMeico}
+                            isCountryDelivery={false}
+                            IsGoBack={false}
+                            detailsCounterDelivery={false}
+                            detailsOrder={detailsOrder}
+                            OrderArray={OrderArray}
+
+                        />
+                    )
+                }
+            })()}
         </>
     );
 }

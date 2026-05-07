@@ -1,5 +1,4 @@
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { SecondaryButtonCancel } from '@/components/buttons/SecondaryButtonCancel';
 import { ExcetptionModalProducts } from '@/components/generals/ExcetptionModalProducts';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
@@ -8,7 +7,6 @@ import { GuideDetailSkeleton } from '@/components/skeleton/GuideDetailSkeleton';
 import { ThemedView } from '@/components/themed-view';
 import { CustomerAddress, GuideResponse, Order } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
-import { MaterialIcons } from '@expo/vector-icons';
 
 import { useRouter } from 'expo-router';
 import * as SecureStore from "expo-secure-store";
@@ -26,9 +24,24 @@ interface InfoInvoiceFormProps {
     IsGoBack?: boolean;
     routeStartedBotton?: string;
     detailsCounterDelivery?: boolean;
+    detailsOrder?: string;
+    OrderArray?: Order;
+
 }
 
-export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton, detailsCounterDelivery }: InfoInvoiceFormProps) {
+export function ViewDetailsPorductsOrder({
+    token = "",
+    onSubmit,
+    numberGuide,
+    isSelectInvocies,
+    documentMeico,
+    isCountryDelivery = false,
+    IsGoBack = false,
+    routeStartedBotton,
+    detailsCounterDelivery,
+    detailsOrder,
+    OrderArray
+}: InfoInvoiceFormProps) {
     const [guide, setGuide] = useState<GuideResponse | null>(null);
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
@@ -204,37 +217,16 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
         }
     };
 
-    const handleExit = async () => {
+   const handleExit = async () => {
         setLoading(true);
-        await SecureStore.deleteItemAsync('user_token');
-        setTimeout(() => {
-            setLoading(false);
-            router.replace('/auth/login');
-        }, 1200);
+        router.push({
+            pathname: '/views/AcceptanceTerms' as any,
+            params: {
+                numberGuide: Number(numberGuide),
+                token: String(token)
+            }
+        });
     };
-
-
-    const reportNovelty = (pedido: Order) => {
-        try {
-            router.push({
-                pathname: '/views/AcceptanceTerms' as any,
-                params: {
-                    numberGuide: Number(numberGuide),
-                    token: String(token),
-                    orderDetails: 'true',
-                    OrderArray: encodeURIComponent(JSON.stringify(pedido))
-                }
-            });
-            setLoading(true);
-
-        } catch (error) {
-            setModalTitle("¡Error!");
-            setModalMessage("Ocurrio un error inesperado.");
-            setModalVisible(true);
-        } finally {
-            setLoading(false);
-        }
-    }
     const handleAceptataionOrder = async (pedido?: Order) => {
         try {
             setLoading(true);
@@ -283,7 +275,6 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
     };
 
     const pedidosFlat = guide?.details?.flatMap(d => d.pedidos) || [];
-    let statusIcon = 'success';
 
     return (
         <ThemedView style={styles.container}>
@@ -304,7 +295,7 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
                 </TouchableOpacity>
 
                 <Text style={styles.headerTitle}>
-                    Validación de documento de transporte
+                    Reportar novedad
                 </Text>
             </View>
 
@@ -340,29 +331,10 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
                                 <View key={`${pedido.codigo + index}`} style={styles.secondCard}>
 
                                     <View style={styles.orderHeader}>
+                                        <Text style={styles.orderTitle}>
+                                            Pedido {pedido.codigo || ""}
+                                        </Text>
 
-                                        {/* IZQUIERDA */}
-                                        <View style={styles.orderLeft}>
-                                            {(statusIcon === 'success') ? (
-                                                <View style={styles.statusDot}>
-                                                    <MaterialIcons name="check" size={9} color="#FFFFFF" />
-                                                </View>
-                                            ) : (statusIcon === 'error') ? (
-                                                <View style={styles.errorDot}>
-                                                    <MaterialIcons name="close" size={9} color="#FFFFFF" />
-                                                </View>
-                                            ) : (statusIcon === 'warning') ? (
-                                                <View style={styles.warningDot}>
-                                                    <MaterialIcons name="warning" size={12} color="#FFA400" />
-                                                </View>
-                                            ) : null}
-
-                                            <Text style={styles.orderTitle}>
-                                                Pedido {pedido.codigo || ""}
-                                            </Text>
-                                        </View>
-
-                                        {/* DERECHA */}
                                         <Text style={styles.productCount}>
                                             {pedido.detalles?.length || 0} productos
                                         </Text>
@@ -390,30 +362,6 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
                                         ))}
                                     </View>
 
-                                    {/* BOTONES POR CARD */}
-                                    <View style={styles.buttonsRow}>
-                                        <SecondaryButtonCancel
-                                            title="Reporatar Novedad"
-                                            onPress={() => {
-                                                reportNovelty(pedido)
-                                            }}
-                                            disabled={false}
-                                            width={160}
-                                            height={40}
-                                            fontSize={14}
-                                        />
-
-                                        <PrimaryButton
-                                            title="Aceptar pedido"
-                                            onPress={async () => {
-                                                await handleAceptataionOrder(pedido);
-                                            }}
-                                            disabled={false}
-                                            width={160}
-                                            height={40}
-                                            fontSize={14}
-                                        />
-                                    </View>
                                 </View>
                             ))}
                         </ScrollView>
@@ -434,15 +382,6 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
                             height={43}
                         />
 
-                        <SecondaryButtonCancel
-                            title="Rechazar carga"
-                            onPress={handleSubmitReject}
-                            disabled={false}
-                            width={328}
-                            height={43}
-                            borderColor={'#C62828'}
-                            colorButtonText={'#C62828'}
-                        />
                     </>
                 </View>
             )}
@@ -518,7 +457,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         width: width,
         height: height,
-        backgroundColor: '#F9F9FA',
+        backgroundColor: '#0ec70e',
     },
     headerContainer: {
         width: '100%',
@@ -671,44 +610,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         marginTop: 10,
         gap: 10,
-    },
-    statusDot: {
-        borderRadius: 6.5,
-        backgroundColor: '#1F9144',
-        borderWidth: 2,
-        borderColor: '#1F9144',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 8,
-    },
-
-    warningDot: {
-        width: 20,
-        height: 20,
-        borderRadius: 6.5,
-        backgroundColor: 'transparent',
-        borderWidth: 2,
-        borderColor: 'transparent',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 8,
-    },
-
-    orderLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-
-    errorDot: {
-        width: 13,
-        height: 13,
-        borderRadius: 6.5,
-        backgroundColor: '#FF3B30',
-        borderWidth: 2,
-        borderColor: '#FF3B30',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 8,
     },
 });
 

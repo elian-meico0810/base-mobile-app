@@ -242,7 +242,6 @@ export function ReportNoveltyScreen({
                                         style={[
                                             styles.unitsPlaceholder,
                                             focusedIndex === index && styles.unitsPlaceholderFocused,
-                                            units[index] !== "" && styles.unitsPlaceholderFilled
                                         ]}
                                         value={units[index]}
                                         onChangeText={(text) => handleUnitChange(text, index)}

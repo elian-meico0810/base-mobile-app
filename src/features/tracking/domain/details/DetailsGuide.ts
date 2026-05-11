@@ -303,6 +303,8 @@ export interface OrderGroup {
   codigo_cliente: string;
   codigo_guia: string;
   fecha_validacion: string;
+  porcentaje_dfr: string;
+  dfr: string;
   estado_pedido: StatusOrder;
   productos: ProductoPedido[];
 }
@@ -314,6 +316,10 @@ export interface ProductoPedido {
   unidades_solicitadas: number;
   unidades_rechazadas: number;
   unidades_entregadas: number;
+  total_entregado: string;
+  total_impuesto_entrega: string;
+  valor_base_producto: string;
+  total_impuestos: string;
 }
 
 

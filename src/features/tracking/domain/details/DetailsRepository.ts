@@ -1,5 +1,5 @@
 import { ApiResponse } from "@/src/features/auth/domain/ApiResponse";
-import { AceptationOrderDetails, Cause, DataUploadFIlePprops, Document, EvidenciaOTPItemOTP, GuideDetails, ListAceptationGuide, ListInfOTP, NoveltyRefusedProps, NovletyOrder, PaymentsByInvoicePorps, ReEntryDeliveryProps, ReentryOTPProps, ReportePagoTotal, ReportNoveltyFileArrayProps, RuteByCodeGuide, RuteInitPorps, SendOrderArrayProps, SendOrderProps, SendOTOPProps, TokenProducts, ValidateCediQRResponse, ValidateCodeOTPProps } from "./DetailsGuide";
+import { Cause, DataUploadFIlePprops, Document, EvidenciaOTPItemOTP, GuideDetails, ListAceptationGuide, ListInfOTP, NoveltyRefusedProps, NovletyOrder, OrderGroup, PaymentsByInvoicePorps, ReEntryDeliveryProps, ReentryOTPProps, ReportePagoTotal, ReportNoveltyFileArrayProps, RuteByCodeGuide, RuteInitPorps, SendOrderArrayProps, SendOrderProps, SendOTOPProps, TokenProducts, ValidateCediQRResponse, ValidateCodeOTPProps } from "./DetailsGuide";
 
 export interface DetailsRepository {
   listGuide: (guide: number, token: string) => Promise<ApiResponse<GuideDetails>>;
@@ -31,6 +31,6 @@ export interface DetailsRepository {
   reEntryDelivery: (data: ReEntryDeliveryProps, token: string) => Promise<any>;
   sendOTPNotPayment: (data: SendOTOPProps, token: string) => Promise<any>;
   reentryOTPNotPayment: (data: ReentryOTPProps, token: string) => Promise<any>;
-  listAceptationOrderDetails: (token: string, guide: number, codigo: string) => Promise<ApiResponse<AceptationOrderDetails[]>>;
+  listAceptationOrderDetails: (token: string, guide: number, codigo: string) => Promise<ApiResponse<OrderGroup[]>>;
 
 }

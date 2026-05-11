@@ -1,5 +1,4 @@
-import { GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
-import { Order } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
+import { GuideDetails, OrderGroup } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { ViewDetailsPorductsOrder } from '@/src/ui/acceptation-terminal/view-details-products-order/ViewDetailsPorductsOrder';
 import { ViewAcceptationTerms } from '@/src/ui/acceptation-terminal/ViewAcceptationTerms';
 import { Stack, useLocalSearchParams } from 'expo-router';
@@ -16,7 +15,7 @@ export default function AcceptanceTermsScreen() {
     const detailsCounterDelivery = params.detailsCounterDelivery as string;
     const detailsOrder = params.orderDetails as string;
     const orderParam = params.order as string;
-    const OrderArray: Order = orderParam ? JSON.parse(orderParam) : {} as Order;
+    const OrderArray: OrderGroup = orderParam ? JSON.parse(orderParam) : {} as OrderGroup;
     const isEjecute = params.isEjecute as string;
 
     return (

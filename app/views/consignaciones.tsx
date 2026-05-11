@@ -324,6 +324,12 @@ export default function ConsignacionesScreen() {
     }
   };
 
+  const handleRemoveEvidence = (evidenceId: string, index: number) => {
+    const updatedPhotos = multiplePhotos.filter(photo => photo.id !== evidenceId);
+    setMultiplePhotos(updatedPhotos);
+
+  };
+
   if (loading) {
     return (
       <>
@@ -488,6 +494,7 @@ export default function ConsignacionesScreen() {
             value={valueInput}
             onConfirmation={consignmentSubmit}
             isLoading={isSubmitting}
+            onRemoveEvidence={handleRemoveEvidence}
           />
         )}
 

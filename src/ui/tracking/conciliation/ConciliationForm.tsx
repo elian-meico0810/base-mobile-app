@@ -44,7 +44,14 @@ export function ConciliationForm({
     [],
   );
 
-  const isSuccess = data?.recaudo_completo ?? false;
+
+  // Se suma el valor de los productos rechazados poder igualar el valor a recaudar 
+  let value = Number(data?.valor_recaudado ?? 0) + Number(data?.total_rechazado ?? 0);
+  let isSuccess = false
+  if (data && value >= Number(data?.valor_total ?? 0)) {
+    isSuccess = true
+  }
+  // const isSuccess = data?.recaudo_completo ?? false;
 
   useEffect(() => {
     loadConciliation();
@@ -71,8 +78,8 @@ export function ConciliationForm({
   const handelClick = async () => {
     try {
       console.log("Finalizar ruta")
-      setStatusValue(StatusInvoice.CLOSE);      
-      await finshRoute();   
+      setStatusValue(StatusInvoice.CLOSE);
+      await finshRoute();
     } catch (e) {
       console.log("Error conciliation:", e);
       setError(true);

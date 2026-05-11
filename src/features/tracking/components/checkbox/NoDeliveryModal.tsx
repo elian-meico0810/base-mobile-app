@@ -62,36 +62,50 @@ export function NoDeliveryModal({
         <TouchableOpacity style={styles.closeButton} onPress={onClose}>
           <Text style={styles.closeText}>×</Text>
         </TouchableOpacity>
+
+        {/* Títulos fuera del ScrollView para que siempre sean visibles */}
         <View style={styles.titleContainer}>
           <Text style={styles.title}>Motivo de la no entrega</Text>
           <Text style={styles.subTitle}>Selecciona una causal para continuar</Text>
         </View>
-        <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent}>
-          {causes.map(cause => (
-            <TouchableOpacity
-              key={cause.codigo}
-              style={[
-                styles.item,
-                selected?.codigo === cause.codigo && styles.itemSelected
-              ]}
-              onPress={() => handleSelect(cause)}
-              disabled={loading}
-            >
-              <View style={styles.itemRow}>
-                <View style={styles.itemTextBox}>
-                  <Text style={styles.itemTitle}>{cause.nombre}</Text>
-                  {cause.requiereEvidencia && (
-                    <View style={styles.tag}>
-                      <Text style={styles.tagText}>Este motivo requiere carga de evidencia</Text>
-                    </View>
-                  )}
+        <View style={styles.listContainer}>
+
+          {/* ScrollView que envuelve TODAS las cápsulas y el botón */}
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={true}
+          >
+            {causes.map((cause, index) => (
+              <TouchableOpacity
+                key={`${cause.codigo}-${index}`}
+                style={[
+                  styles.item,
+                  selected?.codigo === cause.codigo && styles.itemSelected
+                ]}
+                onPress={() => handleSelect(cause)}
+                disabled={loading}
+              >
+                <View style={styles.itemRow}>
+                  <View style={styles.itemTextBox}>
+                    <Text style={styles.itemTitle}>{cause.nombre}</Text>
+                    {cause.requiereEvidencia && (
+                      <View style={styles.tag}>
+                        <Text style={styles.tagText}>Este motivo requiere carga de evidencia</Text>
+                      </View>
+                    )}
+                  </View>
+                  <View style={styles.checkbox}>
+                    {selected?.codigo === cause.codigo && <View style={styles.checkboxInner} />}
+                  </View>
                 </View>
-                <View style={styles.checkbox}>
-                  {selected?.codigo === cause.codigo && <View style={styles.checkboxInner} />}
-                </View>
-              </View>
-            </TouchableOpacity>
-          ))}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Botón dentro del ScrollView para que también sea desplazable si es necesario */}
+        <View style={styles.buttonContainer}>
           <PrimaryButton
             title="Continuar"
             onPress={handleSubmit}
@@ -99,7 +113,7 @@ export function NoDeliveryModal({
             width={328}
             height={43}
           />
-        </ScrollView>
+        </View>
       </View>
     </View>
   );
@@ -125,9 +139,10 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
   },
   container: {
-    position: "relative",
-    padding: 16,
-    zIndex: 10000,
+  position: "relative",
+  padding: 16,
+  zIndex: 10000,
+  flexDirection: "column",
   },
   track: {
     position: "absolute",
@@ -152,7 +167,8 @@ const styles = StyleSheet.create({
     fontWeight: "300",
   },
   titleContainer: {
-    marginBottom: 12,
+    marginBottom: 16,
+    zIndex: 1,
   },
   title: {
     fontFamily: "Rubik",
@@ -167,13 +183,10 @@ const styles = StyleSheet.create({
     marginTop: 8,
     color: "#4B5363",
   },
-  scrollContainer: {
-    flex: 1,
-    width: "100%",
-  },
   scrollContent: {
     gap: 12,
     paddingVertical: 8,
+    paddingBottom: 16,
   },
   item: {
     width: "100%",
@@ -236,4 +249,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#164194",
     borderRadius: 6,
   },
-})
+  buttonContainer: {
+      alignItems: "center",
+  paddingBottom: 34,
+  },
+  scrollView: {
+    width: "100%",
+  },
+
+  listContainer: {
+    flex: 1,
+  width: "100%",
+  marginBottom: 10,
+  },
+});

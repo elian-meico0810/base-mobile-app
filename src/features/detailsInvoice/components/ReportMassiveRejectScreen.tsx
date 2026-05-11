@@ -4,6 +4,7 @@ import {
     Animated,
     Keyboard,
     Platform,
+    ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -72,37 +73,42 @@ export function ReportMassiveRejectScreen({
         <View style={styles.overlay}>
             <TouchableWithoutFeedback onPress={onClose}>
                 <View style={styles.touchableOverlay}>
-
                     <TouchableOpacity
                         style={styles.backgroundOverlay}
                         activeOpacity={1}
                         onPress={onClose}
                     />
 
-                    <View style={[styles.container,
-                    {
-                        width,
-                        height,
-                        marginBottom: keyboardHeight
-                    }]}>
-
-                        <View style={styles.track} />
-
+                    <Animated.View 
+                        style={[
+                            styles.container,
+                            {
+                                width,
+                                height,
+                                marginBottom: keyboardHeight
+                            }
+                        ]}
+                    >
+                        {/* Indicador visual (barra en la parte superior) */}
+                        <View style={styles.handleBar} />
+                        
                         <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                             <Text style={styles.closeText}>✕</Text>
                         </TouchableOpacity>
-
+                        
                         <Text style={styles.title}>{title}</Text>
-
                         <Text style={styles.subtitle}>
                             Selecciona el motivo del rechazo del pedido
                         </Text>
 
-                        <View style={styles.list}>
+                        {/* ScrollView para la lista de causas */}
+                        <ScrollView 
+                            style={styles.scrollView}
+                            contentContainerStyle={styles.scrollContent}
+                            showsVerticalScrollIndicator={true}
+                        >
                             {showTypeDetails?.map((item, index) => {
-
                                 const selected = selectedIndex === index;
-
                                 return (
                                     <TouchableOpacity
                                         key={index}
@@ -116,15 +122,15 @@ export function ReportMassiveRejectScreen({
                                         ]}>
                                             {selected && <View style={styles.radioInner} />}
                                         </View>
-
                                         <Text style={styles.reasonText}>
                                             {item.nombre}
                                         </Text>
                                     </TouchableOpacity>
                                 );
                             })}
-                        </View>
+                        </ScrollView>
 
+                        {/* Botón fijo */}
                         <View style={styles.buttonRow}>
                             <PrimaryButton
                                 title="Continuar"
@@ -134,8 +140,7 @@ export function ReportMassiveRejectScreen({
                                 height={43}
                             />
                         </View>
-
-                    </View>
+                    </Animated.View>
                 </View>
             </TouchableWithoutFeedback>
         </View>
@@ -152,41 +157,40 @@ const styles = StyleSheet.create({
         justifyContent: "flex-end",
         alignItems: "center",
     },
-
     backgroundOverlay: {
         ...StyleSheet.absoluteFillObject,
         backgroundColor: "rgba(0,0,0,0.35)",
     },
-
     container: {
-        width: "100%",
         backgroundColor: "#F9F9FA",
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
-        paddingTop: 20,
+        flexDirection: "column",
+        position: "relative",
+        paddingTop: 12,
         paddingHorizontal: 16,
-        paddingBottom: 40,
     },
-
     title: {
         fontFamily: "Rubik",
         fontSize: 20,
         fontWeight: "700",
         color: "#141D32",
         marginBottom: 4,
+        marginTop: 8,
     },
-
     subtitle: {
         fontFamily: "Rubik",
         fontSize: 14,
         color: "#788095",
         marginBottom: 16,
     },
-
-    list: {
-        gap: 10,
+    scrollView: {
+        flex: 1,
     },
-
+    scrollContent: {
+        gap: 10,
+        paddingBottom: 16,
+    },
     row: {
         flexDirection: "row",
         alignItems: "center",
@@ -195,16 +199,16 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#E0E0E0",
         paddingHorizontal: 16,
-        height: 56,
+        minHeight: 56,
     },
-
     reasonText: {
         fontFamily: "Rubik",
         fontSize: 14,
         fontWeight: "500",
         color: "#141D32",
+        flex: 1,
+        flexWrap: "wrap",
     },
-
     radioOuter: {
         width: 20,
         height: 20,
@@ -216,33 +220,30 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         backgroundColor: "#FFF",
     },
-
     radioOuterSelected: {
         borderColor: "#1F9144",
     },
-
     radioInner: {
         width: 10,
         height: 10,
         borderRadius: 5,
         backgroundColor: "#1F9144",
     },
-
     closeButton: {
         position: "absolute",
-        top: 18,
-        right: 18,
+        top: 16,
+        right: 16,
+        zIndex: 2,
     },
-
     closeText: {
-        fontSize: 18,
+        fontSize: 20,
         color: "#788095",
-        fontWeight: "600",
+        fontWeight: "400",
     },
-
     buttonRow: {
         alignItems: "center",
-        marginTop: 24,
+        paddingTop: 20,
+        paddingBottom: 50,
     },
     touchableOverlay: {
         flex: 1,
@@ -250,17 +251,12 @@ const styles = StyleSheet.create({
         justifyContent: "flex-end",
         alignItems: "center",
     },
-    track: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: "#F9F9FA",
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-
-        elevation: 8,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 6,
+    handleBar: {
+        width: 36,
+        height: 5,
+        backgroundColor: "#E0E0E0",
+        borderRadius: 3,
+        alignSelf: "center",
+        marginBottom: 16,
     },
 });
-

@@ -140,6 +140,7 @@ export function ViewSelectAllAnticipe({ initialGuide, token = "", onSubmit, numb
                 setModalVisible(true);
                 return;
             }
+
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrió un error inesperado.");
@@ -375,6 +376,7 @@ export function ViewSelectAllAnticipe({ initialGuide, token = "", onSubmit, numb
             const hasValidOptionRefused = showOptionRefused &&
                 showOptionRefused !== OptionsRefusedEnum.TIENDA;
             if (hasValidData && (hasValidStatusDelivery || hasValidOptionRefused)) {
+
                 const facturasArray: CreateEntregaProps[] = [];
                 let responses: any[] = [];
                 if (!activateSelect && selectedMultipleInvoices[0]?.facturas && selectedMultipleInvoices[0].facturas.length > 0) {
@@ -431,6 +433,7 @@ export function ViewSelectAllAnticipe({ initialGuide, token = "", onSubmit, numb
                                 });
                             }
                         });
+
                         setSelectedMultipleInvoices([]);
                         const facturaData = {
                             ruta: String(numberGuide),
@@ -532,13 +535,11 @@ export function ViewSelectAllAnticipe({ initialGuide, token = "", onSubmit, numb
         }
     }, [selectedMultipleInvoices]);
     const isSmallScreen = height <= 780;
-    // console.log("validateCheckboxlength: ",validateCheckboxlength);
-    // console.log("conceptDelivery: ",conceptDelivery);
-    // console.log("guide?.facturas: ",guide?.facturas);
+
 
     return (
         <ThemedView style={styles.container}>
-            <NetworkStatus />
+            <NetworkStatus /> 
 
             {/* Fondo gris */}
             <View style={styles.background} />

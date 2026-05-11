@@ -197,7 +197,8 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
               pathname: '/views/AcceptanceTerms' as any,
               params: {
                 numberGuide: Number(guide) ? Number(guide) : Number(tokenData?.numeroGuia),
-                token: String(token)
+                token: String(token),
+                isEjecute:'true'
               }
             });
           } else {

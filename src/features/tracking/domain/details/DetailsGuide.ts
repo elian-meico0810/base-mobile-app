@@ -296,17 +296,38 @@ export interface ReEntryDeliveryProps {
   reporgrmacion: string;
 }
 
-export interface AceptationOrderDetails {
+export interface OrderGroup {
+  codigo: string;
+  bodega: string;
+  canal: string;
+  codigo_cliente: string;
+  codigo_guia: string;
+  fecha_validacion: string;
+  estado_pedido: StatusOrder;
+  productos: ProductoPedido[];
+}
+
+export interface ProductoPedido {
   id: number;
   linea: number;
-  aceptacion_pedido: AcepttionOrder;
   producto: ProductoAceptacion;
   unidades_solicitadas: number;
   unidades_rechazadas: number;
   unidades_entregadas: number;
 }
 
-export interface AcepttionOrder {
+
+export interface AceptationOrderDetails {
+  id: number;
+  linea: number;
+  aceptacion_pedido: AceptationOrder;
+  producto: ProductoAceptacion;
+  unidades_solicitadas: number;
+  unidades_rechazadas: number;
+  unidades_entregadas: number;
+}
+
+export interface AceptationOrder {
   id: number;
   codigo: string;
   bodega: string;
@@ -314,11 +335,11 @@ export interface AcepttionOrder {
   codigo_cliente: string;
   codigo_guia: string;
   fecha_validacion: string;
-  estado_pedido: statusOrder;
+  estado_pedido: StatusOrder;
 }
 
 
-export interface statusOrder {
+export interface StatusOrder {
   id: number;
   tipo: number;
   nombre: string;

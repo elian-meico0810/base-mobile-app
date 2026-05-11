@@ -1,3 +1,5 @@
+import { TopErrorAlert } from '@/components/alerts/TopErrorAlert';
+import { TopSuccessAlert } from '@/components/alerts/TopSuccessAlert';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButtonCancel } from '@/components/buttons/SecondaryButtonCancel';
 import { ExcetptionModalProducts } from '@/components/generals/ExcetptionModalProducts';
@@ -6,7 +8,9 @@ import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { GuideDetailSkeleton } from '@/components/skeleton/GuideDetailSkeleton';
 import { ThemedView } from '@/components/themed-view';
-import { CustomerAddress, GuideResponse, Order } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
+import { TypeStatusEnum } from '@/src/constants/GuideStates';
+import { OrderGroup } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { CustomerAddress } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
 import { MaterialIcons } from '@expo/vector-icons';
 
@@ -26,32 +30,41 @@ interface InfoInvoiceFormProps {
     IsGoBack?: boolean;
     routeStartedBotton?: string;
     detailsCounterDelivery?: boolean;
+    isEjecute?: string | null
 }
 
-export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSelectInvocies, documentMeico, isCountryDelivery = false, IsGoBack = false, routeStartedBotton, detailsCounterDelivery }: InfoInvoiceFormProps) {
-    const [guide, setGuide] = useState<GuideResponse | null>(null);
+export function ViewAcceptationTerms({
+    token = "",
+    onSubmit,
+    numberGuide,
+    isSelectInvocies,
+    documentMeico,
+    isCountryDelivery = false,
+    IsGoBack = false,
+    routeStartedBotton,
+    detailsCounterDelivery,
+    isEjecute = null
+}: InfoInvoiceFormProps) {
+    const [guideOrder, setGuideOrder] = useState<OrderGroup[]>([]);
     const [loading, setLoading] = useState(false);
-    const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
     const [modalVisible, setModalVisible] = useState(false);
     const [sasToken, setSasToken] = useState("");
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
-    const [allowBack, setAllowBack] = useState(false);
-    const [validateException, setValidateException] = useState(false);
     const [ejecuteData, setEjecuteData] = useState(false);
-    const [showSuccessQRp, setShowSuccessQRP] = useState(false);
     const [modalVisibleValidate, setModalVisibleValidate,] = useState(false);
     const [modalTitleValidate, setModalTitleValidate] = useState("");
     const [modalMessageValidate, setModalMessageValidate] = useState("");
     const [modalButtonLabelValidate, setModalButtonLabelValidate] = useState("Entendido");
-    const [showErrorQRP, setShowErrorQRP] = useState(false);
-    const [showErrorQRPMessage, setShowErrorQRPMessage] = useState("Código OTP incorrecto");
     const [uploadPhotoNoDelivery, setUploadPhotoNoDelivery] = useState(false);
     const [noDeliveryFiles, setNoDeliveryFiles] = useState<string[]>([]);
     const [confirmNoDelivery, setConfirmNoDelivery] = useState(false);
     const [keyboardVisible, setKeyboardVisible] = useState(false);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const [showError, setsErrorQRP] = useState(false);
+    const [showSuccess, setSuccess] = useState(false);
+
 
     const btnRef = useRef<any>(null);
     const router = useRouter();
@@ -114,11 +127,11 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
 
     const listTotalsGuide = async () => {
         try {
-            const respones = await invoiceRepositoryImpl.listTotalsGuide(String(numberGuide), token);
+            const respones = await invoiceRepositoryImpl.listTotalsGuide(String(numberGuide), token, isEjecute);
             if (respones?.statusCode === 200 && respones.data) {
 
                 setEjecuteData(true);
-                setGuide(respones.data as GuideResponse);
+                setGuideOrder(respones.data as OrderGroup[]);
             }
 
         } catch (error: any) {
@@ -214,8 +227,9 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
     };
 
 
-    const reportNovelty = (pedido: Order) => {
+    const reportNovelty = (pedido: OrderGroup) => {
         try {
+
             router.push({
                 pathname: '/views/AcceptanceTerms' as any,
                 params: {
@@ -235,10 +249,10 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
             setLoading(false);
         }
     }
-    const handleAceptataionOrder = async (pedido?: Order) => {
+
+    const handleAceptataionOrder = async (pedido?: OrderGroup) => {
         try {
             setLoading(true);
-
             const response = await invoiceRepositoryImpl.aceptationOrder(
                 {
                     codigo: String(pedido?.codigo),
@@ -247,35 +261,34 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
                     codigo_cliente: String(pedido?.codigo_cliente),
                     codigo_guia: String(numberGuide),
 
-                    producto: pedido?.detalles?.map((item) => ({
+                    producto: pedido?.productos?.map((item) => ({
                         linea: item.linea,
 
                         CodigoProducto: item.producto?.codigo
                             ? String(item.producto.codigo)
                             : '',
 
-                        DescripcionProducto: item.producto?.nombre ?? null,
-                        EAN: null,
+                        DescripcionProducto:
+                            item.producto?.nombre ?? null,
 
-                        unidades_solicitadas: item.unidadesSolicitadas ?? 0,
+                        EAN: item.producto?.ean ?? null,
+
+                        unidades_solicitadas:
+                            item.unidades_solicitadas ?? 0,
+
                         unidades_rechazadas: 0,
                     })) ?? []
-                }, token);
+                },
+                token
+            );
 
             if (response?.statusCode === 200) {
-                setModalTitle("¡Procesado!");
-                setModalMessage(`Pedido procesados exitosamente.`);
-                setModalVisible(true);
-                return;
+                listTotalsGuide();
+                setsErrorQRP(false);
+                setSuccess(true);
             } else {
-                setModalTitle("¡Alerta!");
-                setModalMessage("Problemas al guardar la novedad del pedido.");
-                setModalVisible(true);
-
-                setTimeout(() => {
-                    setModalVisible(false);
-                }, 6000);
-                return;
+                setSuccess(false);
+                setsErrorQRP(true);
             }
         } catch (error) {
             setModalTitle("¡Alerta!");
@@ -291,7 +304,7 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
         }
     };
 
-    const pedidosFlat = guide?.details?.flatMap(d => d.pedidos) || [];
+    // const pedidosFlat = guide?.details?.flatMap(d => d.pedidos) || [];
     let statusIcon = 'success';
 
     return (
@@ -319,7 +332,7 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
 
             {/* Card blanco centrado */}
 
-            {!guide ? (
+            {guideOrder?.length == 0 ? (
                 <GuideDetailSkeleton />
             ) : (
                 <>
@@ -333,11 +346,7 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
                                     Documento de transporte {numberGuide}
                                 </Text>
                                 <Text style={styles.subTitle}>
-                                    {
-                                        guide?.details?.reduce((total, address) => {
-                                            return total + (address.pedidos?.length ?? 0);
-                                        }, 0) ?? 0
-                                    } Pedidos
+                                    {guideOrder?.length ?? 0} Pedidos
                                 </Text>
                             </View>
                         </View>
@@ -345,22 +354,25 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
 
                     <View style={styles.secondCardTwo}>
                         <ScrollView>
-                            {pedidosFlat.map((pedido, index) => (
-                                <View key={`${pedido.codigo + index}`} style={styles.secondCard}>
+                            {guideOrder.map((pedido, index) => (
+                                <View
+                                    key={`${pedido.codigo + index}`}
+                                    style={styles.secondCard}
+                                >
 
                                     <View style={styles.orderHeader}>
 
                                         {/* IZQUIERDA */}
                                         <View style={styles.orderLeft}>
-                                            {(statusIcon === 'success') ? (
+                                            {(pedido?.estado_pedido.codigo === TypeStatusEnum.EST_PEDIDO_ACEPT) ? (
                                                 <View style={styles.statusDot}>
                                                     <MaterialIcons name="check" size={9} color="#FFFFFF" />
                                                 </View>
-                                            ) : (statusIcon === 'error') ? (
+                                            ) : (pedido?.estado_pedido.codigo === TypeStatusEnum.EST_PEDI_RECH) ? (
                                                 <View style={styles.errorDot}>
                                                     <MaterialIcons name="close" size={9} color="#FFFFFF" />
                                                 </View>
-                                            ) : (statusIcon === 'warning') ? (
+                                            ) : (pedido?.estado_pedido.codigo === TypeStatusEnum.EST_PEDI_ENT_PARC) ? (
                                                 <View style={styles.warningDot}>
                                                     <MaterialIcons name="warning" size={12} color="#FFA400" />
                                                 </View>
@@ -373,19 +385,22 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
 
                                         {/* DERECHA */}
                                         <Text style={styles.productCount}>
-                                            {pedido.detalles?.length || 0} productos
+                                            {pedido.productos?.length || 0} productos
                                         </Text>
                                     </View>
 
                                     <View style={styles.divider} />
 
                                     <View style={styles.gap}>
-                                        {pedido.detalles?.map((item, itemIndex) => (
+                                        {pedido.productos?.map((item, itemIndex) => (
                                             <View
                                                 key={`${item.producto?.codigo + itemIndex}`}
                                                 style={styles.productRow}
                                             >
-                                                <Text numberOfLines={1} style={styles.productName}>
+                                                <Text
+                                                    numberOfLines={1}
+                                                    style={styles.productName}
+                                                >
                                                     {item.producto?.nombre
                                                         ? item.producto.nombre.charAt(0).toUpperCase() +
                                                         item.producto.nombre.slice(1).toLowerCase()
@@ -393,7 +408,7 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
                                                 </Text>
 
                                                 <Text style={styles.units}>
-                                                    {item.unidadesSolicitadas || 0} uds.
+                                                    {item.unidades_solicitadas || 0} uds.
                                                 </Text>
                                             </View>
                                         ))}
@@ -404,7 +419,7 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
                                         <SecondaryButtonCancel
                                             title="Reporatar Novedad"
                                             onPress={() => {
-                                                reportNovelty(pedido)
+                                                reportNovelty(pedido);
                                             }}
                                             disabled={false}
                                             width={160}
@@ -431,7 +446,7 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
                 </>
             )}
 
-            {guide && (
+            {guideOrder?.length > 0 && (
 
                 <View style={[styles.footer, { marginBottom: 10 }]}>
                     <>
@@ -510,6 +525,27 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
                     maxEvidences={1}
                 />
             )}
+
+            {showSuccess && (
+                <TopSuccessAlert
+                    visible={showSuccess}
+                    message="Pedido confirmado"
+                    subtitle={`Las cantidades verificadas coinciden con la factura.`}
+                    onHide={() => setSuccess(false)}
+                    duration={6000}
+                />
+            )}
+
+            {showError && (
+                <TopErrorAlert
+                    visible={showError}
+                    message="Problemas al confirmar el pedido"
+                    subtitle=" No fue posible confirmar el pedido, intenta de nuevo"
+                    onHide={() => setsErrorQRP(false)}
+                    duration={6000}
+                />
+            )}
+
 
             {loading && <LoadingBlue />}
         </ThemedView>

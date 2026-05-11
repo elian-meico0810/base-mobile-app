@@ -17,6 +17,7 @@ export default function AcceptanceTermsScreen() {
     const detailsOrder = params.orderDetails as string;
     const orderParam = params.order as string;
     const OrderArray: Order = orderParam ? JSON.parse(orderParam) : {} as Order;
+    const isEjecute = params.isEjecute as string;
 
     return (
         <>
@@ -40,6 +41,7 @@ export default function AcceptanceTermsScreen() {
                             isCountryDelivery={false}
                             IsGoBack={false}
                             detailsCounterDelivery={false}
+                            isEjecute={isEjecute}
 
                         />
 

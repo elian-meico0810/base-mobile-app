@@ -343,15 +343,19 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
     }
   },
 
-  async listTotalsGuide(guide: string, token: string) {
+  async listTotalsGuide(guide: string, token: string, isEjecute?: string | null
+  ) {
     try {
-      const response = await authApi.get(`${API_ROUTES.GET_TOTALS_GUIDE_DETAILS}${guide}/`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+      const url = isEjecute
+        ? `${API_ROUTES.GET_TOTALS_GUIDE_DETAILS}${guide}/?is_ejecute=${isEjecute}`
+        : `${API_ROUTES.GET_TOTALS_GUIDE_DETAILS}${guide}/`;
+
+      const response = await authApi.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {

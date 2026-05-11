@@ -1,21 +1,35 @@
 import { AntDesign } from "@expo/vector-icons";
 import { useEffect, useRef } from "react";
-import { Animated, StyleSheet, Text, View } from "react-native";
+import {
+    Animated,
+    Pressable,
+    StyleSheet,
+    Text,
+    View
+} from "react-native";
 
 interface Props {
     visible: boolean;
     message: string;
-    subtitle?: string; // Prop opcional para el subtítulo
+    subtitle?: string;
     duration?: number;
     onHide: () => void;
 }
 
-export function TopSuccessAlert({ visible, message, subtitle, duration = 2000, onHide }: Props) {
-    const slideAnim = useRef(new Animated.Value(-80)).current; 
+export function TopSuccessAlert({
+    visible,
+    message,
+    subtitle,
+    duration = 2000,
+    onHide
+}: Props) {
+
+    const slideAnim = useRef(new Animated.Value(-80)).current;
     const opacityAnim = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
         if (visible) {
+
             Animated.parallel([
                 Animated.timing(slideAnim, {
                     toValue: 0,
@@ -54,21 +68,50 @@ export function TopSuccessAlert({ visible, message, subtitle, duration = 2000, o
         <Animated.View
             style={[
                 styles.container,
-                { transform: [{ translateY: slideAnim }], opacity: opacityAnim }
+                {
+                    transform: [{ translateY: slideAnim }],
+                    opacity: opacityAnim
+                }
             ]}
         >
-            <View style={[
-                styles.content,
-                subtitle ? styles.contentWithSubtitle : styles.contentWithoutSubtitle
-            ]}>
+            <View
+                style={[
+                    styles.content,
+                    subtitle
+                        ? styles.contentWithSubtitle
+                        : styles.contentWithoutSubtitle
+                ]}
+            >
+
+                {/* BOTÓN CERRAR */}
+                <Pressable
+                    style={styles.closeButton}
+                    onPress={onHide}
+                >
+                    <AntDesign
+                        name="close"
+                        size={10}
+                        color="#FFFFFF"
+                    />
+                </Pressable>
+
                 <View style={styles.iconCircle}>
-                    <AntDesign name="check" size={14} color="#141D32" />
+                    <AntDesign
+                        name="check"
+                        size={14}
+                        color="#141D32"
+                    />
                 </View>
 
                 <View style={styles.textContainer}>
-                    <Text style={styles.text}>{message}</Text>
+                    <Text style={styles.text}>
+                        {message}
+                    </Text>
+
                     {subtitle && (
-                        <Text style={styles.subtitle}>{subtitle}</Text>
+                        <Text style={styles.subtitle}>
+                            {subtitle}
+                        </Text>
                     )}
                 </View>
             </View>
@@ -86,6 +129,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         paddingTop: 24,
     },
+
     content: {
         flexDirection: "row",
         alignItems: "center",
@@ -94,14 +138,18 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         paddingHorizontal: 12,
         gap: 8,
+        position: "relative",
     },
+
     contentWithoutSubtitle: {
         height: 40,
     },
+
     contentWithSubtitle: {
-        height: 60, 
+        height: 65,
         paddingVertical: 8,
     },
+
     iconCircle: {
         width: 19.5,
         height: 19.5,
@@ -110,21 +158,35 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
+
     textContainer: {
         flex: 1,
         justifyContent: "center",
     },
+
     text: {
         color: "#FFFFFF",
         fontFamily: "Rubik",
         fontWeight: "800",
         fontSize: 14,
     },
+
     subtitle: {
         color: "#FFFFFF",
         fontFamily: "Rubik",
         fontWeight: "600",
-        fontSize: 12, // Tamaño xs
+        fontSize: 12,
         marginTop: 2,
+    },
+
+    closeButton: {
+        position: "absolute",
+        top: 8,
+        right: 8,
+        width: 16,
+        height: 16,
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 10,
     },
 });

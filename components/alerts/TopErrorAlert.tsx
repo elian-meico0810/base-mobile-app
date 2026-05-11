@@ -1,6 +1,12 @@
 import { AntDesign } from "@expo/vector-icons";
-import React, { useEffect, useRef } from "react";
-import { Animated, StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef } from "react";
+import {
+    Animated,
+    Pressable,
+    StyleSheet,
+    Text,
+    View
+} from "react-native";
 
 interface Props {
     visible: boolean;
@@ -10,12 +16,20 @@ interface Props {
     onHide: () => void;
 }
 
-export function TopErrorAlert({ visible, message, subtitle, duration = 2000, onHide }: Props) {
+export function TopErrorAlert({
+    visible,
+    message,
+    subtitle,
+    duration = 2000,
+    onHide
+}: Props) {
+
     const slideAnim = useRef(new Animated.Value(-80)).current;
     const opacityAnim = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
         if (visible) {
+
             Animated.parallel([
                 Animated.timing(slideAnim, {
                     toValue: 0,
@@ -30,6 +44,7 @@ export function TopErrorAlert({ visible, message, subtitle, duration = 2000, onH
             ]).start();
 
             const timeout = setTimeout(() => {
+
                 Animated.parallel([
                     Animated.timing(opacityAnim, {
                         toValue: 0,
@@ -42,6 +57,7 @@ export function TopErrorAlert({ visible, message, subtitle, duration = 2000, onH
                         useNativeDriver: true,
                     })
                 ]).start(() => onHide());
+
             }, duration);
 
             return () => clearTimeout(timeout);
@@ -54,21 +70,53 @@ export function TopErrorAlert({ visible, message, subtitle, duration = 2000, onH
         <Animated.View
             style={[
                 styles.container,
-                { transform: [{ translateY: slideAnim }], opacity: opacityAnim }
+                {
+                    transform: [{ translateY: slideAnim }],
+                    opacity: opacityAnim
+                }
             ]}
         >
-            <View style={[
-                styles.content,
-                subtitle ? styles.contentWithSubtitle : styles.contentWithoutSubtitle
-            ]}>
+            <View
+                style={[
+                    styles.content,
+                    subtitle
+                        ? styles.contentWithSubtitle
+                        : styles.contentWithoutSubtitle
+                ]}
+            >
+
+                {/* BOTON X */}
+                <Pressable
+                    style={styles.closeButton}
+                    onPress={onHide}
+                >
+                    <AntDesign
+                        name="close"
+                        size={10}
+                        color="#FFFFFF"
+                    />
+                </Pressable>
+
                 <View style={styles.iconCircle}>
-                    <AntDesign name="close" size={14} color="#141D32" />
+                    <AntDesign
+                        name="close"
+                        size={14}
+                        color="#141D32"
+                    />
                 </View>
 
                 <View style={styles.textContainer}>
-                    <Text style={styles.text}>{message}</Text>
-                    {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+                    <Text style={styles.text}>
+                        {message}
+                    </Text>
+
+                    {subtitle && (
+                        <Text style={styles.subtitle}>
+                            {subtitle}
+                        </Text>
+                    )}
                 </View>
+
             </View>
         </Animated.View>
     );
@@ -84,6 +132,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         paddingTop: 28,
     },
+
     content: {
         flexDirection: "row",
         alignItems: "center",
@@ -92,13 +141,28 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         paddingHorizontal: 12,
         gap: 8,
+        position: "relative",
     },
+
     contentWithoutSubtitle: {
         paddingVertical: 10,
     },
+
     contentWithSubtitle: {
         paddingVertical: 10,
     },
+
+    closeButton: {
+        position: "absolute",
+        top: 8,
+        right: 8,
+        zIndex: 10,
+        width: 16,
+        height: 16,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+
     iconCircle: {
         width: 19.5,
         height: 19.5,
@@ -107,10 +171,13 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
+
     textContainer: {
         flex: 1,
         justifyContent: "center",
+        paddingRight: 18,
     },
+
     text: {
         color: "#FFFFFF",
         fontFamily: "Rubik",

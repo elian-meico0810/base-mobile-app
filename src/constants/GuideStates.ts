@@ -109,6 +109,7 @@ export enum CausalRefusedEnum {
 
 export enum TypeDetailsEnum {
     CAUS_REP_NOVEDAD = "CAUS_REP_NOVEDAD",
+    CAUS_REP_PEDIDO = "CAUS_REP_PEDIDO",
     MAXIMUM_AMOUNT = "MAXIMUM_AMOUNT"
 }
 

@@ -1,8 +1,9 @@
 import { PrimaryButton } from "@/components/buttons/PrimaryButton";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     Animated,
     Keyboard,
+    KeyboardAvoidingView,
     Platform,
     ScrollView,
     StyleSheet,
@@ -13,21 +14,9 @@ import {
 } from "react-native";
 import { Cause } from "../../tracking/domain/details/DetailsGuide";
 
-// Interface basada en la estructura exacta del JSON
-interface PaymentItem {
-    id: number;
-    numeroDeposito: string;
-    fechaDeposito: string;
-    valorPagado: string;
-    canal: string;
-    numeroDocumento: string;
-    estado: string;
-    referencia: string;
-}
-
 interface ReportNoveltysProps {
     title: string;
-    onPress?: (data: ReasonData[]) => void; // Modificado para recibir datos
+    onPress?: (data: ReasonData[]) => void; 
     onClose?: () => void;
     disabled?: boolean;
     width?: number;
@@ -36,7 +25,6 @@ interface ReportNoveltysProps {
     showTypeDetails?: Cause[]
 }
 
-// Interface para los datos de razón
 interface ReasonData {
     type: string;
     units: number;
@@ -56,8 +44,11 @@ export function ReportNoveltyScreen({
 }: ReportNoveltysProps) {
     const [units, setUnits] = useState<string[]>(["", "", "", ""]);
     const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
-    const [keyboardHeight] = useState(new Animated.Value(0));
-    const [hasValues, setHasValues] = useState(false); // Nuevo estado
+    const [keyboardVisible, setKeyboardVisible] = useState(false);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const [hasValues, setHasValues] = useState(false);
+    const scrollViewRef = useRef<ScrollView>(null);
+    const translateY = useRef(new Animated.Value(0)).current;
 
     const handleUnitChange = (text: string, index: number) => {
         try {
@@ -65,30 +56,29 @@ export function ReportNoveltyScreen({
             const newUnits = [...units];
             newUnits[index] = numericText;
             setUnits(newUnits);
-
             checkForValues(newUnits);
         } catch (error) {
             throw error;
         }
-
-
     };
 
-    // Función separada para verificar valores
     const checkForValues = (unitsArray: string[]) => {
         const hasAny = unitsArray.some(unit => {
             if (unit === "") return false;
             const unitValue = parseInt(unit, 10);
             return !isNaN(unitValue);
         });
-
         setHasValues(hasAny);
     };
 
-    // FUNCIÓN MODIFICADA: Ya no borra los otros inputs
     const handleInputFocus = (index: number) => {
-        // Solo actualiza el índice enfocado, sin borrar otros inputs
         setFocusedIndex(index);
+        setTimeout(() => {
+            scrollViewRef.current?.scrollTo({
+                y: index * 80,
+                animated: true
+            });
+        }, 100);
     };
 
     const handleInputBlur = () => {
@@ -97,8 +87,6 @@ export function ReportNoveltyScreen({
 
     const reasons = showTypeDetails?.map(item => item.nombre);
 
-
-    // Función para obtener los datos estructurados
     const getReasonValues = (): ReasonData[] => {
         const data: ReasonData[] = [];
         if (!showTypeDetails || !reasons) return [];
@@ -111,52 +99,33 @@ export function ReportNoveltyScreen({
                 codigo: showTypeDetails[index]?.codigo
             });
         });
-
         return data;
     };
 
     useEffect(() => {
-        // Verificar inicialmente
         checkForValues(units);
-
     }, []);
 
-    const handleFinalize = async () => {
-        try {
-            Keyboard.dismiss();
-
-            if (units.length >= 0) {
-                // Obtener los datos estructurados
-                const reasonData = getReasonValues();
-
-                // Enviar los datos al padre PRIMERO
-                onPress?.(reasonData);
-
-                // Esperar un ciclo de renderizado para que React actualice
-                await new Promise(resolve => setTimeout(resolve, 0));
-
-                if (reasonData.length >= 0) {
-                    // Cerrar el modal DESPUÉS de enviar los datos
-                    if (onClose) {
-                        setTimeout(onClose, 100);
-                    }
-                    setHasValues(false);
-                    setUnits(['']);
-                }
-            }
-        } catch (error) {
-            throw error;
-        }
+    const handleFinalize = () => {
+        Keyboard.dismiss();
+        const reasonData = getReasonValues();
+        onPress?.(reasonData);
+        setHasValues(false);
+        setUnits(["", "", "", ""]);
+        onClose?.();
     };
 
     useEffect(() => {
         const keyboardWillShow = Keyboard.addListener(
             Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
             (e) => {
-                Animated.timing(keyboardHeight, {
-                    duration: 250,
-                    toValue: e.endCoordinates.height,
-                    useNativeDriver: false,
+                setKeyboardVisible(true);
+                setKeyboardHeight(e.endCoordinates.height);
+                // SUBE MÁS: cambiado de -e.endCoordinates.height / 2 a -e.endCoordinates.height
+                Animated.timing(translateY, {
+                    duration: 300,
+                    toValue: -e.endCoordinates.height, // Sube toda la altura del teclado
+                    useNativeDriver: true,
                 }).start();
             }
         );
@@ -164,10 +133,12 @@ export function ReportNoveltyScreen({
         const keyboardWillHide = Keyboard.addListener(
             Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
             () => {
-                Animated.timing(keyboardHeight, {
-                    duration: 250,
+                setKeyboardVisible(false);
+                setKeyboardHeight(0);
+                Animated.timing(translateY, {
+                    duration: 300,
                     toValue: 0,
-                    useNativeDriver: false,
+                    useNativeDriver: true,
                 }).start();
             }
         );
@@ -187,38 +158,36 @@ export function ReportNoveltyScreen({
 
     return (
         <View style={styles.overlay}>
-            <View style={styles.touchableOverlay}>
-                {/* Fondo gris */}
-                <TouchableOpacity
-                    style={styles.backgroundOverlay}
-                    onPress={handleClose}
-                    activeOpacity={1}
-                />
-
+            <TouchableOpacity
+                style={styles.backgroundOverlay}
+                onPress={handleClose}
+                activeOpacity={1}
+            />
+            
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={styles.keyboardAvoidingView}
+            >
                 <Animated.View
                     style={[
                         styles.container,
                         {
                             width,
                             height,
-                            marginBottom: keyboardHeight
+                            transform: [{ translateY }]
                         }
                     ]}
                 >
-                    {/* Fondo blanco redondeado */}
                     <View style={styles.track} />
 
-                    {/* Botón cerrar */}
                     <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
                         <Text style={styles.closeText}>✕</Text>
                     </TouchableOpacity>
 
-                    {/* Título */}
                     <View style={styles.titleContainer}>
                         <Text style={styles.title}>{title}</Text>
                     </View>
 
-                    {/* Descripción */}
                     <Text>
                         <Text style={styles.description}>
                             Elige el motivo e ingresa la cantidad de unidades
@@ -228,12 +197,13 @@ export function ReportNoveltyScreen({
                         </Text>
                     </Text>
 
-                    {/* CONTENEDOR ÚNICO DE NOVEDADES */}
                     <View>
                         <ScrollView
+                            ref={scrollViewRef}
                             style={styles.noveltyBox}
                             showsVerticalScrollIndicator={false}
                             nestedScrollEnabled={true}
+                            keyboardShouldPersistTaps="handled"
                         >
                             {reasons?.map((reason, index) => (
                                 <View key={index} style={styles.reasonRow}>
@@ -258,19 +228,17 @@ export function ReportNoveltyScreen({
                         </ScrollView>
                     </View>
 
-                    {/* Botón Confirmar - ahora se habilita cuando hay valores */}
                     <View style={styles.buttonRow}>
                         <PrimaryButton
-                            title={'Confirmar '}
+                            title={'Confirmar'}
                             onPress={handleFinalize}
-                            disabled={!hasValues} // Usamos el estado separado
+                            disabled={!hasValues}
                             width={348}
                             height={43}
                         />
-
                     </View>
                 </Animated.View>
-            </View>
+            </KeyboardAvoidingView>
         </View>
     );
 }
@@ -286,12 +254,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
         zIndex: 9999,
     },
-    touchableOverlay: {
-        flex: 1,
-        justifyContent: "flex-end",
-        alignItems: "center",
-        width: '100%',
-    },
     backgroundOverlay: {
         position: "absolute",
         top: 0,
@@ -300,11 +262,19 @@ const styles = StyleSheet.create({
         bottom: 0,
         backgroundColor: "rgba(0,0,0,0.5)",
     },
+    keyboardAvoidingView: {
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+    },
     container: {
         position: "relative",
         padding: 16,
         zIndex: 10000,
         backgroundColor: "transparent",
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        overflow: 'hidden',
     },
     track: {
         position: "absolute",
@@ -348,23 +318,6 @@ const styles = StyleSheet.create({
         fontWeight: "800",
         color: "#788095",
     },
-    clearButton: {
-        alignSelf: 'flex-end',
-        marginTop: 8,
-        marginBottom: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        backgroundColor: '#F5F7FA',
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#E6E8EC',
-    },
-    clearButtonText: {
-        fontFamily: 'Rubik',
-        fontSize: 12,
-        fontWeight: '500',
-        color: '#788095',
-    },
     reasonRow: {
         flexDirection: "row",
         alignItems: "center",
@@ -398,10 +351,6 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: "#B7C8EE",
     },
-    unitsPlaceholderFilled: {
-        backgroundColor: "#F0F7FF",
-        borderColor: "#B7C8EE",
-    },
     noveltyBox: {
         marginTop: 8,
         backgroundColor: "#FFFFFF",
@@ -414,33 +363,6 @@ const styles = StyleSheet.create({
     buttonRow: {
         alignItems: 'center',
         marginTop: 10,
-    },
-    debugContainer: {
-        backgroundColor: '#F5F7FA',
-        padding: 10,
-        borderRadius: 8,
-        marginTop: 10,
-        marginBottom: 5,
-        borderWidth: 1,
-        borderColor: '#E6E8EC',
-    },
-    debugText: {
-        fontFamily: 'Rubik',
-        fontSize: 11,
-        color: '#666',
-        textAlign: 'center',
-    },
-    debugButton: {
-        width: 348,
-        height: 40,
-        borderRadius: 8,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    debugButtonText: {
-        fontFamily: 'Rubik',
-        fontSize: 14,
-        fontWeight: '600',
-        color: 'white',
+        marginBottom: 60,
     },
 });

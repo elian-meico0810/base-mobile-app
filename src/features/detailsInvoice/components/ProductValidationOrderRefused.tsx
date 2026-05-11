@@ -10,7 +10,7 @@ import {
     StyleSheet,
     View
 } from 'react-native';
-import { OrderGroup } from '../../tracking/domain/details/DetailsGuide';
+import { OrderGroup, ProductoPedido } from '../../tracking/domain/details/DetailsGuide';
 import { ProductItemAceptation } from './ProductItemAceptation';
 const { width, height } = Dimensions.get('window');
 
@@ -40,6 +40,7 @@ interface ProductValidationOrderRefusedProps {
     onItemProductsPending?: (data: OrderGroup[]) => void;
     notDetails?: string;
     onValueInvocie?: (value: number) => void;
+    onValidatedProducts?: (product: ProductoPedido) => void;
 }
 
 export const ProductValidationOrderRefused = ({
@@ -59,10 +60,11 @@ export const ProductValidationOrderRefused = ({
     onRefreshing,
     onItemProductsPending,
     notDetails,
-    onValueInvocie
+    onValueInvocie,
+    onValidatedProducts,
 }: ProductValidationOrderRefusedProps) => {
     const [allProducts, setAllProducts] = useState<OrderGroup[]>(dataPorduct || []);
-    const [validatedProducts, setValidatedProducts] = useState<OrderGroup[]>([]);
+    const [validatedProducts, setValidatedProducts] = useState<ProductoPedido | null>();
     const [showValidatedModal, setShowValidatedModal] = useState(false);
     const [showFinishAlert, setFinishAlert] = useState(false);
     const [currentValidationType, setCurrentValidationType] = useState<'success' | 'warning' | 'error' | 'null'>('null');
@@ -73,16 +75,27 @@ export const ProductValidationOrderRefused = ({
     const [serviceToken, setServiceToken] = useState("");
     const [serviceUrl, setBaseUrl] = useState("");
     // VARIABLES NUEVAS - Separar productos según condiciones
-    const [productsSold, setProductsSold] = useState<any[]>([]);
     const [productsPending, setProductsPending] = useState<any[]>([]);
     const [activeSwipeId, setActiveSwipeId] = useState<string | null>(null);
+    const [currentProduct, setCurrentProduct] = useState<any | null>(null);
 
     useEffect(() => {
         if (showDirection) {
             onStatusNovelty?.(showDirection);
+            setDirection(null);
         }
+
     }, [showDirection]);
 
+    useEffect(() => {
+        if (validatedProducts) {
+            onValidatedProducts?.(validatedProducts);
+            setValidatedProducts(null);
+        }
+
+    }, [validatedProducts]);
+
+   
     useEffect(() => {
         if (productsPending.length > 0) {
             onItemProductsPending?.(productsPending);
@@ -103,40 +116,6 @@ export const ProductValidationOrderRefused = ({
             setCurrentValidationType(validationType);
         }
     }, [onErrorAlert, onSuccessAlet]);
-
-    // Efecto para actualizar las variables separadas cuando cambien los productos
-    useEffect(() => {
-        const procesarProductos = () => {
-            if (allProducts.length === 0) {
-                setProductsSold([]);
-                setProductsPending([]);
-                return;
-            }
-
-            // Obtener todos los productos de forma plana desde 'productos'
-            const todosProductos: any[] = [];
-            allProducts.forEach(order => {
-                if (order.productos && Array.isArray(order.productos)) {
-                    todosProductos.push(...order.productos);
-                }
-            });
-
-            // Separar según las condiciones
-            const validados = todosProductos.filter(item =>
-                item.estado?.codigo === 'EST_DET_VALIDADO'
-            );
-
-            const pendientes = todosProductos.filter(item =>
-                item.estado?.codigo !== 'EST_DET_VALIDADO'
-            );
-
-            // Actualizar las variables
-            setProductsSold(validados);
-            setProductsPending(pendientes);
-        };
-
-        procesarProductos();
-    }, [allProducts]);
 
     const validateAllProducts = (validationType: 'success' | 'warning' | 'error' = 'success') => {
         if (allProducts.length === 0) return;
@@ -163,17 +142,6 @@ export const ProductValidationOrderRefused = ({
             setTotal(Number(totalUnits));
         }
     };
-
-    // Calcular productos pendientes y validados
-    const validatedCount = 0;
-
-    const totalProducts = allProducts.reduce((total, order) => {
-        return total + (order.productos?.length || 0);
-    }, 0);
-
-    const pendingCount = totalProducts - validatedCount;
-    const progressPercentage = totalProducts > 0 ? (validatedCount / totalProducts) * 100 : 0;
-    const isValid = pendingCount === 0;
 
     const handleFinalize = () => {
         try {
@@ -223,7 +191,6 @@ export const ProductValidationOrderRefused = ({
         unidadesEntregadas: new Map(),
     });
 
-    // Calcula los totales basados en los Maps
     const totalGeneral = Array.from(productsByStatus.pending.values())
         .reduce((sum, value) => sum + value, 0);
 
@@ -294,6 +261,7 @@ export const ProductValidationOrderRefused = ({
                                 onValidate={handleValidate}
                                 onPresssNovlety={(direction) => {
                                     setDirection(direction);
+                                    setValidatedProducts(item)
                                 }}
                                 activeSwipeId={activeSwipeId}
                                 setActiveSwipeId={setActiveSwipeId}
@@ -313,10 +281,10 @@ export const ProductValidationOrderRefused = ({
                                 onDataProduct={(id, _totalProducts, unidadesEntregadas) => {
                                     const deliveredUnits = unidadesEntregadas ? unidadesEntregadas : item?.unidades_solicitadas;
                                     const deliveredValue = calculateVlueByPorducts(
-                                        item, 
-                                        TypeCaculateValueEnum.ACTION_5, 
-                                        Number(deliveredUnits), 
-                                        undefined, 
+                                        item,
+                                        TypeCaculateValueEnum.ACTION_5,
+                                        Number(deliveredUnits),
+                                        undefined,
                                         Number(allProducts?.[0]?.porcentaje_dfr)
                                     );
                                     updateProductStatus(id, Number(deliveredValue), 'pending', unidadesEntregadas);
@@ -340,7 +308,7 @@ export const ProductValidationOrderRefused = ({
                     <PrimaryButton
                         title="Confirmar"
                         onPress={handleFinalize}
-                        disabled={!isValid}
+                        disabled={false}
                         width={348}
                         height={43}
                     />

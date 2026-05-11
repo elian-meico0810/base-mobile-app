@@ -41,6 +41,7 @@ export const API_ROUTES = {
   CREATE_OTP_NOT_PAYMENT: "otp/direccion/crear-sin-pago/",
   CREATE_ACEPTATION_GUIDE:"aceptacion-pedido/crear/",
   GET_ORDER_ACEPT: "aceptacion-pedido/get-all/",
+  ACEPTATION_ORDER_NOVELTY: "aceptacion-pedido/reportar-novedad/",
   // Back contado anticipado
   SEND_PAYMENT_GATEWAY: "pagos/generar-link-pasarela/",
   GENERATE_QR: "pagos/generar_qr_bancolombia/",

@@ -57,6 +57,7 @@ export const ProductItemAceptation = ({
     const deliveredUnits = Number(item?.unidades_entregadas ?? 0);
     const rejectedUnits = Number(item?.unidades_rechazadas ?? 0);
     const requestedUnits = Number(item?.unidades_solicitadas ?? 0);
+    const [hasNotified, setHasNotified] = useState(false); // ← NUEVO: para evitar notificaciones múltiples
 
     let noveltySum = 0;
     if (Array.isArray(item?.novedades)) {
@@ -161,6 +162,7 @@ export const ProductItemAceptation = ({
                 setShowSideBar(false);
                 onCloseReport?.(false);
                 setIsRefreshing(false);
+                setHasNotified(false); // ← RESET al hacer refresh
             } else {
                 setIsRefreshing(false);
             }
@@ -191,6 +193,7 @@ export const ProductItemAceptation = ({
             hasAutoValidated.current = true;
             handleCloseSwipe();
             setRefreshing(false);
+            setHasNotified(false); // ← RESET
         }
     }, [activeSwipeId, itemIdString, isSwiped, swipeDirection, showRefreshing]);
 
@@ -207,15 +210,17 @@ export const ProductItemAceptation = ({
     useEffect(() => {
         if (activeSwipeId !== itemIdString) {
             hasAutoValidated.current = false;
+            setHasNotified(false); // ← RESET al cambiar de producto activo
         }
     }, [activeSwipeId, itemIdString]);
 
-    // Notificar SOLO para swipe derecho
+    // Notificar SOLO para swipe derecho - UNA SOLA VEZ por swipe
     useEffect(() => {
-        if (swipeDirection === 'right') {
+        if (swipeDirection === 'right' && !hasNotified) {
+            setHasNotified(true);
             onPresssNovlety?.(swipeDirection);
         }
-    }, [swipeDirection, onPresssNovlety]);
+    }, [swipeDirection, onPresssNovlety, hasNotified]);
 
     const handleCloseSwipe = useCallback(() => {
         if (isAnimating.current) return;
@@ -265,14 +270,6 @@ export const ProductItemAceptation = ({
             }
         });
     }, [item.id, onCloseReport, onValidate, setActiveSwipeId, shouldAutoValidate, swipePosition]);
-
-    // Swipe izquierdo BLOQUEADO - no hace nada
-    const handleLeftSwipeBlocked = useCallback(() => {
-        // BLOQUEADO: No se ejecuta onValidate
-        if (isSwiped) {
-            handleCloseSwipe();
-        }
-    }, [isSwiped, handleCloseSwipe]);
 
     const panResponder = useRef(
         PanResponder.create({
@@ -344,6 +341,7 @@ export const ProductItemAceptation = ({
                         if (activeSwipeId === itemIdString) {
                             setActiveSwipeId(null);
                         }
+                        setHasNotified(false); // ← RESET al cancelar swipe
                     });
                 }
             },
@@ -366,6 +364,7 @@ export const ProductItemAceptation = ({
                     if (activeSwipeId === itemIdString) {
                         setActiveSwipeId(null);
                     }
+                    setHasNotified(false); // ← RESET
                 });
             }
         })

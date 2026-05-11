@@ -7,6 +7,7 @@ import {
   CreatePaymentTypeProps,
   GenerateQRPorps,
   NoDeliveryProps,
+  NoveltyOrderPayload,
   OpneAddressesDeliveryProps, OpneAddressesProps,
   PaymentGatewayProps, ReportWhatsAppQRPorps,
   UploadEvidenceAcceptationGuidesProps,
@@ -430,6 +431,24 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
       // Aquí devuelves solo el JSON que envió el servidor
       return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {
+      throw error;
+    }
+  },
+
+    async reportNovelty(data: NoveltyOrderPayload, token: string) {
+    try {
+      const response = await authApi.post(
+        API_ROUTES.ACEPTATION_ORDER_NOVELTY,
+        data,
+       {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error: any) {
       throw error;
     }
   },

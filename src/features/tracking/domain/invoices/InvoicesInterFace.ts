@@ -259,3 +259,14 @@ export interface AceptationPedidoProps {
   estado?: string;
   producto: AceptacionProductoDetalle[];
 }
+
+
+export interface NoveltyItem {
+    cantidad: number;
+    codigo: string;
+}
+
+export interface NoveltyOrderPayload {
+    aceptacion_pedido_detalle: number;
+    novedad: NoveltyItem[];
+}

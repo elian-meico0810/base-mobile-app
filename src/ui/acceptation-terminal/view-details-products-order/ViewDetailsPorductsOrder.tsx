@@ -8,8 +8,8 @@ import { ThemedView } from '@/components/themed-view';
 import { TypeDetailsEnum, TypeStatusEnum } from '@/src/constants/GuideStates';
 import { ProductValidationOrderRefused } from '@/src/features/detailsInvoice/components/ProductValidationOrderRefused';
 import { ReportNoveltyScreen } from '@/src/features/detailsInvoice/components/ReportNoveltyScreen';
-import { AceptationOrderDetails, Cause, OrderGroup } from '@/src/features/tracking/domain/details/DetailsGuide';
-import { AceptationPedidoProps, CustomerAddress, Order } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
+import { AceptationOrderDetails, Cause, OrderGroup, ProductoPedido } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { AceptationPedidoProps, CustomerAddress, NoveltyOrderPayload, Order } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -55,8 +55,6 @@ export function ViewDetailsPorductsOrder({
     detailsOrder,
     OrderArray
 }: InfoInvoiceFormProps) {
-    console.log("OrderArray: ", OrderArray);
-
     const [loading, setLoading] = useState(false);
     const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
     const [modalVisible, setModalVisible] = useState(false);
@@ -89,6 +87,7 @@ export function ViewDetailsPorductsOrder({
     const [alertButton, setAlertButton] = useState(false);
     const [productItemDataPending, setProductItemDataPending] = useState<OrderGroup[]>([]);
     const [productItemData, setProductItemData] = useState<OrderGroup | null>(null);
+    const [selectedProduct, setSelectedProduct] = useState<ProductoPedido | null>(null);
     const btnRef = useRef<any>(null);
     const router = useRouter();
 
@@ -160,7 +159,11 @@ export function ViewDetailsPorductsOrder({
 
     }, []);
 
-
+    useEffect(() => {
+        if (alertButton) {
+            submitDataByActionsAlert();
+        }
+    }, [alertButton]);
 
     const uploadPhotoSubmit = async (evidences: string[]) => {
         try {
@@ -290,7 +293,7 @@ export function ViewDetailsPorductsOrder({
 
     const getRefused = async () => {
         try {
-            const responseQuery = await detailsRepositoryImpl.listTypeDetails(TypeDetailsEnum.CAUS_REP_NOVEDAD, token);
+            const responseQuery = await detailsRepositoryImpl.listTypeDetails(TypeDetailsEnum.CAUS_REP_PEDIDO, token);
 
             if (responseQuery?.statusCode == 200) {
                 const data = responseQuery.data;
@@ -319,23 +322,56 @@ export function ViewDetailsPorductsOrder({
 
     const submitDataByActionsAlert = async () => {
         try {
+            console.log("submitDataByActionsAlert");
+
             if (modalVisible) return;
 
             setLoading(true);
 
-            if (successButton) {
-                console.log("ACa entor al successButton");
+            if (alertButton && selectedProduct) {
+                const payload: NoveltyOrderPayload = {
+                    aceptacion_pedido_detalle: selectedProduct.id,
 
-            } else if (alertButton) {
-                console.log("ACa entor al alertButton");
+                    novedad: dataNovelty
+                        .filter(
+                            (item): item is typeof item & { codigo: string } =>
+                                item.units > 0 && !!item.codigo
+                        )
+                        .map(item => ({
+                            cantidad: item.units,
+                            codigo: item.codigo
+                        }))
+                };
+                const response = await invoiceRepositoryImpl.reportNovelty(
+                    payload,
+                    token
+                );
 
+                if (response?.statusCode === 200) {
+                    setAlertButton(false);
+                    setIsRejected(true);
+                    setModalTitle("¡Procesado!");
+                    setModalMessage(`Novedad registrada con éxito.`);
+                    setModalVisible(true);
+                    setAlertButton(false);
+                    return;
+                } else {
+                    setModalTitle("¡Alerta!");
+                    setModalMessage("Problemas al guardar la novedad del pedido.");
+                    setModalVisible(true);
+
+                    setTimeout(() => {
+                        setModalVisible(false);
+                    }, 6000);
+                    return;
+                }
 
 
             }
             getDataProduct();
         } catch (error) {
             setModalTitle("¡Error!");
-            setModalMessage("Ocurrio un error inesperado.");
+            setModalMessage("Ocurrio un error inesperadosss 11.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -470,12 +506,6 @@ export function ViewDetailsPorductsOrder({
                         </View>
                     </View>
 
-                    <View style={styles.secondCardTwo}>
-                        <ScrollView>
-
-                        </ScrollView>
-                    </View>
-
                 </>
             )}
             <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
@@ -515,21 +545,14 @@ export function ViewDetailsPorductsOrder({
                             setProductItemDataPending(data);
                         }
                     }}
+                    onValidatedProducts={(data) => {
+                        if (data) {
+                            setSelectedProduct(data);
+                        }
+                    }}
                 />
 
-                {/* <ProductValidationOrder
-                    onFinalize={() => {
-                    }}
-                    onSuccessAlet={() => {
 
-                    }}
-                    dataPorduct={products}
-                    token={token}
-                    isRejected={isRejected}
-                    onProductsChange={async (body) => {
-                        await handleRejectOrderTwo(body);
-                    }}
-                /> */}
             </ScrollView>
 
             <ExceptionModal
@@ -599,6 +622,7 @@ export function ViewDetailsPorductsOrder({
                     maxEvidences={1}
                 />
             )}
+
             {modalStatusNovelty == 'right' && (
                 <ReportNoveltyScreen
                     title="Reportar novedad"
@@ -610,9 +634,8 @@ export function ViewDetailsPorductsOrder({
                         setDataNovelty(data);
                         setRefreshingOnPress(false);
                         setNovelty(true);
-                        setTimeout(() => {
-                            setStatusNovelty(null);
-                        }, 100);
+                        setAlertButton(true);
+
                     }}
                     showViewModal={showViewModal}
                     showTypeDetails={showTypeDetails}

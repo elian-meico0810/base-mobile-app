@@ -8,7 +8,8 @@ import { ThemedView } from '@/components/themed-view';
 import { TypeDetailsEnum, TypeStatusEnum } from '@/src/constants/GuideStates';
 import { ProductValidationOrderRefused } from '@/src/features/detailsInvoice/components/ProductValidationOrderRefused';
 import { ReportNoveltyScreen } from '@/src/features/detailsInvoice/components/ReportNoveltyScreen';
-import { AceptationOrderDetails, Cause, OrderGroup, ProductoPedido } from '@/src/features/tracking/domain/details/DetailsGuide';
+import { ChangeCodeModal } from '@/src/features/tracking/components/screens/ChangeCodeModal';
+import { Cause, OrderGroup, ProductoPedido } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { AceptationPedidoProps, CustomerAddress, NoveltyOrderPayload, Order } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
@@ -88,6 +89,8 @@ export function ViewDetailsPorductsOrder({
     const [productItemDataPending, setProductItemDataPending] = useState<OrderGroup[]>([]);
     const [productItemData, setProductItemData] = useState<OrderGroup | null>(null);
     const [selectedProduct, setSelectedProduct] = useState<ProductoPedido | null>(null);
+    const [showChangeCode, setShowChangeCode] = useState(false);
+    const [showNotEntry, setShowNotEntry] = useState(false);
     const btnRef = useRef<any>(null);
     const router = useRouter();
 
@@ -257,11 +260,7 @@ export function ViewDetailsPorductsOrder({
 
     const handleSubmit = async () => {
         try {
-            setLoading(true);
-            setModalTitleCancel("¡Alerta!");
-            setModalMessageCancel(`¿Confirmas que no recibiste el pedido?`);
-            setModalVisibleCancel(true);
-
+            await handleRejectOrderTwo()
 
         } catch (error) {
             setModalTitle("¡Error!");
@@ -397,47 +396,54 @@ export function ViewDetailsPorductsOrder({
         }
     };
 
-    const handleRejectOrderTwo = async (data: AceptationOrderDetails[]) => {
+    const seendViewDetails = async () => {
+                    await handleExit();
+
+    }
+    const handleRejectOrderTwo = async () => {
         try {
             setLoading(true);
-            const payload: AceptationPedidoProps = {
-                bodega: OrderArray?.bodega ?? "",
-                canal: OrderArray?.canal ?? "",
-                codigo: OrderArray?.codigo ?? "",
-                codigo_cliente: OrderArray?.codigo_cliente ?? "",
-                codigo_guia: String(numberGuide) ?? "",
-                estado: TypeStatusEnum.EST_PEDIDO_ACEPT,
-                producto: data.map((item) => ({
-                    CodigoProducto: item?.producto?.codigo?.trim() ?? "",
-                    DescripcionProducto: item?.producto?.nombre ?? "",
-                    EAN: item?.producto?.ean ?? null,
-                    linea: item?.linea ?? 0,
-                    unidades_rechazadas: item?.unidades_rechazadas ?? 0,
-                    unidades_solicitadas: item?.unidades_solicitadas ?? 0,
-                }))
-            };
+            if ((OrderArray?.productos?.length ?? 0) > 0) {
 
-            const response = await invoiceRepositoryImpl.aceptationOrder(
-                payload,
-                token
-            );
+                const payload: AceptationPedidoProps = {
+                    bodega: OrderArray?.bodega ?? "",
+                    canal: OrderArray?.canal ?? "",
+                    codigo: OrderArray?.codigo ?? "",
+                    codigo_cliente: OrderArray?.codigo_cliente ?? "",
+                    codigo_guia: String(numberGuide ?? ""),
+                    estado: TypeStatusEnum.EST_PEDI_RECH,
+                    producto: OrderArray?.productos?.map((item) => ({
+                        CodigoProducto: item?.producto?.codigo?.trim() ?? "",
+                        DescripcionProducto: item?.producto?.nombre ?? "",
+                        EAN: item?.producto?.ean ?? null,
+                        linea: item?.linea ?? 0,
+                        unidades_rechazadas: item?.unidades_solicitadas ?? 0,
+                        unidades_solicitadas: item?.unidades_solicitadas ?? 0,
+                    })) ?? []
+                };
 
-            if (response?.statusCode === 200) {
-                setIsRejected(true);
-                setModalTitle("¡Procesado!");
-                setModalMessage(`Novedad registrada con éxito.`);
-                setModalVisible(true);
-                await handleExit();
-                return;
-            } else {
-                setModalTitle("¡Alerta!");
-                setModalMessage("Problemas al guardar la novedad del pedido.");
-                setModalVisible(true);
 
-                setTimeout(() => {
-                    setModalVisible(false);
-                }, 6000);
-                return;
+                const response = await invoiceRepositoryImpl.aceptationOrder(
+                    payload,
+                    token
+                );
+
+                if (response?.statusCode === 200) {
+                    setIsRejected(true);
+                    setModalTitle("¡Procesado!");
+                    setModalMessage(`Pedido no recibido. Se confirmó que el pedido no fue recibido.`);
+                    setModalVisible(true);
+                    return;
+                } else {
+                    setModalTitle("¡Alerta!");
+                    setModalMessage("Problemas al guardar la novedad del pedido.");
+                    setModalVisible(true);
+
+                    setTimeout(() => {
+                        setModalVisible(false);
+                    }, 6000);
+                    return;
+                }
             }
 
         } catch (error: any) {
@@ -505,9 +511,12 @@ export function ViewDetailsPorductsOrder({
 
                                 <TouchableOpacity
                                     style={styles.rejectButton}
-                                    onPress={async () =>
-                                        handleSubmit()
-                                    }
+                                    onPress={() => {
+                                        setShowChangeCode(true);
+
+                                        setShowNotEntry(true);
+
+                                    }}
                                 >
                                     <View style={styles.errorDot}>
                                         <MaterialIcons name="close" size={8} color="#FFFFFF" />
@@ -527,7 +536,7 @@ export function ViewDetailsPorductsOrder({
                 {/** Listado de productos */}
                 <ProductValidationOrderRefused
                     onFinalize={() => {
-                        handleSubmit;
+                        setShowChangeCode(true);
                     }}
                     onSuccessAlet={successButton}
                     onErrorAlert={alertButton}
@@ -572,7 +581,12 @@ export function ViewDetailsPorductsOrder({
 
             <ExceptionModal
                 visible={modalVisible}
-                onClose={() => setModalVisible(false)}
+                onClose={() => {
+                    setModalVisible(false);
+                    if(showNotEntry){
+                        seendViewDetails();
+                    }
+                }}
                 title={modalTitle}
                 message={modalMessage}
                 buttonLabel={modalButtonLabel}
@@ -606,6 +620,21 @@ export function ViewDetailsPorductsOrder({
                     handleSubmitReject();
                 }}
             />
+
+            <ChangeCodeModal
+                visible={showChangeCode}
+                onClose={() => setShowChangeCode(false)}
+                onConfirm={(newPhone) => {
+                    if (newPhone.length == 6 && showNotEntry) {
+                        handleSubmit();
+                    }
+                    setShowChangeCode(false);
+                }}
+                onAlert={() => {
+                    console.log("llego aca");
+                }}
+            />
+
 
             {uploadPhotoNoDelivery && (
                 <UploadPhoto

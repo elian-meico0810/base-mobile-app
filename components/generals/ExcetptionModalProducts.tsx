@@ -86,7 +86,7 @@ export function ExcetptionModalProducts({
                                 />
 
                                 <SecondaryButtonCancel
-                                    title="Rechazar"
+                                    title="Cancelar"
                                     onPress={() => {
                                         onReject?.();
                                     }}

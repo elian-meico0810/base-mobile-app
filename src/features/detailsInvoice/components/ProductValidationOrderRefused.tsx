@@ -146,15 +146,30 @@ export const ProductValidationOrderRefused = ({
 
     const handleFinalize = () => {
         try {
-            if (productsPending.length == 0) {
+            const allRejectedValid = allProducts.every((pedido) =>
+                pedido.productos.every((producto) => {
+                    return Number(producto.unidades_rechazadas || 0) > 0;
+                })
+            );
+
+            if (allRejectedValid) {
+                console.log("onFinalize_ ");
+                
                 onFinalize?.();
                 onValueInvocie?.(valueRealTotal);
                 setShowValidatedModal(true);
             }
+
         } catch (error) {
             throw error;
         }
     };
+
+    const allRejectedValid = allProducts.every((pedido) =>
+        pedido.productos.every(
+            (producto) => Number(producto.unidades_rechazadas || 0) > 0
+        )
+    );
 
     // Función para obtener todos los productos pendientes
     const getAllPendingProducts = () => {
@@ -334,7 +349,7 @@ export const ProductValidationOrderRefused = ({
                     <PrimaryButton
                         title="Confirmar"
                         onPress={handleFinalize}
-                        disabled={false}
+                        disabled={!allRejectedValid}
                         width={348}
                         height={43}
                     />

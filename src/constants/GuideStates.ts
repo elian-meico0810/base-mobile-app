@@ -138,3 +138,9 @@ export enum TypeStatusEnum {
     EST_PEDI_RECH = "EST_PEDI_RECH",
     EST_PEDIDO_ACEPT = "EST_PEDIDO_ACEPT"
 }
+
+
+export enum TypeValueParameterEnum {
+    TEXT_ODER = "TEXT_ODER",
+    TEXT_NOVELTY_ODER = "TEXT_NOVELTY_ODER"
+}

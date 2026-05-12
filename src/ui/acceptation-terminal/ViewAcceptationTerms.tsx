@@ -8,9 +8,9 @@ import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { GuideDetailSkeleton } from '@/components/skeleton/GuideDetailSkeleton';
 import { ThemedView } from '@/components/themed-view';
-import { TypeStatusEnum } from '@/src/constants/GuideStates';
+import { TypeStatusEnum, TypeValueParameterEnum } from '@/src/constants/GuideStates';
 import { OrderGroup } from '@/src/features/tracking/domain/details/DetailsGuide';
-import { CustomerAddress } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
+import { CustomerAddress, TypeParameterValue } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
 import { MaterialIcons } from '@expo/vector-icons';
 
@@ -53,6 +53,7 @@ export function ViewAcceptationTerms({
     const [modalMessage, setModalMessage] = useState("");
     const [modalButtonLabel, setModalButtonLabel] = useState("Entendido");
     const [ejecuteData, setEjecuteData] = useState(false);
+    const [ejecute, setEjecute] = useState(false);
     const [modalVisibleValidate, setModalVisibleValidate,] = useState(false);
     const [modalTitleValidate, setModalTitleValidate] = useState("");
     const [modalMessageValidate, setModalMessageValidate] = useState("");
@@ -64,8 +65,8 @@ export function ViewAcceptationTerms({
     const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [showError, setsErrorQRP] = useState(false);
     const [showSuccess, setSuccess] = useState(false);
-
-
+    const [typeValue, setTypeValue] = useState<TypeParameterValue[]>([]);
+    const [isButtonEnabled, setIsButtonEnabled] = useState(false);
     const btnRef = useRef<any>(null);
     const router = useRouter();
 
@@ -143,6 +144,65 @@ export function ViewAcceptationTerms({
         }
     };
 
+    const getTypeValueParameter = () => {
+        try {
+            if (!guideOrder || guideOrder.length === 0) return null;
+
+            const allAccepted = guideOrder.every(
+                pedido => pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDIDO_ACEPT
+            );
+
+            if (allAccepted) {
+                return TypeValueParameterEnum.TEXT_NOVELTY_ODER;
+            }
+
+            // Verificar si ALGUNO está en estado RECHAZADO o ENTREGA PARCIAL
+            const hasRejectedOrPartial = guideOrder.some(
+                pedido => pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDI_RECH ||
+                    pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDI_ENT_PARC || pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDI_PEND
+            );
+
+            if (hasRejectedOrPartial) {
+                return TypeValueParameterEnum.TEXT_ODER;
+            }
+
+            return null;
+
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        }
+    };
+
+    const listTypeCash = async () => {
+        try {
+            setLoading(true);
+            const typeParameter = getTypeValueParameter();
+
+            if (typeParameter) {
+
+                const response = await invoiceRepositoryImpl.typeParameterValue(typeParameter, token);
+                if (response?.statusCode === 200 && Array.isArray(response.data)) {
+                    setEjecute(true);
+                    setTypeValue(response.data);
+                } else {
+                    setModalTitle("¡Alerta!");
+                    setModalMessage(response?.message ?? "Ocurrió un error inesperado.");
+                    setModalVisible(true);
+                    return;
+                }
+            }
+
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         const init = async () => {
             const token = await SecureStore.getItemAsync("service_token");
@@ -161,15 +221,41 @@ export function ViewAcceptationTerms({
         }
     }, [token]);
 
+
+    useEffect(() => {
+        const loadTypeCash = async () => {
+            if (token && !typeValue?.[0]?.valor && !ejecute) {
+                await listTypeCash();
+            }
+        };
+
+        loadTypeCash();
+    }, [guideOrder.length > 0]);
+
+    const allOrdersAreNotPending = () => {
+        try {
+
+            if (!guideOrder || guideOrder.length === 0) return false;
+
+            return guideOrder.every(
+                pedido => pedido?.estado_pedido?.codigo !== TypeStatusEnum.EST_PEDI_PEND
+            );
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
+        }
+    }
+
     const handleSubmit = async () => {
         try {
-            setLoading(true);
-            setModalTitleValidate("Aceptación de documento de transporte");
-            setModalMessageValidate("Al aceptar este despacho confirmo que recibí de parte de Meico la mercancía descrita en el documento de transporte y asumo la custodia para su traslado y entrega.");
-            setModalButtonLabelValidate("Registrar evidencia");
-            setModalVisibleValidate(true);
-
-
+            if (isButtonEnabled) {
+                setLoading(true);
+                setModalTitleValidate("Aceptación de documento de transporte");
+                setModalMessageValidate(typeValue?.[0]?.valor || "");
+                setModalButtonLabelValidate("Registrar evidencia");
+                setModalVisibleValidate(true);
+            }
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
@@ -283,6 +369,7 @@ export function ViewAcceptationTerms({
             );
 
             if (response?.statusCode === 200) {
+                setGuideOrder([]);
                 listTotalsGuide();
                 setsErrorQRP(false);
                 setSuccess(true);
@@ -304,8 +391,13 @@ export function ViewAcceptationTerms({
         }
     };
 
-    // const pedidosFlat = guide?.details?.flatMap(d => d.pedidos) || [];
-    let statusIcon = 'success';
+
+    useEffect(() => {
+        const hasAnyPending = guideOrder.some(
+            pedido => pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDI_PEND
+        );
+        setIsButtonEnabled(!hasAnyPending);
+    }, [guideOrder]);
 
     return (
         <ThemedView style={styles.container}>
@@ -453,7 +545,7 @@ export function ViewAcceptationTerms({
                         <PrimaryButton
                             title="Aceptar carga"
                             onPress={handleSubmit}
-                            disabled={false}
+                            disabled={!isButtonEnabled}
                             width={328}
                             height={43}
                         />
@@ -491,7 +583,7 @@ export function ViewAcceptationTerms({
                 }}
                 onReject={() => {
                     setModalVisibleValidate(false);
-                    handleSubmitReject();
+                    // handleSubmitReject();
                 }}
             />
 

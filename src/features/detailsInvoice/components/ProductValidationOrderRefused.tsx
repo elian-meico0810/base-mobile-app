@@ -95,7 +95,7 @@ export const ProductValidationOrderRefused = ({
 
     }, [validatedProducts]);
 
-   
+
     useEffect(() => {
         if (productsPending.length > 0) {
             onItemProductsPending?.(productsPending);
@@ -107,6 +107,7 @@ export const ProductValidationOrderRefused = ({
             setAllProducts(dataPorduct);
         }
     }, [dataPorduct]);
+
 
     useEffect(() => {
         if (onErrorAlert || onSuccessAlet) {
@@ -235,6 +236,25 @@ export const ProductValidationOrderRefused = ({
             return newState;
         });
     };
+    useEffect(() => {
+        if (dataPorduct && dataPorduct.length > 0) {
+            setAllProducts(dataPorduct);
+
+            setProductsByStatus({
+                pending: new Map(),
+                validated: new Map(),
+                unidadesEntregadas: new Map(),
+            });
+
+            const pendingProducts: any[] = [];
+            dataPorduct.forEach(order => {
+                if (order.productos && Array.isArray(order.productos)) {
+                    pendingProducts.push(...order.productos);
+                }
+            });
+            setProductsPending(pendingProducts);
+        }
+    }, [dataPorduct]);
 
     return (
         <View style={styles.mainContainer}>
@@ -248,57 +268,63 @@ export const ProductValidationOrderRefused = ({
                 <View style={styles.container}>
                     {/* Mostrar productos pendientes */}
                     {pendingProductsFlat.length > 0 ? (
-                        pendingProductsFlat.map((item, index) => (
-                            <ProductItemAceptation
-                                key={item.id}
-                                item={{
-                                    ...item,
-                                    unidadesSolicitadas: item.unidades_solicitadas,
-                                    unidadesRechazadas: item.unidades_rechazadas,
-                                    unidadesEntregadas: item.unidades_entregadas
-                                }}
-                                isLastItem={index === pendingProductsFlat.length - 1}
-                                onValidate={handleValidate}
-                                onPresssNovlety={(direction) => {
-                                    setDirection(direction);
-                                    setValidatedProducts(item)
-                                }}
-                                activeSwipeId={activeSwipeId}
-                                setActiveSwipeId={setActiveSwipeId}
-                                shouldAutoValidate={shouldAutoValidate}
-                                onCloseReport={(value) => onCloseReportPorduct?.(value)}
-                                testToken={serviceToken}
-                                testUrl={serviceUrl}
-                                onItemData={(data) => {
-                                    if (data?.estado) {
-                                        // onItemData?.(data);
-                                    }
-                                }}
-                                refreshing={refreshing}
-                                onRefreshing={() => {
-                                    onRefreshing?.();
-                                }}
-                                onDataProduct={(id, _totalProducts, unidadesEntregadas) => {
-                                    const deliveredUnits = unidadesEntregadas ? unidadesEntregadas : item?.unidades_solicitadas;
-                                    const deliveredValue = calculateVlueByPorducts(
-                                        item,
-                                        TypeCaculateValueEnum.ACTION_5,
-                                        Number(deliveredUnits),
-                                        undefined,
-                                        Number(allProducts?.[0]?.porcentaje_dfr)
-                                    );
-                                    updateProductStatus(id, Number(deliveredValue), 'pending', unidadesEntregadas);
-                                }}
-                                porcentajeDFR={Number(allProducts?.[0]?.porcentaje_dfr)}
-                                notDetails={notDetails}
-                            />
-                        ))
+                        pendingProductsFlat.map((item, index) => {
+                            return (
+                                <ProductItemAceptation
+                                    key={item.id}
+                                    item={item}
+                                    isLastItem={index === pendingProductsFlat.length - 1}
+                                    onValidate={handleValidate}
+                                    onPresssNovlety={(direction) => {
+                                        setDirection(direction);
+                                        setValidatedProducts(item);
+                                    }}
+                                    activeSwipeId={activeSwipeId}
+                                    setActiveSwipeId={setActiveSwipeId}
+                                    shouldAutoValidate={shouldAutoValidate}
+                                    onCloseReport={(value) => onCloseReportPorduct?.(value)}
+                                    testToken={serviceToken}
+                                    testUrl={serviceUrl}
+                                    onItemData={(data) => {
+                                        if (data?.estado) {
+                                            // onItemData?.(data);
+                                        }
+                                    }}
+                                    refreshing={refreshing}
+                                    onRefreshing={() => {
+                                        onRefreshing?.();
+                                    }}
+                                    onDataProduct={(id, _totalProducts, unidadesEntregadas) => {
+
+                                        const deliveredUnits = unidadesEntregadas
+                                            ? unidadesEntregadas
+                                            : item?.unidades_solicitadas;
+
+                                        const deliveredValue = calculateVlueByPorducts(
+                                            item,
+                                            TypeCaculateValueEnum.ACTION_5,
+                                            Number(deliveredUnits),
+                                            undefined,
+                                            Number(allProducts?.[0]?.porcentaje_dfr)
+                                        );
+
+                                        updateProductStatus(
+                                            id,
+                                            Number(deliveredValue),
+                                            'pending',
+                                            unidadesEntregadas
+                                        );
+                                    }}
+                                    porcentajeDFR={Number(allProducts?.[0]?.porcentaje_dfr)}
+                                    notDetails={notDetails}
+                                />
+                            );
+                        })
                     ) : (
                         Array.from({ length: 4 }).map((_, i) => (
                             <ProductItemSkeleton key={i} />
                         ))
                     )}
-
                     <View style={styles.bottomSpacing} />
                 </View>
             </ScrollView>

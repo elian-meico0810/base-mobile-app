@@ -159,10 +159,14 @@ export function ViewDetailsPorductsOrder({
 
     }, []);
 
-    useEffect(() => {
+    const handleAlertButton = async () => {
         if (alertButton) {
-            submitDataByActionsAlert();
+            await submitDataByActionsAlert();
         }
+    };
+
+    useEffect(() => {
+        handleAlertButton();
     }, [alertButton]);
 
     const uploadPhotoSubmit = async (evidences: string[]) => {
@@ -235,7 +239,6 @@ export function ViewDetailsPorductsOrder({
 
             const responseQuery = await detailsRepositoryImpl.listAceptationOrderDetails(token, Number(numberGuide), String(OrderArray?.codigo));
             if (responseQuery?.statusCode === 200) {
-
                 setPorductData(
                     Array.isArray(responseQuery.data)
                         ? responseQuery.data.flat()
@@ -319,16 +322,27 @@ export function ViewDetailsPorductsOrder({
 
     };
 
-
     const submitDataByActionsAlert = async () => {
         try {
-            console.log("submitDataByActionsAlert");
+            const totalUnits = dataNovelty.reduce(
+                (acc, item) => acc + (item.units || 0),
+                0
+            );
 
-            if (modalVisible) return;
-
+            if (modalVisible || totalUnits == 0) return;
             setLoading(true);
 
             if (alertButton && selectedProduct) {
+
+                if (totalUnits > selectedProduct.unidades_solicitadas) {
+                    setAlertButton(false);
+                    setModalTitle("¡Cantidad inválida!");
+                    setModalMessage("Las unidades ingresadas del producto exceden la cantidad facturada, verifíque.");
+                    setModalVisible(true);
+                    setLoading(false);
+                    return;
+                }
+
                 const payload: NoveltyOrderPayload = {
                     aceptacion_pedido_detalle: selectedProduct.id,
 
@@ -342,10 +356,8 @@ export function ViewDetailsPorductsOrder({
                             codigo: item.codigo
                         }))
                 };
-                const response = await invoiceRepositoryImpl.reportNovelty(
-                    payload,
-                    token
-                );
+
+                const response = await invoiceRepositoryImpl.reportNovelty(payload, token);
 
                 if (response?.statusCode === 200) {
                     setAlertButton(false);
@@ -353,31 +365,37 @@ export function ViewDetailsPorductsOrder({
                     setModalTitle("¡Procesado!");
                     setModalMessage(`Novedad registrada con éxito.`);
                     setModalVisible(true);
-                    setAlertButton(false);
+
+                    setDataNovelty([]);
+                    setSelectedProduct(null);
+                    setStatusNovelty(null);
+                    setNovelty(false);
+
+                    setTimeout(() => {
+                        getDataProduct();
+                    }, 500);
+
                     return;
                 } else {
                     setModalTitle("¡Alerta!");
-                    setModalMessage("Problemas al guardar la novedad del pedido.");
+                    setModalMessage(response.message || "Ocurrio un error inesperado.");
                     setModalVisible(true);
-
-                    setTimeout(() => {
-                        setModalVisible(false);
-                    }, 6000);
                     return;
+
                 }
-
-
             }
-            getDataProduct();
+
+            await getDataProduct();
+
         } catch (error) {
-            setModalTitle("¡Error!");
-            setModalMessage("Ocurrio un error inesperadosss 11.");
+            setModalTitle("¡Alerta!");
+            setModalMessage("Problemas al guardar la novedad del pedido.");
             setModalVisible(true);
         } finally {
             setLoading(false);
+            setAlertButton(false);
         }
     };
-
 
     const handleRejectOrderTwo = async (data: AceptationOrderDetails[]) => {
         try {
@@ -405,9 +423,6 @@ export function ViewDetailsPorductsOrder({
             );
 
             if (response?.statusCode === 200) {
-
-
-
                 setIsRejected(true);
                 setModalTitle("¡Procesado!");
                 setModalMessage(`Novedad registrada con éxito.`);
@@ -635,7 +650,6 @@ export function ViewDetailsPorductsOrder({
                         setRefreshingOnPress(false);
                         setNovelty(true);
                         setAlertButton(true);
-
                     }}
                     showViewModal={showViewModal}
                     showTypeDetails={showTypeDetails}

@@ -16,7 +16,7 @@ import { Cause } from "../../tracking/domain/details/DetailsGuide";
 
 interface ReportNoveltysProps {
     title: string;
-    onPress?: (data: ReasonData[]) => void; 
+    onPress?: (data: ReasonData[]) => void;
     onClose?: () => void;
     disabled?: boolean;
     width?: number;
@@ -107,12 +107,16 @@ export function ReportNoveltyScreen({
     }, []);
 
     const handleFinalize = () => {
-        Keyboard.dismiss();
-        const reasonData = getReasonValues();
-        onPress?.(reasonData);
-        setHasValues(false);
-        setUnits(["", "", "", ""]);
-        onClose?.();
+        if (hasValues) {
+
+            Keyboard.dismiss();
+            const reasonData = getReasonValues();
+            onPress?.(reasonData);
+            setHasValues(false);
+            setUnits(["", "", "", ""]);
+            onClose?.();
+        }
+
     };
 
     useEffect(() => {
@@ -121,10 +125,9 @@ export function ReportNoveltyScreen({
             (e) => {
                 setKeyboardVisible(true);
                 setKeyboardHeight(e.endCoordinates.height);
-                // SUBE MÁS: cambiado de -e.endCoordinates.height / 2 a -e.endCoordinates.height
                 Animated.timing(translateY, {
                     duration: 300,
-                    toValue: -e.endCoordinates.height, // Sube toda la altura del teclado
+                    toValue: -e.endCoordinates.height,
                     useNativeDriver: true,
                 }).start();
             }
@@ -163,7 +166,7 @@ export function ReportNoveltyScreen({
                 onPress={handleClose}
                 activeOpacity={1}
             />
-            
+
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={styles.keyboardAvoidingView}

@@ -9,15 +9,12 @@ import {
     Text,
     View
 } from 'react-native';
-import { ProductoPedido, StatusOrder } from '../../tracking/domain/details/DetailsGuide';
+import { ProductoPedido } from '../../tracking/domain/details/DetailsGuide';
 
 const { width } = Dimensions.get('window');
 
 interface ProductItemAceptationProps {
-    item: ProductoPedido & {
-        estado?: StatusOrder;
-        novedades?: Array<{ valor?: string }>;
-    };
+    item: ProductoPedido;
     isLastItem: boolean;
     onValidate: (id: number, direction: 'left' | 'right') => void;
     onPresssNovlety?: (direction: 'left' | 'right' | null) => void;
@@ -53,28 +50,16 @@ export const ProductItemAceptation = ({
     porcentajeDFR,
     notDetails
 }: ProductItemAceptationProps) => {
-    const isValidated = item?.estado?.codigo === 'EST_DET_VALIDADO';
+    const isValidated = Number(item?.unidades_rechazadas) > 0;
     const deliveredUnits = Number(item?.unidades_entregadas ?? 0);
     const rejectedUnits = Number(item?.unidades_rechazadas ?? 0);
     const requestedUnits = Number(item?.unidades_solicitadas ?? 0);
-    const [hasNotified, setHasNotified] = useState(false); // ← NUEVO: para evitar notificaciones múltiples
-
-    let noveltySum = 0;
-    if (Array.isArray(item?.novedades)) {
-        for (const nov of item.novedades) {
-            const val = parseFloat(nov?.valor ?? '0');
-            if (!isNaN(val)) {
-                noveltySum += val;
-            }
-        }
-    }
-
-    const deliveredEstimateCalc = Math.max(requestedUnits - noveltySum, 0);
+    const [hasNotified, setHasNotified] = useState(false);
 
     let statusIcon: 'success' | 'error' | 'warning' | null = null;
     if (requestedUnits === deliveredUnits && requestedUnits > 0) {
         statusIcon = 'success';
-    } else if (deliveredUnits === 0) {
+    } else if (deliveredUnits === 0 && item?.unidades_rechazadas > 0) {
         statusIcon = 'error';
     } else if (requestedUnits > 0 && deliveredUnits > 0 && deliveredUnits !== requestedUnits) {
         statusIcon = 'warning';
@@ -87,9 +72,12 @@ export const ProductItemAceptation = ({
         return (baseValue + taxes) * units;
     };
 
-    const totalValueDisplay = isValidated
-        ? (deliveredUnits > 0 ? calculateProductValue(deliveredUnits) : 0)
-        : (deliveredEstimateCalc > 0 ? calculateProductValue(deliveredEstimateCalc) : 0);
+    let totalValueDisplay = 0
+    totalValueDisplay = (deliveredUnits > 0 ? calculateProductValue(deliveredUnits) : 0)
+
+    if (deliveredUnits === 0  && !rejectedUnits || rejectedUnits == 0) {
+        totalValueDisplay = (Number(item?.unidades_solicitadas ?? 0) > 0 ? calculateProductValue(Number(item?.unidades_solicitadas ?? 0)) : 0)
+    }
 
     const swipePosition = useRef(new Animated.Value(0)).current;
     const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
@@ -122,7 +110,7 @@ export const ProductItemAceptation = ({
 
     useEffect(() => {
         if (onDataProduct) {
-            const deliveredEstimate = Math.max(Number(item.unidades_solicitadas) - noveltySum, 0);
+            const deliveredEstimate = Math.max(Number(item.unidades_solicitadas) - Number(item.unidades_solicitadas), 0);
             const totalValue = isValidated
                 ? (deliveredUnits > 0 ? calculateProductValue(deliveredUnits) : 0)
                 : (deliveredEstimate > 0 ? calculateProductValue(deliveredEstimate) : 0);
@@ -135,7 +123,6 @@ export const ProductItemAceptation = ({
         item.unidades_solicitadas,
         item.total_impuestos,
         item.valor_base_producto,
-        item.estado?.codigo
     ]);
 
     // Efecto para manejar refreshing externo
@@ -416,15 +403,15 @@ export const ProductItemAceptation = ({
                                     style={styles.productImage}
                                     resizeMode="cover"
                                 />
-                                {(statusIcon === 'success' && item.estado?.codigo === 'EST_DET_VALIDADO') ? (
+                                {(statusIcon === 'success') ? (
                                     <View style={styles.statusDot}>
                                         <MaterialIcons name="check" size={9} color="#FFFFFF" />
                                     </View>
-                                ) : (statusIcon === 'error' && item.estado?.codigo === 'EST_DET_VALIDADO') ? (
+                                ) : (statusIcon === 'error') ? (
                                     <View style={styles.errorDot}>
                                         <MaterialIcons name="close" size={9} color="#FFFFFF" />
                                     </View>
-                                ) : (statusIcon === 'warning' && item.estado?.codigo === 'EST_DET_VALIDADO') ? (
+                                ) : (statusIcon === 'warning') ? (
                                     <View style={styles.warningDot}>
                                         <MaterialIcons name="warning" size={12} color="#FFA400" />
                                     </View>
@@ -432,15 +419,15 @@ export const ProductItemAceptation = ({
                             </View>
                         ) : (
                             <View style={styles.imagePlaceholder}>
-                                {(statusIcon === 'success' && item.estado?.codigo === 'EST_DET_VALIDADO') ? (
+                                {(statusIcon === 'success') ? (
                                     <View style={styles.statusDot}>
                                         <MaterialIcons name="check" size={9} color="#FFFFFF" />
                                     </View>
-                                ) : (statusIcon === 'error' && item.estado?.codigo === 'EST_DET_VALIDADO') ? (
+                                ) : (statusIcon === 'error') ? (
                                     <View style={styles.errorDot}>
                                         <MaterialIcons name="close" size={9} color="#FFFFFF" />
                                     </View>
-                                ) : (statusIcon === 'warning' && item.estado?.codigo === 'EST_DET_VALIDADO') ? (
+                                ) : (statusIcon === 'warning') ? (
                                     <View style={styles.warningDot}>
                                         <MaterialIcons name="warning" size={12} color="#FFA400" />
                                     </View>
@@ -474,16 +461,14 @@ export const ProductItemAceptation = ({
 
                             </View>
 
-                            {!notDetails ? (
-                                <View style={styles.priceRow}>
-                                    <Text style={styles.totalPrice}>
-                                        ${formatNumber(totalValueDisplay ?? 0)}
-                                    </Text>
-                                    <Text style={styles.unitPrice}>
-                                        $ {formatNumber(calculateProductValue(1) ?? 0)} c/u
-                                    </Text>
-                                </View>
-                            ) : null}
+                            <View style={styles.priceRow}>
+                                <Text style={styles.totalPrice}>
+                                    ${formatNumber(totalValueDisplay ?? 0)}
+                                </Text>
+                                <Text style={styles.unitPrice}>
+                                    $ {formatNumber(calculateProductValue(1) ?? 0)} c/u
+                                </Text>
+                            </View>
                         </View>
                     </View>
                 </View>

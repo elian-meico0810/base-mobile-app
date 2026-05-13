@@ -483,56 +483,80 @@ export function ViewAcceptationTerms({
                                     <View style={styles.divider} />
 
                                     <View style={styles.gap}>
-                                        {pedido.productos?.map((item, itemIndex) => (
-                                            <View
-                                                key={`${item.producto?.codigo + itemIndex}`}
-                                                style={styles.productRow}
-                                            >
-                                                <Text
-                                                    numberOfLines={1}
-                                                    style={styles.productName}
-                                                >
-                                                    {item.producto?.nombre
-                                                        ? item.producto.nombre.charAt(0).toUpperCase() +
-                                                        item.producto.nombre.slice(1).toLowerCase()
-                                                        : ""}
-                                                </Text>
+                                        {pedido.productos?.map((item, itemIndex) => {
+                                            const deliveredUnits = item.unidades_entregadas || 0;
+                                            const requestedUnits = item.unidades_solicitadas || 0;
+                                            const requestedRefusedUnits = item.unidades_rechazadas || 0;
 
-                                                <Text style={styles.units}>
-                                                    {item.unidades_solicitadas || 0} uds.
-                                                </Text>
-                                            </View>
-                                        ))}
+                                            const isValidated =
+                                                requestedRefusedUnits > 0 && deliveredUnits !== requestedUnits;
+
+                                            return (
+                                                <View
+                                                    key={`${item.producto?.codigo + itemIndex}`}
+                                                    style={styles.productRow}
+                                                >
+                                                    <Text
+                                                        numberOfLines={1}
+                                                        style={styles.productName}
+                                                    >
+                                                        {item.producto?.nombre
+                                                            ? item.producto.nombre.charAt(0).toUpperCase() +
+                                                            item.producto.nombre.slice(1).toLowerCase()
+                                                            : ""}
+                                                    </Text>
+
+                                                    <View style={styles.productHeader}>
+                                                        <Text style={styles.quantityText}>
+                                                            {isValidated ? deliveredUnits : requestedUnits} uds.
+                                                        </Text>
+
+                                                        {isValidated && (
+                                                            <Text style={styles.quantityTextValue}>
+                                                                {requestedUnits} uds.
+                                                            </Text>
+                                                        )}
+                                                    </View>
+                                                </View>
+                                            );
+                                        })}
                                     </View>
 
                                     {/* BOTONES POR CARD */}
-                                    {!pedido?.codigo_validado && (
+                                    {!(
+                                        pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDIDO_ACEPT ||
+                                        (
+                                            pedido?.codigo_validado &&
+                                            (
+                                                pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDI_ENT_PARC ||
+                                                pedido?.estado_pedido?.codigo === TypeStatusEnum.EST_PEDI_RECH
+                                            )
+                                        )
+                                    ) && (
+                                            <View style={styles.buttonsRow}>
+                                                <SecondaryButtonCancel
+                                                    title="Reporatar Novedad"
+                                                    onPress={() => {
+                                                        reportNovelty(pedido);
+                                                    }}
+                                                    disabled={false}
+                                                    width={160}
+                                                    height={40}
+                                                    fontSize={14}
+                                                />
 
-                                        <View style={styles.buttonsRow}>
-                                            <SecondaryButtonCancel
-                                                title="Reporatar Novedad"
-                                                onPress={() => {
-                                                    reportNovelty(pedido);
-                                                }}
-                                                disabled={false}
-                                                width={160}
-                                                height={40}
-                                                fontSize={14}
-                                            />
-
-                                            <PrimaryButton
-                                                title="Aceptar pedido"
-                                                onPress={async () => {
-                                                    await handleAceptataionOrder(pedido);
-                                                }}
-                                                disabled={false}
-                                                width={160}
-                                                height={40}
-                                                fontSize={14}
-                                            />
-                                        </View>
-                                    )}
-
+                                                <PrimaryButton
+                                                    title="Aceptar pedido"
+                                                    onPress={async () => {
+                                                        await handleAceptataionOrder(pedido);
+                                                    }}
+                                                    disabled={false}
+                                                    width={160}
+                                                    height={40}
+                                                    fontSize={14}
+                                                />
+                                            </View>
+                                        )}
                                 </View>
                             ))}
                         </ScrollView>
@@ -849,6 +873,28 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 8,
+    },
+    productHeader: {
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'flex-end',
+        gap: 2,
+    },
+
+    quantityText: {
+        fontFamily: 'Rubik',
+        fontWeight: '600',
+        fontSize: 14,
+        color: '#788095',
+    },
+
+    quantityTextValue: {
+        fontFamily: 'Rubik',
+        fontWeight: '600',
+        fontSize: 12,
+        lineHeight: 12,
+        textDecorationLine: 'line-through',
+        color: '#788095',
     },
 });
 

@@ -26,10 +26,10 @@ export function ChangeCodeModal({
     onConfirm,
     onAlert
 }: ChangeCodeModalProps) {
-
-    const [phone, setPhone] = useState("");
+    const [code, setCode] = useState("");
     const [keyboardHeight] = useState(new Animated.Value(0));
-    const isValid = phone.length === 6;
+    
+    const isValid = code.length === 6;
 
     useEffect(() => {
         const keyboardWillShow = Keyboard.addListener(
@@ -62,14 +62,31 @@ export function ChangeCodeModal({
 
     const handleClose = () => {
         Keyboard.dismiss();
-        setTimeout(onClose, 100);
+        setTimeout(() => {
+            setCode("");
+            onClose();
+        }, 100);
     };
 
     useEffect(() => {
         if (visible) {
             keyboardHeight.setValue(0);
+            setCode("");
         }
     }, [visible]);
+
+    const handleConfirm = () => {
+        if (!isValid) return; 
+        
+        Keyboard.dismiss();
+        
+        setTimeout(() => {
+            onConfirm(code);
+            onAlert(); 
+            onClose();
+            setCode("");
+        }, 300);
+    };
 
     return (
         <Modal
@@ -81,12 +98,6 @@ export function ChangeCodeModal({
         >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <View style={styles.overlay}>
-
-                    <TouchableOpacity
-                        activeOpacity={1}
-                        onPress={handleClose}
-                    />
-
                     <Animated.View
                         style={[
                             styles.modalContainer,
@@ -98,8 +109,7 @@ export function ChangeCodeModal({
                         ]}
                     >
                         <View style={styles.modal}>
-
-                            {/* BOTON X */}
+                            {/* Botón cerrar */}
                             <TouchableOpacity
                                 style={styles.closeButton}
                                 onPress={handleClose}
@@ -118,10 +128,10 @@ export function ChangeCodeModal({
                             </Text>
 
                             <TextInput
-                                value={phone}
+                                value={code}
                                 onChangeText={(text) => {
                                     const onlyNumbers = text.replace(/[^0-9]/g, '');
-                                    setPhone(onlyNumbers);
+                                    setCode(onlyNumbers);
                                 }}
                                 style={[
                                     styles.input,
@@ -130,7 +140,7 @@ export function ChangeCodeModal({
                                         height: 43,
                                     }
                                 ]}
-                                placeholder="Codigo Verficiacion"
+                                placeholder="Código de verificación"
                                 keyboardType="number-pad"
                                 maxLength={6}
                                 autoFocus={true}
@@ -138,23 +148,11 @@ export function ChangeCodeModal({
 
                             <PrimaryButton
                                 title="Confirmar"
-                                onPress={() => {
-                                    if (!isValid) return;
-
-                                    Keyboard.dismiss();
-
-                                    setTimeout(() => {
-                                        onConfirm(phone);
-                                        onClose();
-                                        onAlert();
-                                        setPhone("");
-                                    }, 300);
-                                }}
+                                onPress={handleConfirm}
                                 width={350}
                                 height={43}
                                 disabled={!isValid}
                             />
-
                         </View>
                     </Animated.View>
                 </View>
@@ -172,7 +170,6 @@ const styles = StyleSheet.create({
     modalContainer: {
         justifyContent: "flex-end",
     },
-
     modal: {
         backgroundColor: "#FFFFFF",
         padding: 20,
@@ -182,7 +179,6 @@ const styles = StyleSheet.create({
         maxHeight: "70%",
         position: "relative",
     },
-
     closeButton: {
         position: "absolute",
         top: 18,
@@ -193,14 +189,12 @@ const styles = StyleSheet.create({
         alignItems: "center",
         zIndex: 10,
     },
-
     closeText: {
         color: "#141D32",
         fontSize: 18,
         fontWeight: "700",
         lineHeight: 20,
     },
-
     title: {
         fontFamily: "Rubik",
         fontWeight: "800",
@@ -208,7 +202,6 @@ const styles = StyleSheet.create({
         color: "#141D32",
         marginTop: 10,
     },
-
     description: {
         fontFamily: "Rubik",
         fontWeight: "600",
@@ -216,7 +209,6 @@ const styles = StyleSheet.create({
         color: "#788095",
         marginBottom: 8,
     },
-
     input: {
         height: 46,
         borderRadius: 10,
@@ -227,6 +219,17 @@ const styles = StyleSheet.create({
         fontWeight: "400",
         fontSize: 16,
         color: "#141D32",
+        marginBottom: 8,
+    },
+    counterText: {
+        fontFamily: "Rubik",
+        fontSize: 12,
+        color: "#788095",
         marginBottom: 20,
+        textAlign: "right",
+    },
+    counterTextValid: {
+        color: "#4CAF50",
+        fontWeight: "600",
     },
 });

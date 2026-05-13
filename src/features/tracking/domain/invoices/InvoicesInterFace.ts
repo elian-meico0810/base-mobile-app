@@ -274,4 +274,5 @@ export interface NoveltyOrderPayload {
 export interface ValidateCodeProps {
   bodega: string;
   codigo: string;
+  codigo_pedido:  string;
 }

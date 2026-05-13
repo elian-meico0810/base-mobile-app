@@ -93,6 +93,11 @@ export function ViewDetailsPorductsOrder({
     const [showNotEntry, setShowNotEntry] = useState(false);
     const [newCode, setNewCode] = useState("");
 
+    const [modalButtonLabelTwo, setModalButtonLabelTwo] = useState("Entendido");
+    const [modalTitleTwo, setModalTitleTwo] = useState("");
+    const [modalMessageTwo, setModalMessageTwo] = useState("");
+    const [modalVisibleTwo, setModalVisibleTwo] = useState(false);
+
     const btnRef = useRef<any>(null);
     const router = useRouter();
 
@@ -443,9 +448,9 @@ export function ViewDetailsPorductsOrder({
 
                 if (response?.statusCode === 200) {
                     setIsRejected(true);
-                    setModalTitle("¡Procesado!");
-                    setModalMessage(`Pedido no recibido. Se confirmó que el pedido no fue recibido.`);
-                    setModalVisible(true);
+                    setModalTitleTwo("¡Pedido no recibido!");
+                    setModalMessageTwo(` Se confirmó que el pedido no fue recibido.`);
+                    setModalVisibleTwo(true);
                     return;
                 } else {
                     setModalTitle("¡Alerta!");
@@ -478,25 +483,27 @@ export function ViewDetailsPorductsOrder({
     const handleValidateCode = async (code: string) => {
         try {
             setLoading(true);
-
             if (OrderArray?.bodega) {
                 const response = await invoiceRepositoryImpl.validateCode(
                     {
                         bodega: OrderArray?.bodega,
-                        codigo: code
+                        codigo: code,
+                        codigo_pedido: OrderArray?.codigo ?? "",
+
                     },
                     token
                 );
                 if (response?.statusCode === 200) {
-                    setIsRejected(true);
-                    setModalTitle("¡Pedido no recibido!");
-                    setModalMessage(` Se confirmó que el pedido no fue recibido.`);
-                    setModalVisible(true);
-                    return;
+                    if (showNotEntry) {
+                        await handleRejectOrderTwo()
+                    }
                 } else {
                     setModalTitle("¡Alerta!");
                     setModalMessage(response.message || "Ocurrio un error inesperado.");
                     setModalVisible(true);
+                    setTimeout(() => {
+                        setModalVisible(false);
+                    }, 6000);
                     return;
                 }
             }
@@ -633,13 +640,25 @@ export function ViewDetailsPorductsOrder({
                 visible={modalVisible}
                 onClose={() => {
                     setModalVisible(false);
-                    if (showNotEntry) {
-                        // seendViewDetails();
-                    }
+
                 }}
                 title={modalTitle}
                 message={modalMessage}
                 buttonLabel={modalButtonLabel}
+            />
+
+
+            <ExceptionModal
+                visible={modalVisibleTwo}
+                onClose={() => {
+                    setModalVisibleTwo(false);
+                    if (showNotEntry) {
+                        seendViewDetails();
+                    }
+                }}
+                title={modalTitleTwo}
+                message={modalMessageTwo}
+                buttonLabel={modalButtonLabelTwo}
             />
 
             <ExecptionModalCancel

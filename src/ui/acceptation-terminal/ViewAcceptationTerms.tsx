@@ -130,7 +130,6 @@ export function ViewAcceptationTerms({
         try {
             const respones = await invoiceRepositoryImpl.listTotalsGuide(String(numberGuide), token, isEjecute);
             if (respones?.statusCode === 200 && respones.data) {
-
                 setEjecuteData(true);
                 setGuideOrder(respones.data as OrderGroup[]);
             }
@@ -507,29 +506,33 @@ export function ViewAcceptationTerms({
                                     </View>
 
                                     {/* BOTONES POR CARD */}
-                                    <View style={styles.buttonsRow}>
-                                        <SecondaryButtonCancel
-                                            title="Reporatar Novedad"
-                                            onPress={() => {
-                                                reportNovelty(pedido);
-                                            }}
-                                            disabled={false}
-                                            width={160}
-                                            height={40}
-                                            fontSize={14}
-                                        />
+                                    {!pedido?.codigo_validado && (
 
-                                        <PrimaryButton
-                                            title="Aceptar pedido"
-                                            onPress={async () => {
-                                                await handleAceptataionOrder(pedido);
-                                            }}
-                                            disabled={false}
-                                            width={160}
-                                            height={40}
-                                            fontSize={14}
-                                        />
-                                    </View>
+                                        <View style={styles.buttonsRow}>
+                                            <SecondaryButtonCancel
+                                                title="Reporatar Novedad"
+                                                onPress={() => {
+                                                    reportNovelty(pedido);
+                                                }}
+                                                disabled={false}
+                                                width={160}
+                                                height={40}
+                                                fontSize={14}
+                                            />
+
+                                            <PrimaryButton
+                                                title="Aceptar pedido"
+                                                onPress={async () => {
+                                                    await handleAceptataionOrder(pedido);
+                                                }}
+                                                disabled={false}
+                                                width={160}
+                                                height={40}
+                                                fontSize={14}
+                                            />
+                                        </View>
+                                    )}
+
                                 </View>
                             ))}
                         </ScrollView>

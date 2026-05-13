@@ -305,6 +305,7 @@ export interface OrderGroup {
   fecha_validacion: string;
   porcentaje_dfr: string;
   dfr: string;
+  codigo_validado?: number| null| undefined;
   estado_pedido: StatusOrder;
   productos: ProductoPedido[];
 }

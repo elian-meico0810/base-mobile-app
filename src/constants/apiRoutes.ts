@@ -42,6 +42,7 @@ export const API_ROUTES = {
   CREATE_ACEPTATION_GUIDE:"aceptacion-pedido/crear/",
   GET_ORDER_ACEPT: "aceptacion-pedido/get-all/",
   ACEPTATION_ORDER_NOVELTY: "aceptacion-pedido/reportar-novedad/",
+  VALIDATE_CODE_BY_BODEGA: "codigos-validacion-guias/validate-codigo-guia-by-bodega/",
   // Back contado anticipado
   SEND_PAYMENT_GATEWAY: "pagos/generar-link-pasarela/",
   GENERATE_QR: "pagos/generar_qr_bancolombia/",
@@ -68,13 +69,13 @@ export const API_ROUTES = {
 export const ENV_DEV = {
   // ============================================================================================================================================================
   //Qa
-  // KEY_APP: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX25hbWUiOiJhcGltZWljb3RyYWNrQG1laWNvLmNvbS5jbyIsImVtYWlsIjoiYXBpbWVpY290cmFja0BtZWljby5jb20uY28iLCJkaXNwbGF5X25hbWUiOiJBUEkgIiwiZXhwIjo4ODE1NjA2MTM5NCwicGVybWlzc2lvbnMiOlsiQUxMIl0sImNsaWVudF9pZCI6Im1laWNvX3RyYWNrIn0.CfrDOgJNIyJww6XPOxU1U86F_8r5GYEHSR3TRrqp_aU"
+  KEY_APP: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX25hbWUiOiJhcGltZWljb3RyYWNrQG1laWNvLmNvbS5jbyIsImVtYWlsIjoiYXBpbWVpY290cmFja0BtZWljby5jb20uY28iLCJkaXNwbGF5X25hbWUiOiJBUEkgIiwiZXhwIjo4ODE1NjA2MTM5NCwicGVybWlzc2lvbnMiOlsiQUxMIl0sImNsaWVudF9pZCI6Im1laWNvX3RyYWNrIn0.CfrDOgJNIyJww6XPOxU1U86F_8r5GYEHSR3TRrqp_aU"
   // ============================================================================================================================================================
 
 
   // ============================================================================================================================================================
   // Prod
-  KEY_APP: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX25hbWUiOiJhcGltZWljb3RyYWNrQG1laWNvLmNvbS5jbyIsImVtYWlsIjoiYXBpbWVpY290cmFja0BtZWljby5jb20uY28iLCJkaXNwbGF5X25hbWUiOiJBUEkgIiwiZXhwIjo4ODE1NjA2MTM5NywicGVybWlzc2lvbnMiOlsiQUxMIl0sImNsaWVudF9pZCI6Im1laWNvX3RydWNrX3RyYW5zcG9ydGFkb3IifQ.X1cwgIQC9sWRA2SACv6JillhAg4cDkX7UQBtE5jqLds"
+  // KEY_APP: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX25hbWUiOiJhcGltZWljb3RyYWNrQG1laWNvLmNvbS5jbyIsImVtYWlsIjoiYXBpbWVpY290cmFja0BtZWljby5jb20uY28iLCJkaXNwbGF5X25hbWUiOiJBUEkgIiwiZXhwIjo4ODE1NjA2MTM5NywicGVybWlzc2lvbnMiOlsiQUxMIl0sImNsaWVudF9pZCI6Im1laWNvX3RydWNrX3RyYW5zcG9ydGFkb3IifQ.X1cwgIQC9sWRA2SACv6JillhAg4cDkX7UQBtE5jqLds"
   // ============================================================================================================================================================
 
 

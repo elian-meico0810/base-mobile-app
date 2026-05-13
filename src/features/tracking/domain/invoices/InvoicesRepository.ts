@@ -1,6 +1,6 @@
 import { ApiResponse } from "@/src/features/auth/domain/ApiResponse";
 import { OrderGroup } from "../details/DetailsGuide";
-import { AceptationPedidoProps, ApproveOrReject, CreateEntregaProps, CreatePaymentTypeProps, DerliveryDocument, GenerateQRPorps, NoDeliveryProps, NoveltyOrderPayload, OpneAddressesDeliveryProps, OpneAddressesProps, PaymentGatewayProps, ReportWhatsAppQRPorps, SuccessOrderArrayPayment, successOrderCashPayment, successOrderPayment, TypeParameterValue, UploadEvidenceAcceptationGuidesProps, WhatsappProps, WhatsappTATImageProps } from "./InvoicesInterFace";
+import { AceptationPedidoProps, ApproveOrReject, CreateEntregaProps, CreatePaymentTypeProps, DerliveryDocument, GenerateQRPorps, NoDeliveryProps, NoveltyOrderPayload, OpneAddressesDeliveryProps, OpneAddressesProps, PaymentGatewayProps, ReportWhatsAppQRPorps, SuccessOrderArrayPayment, successOrderCashPayment, successOrderPayment, TypeParameterValue, UploadEvidenceAcceptationGuidesProps, ValidateCodeProps, WhatsappProps, WhatsappTATImageProps } from "./InvoicesInterFace";
 
 export interface InvoicesRepository {
   sendPaymentGetway: (data: PaymentGatewayProps, token: string) => Promise<any>;
@@ -28,5 +28,6 @@ export interface InvoicesRepository {
   uploadEvidenceAcceptationGuides: (data: UploadEvidenceAcceptationGuidesProps, token: string) => Promise<any>;
   aceptationOrder: (data: AceptationPedidoProps, token: string) => Promise<any>;
   reportNovelty: (data: NoveltyOrderPayload, token: string) => Promise<any>;
+  validateCode: (data: ValidateCodeProps, token: string) => Promise<any>;
 
 }

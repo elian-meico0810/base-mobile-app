@@ -91,6 +91,8 @@ export function ViewDetailsPorductsOrder({
     const [selectedProduct, setSelectedProduct] = useState<ProductoPedido | null>(null);
     const [showChangeCode, setShowChangeCode] = useState(false);
     const [showNotEntry, setShowNotEntry] = useState(false);
+    const [newCode, setNewCode] = useState("");
+
     const btnRef = useRef<any>(null);
     const router = useRouter();
 
@@ -257,6 +259,17 @@ export function ViewDetailsPorductsOrder({
         }
     };
 
+    const handleSubmitCode = async (code: string) => {
+        try {
+            await handleValidateCode(code)
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleSubmit = async () => {
         try {
@@ -397,7 +410,7 @@ export function ViewDetailsPorductsOrder({
     };
 
     const seendViewDetails = async () => {
-                    await handleExit();
+        await handleExit();
 
     }
     const handleRejectOrderTwo = async () => {
@@ -460,6 +473,43 @@ export function ViewDetailsPorductsOrder({
             setLoading(false);
         }
     };
+
+
+    const handleValidateCode = async (code: string) => {
+        try {
+            setLoading(true);
+
+            if (OrderArray?.bodega) {
+                const response = await invoiceRepositoryImpl.validateCode(
+                    {
+                        bodega: OrderArray?.bodega,
+                        codigo: code
+                    },
+                    token
+                );
+                if (response?.statusCode === 200) {
+                    setIsRejected(true);
+                    setModalTitle("¡Pedido no recibido!");
+                    setModalMessage(` Se confirmó que el pedido no fue recibido.`);
+                    setModalVisible(true);
+                    return;
+                } else {
+                    setModalTitle("¡Alerta!");
+                    setModalMessage(response.message || "Ocurrio un error inesperado.");
+                    setModalVisible(true);
+                    return;
+                }
+            }
+
+        } catch (error: any) {
+            setModalTitle("¡Alerta!");
+            setModalMessage(error?.message || "Problemas al guardar la novedad del pedido.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     useEffect(() => {
         getDataProduct();
@@ -583,8 +633,8 @@ export function ViewDetailsPorductsOrder({
                 visible={modalVisible}
                 onClose={() => {
                     setModalVisible(false);
-                    if(showNotEntry){
-                        seendViewDetails();
+                    if (showNotEntry) {
+                        // seendViewDetails();
                     }
                 }}
                 title={modalTitle}
@@ -625,9 +675,7 @@ export function ViewDetailsPorductsOrder({
                 visible={showChangeCode}
                 onClose={() => setShowChangeCode(false)}
                 onConfirm={(newPhone) => {
-                    if (newPhone.length == 6 && showNotEntry) {
-                        handleSubmit();
-                    }
+                    handleSubmitCode(String(newPhone));
                     setShowChangeCode(false);
                 }}
                 onAlert={() => {

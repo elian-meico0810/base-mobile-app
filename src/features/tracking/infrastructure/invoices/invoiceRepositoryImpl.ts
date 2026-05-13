@@ -11,6 +11,7 @@ import {
   OpneAddressesDeliveryProps, OpneAddressesProps,
   PaymentGatewayProps, ReportWhatsAppQRPorps,
   UploadEvidenceAcceptationGuidesProps,
+  ValidateCodeProps,
   WhatsappProps, WhatsappTATImageProps
 } from "../../domain/invoices/InvoicesInterFace";
 import { InvoicesRepository, } from "../../domain/invoices/InvoicesRepository";
@@ -435,12 +436,12 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
     }
   },
 
-    async reportNovelty(data: NoveltyOrderPayload, token: string) {
+  async reportNovelty(data: NoveltyOrderPayload, token: string) {
     try {
       const response = await authApi.post(
         API_ROUTES.ACEPTATION_ORDER_NOVELTY,
         data,
-       {
+        {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -450,6 +451,32 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
       return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error: any) {
       throw error;
+    }
+  },
+
+  async validateCode(data: ValidateCodeProps, token: string) {
+    try {
+      const response = await authApi.post(
+        `${API_ROUTES.VALIDATE_CODE_BY_BODEGA}`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      // Aquí devuelves solo el JSON que envió el servidor
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error: any) {
+      return {
+        statusCode: error.response?.status ?? 500,
+        message:
+          error.response?.data?.message ??
+          "Ocurrió un error inesperado",
+        success: false,
+        data: null,
+      };
     }
   },
 };

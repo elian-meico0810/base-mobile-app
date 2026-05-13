@@ -270,3 +270,8 @@ export interface NoveltyOrderPayload {
     aceptacion_pedido_detalle: number;
     novedad: NoveltyItem[];
 }
+
+export interface ValidateCodeProps {
+  bodega: string;
+  codigo: string;
+}

@@ -53,15 +53,21 @@ export function ReportNoveltyScreen({
     const handleUnitChange = (text: string, index: number) => {
         try {
             const numericText = text.replace(/[^0-9]/g, '');
-            const newUnits = [...units];
-            newUnits[index] = numericText;
-            setUnits(newUnits);
-            checkForValues(newUnits);
+            setUnits(prevUnits => {
+                const newUnits = [...prevUnits];
+                newUnits[index] = numericText;
+                const hasAny = newUnits.some(unit => {
+                    if (unit === "") return false;
+                    const unitValue = parseInt(unit, 10);
+                    return !isNaN(unitValue);
+                });
+                setHasValues(hasAny);
+                return newUnits;
+            });
         } catch (error) {
             throw error;
         }
     };
-
     const checkForValues = (unitsArray: string[]) => {
         const hasAny = unitsArray.some(unit => {
             if (unit === "") return false;

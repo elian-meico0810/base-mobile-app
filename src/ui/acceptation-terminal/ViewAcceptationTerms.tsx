@@ -282,6 +282,14 @@ export function ViewAcceptationTerms({
 
                 if (responseData?.statusCode === 200) {
                     setLoading(false);
+                    router.push({
+                        pathname: '/views/details',
+                        params: {
+                            guide: Number(numberGuide),
+                            token: String(token),
+                            showAlert: "true"
+                        }
+                    });
                     return;
                 } else {
                     setModalTitle("¡Alerta!");

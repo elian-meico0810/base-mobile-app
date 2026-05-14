@@ -496,6 +496,8 @@ export function ViewDetailsPorductsOrder({
                 if (response?.statusCode === 200) {
                     if (showNotEntry) {
                         await handleRejectOrderTwo()
+                    } else {
+                        seendViewDetails();
                     }
                 } else {
                     setModalTitle("¡Alerta!");

@@ -44,7 +44,7 @@ export default function RenderQRView({
     styles,
     formatNumber,
     Row,
-    totalRecauder
+    totalRecauder,
 }: Props) {
     const [isQRGenerating, setIsQRGenerating] = useState(false);
     const [localQRData, setLocalQRData] = useState<string | undefined>(qrData);
@@ -344,7 +344,7 @@ export default function RenderQRView({
                         width={350}
                         height={43}
                     />
-                )}
+                )} 
             </View>
         </>
         //     ) : (

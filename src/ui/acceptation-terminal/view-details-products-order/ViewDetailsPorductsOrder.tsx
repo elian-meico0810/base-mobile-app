@@ -396,7 +396,7 @@ export function ViewDetailsPorductsOrder({
                                 codigo: item.codigo
                             }))
                     };
-                    
+
                     response = await invoiceRepositoryImpl.reportNoveltyCargue(payload, token);
                 } else {
                     const payload: NoveltyOrderPayload = {
@@ -524,15 +524,32 @@ export function ViewDetailsPorductsOrder({
         try {
             setLoading(true);
             if (OrderArray?.bodega) {
-                const response = await invoiceRepositoryImpl.validateCode(
-                    {
-                        bodega: OrderArray?.bodega,
-                        codigo: code,
-                        codigo_pedido: OrderArray?.codigo ?? "",
+                const hasCargue =
+                    OrderArray?.cargue &&
+                    OrderArray?.cargue !== "None" &&
+                    OrderArray?.cargue?.trim() !== "";
+                let response;
+                
+                if (hasCargue) {
+                    response = await invoiceRepositoryImpl.validateCodeCargue(
+                        {
+                            bodega: OrderArray?.bodega,
+                            codigo: code,
+                            cargue: OrderArray?.cargue ?? "",
 
-                    },
-                    token
-                );
+                        },
+                        token
+                    );
+                } else {
+                    response = await invoiceRepositoryImpl.validateCode(
+                        {
+                            bodega: OrderArray?.bodega,
+                            codigo: code,
+                            codigo_pedido: OrderArray?.codigo ?? "",
+                        },
+                        token
+                    );
+                }
                 if (response?.statusCode === 200) {
                     if (showNotEntry) {
                         await handleRejectOrderTwo()

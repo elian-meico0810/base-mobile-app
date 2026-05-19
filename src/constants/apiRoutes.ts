@@ -45,6 +45,7 @@ export const API_ROUTES = {
   ACEPTATION_ORDER_NOVELTY: "aceptacion-pedido/reportar-novedad/",
   ACEPTATION_ORDER_NOVELTY_CARGUE: "aceptacion-cargue/reportar-novedad/",
   VALIDATE_CODE_BY_BODEGA: "codigos-validacion-guias/validate-codigo-guia-by-bodega/",
+  VALIDATE_CODE_BY_BODEGA_CARGUE: "codigos-validacion-guias/validate-codigo-guia-by-bodega-in-cargue/",
   // Back contado anticipado
   SEND_PAYMENT_GATEWAY: "pagos/generar-link-pasarela/",
   GENERATE_QR: "pagos/generar_qr_bancolombia/",

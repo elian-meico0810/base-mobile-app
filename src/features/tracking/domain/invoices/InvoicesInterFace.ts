@@ -292,3 +292,9 @@ export interface ValidateCodeProps {
 export interface CreateCargueProps {
   cargue: string;
 }
+
+export interface ValidateCodeCargueProps {
+  bodega: string;
+  codigo: string;
+  cargue:  string;
+}

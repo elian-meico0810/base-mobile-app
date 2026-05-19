@@ -31,6 +31,6 @@ export interface DetailsRepository {
   reEntryDelivery: (data: ReEntryDeliveryProps, token: string) => Promise<any>;
   sendOTPNotPayment: (data: SendOTOPProps, token: string) => Promise<any>;
   reentryOTPNotPayment: (data: ReentryOTPProps, token: string) => Promise<any>;
-  listAceptationOrderDetails: (token: string, guide: number, codigo: string) => Promise<ApiResponse<OrderGroup[]>>;
+  listAceptationOrderDetails: (token: string, guide: number, codigo?: string | null, codigo_cargue?: string | null,) => Promise<ApiResponse<OrderGroup[]>>;
 
 }

@@ -40,6 +40,7 @@ export const API_ROUTES = {
   SEND_REENTRY_DELIVERY:"pedidos/send-pedidos/reprogramados/",
   CREATE_OTP_NOT_PAYMENT: "otp/direccion/crear-sin-pago/",
   CREATE_ACEPTATION_GUIDE:"aceptacion-pedido/crear/",
+  CREATE_ACEPTATION_CARGUE:"aceptacion-pedido/crear-aprobacion-cargue/",
   GET_ORDER_ACEPT: "aceptacion-pedido/get-all/",
   ACEPTATION_ORDER_NOVELTY: "aceptacion-pedido/reportar-novedad/",
   VALIDATE_CODE_BY_BODEGA: "codigos-validacion-guias/validate-codigo-guia-by-bodega/",

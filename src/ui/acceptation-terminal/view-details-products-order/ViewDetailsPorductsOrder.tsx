@@ -246,8 +246,19 @@ export function ViewDetailsPorductsOrder({
         try {
             setLoading(true);
 
+            const hasCargue =
+                OrderArray?.cargue &&
+                OrderArray?.cargue !== "None" &&
+                OrderArray?.cargue?.trim() !== "";
 
-            const responseQuery = await detailsRepositoryImpl.listAceptationOrderDetails(token, Number(numberGuide), String(OrderArray?.codigo));
+            const responseQuery = await detailsRepositoryImpl.listAceptationOrderDetails(
+                token,
+                Number(numberGuide),
+                hasCargue ? null : String(OrderArray?.codigo),
+
+                hasCargue ? String(OrderArray?.cargue) : null
+            );
+
             if (responseQuery?.statusCode === 200) {
                 setPorductData(
                     Array.isArray(responseQuery.data)

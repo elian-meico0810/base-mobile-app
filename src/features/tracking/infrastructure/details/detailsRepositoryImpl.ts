@@ -511,9 +511,9 @@ export const detailsRepositoryImpl: DetailsRepository = {
     }
   },
 
-  async listAceptationOrderDetails(token: string, guide: number, codigo_pedido: string) {
+  async listAceptationOrderDetails(token: string, guide: number, codigo_pedido?: string | null, codigo_cargue?: string | null) {
     try {
-      const response = await authApi.get(`${API_ROUTES.GET_ORDER_ACEPT}?codigo_guia=${guide}&codigo_pedido=${codigo_pedido}`, {
+      const response = await authApi.get(`${API_ROUTES.GET_ORDER_ACEPT}?codigo_guia=${guide}&codigo_pedido=${codigo_pedido}&codigo_cargue=${codigo_cargue}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

@@ -300,6 +300,7 @@ export interface OrderGroup {
   codigo: string;
   bodega: string;
   canal: string;
+  cargue: string;
   codigo_cliente: string;
   codigo_guia: string;
   fecha_validacion: string;

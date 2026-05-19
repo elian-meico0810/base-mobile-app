@@ -3,6 +3,7 @@ import { authApi, authDevApi } from "@/src/features/auth/infrastructure/authApi"
 import {
   AceptationPedidoProps,
   ApproveOrReject,
+  CreateCargueProps,
   CreateEntregaProps,
   CreatePaymentTypeProps,
   GenerateQRPorps,
@@ -477,6 +478,25 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
         success: false,
         data: null,
       };
+    }
+  },
+
+    async createCargue(data: CreateCargueProps, token: string) {
+    try {
+      const response = await authApi.post(
+        `${API_ROUTES.CREATE_ACEPTATION_CARGUE}`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      // Aquí devuelves solo el JSON que envió el servidor
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
     }
   },
 };

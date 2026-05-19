@@ -62,6 +62,7 @@ export function ViewAcceptationTerms({
     const [noDeliveryFiles, setNoDeliveryFiles] = useState<string[]>([]);
     const [confirmNoDelivery, setConfirmNoDelivery] = useState(false);
     const [keyboardVisible, setKeyboardVisible] = useState(false);
+    const [showHasCargue, setHasCargue] = useState(false);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [showError, setsErrorQRP] = useState(false);
     const [showSuccess, setSuccess] = useState(false);
@@ -346,35 +347,56 @@ export function ViewAcceptationTerms({
     const handleAceptataionOrder = async (pedido?: OrderGroup) => {
         try {
             setLoading(true);
-            const response = await invoiceRepositoryImpl.aceptationOrder(
-                {
-                    codigo: String(pedido?.codigo),
-                    bodega: String(pedido?.bodega),
-                    canal: String(pedido?.canal),
-                    codigo_cliente: String(pedido?.codigo_cliente),
-                    codigo_guia: String(numberGuide),
-
-                    producto: pedido?.productos?.map((item) => ({
-                        linea: item.linea,
-
-                        CodigoProducto: item.producto?.codigo
-                            ? String(item.producto.codigo)
-                            : '',
-
-                        DescripcionProducto:
-                            item.producto?.nombre ?? null,
-
-                        EAN: item.producto?.ean ?? null,
-
-                        unidades_solicitadas:
-                            item.unidades_solicitadas ?? 0,
-
-                        unidades_rechazadas: 0,
-                    })) ?? []
-                },
-                token
+            pedido?.cargue
+            const hasCargue = Boolean(
+                pedido?.cargue &&
+                pedido?.cargue !== "None" &&
+                pedido?.cargue?.trim() !== ""
             );
 
+            let response;
+            console.log("hasCargue: ", hasCargue);
+            setHasCargue(hasCargue);
+            if (hasCargue) {
+
+                response = await invoiceRepositoryImpl.createCargue(
+                    {
+                        cargue: String(pedido?.cargue)
+                    },
+                    token
+                );
+
+            } else {
+                response = await invoiceRepositoryImpl.aceptationOrder(
+                    {
+                        codigo: String(pedido?.codigo),
+                        bodega: String(pedido?.bodega),
+                        canal: String(pedido?.canal),
+                        codigo_cliente: String(pedido?.codigo_cliente),
+                        codigo_guia: String(numberGuide),
+
+                        producto: pedido?.productos?.map((item) => ({
+                            linea: item.linea,
+
+                            CodigoProducto: item.producto?.codigo
+                                ? String(item.producto.codigo)
+                                : '',
+
+                            DescripcionProducto:
+                                item.producto?.nombre ?? null,
+
+                            EAN: item.producto?.ean ?? null,
+
+                            unidades_solicitadas:
+                                item.unidades_solicitadas ?? 0,
+
+                            unidades_rechazadas: 0,
+                        })) ?? []
+                    },
+                    token
+                );
+
+            }
             if (response?.statusCode === 200) {
                 setGuideOrder([]);
                 listTotalsGuide();
@@ -478,7 +500,11 @@ export function ViewAcceptationTerms({
                                             ) : null}
 
                                             <Text style={styles.orderTitle}>
-                                                Pedido {pedido.codigo || ""}
+                                                {pedido?.cargue &&
+                                                    pedido?.cargue !== "None" &&
+                                                    pedido?.cargue?.trim() !== ""
+                                                    ? `Cargue ${pedido.cargue}`
+                                                    : `Pedido ${pedido.codigo || ""}`}
                                             </Text>
                                         </View>
 
@@ -657,7 +683,7 @@ export function ViewAcceptationTerms({
                 <TopSuccessAlert
                     visible={showSuccess}
                     message="Pedido confirmado"
-                    subtitle={`Las cantidades verificadas coinciden con la factura.`}
+                    subtitle={showHasCargue ? `Las cantidades verificadas coinciden con el documento.` : `Las cantidades verificadas coinciden con la factura.`}
                     onHide={() => setSuccess(false)}
                     duration={6000}
                 />
@@ -765,7 +791,6 @@ const styles = StyleSheet.create({
     },
     secondCard: {
         width: 360,
-        maxHeight: 600,
         backgroundColor: '#FFFFFF',
         borderColor: '#F0F1F5',
         borderWidth: 1,

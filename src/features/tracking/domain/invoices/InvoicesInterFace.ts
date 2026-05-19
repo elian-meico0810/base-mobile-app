@@ -276,3 +276,8 @@ export interface ValidateCodeProps {
   codigo: string;
   codigo_pedido:  string;
 }
+
+
+export interface CreateCargueProps {
+  cargue: string;
+}

@@ -271,6 +271,17 @@ export interface NoveltyOrderPayload {
     novedad: NoveltyItem[];
 }
 
+export interface NoveltyCarguePayload {
+    cargue: string;
+    producto: string;
+    unidades_solicitadas: number;
+    unidades_rechazadas: number;
+    total_entregado: string;
+    total_impuesto_entrega: string;
+    valor_base_producto: string;
+    total_impuestos: string;
+    novedad: NoveltyItem[];
+}
 export interface ValidateCodeProps {
   bodega: string;
   codigo: string;

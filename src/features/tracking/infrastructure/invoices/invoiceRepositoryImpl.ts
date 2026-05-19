@@ -8,6 +8,7 @@ import {
   CreatePaymentTypeProps,
   GenerateQRPorps,
   NoDeliveryProps,
+  NoveltyCarguePayload,
   NoveltyOrderPayload,
   OpneAddressesDeliveryProps, OpneAddressesProps,
   PaymentGatewayProps, ReportWhatsAppQRPorps,
@@ -481,7 +482,7 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
     }
   },
 
-    async createCargue(data: CreateCargueProps, token: string) {
+  async createCargue(data: CreateCargueProps, token: string) {
     try {
       const response = await authApi.post(
         `${API_ROUTES.CREATE_ACEPTATION_CARGUE}`,
@@ -496,6 +497,24 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
       // Aquí devuelves solo el JSON que envió el servidor
       return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
     } catch (error) {
+      throw error;
+    }
+  },
+
+  async reportNoveltyCargue(data: NoveltyCarguePayload, token: string) {
+    try {
+      const response = await authApi.post(
+        API_ROUTES.ACEPTATION_ORDER_NOVELTY_CARGUE,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error: any) {
       throw error;
     }
   },

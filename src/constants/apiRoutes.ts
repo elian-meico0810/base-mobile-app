@@ -43,6 +43,7 @@ export const API_ROUTES = {
   CREATE_ACEPTATION_CARGUE:"aceptacion-pedido/crear-aprobacion-cargue/",
   GET_ORDER_ACEPT: "aceptacion-pedido/get-all/",
   ACEPTATION_ORDER_NOVELTY: "aceptacion-pedido/reportar-novedad/",
+  ACEPTATION_ORDER_NOVELTY_CARGUE: "aceptacion-cargue/reportar-novedad/",
   VALIDATE_CODE_BY_BODEGA: "codigos-validacion-guias/validate-codigo-guia-by-bodega/",
   // Back contado anticipado
   SEND_PAYMENT_GATEWAY: "pagos/generar-link-pasarela/",

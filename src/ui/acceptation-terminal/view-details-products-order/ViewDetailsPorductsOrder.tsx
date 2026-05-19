@@ -10,7 +10,7 @@ import { ProductValidationOrderRefused } from '@/src/features/detailsInvoice/com
 import { ReportNoveltyScreen } from '@/src/features/detailsInvoice/components/ReportNoveltyScreen';
 import { ChangeCodeModal } from '@/src/features/tracking/components/screens/ChangeCodeModal';
 import { Cause, OrderGroup, ProductoPedido } from '@/src/features/tracking/domain/details/DetailsGuide';
-import { AceptationPedidoProps, CustomerAddress, NoveltyOrderPayload, Order } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
+import { AceptationPedidoProps, CustomerAddress, NoveltyCarguePayload, NoveltyOrderPayload, Order } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { invoiceRepositoryImpl } from '@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -361,6 +361,11 @@ export function ViewDetailsPorductsOrder({
             setLoading(true);
 
             if (alertButton && selectedProduct) {
+                const hasCargue = Boolean(
+                    OrderArray?.cargue &&
+                    OrderArray?.cargue !== "None" &&
+                    OrderArray?.cargue?.trim() !== ""
+                );
 
                 if (totalUnits > selectedProduct.unidades_solicitadas) {
                     setAlertButton(false);
@@ -370,22 +375,46 @@ export function ViewDetailsPorductsOrder({
                     setLoading(false);
                     return;
                 }
+                let response;
+                if (hasCargue) {
+                    const payload: NoveltyCarguePayload = {
+                        cargue: String(OrderArray?.cargue),
+                        producto: String(selectedProduct?.producto?.codigo),
+                        unidades_rechazadas: selectedProduct?.unidades_rechazadas,
+                        unidades_solicitadas: selectedProduct?.unidades_solicitadas,
+                        total_entregado: selectedProduct?.total_entregado,
+                        total_impuesto_entrega: selectedProduct?.total_impuesto_entrega,
+                        valor_base_producto: selectedProduct?.valor_base_producto,
+                        total_impuestos: selectedProduct?.total_impuestos,
+                        novedad: dataNovelty
+                            .filter(
+                                (item): item is typeof item & { codigo: string } =>
+                                    item.units > 0 && !!item.codigo
+                            )
+                            .map(item => ({
+                                cantidad: item.units,
+                                codigo: item.codigo
+                            }))
+                    };
+                    
+                    response = await invoiceRepositoryImpl.reportNoveltyCargue(payload, token);
+                } else {
+                    const payload: NoveltyOrderPayload = {
+                        aceptacion_pedido_detalle: selectedProduct.id,
 
-                const payload: NoveltyOrderPayload = {
-                    aceptacion_pedido_detalle: selectedProduct.id,
+                        novedad: dataNovelty
+                            .filter(
+                                (item): item is typeof item & { codigo: string } =>
+                                    item.units > 0 && !!item.codigo
+                            )
+                            .map(item => ({
+                                cantidad: item.units,
+                                codigo: item.codigo
+                            }))
+                    };
 
-                    novedad: dataNovelty
-                        .filter(
-                            (item): item is typeof item & { codigo: string } =>
-                                item.units > 0 && !!item.codigo
-                        )
-                        .map(item => ({
-                            cantidad: item.units,
-                            codigo: item.codigo
-                        }))
-                };
-
-                const response = await invoiceRepositoryImpl.reportNovelty(payload, token);
+                    response = await invoiceRepositoryImpl.reportNovelty(payload, token);
+                }
 
                 if (response?.statusCode === 200) {
                     setAlertButton(false);

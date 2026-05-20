@@ -2,8 +2,9 @@ import { TopErrorAlert } from '@/components/alerts/TopErrorAlert';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { ExitAppModal } from '@/components/generals/ExitAppModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
+import { LogoText } from '@/components/generals/LogoText';
 import { TokenExpiredModal } from '@/components/generals/TokenExpiredModal';
-import { PrimaryInputLogin } from '@/components/inputs/PrimaryInputLogin';
+import { PrimaryInput } from '@/components/inputs/PrimaryInput';
 import { ThemedView } from '@/components/themed-view';
 import { authRepositoryImpl } from '@/src/features/auth/infrastructure/login/authRepositoryImpl';
 import { ListAceptationGuide } from '@/src/features/tracking/domain/details/DetailsGuide';
@@ -17,10 +18,9 @@ import { useEffect, useState } from "react";
 import {
   BackHandler,
   Dimensions,
-  Keyboard,
+  Image, Keyboard,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View
 } from "react-native";
 
@@ -43,10 +43,6 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
 
   const heightValue = heightCaldulate();
 
-  const handleGoBack = async () => {
-    // router.back();
-
-  };
   useEffect(() => {
     if (params.message) {
       setShowErrorQRP(true);
@@ -202,7 +198,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
               params: {
                 numberGuide: Number(guide) ? Number(guide) : Number(tokenData?.numeroGuia),
                 token: String(token),
-                isEjecute: 'true'
+                isEjecute:'true'
               }
             });
           } else {
@@ -246,25 +242,35 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
         visible={exitModalVisible}
         onClose={() => setExitModalVisible(false)}
       />
-      <View style={styles.whitePanel}>
+      {/* <NetworkStatus /> */}
 
-        {/* Header arriba del todo */}
-        <View style={styles.headerContainer}>
-          <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-            <Text style={styles.backArrow}>‹</Text>
-          </TouchableOpacity>
-          <View style={styles.placeholder} />
-        </View>
+      <View style={[styles.backgroundFill, { width, height: '100%' }]} pointerEvents="none">
+        <Image
+          source={require('@/assets/icons/Welcome.png')}
+          style={[styles.backgroundImage, { width, height: '100%' }]}
+          resizeMode="cover"
+        />
+      </View>
 
-        {/* Contenido separado */}
+      {[...Array(4)].map((_, i) => (
+        <View key={i} style={[styles.separator, { top: (i + 1) * (height / 5) - 1 }]} />
+      ))}
+
+      <LogoText style={styles.logo} />
+
+      {/* Panel blanco con altura fija */}
+      <View style={[
+        styles.whitePanel,
+        { height: height - (heightValue ? 150 : 210) }
+      ]}>
         <View style={styles.content}>
           <View style={styles.topContent}>
-            <Text style={styles.title}>Número de guía</Text>
+            <Text style={styles.title}>¡Bienvenido!</Text>
             <Text style={styles.subtitle}>
-              Ingresa el número de guía para comenzar tu ruta.
+              Ingresa el número de guía para comenzar tu ruta
             </Text>
 
-            <PrimaryInputLogin
+            <PrimaryInput
               placeholder="Número de guía"
               value={guide}
               onChangeText={(text) => {
@@ -281,10 +287,10 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
 
           <View style={[
             styles.buttonContainer,
-            { marginBottom: keyboardHeight > 0 ? keyboardHeight + 60 : 50 }
+            { marginBottom: keyboardHeight > 0 ? keyboardHeight + 40 : 25 }
           ]}>
             <PrimaryButton
-              title="Confirmar"
+              title="Ingresar"
               onPress={handleSubmit}
               disabled={!isValid}
               width={328}
@@ -308,11 +314,11 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F2F4F7',
+    position: 'relative',
+    alignItems: 'center',
   },
   backgroundFill: {
-    borderColor: '#F0F1F5',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#143881ff',
   },
   backgroundImage: {
     zIndex: 1,
@@ -329,10 +335,14 @@ const styles = StyleSheet.create({
     top: 100,
   },
   whitePanel: {
-    flex: 1,
-    backgroundColor: '#F2F4F7',
-    paddingHorizontal: 27,
-    paddingTop: 20,
+    position: 'absolute',
+    top: 200,
+    left: 0,
+    right: 0,
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    padding: 27,
     zIndex: 3,
   },
   content: {
@@ -346,13 +356,14 @@ const styles = StyleSheet.create({
     fontFamily: "Rubik",
     fontWeight: "700",
     fontSize: 24,
+    textAlign: "center",
     marginBottom: 8,
   },
   subtitle: {
     fontFamily: "Rubik",
     fontWeight: "400",
     fontSize: 14,
-    color: "#788095",
+    textAlign: "center",
     marginBottom: 24,
   },
   errorText: {
@@ -365,34 +376,5 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: 'center',
   },
-  headerContainer: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 0,
-    paddingTop: 10,
-    paddingBottom: 20,
-    backgroundColor: 'transparent',
-  },
-  backButton: {
-    padding: 8,
-    marginRight: 8,
-  },
-  backArrow: {
-    fontSize: 40,
-    color: '#000',
-    fontWeight: '300',
-    lineHeight: 32,
-  },
-  headerTitle: {
-    fontFamily: 'Rubik',
-    fontWeight: '700',
-    fontSize: 18,
-    color: '#000',
-    flex: 1,
-  },
-  placeholder: {
-    width: 40,
-  },
+  
 });

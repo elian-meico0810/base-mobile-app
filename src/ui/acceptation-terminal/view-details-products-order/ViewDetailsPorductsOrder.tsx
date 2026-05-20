@@ -619,10 +619,9 @@ export function ViewDetailsPorductsOrder({
             {/* Header con título */}
 
             <View style={styles.headerContainer}>
-                <TouchableOpacity style={styles.backButton} onPress={()=>
-                    {
-                        handleExit(false);
-                        }}>
+                <TouchableOpacity style={styles.backButton} onPress={() => {
+                    handleExit(false);
+                }}>
                     <Image
                         source={require('@/assets/icons/ExitIcon.png')}
                         style={styles.backIcon}
@@ -648,7 +647,11 @@ export function ViewDetailsPorductsOrder({
                         <View style={styles.orderInfo}>
                             <View style={styles.storeText}>
                                 <Text style={styles.labelTwo}>
-                                    Documento de transporte {numberGuide}
+                                    {OrderArray?.cargue &&
+                                        OrderArray?.cargue !== "None" &&
+                                        OrderArray?.cargue?.trim() !== ""
+                                        ? `Cargue ${OrderArray.cargue}`
+                                        : `Documento de transporte ${numberGuide}`}
                                 </Text>
 
                                 <Text style={styles.subTitle}>
@@ -658,12 +661,9 @@ export function ViewDetailsPorductsOrder({
                                 <TouchableOpacity
                                     style={styles.rejectButton}
                                     onPress={() => {
-
                                         setShowChangeCode(true);
-
                                         setShowNotEntry(true);
-                                    }
-                                    }
+                                    }}
                                 >
                                     <View style={styles.errorDot}>
                                         <MaterialIcons name="close" size={8} color="#FFFFFF" />

@@ -367,7 +367,8 @@ export function InfoInvoiceCreditForm({
                             latitud: clienteEncontrado.latitud,
                             longitud: clienteEncontrado.longitud,
                             estado: clienteEncontrado.estado,
-                            facturas: clienteEncontrado.facturas
+                            facturas: clienteEncontrado.facturas,
+                            razonSocioal: clienteEncontrado.razonSocioal,
                         });
 
                     }

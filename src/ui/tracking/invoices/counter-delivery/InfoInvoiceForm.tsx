@@ -845,6 +845,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             poblacion: clienteEncontrado.poblacion,
                             codigoCliente: clienteEncontrado.codigoCliente,
                             nombreCliente: clienteEncontrado.nombreCliente,
+                            razonSocioal: clienteEncontrado.razonSocioal,
                             latitud: clienteEncontrado.latitud,
                             longitud: clienteEncontrado.longitud,
                             estado: clienteEncontrado.estado,

@@ -355,7 +355,6 @@ export function ViewAcceptationTerms({
             );
 
             let response;
-            console.log("hasCargue: ", hasCargue);
             setHasCargue(hasCargue);
             if (hasCargue) {
 
@@ -407,13 +406,8 @@ export function ViewAcceptationTerms({
                 setsErrorQRP(true);
             }
         } catch (error) {
-            setModalTitle("¡Alerta!");
-            setModalMessage("Problemas al guardar la novedad del pedido.");
-            setModalVisible(true);
-
-            setTimeout(() => {
-                setModalVisible(false);
-            }, 6000);
+            setSuccess(false);
+            setsErrorQRP(true);
             return;
         } finally {
             setLoading(false);

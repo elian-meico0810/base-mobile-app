@@ -18,17 +18,22 @@ interface ChangeCodeModalProps {
     onClose: () => void;
     onConfirm: (phone: string) => void;
     onAlert: () => void;
+    errorMessage?: string;
+    hasCargue?: boolean;
+
 }
 
 export function ChangeCodeModal({
     visible,
     onClose,
     onConfirm,
-    onAlert
+    onAlert,
+    errorMessage,
+    hasCargue
 }: ChangeCodeModalProps) {
     const [code, setCode] = useState("");
     const [keyboardHeight] = useState(new Animated.Value(0));
-    
+
     const isValid = code.length === 6;
 
     useEffect(() => {
@@ -70,20 +75,21 @@ export function ChangeCodeModal({
 
     useEffect(() => {
         if (visible) {
-            keyboardHeight.setValue(0);
             setCode("");
         }
     }, [visible]);
 
     const handleConfirm = () => {
-        if (!isValid) return; 
-        
+        if (!isValid) return;
+
         Keyboard.dismiss();
-        
+
         setTimeout(() => {
             onConfirm(code);
-            onAlert(); 
-            onClose();
+            onAlert();
+            if (!hasCargue) {
+                onClose();
+            }
             setCode("");
         }, 300);
     };
@@ -145,6 +151,11 @@ export function ChangeCodeModal({
                                 maxLength={6}
                                 autoFocus={true}
                             />
+                            {errorMessage ? (
+                                <Text style={styles.errorText}>
+                                    {errorMessage}
+                                </Text>
+                            ) : null}
 
                             <PrimaryButton
                                 title="Confirmar"
@@ -231,5 +242,12 @@ const styles = StyleSheet.create({
     counterTextValid: {
         color: "#4CAF50",
         fontWeight: "600",
+    },
+    errorText: {
+        color: 'red',
+        fontSize: 12,
+        marginBottom: 10,
+        width: 350,
+        textAlign: 'left',
     },
 });

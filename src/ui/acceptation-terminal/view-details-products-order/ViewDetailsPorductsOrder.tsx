@@ -62,6 +62,7 @@ export function ViewDetailsPorductsOrder({
     const [sasToken, setSasToken] = useState("");
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
+    const [modalMessageAlert, setModalMessageAlert] = useState("");
     const [modalVisibleCancel, setModalVisibleCancel] = useState(false);
     const [modalTitleCancel, setModalTitleCancel] = useState("");
     const [modalMessageCancel, setModalMessageCancel] = useState("");
@@ -91,8 +92,6 @@ export function ViewDetailsPorductsOrder({
     const [selectedProduct, setSelectedProduct] = useState<ProductoPedido | null>(null);
     const [showChangeCode, setShowChangeCode] = useState(false);
     const [showNotEntry, setShowNotEntry] = useState(false);
-    const [newCode, setNewCode] = useState("");
-
     const [modalButtonLabelTwo, setModalButtonLabelTwo] = useState("Entendido");
     const [modalTitleTwo, setModalTitleTwo] = useState("");
     const [modalMessageTwo, setModalMessageTwo] = useState("");
@@ -518,7 +517,10 @@ export function ViewDetailsPorductsOrder({
             setLoading(false);
         }
     };
-
+    const hasCargue =
+        OrderArray?.cargue &&
+        OrderArray?.cargue !== "None" &&
+        OrderArray?.cargue?.trim() !== "";
 
     const handleValidateCode = async (code: string) => {
         try {
@@ -529,7 +531,7 @@ export function ViewDetailsPorductsOrder({
                     OrderArray?.cargue !== "None" &&
                     OrderArray?.cargue?.trim() !== "";
                 let response;
-                
+
                 if (hasCargue) {
                     response = await invoiceRepositoryImpl.validateCodeCargue(
                         {
@@ -557,13 +559,21 @@ export function ViewDetailsPorductsOrder({
                         seendViewDetails();
                     }
                 } else {
-                    setModalTitle("¡Alerta!");
-                    setModalMessage(response.message || "Ocurrio un error inesperado.");
-                    setModalVisible(true);
-                    setTimeout(() => {
-                        setModalVisible(false);
-                    }, 6000);
-                    return;
+                    if (!hasCargue) {
+                        setModalTitle("¡Alerta!");
+                        setModalMessage(response.message || "Ocurrio un error inesperado.");
+                        setModalVisible(true);
+                        setTimeout(() => {
+                            setModalVisible(false);
+                        }, 6000);
+                        return;
+                    } else {
+                        setModalMessageAlert(response.message || "Código inválido")
+                        setTimeout(() => {
+                            setModalMessageAlert("");
+                        }, 6000);
+                        return;
+                    }
                 }
             }
 
@@ -628,11 +638,12 @@ export function ViewDetailsPorductsOrder({
                                 <TouchableOpacity
                                     style={styles.rejectButton}
                                     onPress={() => {
+
                                         setShowChangeCode(true);
 
                                         setShowNotEntry(true);
-
-                                    }}
+                                    }
+                                    }
                                 >
                                     <View style={styles.errorDot}>
                                         <MaterialIcons name="close" size={8} color="#FFFFFF" />
@@ -751,14 +762,20 @@ export function ViewDetailsPorductsOrder({
 
             <ChangeCodeModal
                 visible={showChangeCode}
-                onClose={() => setShowChangeCode(false)}
+                onClose={() => {
+                        setShowChangeCode(false);
+                }}
                 onConfirm={(newPhone) => {
                     handleSubmitCode(String(newPhone));
-                    setShowChangeCode(false);
+                    if (!hasCargue) {
+                        setShowChangeCode(false);
+                    }
                 }}
                 onAlert={() => {
                     console.log("llego aca");
                 }}
+                errorMessage={modalMessageAlert}
+                hasCargue={hasCargue ? true: false}
             />
 
 

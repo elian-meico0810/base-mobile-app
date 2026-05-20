@@ -60,7 +60,7 @@ export function TopSuccessAlert({
 
             return () => clearTimeout(timeout);
         }
-    }, [visible]);
+    }, [visible, duration]);
 
     if (!visible) return null;
 

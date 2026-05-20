@@ -5,6 +5,7 @@ import {
   ApproveOrReject,
   CreateCargueProps,
   CreateEntregaProps,
+  CreateNotEntryCargueProps,
   CreatePaymentTypeProps,
   GenerateQRPorps,
   NoDeliveryProps,
@@ -543,6 +544,25 @@ export const invoiceRepositoryImpl: InvoicesRepository = {
         success: false,
         data: null,
       };
+    }
+  },
+
+  async createNotEntry(data: CreateNotEntryCargueProps, token: string) {
+    try {
+      const response = await authApi.post(
+        `${API_ROUTES.CREATE_NOT_ACEPTATION_GUIDE}`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      // Aquí devuelves solo el JSON que envió el servidor
+      return (typeof response.data === "string") ? JSON.parse(response.data) : response.data;
+    } catch (error) {
+      throw error;
     }
   },
 };

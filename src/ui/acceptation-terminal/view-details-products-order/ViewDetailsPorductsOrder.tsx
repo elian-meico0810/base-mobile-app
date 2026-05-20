@@ -1,3 +1,4 @@
+import { TopErrorAlert } from '@/components/alerts/TopErrorAlert';
 import { ExcetptionModalProducts } from '@/components/generals/ExcetptionModalProducts';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { ExecptionModalCancel } from '@/components/generals/ExecptionModalCancel';
@@ -63,6 +64,7 @@ export function ViewDetailsPorductsOrder({
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
     const [modalMessageAlert, setModalMessageAlert] = useState("");
+    const [showModalPone, setModalPone] = useState(true);
     const [modalVisibleCancel, setModalVisibleCancel] = useState(false);
     const [modalTitleCancel, setModalTitleCancel] = useState("");
     const [modalMessageCancel, setModalMessageCancel] = useState("");
@@ -96,6 +98,12 @@ export function ViewDetailsPorductsOrder({
     const [modalTitleTwo, setModalTitleTwo] = useState("");
     const [modalMessageTwo, setModalMessageTwo] = useState("");
     const [modalVisibleTwo, setModalVisibleTwo] = useState(false);
+    const [showError, setsError] = useState(false);
+    const [showErrorMessages, setsErrorMessages] = useState("");
+    const [showErrorTitle, setsErrorTitle] = useState("");
+    const [showSuccess, setSuccess] = useState(false);
+    const [showSuccessMessages, setSuccessMessages] = useState("");
+    const [showSuccessTitle, setSuccessTitle] = useState("");
 
     const btnRef = useRef<any>(null);
     const router = useRouter();
@@ -216,18 +224,19 @@ export function ViewDetailsPorductsOrder({
         }
     };
 
-    const handleExit = async () => {
+    const handleExit = async (success: boolean = false) => {
         setLoading(true);
+
         router.push({
             pathname: '/views/AcceptanceTerms' as any,
             params: {
                 numberGuide: Number(numberGuide),
                 token: String(token),
-                OrderArray: encodeURIComponent(JSON.stringify(OrderArray))
+                OrderArray: encodeURIComponent(JSON.stringify(OrderArray)),
+                showSuccess: success ? "true" : null
             }
         });
     };
-
     const handleAceptataionOrder = async (pedido?: Order) => {
         try {
             setLoading(true);
@@ -453,63 +462,79 @@ export function ViewDetailsPorductsOrder({
         }
     };
 
-    const seendViewDetails = async () => {
-        await handleExit();
+    const seendViewDetails = async (status: boolean) => {
+        await handleExit(status);
 
     }
     const handleRejectOrderTwo = async () => {
         try {
             setLoading(true);
             if ((OrderArray?.productos?.length ?? 0) > 0) {
+                const hasCargue =
+                    OrderArray?.cargue &&
+                    OrderArray?.cargue !== "None" &&
+                    OrderArray?.cargue?.trim() !== "";
+                let response;
 
-                const payload: AceptationPedidoProps = {
-                    bodega: OrderArray?.bodega ?? "",
-                    canal: OrderArray?.canal ?? "",
-                    codigo: OrderArray?.codigo ?? "",
-                    codigo_cliente: OrderArray?.codigo_cliente ?? "",
-                    codigo_guia: String(numberGuide ?? ""),
-                    estado: TypeStatusEnum.EST_PEDI_RECH,
-                    producto: OrderArray?.productos?.map((item) => ({
-                        CodigoProducto: item?.producto?.codigo?.trim() ?? "",
-                        DescripcionProducto: item?.producto?.nombre ?? "",
-                        EAN: item?.producto?.ean ?? null,
-                        linea: item?.linea ?? 0,
-                        unidades_rechazadas: item?.unidades_solicitadas ?? 0,
-                        unidades_solicitadas: item?.unidades_solicitadas ?? 0,
-                    })) ?? []
-                };
+                if (hasCargue) {
+                    response = await invoiceRepositoryImpl.createNotEntry(
+                        {
+                            cargue: OrderArray?.cargue,
+                            codigo_guia: OrderArray?.codigo_guia ?? "",
+                        },
+                        token
+                    );
 
+                } else {
+                    const payload: AceptationPedidoProps = {
+                        bodega: OrderArray?.bodega ?? "",
+                        canal: OrderArray?.canal ?? "",
+                        codigo: OrderArray?.codigo ?? "",
+                        codigo_cliente: OrderArray?.codigo_cliente ?? "",
+                        codigo_guia: String(numberGuide ?? ""),
+                        estado: TypeStatusEnum.EST_PEDI_RECH,
+                        producto: OrderArray?.productos?.map((item) => ({
+                            CodigoProducto: item?.producto?.codigo?.trim() ?? "",
+                            DescripcionProducto: item?.producto?.nombre ?? "",
+                            EAN: item?.producto?.ean ?? null,
+                            linea: item?.linea ?? 0,
+                            unidades_rechazadas: item?.unidades_solicitadas ?? 0,
+                            unidades_solicitadas: item?.unidades_solicitadas ?? 0,
+                        })) ?? []
+                    };
 
-                const response = await invoiceRepositoryImpl.aceptationOrder(
-                    payload,
-                    token
-                );
+                    response = await invoiceRepositoryImpl.aceptationOrder(
+                        payload,
+                        token
+                    );
+                }
 
                 if (response?.statusCode === 200) {
-                    setIsRejected(true);
-                    setModalTitleTwo("¡Pedido no recibido!");
-                    setModalMessageTwo(` Se confirmó que el pedido no fue recibido.`);
-                    setModalVisibleTwo(true);
+                    setShowChangeCode(false);
+                    setSuccessTitle("¡Pedido no recibido!");
+                    setSuccessMessages(` Se confirmó que el pedido no fue recibido.`);
+                    if (showNotEntry) {
+                        seendViewDetails(true);
+                    }
                     return;
                 } else {
-                    setModalTitle("¡Alerta!");
-                    setModalMessage("Problemas al guardar la novedad del pedido.");
-                    setModalVisible(true);
+                    setsErrorTitle("Problemas al guardar la novedad del pedido.");
+                    setsErrorMessages("¡Alerta!");
+                    setsError(true);
 
                     setTimeout(() => {
-                        setModalVisible(false);
+                        setsError(false);
                     }, 6000);
                     return;
                 }
             }
-
         } catch (error: any) {
-            setModalTitle("¡Alerta!");
-            setModalMessage("Problemas al guardar la novedad del pedido.");
-            setModalVisible(true);
+            setsErrorTitle("Problemas al guardar la novedad del pedido.");
+            setsErrorMessages("¡Alerta!");
+            setsError(true);
 
             setTimeout(() => {
-                setModalVisible(false);
+                setsError(false);
             }, 6000);
             return;
 
@@ -556,24 +581,15 @@ export function ViewDetailsPorductsOrder({
                     if (showNotEntry) {
                         await handleRejectOrderTwo()
                     } else {
-                        seendViewDetails();
+                        seendViewDetails(false);
                     }
                 } else {
-                    if (!hasCargue) {
-                        setModalTitle("¡Alerta!");
-                        setModalMessage(response.message || "Ocurrio un error inesperado.");
-                        setModalVisible(true);
-                        setTimeout(() => {
-                            setModalVisible(false);
-                        }, 6000);
-                        return;
-                    } else {
-                        setModalMessageAlert(response.message || "Código inválido")
-                        setTimeout(() => {
-                            setModalMessageAlert("");
-                        }, 6000);
-                        return;
-                    }
+
+                    setModalMessageAlert(response.message || "Código inválido")
+                    setTimeout(() => {
+                        setModalMessageAlert("");
+                    }, 6000);
+                    return;
                 }
             }
 
@@ -592,6 +608,7 @@ export function ViewDetailsPorductsOrder({
         getRefused();
     }, [OrderArray, token]);
 
+
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -602,7 +619,10 @@ export function ViewDetailsPorductsOrder({
             {/* Header con título */}
 
             <View style={styles.headerContainer}>
-                <TouchableOpacity style={styles.backButton} onPress={handleExit}>
+                <TouchableOpacity style={styles.backButton} onPress={()=>
+                    {
+                        handleExit(false);
+                        }}>
                     <Image
                         source={require('@/assets/icons/ExitIcon.png')}
                         style={styles.backIcon}
@@ -723,7 +743,7 @@ export function ViewDetailsPorductsOrder({
                 onClose={() => {
                     setModalVisibleTwo(false);
                     if (showNotEntry) {
-                        seendViewDetails();
+                        seendViewDetails(false);
                     }
                 }}
                 title={modalTitleTwo}
@@ -763,19 +783,17 @@ export function ViewDetailsPorductsOrder({
             <ChangeCodeModal
                 visible={showChangeCode}
                 onClose={() => {
-                        setShowChangeCode(false);
+                    setShowChangeCode(false);
                 }}
                 onConfirm={(newPhone) => {
                     handleSubmitCode(String(newPhone));
-                    if (!hasCargue) {
-                        setShowChangeCode(false);
-                    }
+
                 }}
                 onAlert={() => {
                     console.log("llego aca");
                 }}
                 errorMessage={modalMessageAlert}
-                hasCargue={hasCargue ? true: false}
+                hasCargue={showModalPone}
             />
 
 
@@ -827,6 +845,17 @@ export function ViewDetailsPorductsOrder({
                     showTypeDetails={showTypeDetails}
                 />
             )}
+
+            {showError && (
+                <TopErrorAlert
+                    visible={showError}
+                    message={showErrorMessages}
+                    subtitle={showErrorTitle}
+                    onHide={() => setsError(false)}
+                    duration={6000}
+                />
+            )}
+
             {loading && <LoadingBlue />}
         </ThemedView>
     );

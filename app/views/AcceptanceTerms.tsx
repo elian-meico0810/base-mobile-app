@@ -15,6 +15,7 @@ export default function AcceptanceTermsScreen() {
     const detailsCounterDelivery = params.detailsCounterDelivery as string;
     const detailsOrder = params.orderDetails as string;
     const orderParam = params.order as string;
+    const showSuccess = params.showSuccess as string;
     const OrderArray: OrderGroup = orderParam ? JSON.parse(orderParam) : {} as OrderGroup;
     const isEjecute = params.isEjecute as string;
 
@@ -41,6 +42,7 @@ export default function AcceptanceTermsScreen() {
                             IsGoBack={false}
                             detailsCounterDelivery={false}
                             isEjecute={isEjecute}
+                            showSuccessModal={showSuccess ? "true" : null}
 
                         />
 

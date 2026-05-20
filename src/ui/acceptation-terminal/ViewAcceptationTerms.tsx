@@ -31,6 +31,7 @@ interface InfoInvoiceFormProps {
     routeStartedBotton?: string;
     detailsCounterDelivery?: boolean;
     isEjecute?: string | null
+    showSuccessModal?: string | null
 }
 
 export function ViewAcceptationTerms({
@@ -43,11 +44,15 @@ export function ViewAcceptationTerms({
     IsGoBack = false,
     routeStartedBotton,
     detailsCounterDelivery,
-    isEjecute = null
+    isEjecute = null,
+    showSuccessModal = null
 }: InfoInvoiceFormProps) {
+    console.log("showSuccessModal: ", showSuccessModal);
+
     const [guideOrder, setGuideOrder] = useState<OrderGroup[]>([]);
     const [loading, setLoading] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
+    const [showSuccessModalOne, setSuccessModal] = useState(showSuccessModal ? true : false);
     const [sasToken, setSasToken] = useState("");
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
@@ -693,7 +698,18 @@ export function ViewAcceptationTerms({
                 />
             )}
 
+            {showSuccessModalOne && (
+                <TopSuccessAlert
+                    visible={showSuccessModalOne}
+                    message={"¡Pedido no recibido!"}
+                    subtitle={`Se confirmó que el pedido no fue recibido.`}
+                    onHide={() => {
+                        setSuccessModal(false)
 
+                    }}
+                    duration={6000}
+                />
+            )}
             {loading && <LoadingBlue />}
         </ThemedView>
     );

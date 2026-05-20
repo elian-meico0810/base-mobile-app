@@ -91,7 +91,7 @@ export function ChangeCodeModal({
                 onClose();
             }
             setCode("");
-        }, 300);
+        }, 200);
     };
 
     return (

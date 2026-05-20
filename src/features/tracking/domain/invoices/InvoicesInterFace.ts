@@ -298,3 +298,9 @@ export interface ValidateCodeCargueProps {
   codigo: string;
   cargue:  string;
 }
+
+export interface CreateNotEntryCargueProps {
+  cargue: string;
+  codigo_guia: string;
+}
+

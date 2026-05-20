@@ -47,8 +47,6 @@ export function ViewAcceptationTerms({
     isEjecute = null,
     showSuccessModal = null
 }: InfoInvoiceFormProps) {
-    console.log("showSuccessModal: ", showSuccessModal);
-
     const [guideOrder, setGuideOrder] = useState<OrderGroup[]>([]);
     const [loading, setLoading] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);

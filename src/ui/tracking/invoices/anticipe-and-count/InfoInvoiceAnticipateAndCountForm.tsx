@@ -425,7 +425,7 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
                             longitud: clienteEncontrado.longitud,
                             estado: clienteEncontrado.estado,
                             facturas: clienteEncontrado.facturas,
-                            razonSocioal: clienteEncontrado.razonSocioal,
+                            razonSocial: clienteEncontrado.razonSocial,
                         });
 
                     }

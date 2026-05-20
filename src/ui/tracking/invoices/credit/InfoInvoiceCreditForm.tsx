@@ -368,7 +368,7 @@ export function InfoInvoiceCreditForm({
                             longitud: clienteEncontrado.longitud,
                             estado: clienteEncontrado.estado,
                             facturas: clienteEncontrado.facturas,
-                            razonSocioal: clienteEncontrado.razonSocioal,
+                            razonSocial: clienteEncontrado.razonSocial,
                         });
 
                     }
@@ -806,6 +806,7 @@ export function InfoInvoiceCreditForm({
                                         <Text style={styles.value}>
                                             {toUpperCase(guide?.nombreCliente)}
                                         </Text>
+                                        <Text style={styles.labelTwoRz}>{toUpperCase(guide?.razonSocial)}</Text>
                                     </View>
                                 </View>
 
@@ -1326,9 +1327,10 @@ const styles = StyleSheet.create({
     },
     labelTwo: {
         fontFamily: 'Rubik',
-        fontWeight: '600',
+        fontWeight: '400',
         fontSize: 14,
         color: '#788095',
+        marginBottom: 2,
     },
     value: {
         fontFamily: 'Rubik',
@@ -1337,6 +1339,14 @@ const styles = StyleSheet.create({
         color: '#141D32',
         alignItems: 'flex-start',
         overflow: 'hidden',
+        marginTop: 2,
+    },
+    labelTwoRz: {
+        fontFamily: 'Rubik',
+        fontWeight: '400',
+        fontSize: 12,
+        color: '#788095',
+        marginTop: 4,
     },
     direccionText: {
         fontFamily: 'Rubik',

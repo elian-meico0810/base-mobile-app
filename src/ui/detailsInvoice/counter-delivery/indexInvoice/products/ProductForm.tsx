@@ -334,8 +334,8 @@ export function ProductForm({
 
                 const response = await detailsRepositoryImpl.sendOrder(
                     {
-                        totalEntregado: conticion ? '0 ': String(Number(productItemData.unidadesSolicitadas) * Number(productItemData.valorBaseProducto)),
-                        totalImpuestoEntrega:  conticion ? '0 ': String(productItemData?.totalImpuestos),
+                        totalEntregado: conticion ? '0 ' : String(Number(productItemData.unidadesSolicitadas) * Number(productItemData.valorBaseProducto)),
+                        totalImpuestoEntrega: conticion ? '0 ' : String(productItemData?.totalImpuestos),
                     }
                     , String(productItemData?.id), token);
 
@@ -391,7 +391,7 @@ export function ProductForm({
                             unidadesRechazadas: Number(totalUnits),
                             unidadesEntregadas: Number(productItemData?.unidadesSolicitadas) - Number(totalUnits),
                             totalEntregado: conticion ? 0 : calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_5, totalUnits),
-                            totalImpuestoEntrega:  conticion ? 0 :  calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_7, totalUnits),
+                            totalImpuestoEntrega: conticion ? 0 : calculateVlueByPorducts(productItemData, TypeCaculateValueEnum.ACTION_7, totalUnits),
                             novedades: novedadesArray
                         };
 
@@ -498,7 +498,7 @@ export function ProductForm({
 
                     // Verificar si AHORA es después de medianoche del día guardado
                     // if (now > midnightOfSavedDay) {
-                        tokenData();
+                    tokenData();
                     // }
                 } else {
                     tokenData();
@@ -522,7 +522,7 @@ export function ProductForm({
         }
     }, [modalStatusNovelty, productItemData?.id, successButton]);
 
-        const tokenData = async () => {
+    const tokenData = async () => {
         try {
 
             const responseData = await detailsRepositoryImpl.tokenPorducts(token);
@@ -541,7 +541,7 @@ export function ProductForm({
                 const testToken = await SecureStore.getItemAsync('service_token_product');
                 const testUrl = await SecureStore.getItemAsync('base_url_product');
                 const dateToken = await SecureStore.getItemAsync('date_token_product');
-                    
+
             }
         } catch (error) {
             setModalTitle("¡Error!");
@@ -590,11 +590,17 @@ export function ProductForm({
                     ]}
                 >
                     <View style={styles.headerRow}>
-                        <Text style={styles.merchantName}>
-                            {capitalizeFirst(guide?.nombreCliente) ?? ''}
-                        </Text>
 
-                        {/* Icono solo visual (opcional) */}
+                        <View style={styles.namesContainer}>
+                            <Text style={styles.merchantName}>
+                                {capitalizeFirst(guide?.nombreCliente) ?? ''}
+                            </Text>
+
+                            <Text style={styles.merchantSubName}>
+                                {capitalizeFirst(guide?.razonSocial) ?? ''}
+                            </Text>
+                        </View>
+
                         <View style={styles.expandButton}>
                             <View style={styles.arrowsContainer}>
                                 <Image
@@ -604,6 +610,7 @@ export function ProductForm({
                                 />
                             </View>
                         </View>
+
                     </View>
 
                     {/* Contenido expandido */}
@@ -886,22 +893,10 @@ const styles = StyleSheet.create({
         minHeight: 49,
     },
     cardCollapsed: {
-        height: 49,
+        height: 60,
         justifyContent: 'center',
         paddingTop: 8,
         paddingBottom: 8,
-    },
-    headerRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        width: '100%',
-    },
-    merchantName: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#141D32',
-        flex: 1,
-        textAlign: 'center',
     },
     expandButton: {
         width: 16,
@@ -980,5 +975,29 @@ const styles = StyleSheet.create({
     reboackIcon: {
         width: 12,
         height: 12,
+    },
+    headerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '100%',
+    },
+
+    namesContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    merchantName: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#141D32',
+        textAlign: 'center',
+    },
+    merchantSubName: {
+        fontSize: 13,
+        fontWeight: '400',
+        color: '#788095',
+        textAlign: 'center',
+        marginTop: 2,
     },
 });

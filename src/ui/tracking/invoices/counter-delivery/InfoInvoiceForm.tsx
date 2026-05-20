@@ -838,14 +838,13 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     );
                     if (clienteFiltrado.length > 0) {
                         const clienteEncontrado = clienteFiltrado[0];
-
                         setGuide({
                             idDireccion: clienteEncontrado.idDireccion,
                             direccion: clienteEncontrado.direccion,
                             poblacion: clienteEncontrado.poblacion,
                             codigoCliente: clienteEncontrado.codigoCliente,
                             nombreCliente: clienteEncontrado.nombreCliente,
-                            razonSocioal: clienteEncontrado.razonSocioal,
+                            razonSocial: clienteEncontrado.razonSocial,
                             latitud: clienteEncontrado.latitud,
                             longitud: clienteEncontrado.longitud,
                             estado: clienteEncontrado.estado,
@@ -1454,6 +1453,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                         <Text style={styles.value}>
                                             {toUpperCase(guide?.nombreCliente)}
                                         </Text>
+                                        <Text style={styles.labelTwoRz}>{toUpperCase(guide?.razonSocial)}</Text>
                                     </View>
                                 </View>
 
@@ -2229,9 +2229,10 @@ const styles = StyleSheet.create({
     },
     labelTwo: {
         fontFamily: 'Rubik',
-        fontWeight: '600',
+        fontWeight: '400',
         fontSize: 14,
         color: '#788095',
+        marginBottom: 2, 
     },
     value: {
         fontFamily: 'Rubik',
@@ -2240,6 +2241,14 @@ const styles = StyleSheet.create({
         color: '#141D32',
         alignItems: 'flex-start',
         overflow: 'hidden',
+        marginTop: 2,
+    },
+    labelTwoRz: {
+        fontFamily: 'Rubik',
+        fontWeight: '400',
+        fontSize: 12,
+        color: '#788095',
+        marginTop: 4, 
     },
     direccionText: {
         fontFamily: 'Rubik',

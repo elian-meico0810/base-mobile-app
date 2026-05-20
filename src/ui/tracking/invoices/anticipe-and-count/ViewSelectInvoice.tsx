@@ -478,7 +478,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         facturas: clienteEncontrado.facturas,
                         pedidos: clienteEncontrado.pedidos,
                         whatsapp: clienteEncontrado.whatsapp,
-                        razonSocioal: clienteEncontrado.razonSocioal,
+                        razonSocial: clienteEncontrado.razonSocial,
 
                     });
                     listInfOTByDirection({
@@ -494,7 +494,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         facturas: clienteEncontrado.facturas,
                         pedidos: clienteEncontrado.pedidos,
                         whatsapp: clienteEncontrado.whatsapp,
-                        razonSocioal: clienteEncontrado.razonSocioal,
+                        razonSocial: clienteEncontrado.razonSocial,
 
                     });
                     listInfOTPFileByDirection({
@@ -510,7 +510,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         facturas: clienteEncontrado.facturas,
                         pedidos: clienteEncontrado.pedidos,
                         whatsapp: clienteEncontrado.whatsapp,
-                        razonSocioal: clienteEncontrado.razonSocioal,
+                        razonSocial: clienteEncontrado.razonSocial,
 
                     })
                     listDocumentQuery({
@@ -526,7 +526,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         facturas: clienteEncontrado.facturas,
                         pedidos: clienteEncontrado.pedidos,
                         whatsapp: clienteEncontrado.whatsapp,
-                        razonSocioal: clienteEncontrado.razonSocioal,
+                        razonSocial: clienteEncontrado.razonSocial,
 
                     });
                 }

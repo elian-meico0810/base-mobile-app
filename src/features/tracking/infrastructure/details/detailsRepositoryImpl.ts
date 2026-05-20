@@ -551,5 +551,5 @@ export const detailsRepositoryImpl: DetailsRepository = {
     } catch (error) {
       throw error;
     }
-
+  },
 }

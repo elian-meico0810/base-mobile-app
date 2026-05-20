@@ -542,17 +542,13 @@ export function ViewSelectInvoice({
     const conceptDeliveryValue = conceptDeliverySelect.length > 0;
     const conditionEntryVisible = !conditionButton && conceptDeliveryValue || EntryVisible;
 
-<<<<<<< HEAD
     const conditionEntryVisibleTwo = !conditionButton && conceptDeliveryValue;
-    const areAllInvoicesConutreDlivery = guide?.facturas.every(
-        factura => factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO || factura.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO
-=======
+
     // const conditionEntryVisibleTwo = !conditionButton && conceptDeliveryValue;
     const hasAnyInvoiceCounterDelivery = guide?.facturas?.some(
         factura =>
             factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO ||
             factura.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO
->>>>>>> bbcc44d (fix: enhance validation for isSelectInvocies and improve invoice handling in multiple components)
     );
     return (
         <ThemedView style={styles.container}>

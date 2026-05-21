@@ -5,12 +5,12 @@ import { DetailsGudes } from '@/components/generals/DetailsGudes';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { GuideCard } from '@/components/generals/GuideCard';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
+import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { ScanQRCard } from '@/components/generals/ScanQRCard';
 import { TodayDeliveries } from '@/components/generals/TodayDeliveries';
 import { SearchInput } from '@/components/inputs/SearchInput';
 import { UploadPhotoItem } from '@/components/photo/uploadPhotoItem';
 import { GuideCardSkeleton } from '@/components/skeleton/GuideCardSkeleton';
-import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
 import { GuideState, StatusInvoice, StatusInvoiceID, TypeConPagoEnum, TypeDetailsEnum, TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import { ConsignmentData } from '@/src/features/detailsInvoice/components/ConsignmentData';
@@ -34,6 +34,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 
@@ -81,6 +82,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
     const [retryScan, setRetryScan] = useState(false);
     const btnRef = useRef<any>(null);
     const router = useRouter();
+    const insets = useSafeAreaInsets();
 
     const isValid = guide.length >= 5;
     const isSmallScreen = height <= 780;
@@ -575,8 +577,14 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
     };
 
     return (
-        <ThemedView style={styles.container}>
-            {/* <NetworkStatus /> */}
+        <SafeAreaView style={[
+            styles.container,
+            {
+                paddingLeft: insets.left,
+                paddingRight: insets.right,
+            }
+        ]}>
+            <NetworkStatus />
 
             <View style={[styles.backgroundFill,]} >
                 <Image
@@ -916,13 +924,13 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
             )}
             {loading && <LoadingBlue />}
 
-        </ThemedView>
+        </SafeAreaView>
     );
 }
 const styles = StyleSheet.create({
-    container: {
-        position: 'relative',
-        alignItems: 'center',
+     container: {
+        flex: 1, 
+        backgroundColor: '#164194', 
     },
     cardConsignment: {
         width: width * 0.9,
@@ -960,8 +968,13 @@ const styles = StyleSheet.create({
         height: 16,
         tintColor: '#141D32',
     },
-    backgroundFill: {
-        backgroundColor: '#164194',
+   backgroundFill: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0, 
+        zIndex: 1,
     },
     backgroundImage: {
         zIndex: 1,
@@ -973,7 +986,7 @@ const styles = StyleSheet.create({
         zIndex: 2,
     },
     logo: {
-        zIndex: 10,
+        zIndex: 8,
         position: 'absolute',
         top: 100,
     },

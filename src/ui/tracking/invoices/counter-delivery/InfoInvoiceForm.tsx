@@ -11,7 +11,6 @@ import { TypePayment } from '@/components/generals/TypePayment';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { UploadPhotoOTP } from '@/components/photo/uploadPhotoOTP';
 import { OrderDetailSkeleton } from '@/components/skeleton/OrderDetailSkeleton ';
-import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
 import { OptionsRefusedEnum, StatusDelivery, TypeCaculateValueEnum, TypeConPagoEnum, TypeInvoiceEnum, TypeQr } from '@/src/constants/GuideStates';
 import { DeliveryStatusAction } from '@/src/features/tracking/components/checkbox/DeliveryStatusAction';
@@ -33,6 +32,7 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useRef, useState } from "react";
 import { BackHandler, Dimensions, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 const { width, height } = Dimensions.get('window');
 
 interface InfoInvoiceFormProps {
@@ -133,6 +133,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [uploadPhotoTwo, setUploadPhotoTwo] = useState(false);
     const [currentQRType, setCurrentQRType] = useState(qrType || undefined);
     const [currentQRData, setCurrentQRData] = useState(qrBase64 || undefined);
+    const insets = useSafeAreaInsets();
 
 
     useEffect(() => {
@@ -1390,7 +1391,13 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const isZero = discount === 0;
     const isValidateCondition = (detailsCounterDelivery || closeButton || isViewDetailsPorducts);
     return (
-        <ThemedView style={styles.container}>
+        <SafeAreaView style={[
+            styles.container,
+            {
+                paddingLeft: insets.left,
+                paddingRight: insets.right,
+            }
+        ]}>
             {/* <NetworkStatus /> */}
 
             {/* Fondo gris */}
@@ -2105,7 +2112,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 />
             )}
             {loading && <LoadingBlue />}
-        </ThemedView>
+        </SafeAreaView>
     );
 }
 

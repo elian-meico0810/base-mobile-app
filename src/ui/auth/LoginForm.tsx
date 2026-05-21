@@ -5,7 +5,6 @@ import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LogoText } from '@/components/generals/LogoText';
 import { TokenExpiredModal } from '@/components/generals/TokenExpiredModal';
 import { PrimaryInput } from '@/components/inputs/PrimaryInput';
-import { ThemedView } from '@/components/themed-view';
 import { authRepositoryImpl } from '@/src/features/auth/infrastructure/login/authRepositoryImpl';
 import { ListAceptationGuide } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
@@ -23,6 +22,7 @@ import {
   Text,
   View
 } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 
@@ -38,6 +38,8 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
   const [showErrorQRP, setShowErrorQRP] = useState(false);
   const [showErrorQRPMessage, setShowErrorQRPMessage] = useState("");
   const [exitModalVisible, setExitModalVisible] = useState(false);
+  const insets = useSafeAreaInsets();
+
   const isValid = guide.length >= 5;
   const router = useRouter();
 
@@ -235,7 +237,13 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
   }, []);
 
   return (
-    <ThemedView style={styles.container}>
+    <SafeAreaView  style={[
+        styles.container,
+        {
+          paddingLeft: insets.left,
+          paddingRight: insets.right,
+        }
+      ]}>
       <TokenExpiredModal visible={showModal} onClose={() => setShowModal(false)} />
       <ExitAppModal
         visible={exitModalVisible}
@@ -306,7 +314,8 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
         />
       )}
       {isLoading && <LoadingBlue />}
-    </ThemedView>
+    </SafeAreaView>
+
   );
 }
 

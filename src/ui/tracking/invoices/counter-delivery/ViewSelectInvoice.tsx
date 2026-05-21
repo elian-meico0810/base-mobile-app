@@ -3,8 +3,8 @@ import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails'
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
+import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { OrderDetailSkeletonSelect } from '@/components/skeleton/OrderDetailSkeletonSelect';
-import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
 import { TipeCodeOTP } from '@/src/constants/GuideStates';
 import InvoicesList from '@/src/features/tracking/components/tabs/InvoicesList';
@@ -17,6 +17,7 @@ import * as Location from "expo-location";
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from "react";
 import { BackHandler, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 const { width, height } = Dimensions.get('window');
 
 interface ViewSelectInvoiceProps {
@@ -61,6 +62,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const btnRef = useRef<any>(null);
     const router = useRouter();
     const heightValue = heightCaldulate();
+    const insets = useSafeAreaInsets();
 
     useEffect(() => {
         const backAction = () => {
@@ -463,8 +465,14 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const conditionEntryVisibleTwo = conditionEntryVisible || guide?.fecha_apertura || EntryVisible || conditionButton;
 
     return (
-        <ThemedView style={styles.container}>
-            {/* <NetworkStatus /> */}
+        <SafeAreaView style={[
+            styles.container,
+            {
+                paddingLeft: insets.left,
+                paddingRight: insets.right,
+            }
+        ]}>
+            <NetworkStatus />
 
             {/* Fondo gris */}
             <View style={styles.background} />
@@ -629,7 +637,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
 
             {loading && <LoadingBlue />}
-        </ThemedView>
+        </SafeAreaView>
     );
 }
 

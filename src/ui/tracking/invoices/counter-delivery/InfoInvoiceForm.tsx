@@ -1425,7 +1425,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
 
             <ScrollView
-                style={[styles.scrollView, { marginTop: RefreshingOnPress ? 90 : 8 }]}
+                style={[styles.scrollView, { marginTop: RefreshingOnPress ? 90 : 2 }]}
                 contentContainerStyle={[
                     styles.scrollContent,
                     // Ajustar el padding cuando no hay alerta
@@ -2142,8 +2142,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
-        paddingTop: 35,
-        paddingBottom: 5,
+        paddingTop: 10,
         backgroundColor: '#F9F9FA',
     },
     backButton: {

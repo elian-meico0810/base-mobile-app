@@ -3,6 +3,7 @@ import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { ExitAppModal } from '@/components/generals/ExitAppModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LogoText } from '@/components/generals/LogoText';
+import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { TokenExpiredModal } from '@/components/generals/TokenExpiredModal';
 import { PrimaryInput } from '@/components/inputs/PrimaryInput';
 import { authRepositoryImpl } from '@/src/features/auth/infrastructure/login/authRepositoryImpl';
@@ -237,21 +238,21 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
   }, []);
 
   return (
-    <SafeAreaView  style={[
-        styles.container,
-        {
-          paddingLeft: insets.left,
-          paddingRight: insets.right,
-        }
-      ]}>
+    <SafeAreaView style={[
+      styles.container,
+      {
+        paddingLeft: insets.left,
+        paddingRight: insets.right,
+      }
+    ]}>
       <TokenExpiredModal visible={showModal} onClose={() => setShowModal(false)} />
       <ExitAppModal
         visible={exitModalVisible}
         onClose={() => setExitModalVisible(false)}
       />
-      {/* <NetworkStatus /> */}
+      <NetworkStatus />
 
-      <View style={[styles.backgroundFill, { width, height: '100%' }]} pointerEvents="none">
+      <View style={[styles.backgroundFill, { width, height }]} pointerEvents="none">
         <Image
           source={require('@/assets/icons/Welcome.png')}
           style={[styles.backgroundImage, { width, height: '100%' }]}
@@ -268,7 +269,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
       {/* Panel blanco con altura fija */}
       <View style={[
         styles.whitePanel,
-        { height: height - (heightValue ? 150 : 210) }
+        { height: height - (heightValue ? 150 : 200) }
       ]}>
         <View style={styles.content}>
           <View style={styles.topContent}>
@@ -327,14 +328,17 @@ const styles = StyleSheet.create({
   },
   backgroundFill: {
     backgroundColor: '#143881ff',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   backgroundImage: {
     zIndex: 1,
   },
   separator: {
     position: 'absolute',
-    height: 5,
-    transform: [{ rotate: '-15deg' }],
     zIndex: 2,
   },
   logo: {

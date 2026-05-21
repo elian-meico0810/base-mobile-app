@@ -928,10 +928,11 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
     );
 }
 const styles = StyleSheet.create({
-     container: {
-        flex: 1, 
-        backgroundColor: '#164194', 
-    },
+  container: {
+    flex: 1,
+    position: 'relative',
+    alignItems: 'center',
+  },
     cardConsignment: {
         width: width * 0.9,
         height: 48,

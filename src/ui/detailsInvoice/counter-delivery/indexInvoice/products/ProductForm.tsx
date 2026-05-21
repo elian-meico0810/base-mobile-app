@@ -542,7 +542,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         dataProduct();
 
     }, [token]);
-
+    
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -596,7 +596,11 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                             <View style={styles.actionButtonsRow}>
                                 <TouchableOpacity
                                     style={styles.rejectButton}
-                                    onPress={() => setViewModalActionRefused(true)}
+                                    onPress={() => {
+                                        if (showPorductData?.[0]?.detalles?.length > 0) {
+                                            setViewModalActionRefused(true);
+                                        }
+                                    }}
                                 >
                                     <MaterialIcons name="close" size={16} color="#C62828" />
                                     <Text style={styles.rejectButtonText}> Rechazo masivo</Text>
@@ -604,7 +608,11 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
                                 <TouchableOpacity
                                     style={styles.acceptButton}
-                                    onPress={() => setViewModalActionSuccess(true)}
+                                    onPress={() => {
+                                        if (showPorductData?.[0]?.detalles?.length > 0) {
+                                            setViewModalActionSuccess(true);
+                                        }
+                                    }}
                                 >
                                     <MaterialIcons name="check" size={16} color="#1F9144" />
                                     <Text style={styles.acceptButtonText}> Validacion masiva</Text>

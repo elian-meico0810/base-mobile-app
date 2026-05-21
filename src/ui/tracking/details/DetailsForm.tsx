@@ -584,7 +584,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
             const menu_father = await SecureStore.getItemAsync('menu_father');
             const menuViewsParsed = JSON.parse(menu_views || "[]");
             const menuFatherParsed = JSON.parse(menu_father || "[]");
-
+            
             const result = invoices.every(inv => {
                 const match = menuViewsParsed.some((mv: any) => {
                     return inv.tipo === mv?.nombre;

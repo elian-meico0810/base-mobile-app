@@ -166,9 +166,8 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
             const dateToken = await SecureStore.getItemAsync('date_token_product');
 
           }
-
+          
           const responseMenuOption = await detailsRepositoryImpl.listMenuViews(tokenString);
-
           if (
             responseMenuOption.statusCode === 200 &&
             responseMenuOption?.data &&
@@ -202,10 +201,11 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
             setErrorMessage("Error al cargar las opciones padres de la app móvil.");
             return;
           }
-
+          await handleData(tokenString);
         } catch (error) {
+          console.log("ERROR LOGIN FLOW:", error);
+
         }
-        await handleData(tokenString);
 
       } else {
         setErrorMessage(response?.message || "La guía no existe o es incorrecta.");

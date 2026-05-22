@@ -932,60 +932,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 };
                 const response = await detailsRepositoryImpl.reportNoveltyFileArray(payload, token);
 
-                // if (guide?.facturas && guide.facturas.length > 0) {
-                //     guide.facturas.forEach((factura, index) => {
-                //         facturasArray.push({
-                //             ruta: String(numberGuide),
-                //             documentMeico: String(factura.numeroFactura),
-                //             direccion: Number(guide?.idDireccion),
-                //             causal: showOptionRefused === OptionsRefusedEnum.DINERO
-                //                 ? CausalDelivery.DINERO_INSUFICIENTE
-                //                 : showOptionRefused === OptionsRefusedEnum.DUEÑO
-                //                     ? CausalDelivery.DUENO_NO_CONTESTA
-                //                     : showOptionRefused === OptionsRefusedEnum.TIENDA
-                //                         ? CausalDelivery.TIENDA_CERRADA
-                //                         : showOptionRefused === OptionsRefusedEnum.PRODUCTOS
-                //                             ? CausalDelivery.PRODUCTOS_DANADOS
-                //                             : null,
-                //             estado: "ACT_EST_ENTREGA",
-                //             files:
-                //                 showStatusDelivery === StatusDelivery.RECHAZADO
-                //                     ?
-                //                     showOptionRefused === OptionsRefusedEnum.TIENDA
-                //                         ? multiplePhotos.map((item) => ({
-                //                             tipoEntrega: TypeDelivery.RECHAZADO,
-                //                             rutaArchivo: item.base64 ?? null,
-                //                         }))
-                //                         : []
-                //                     :
-                //                     multiplePhotos.map((item) => ({
-                //                         tipoEntrega:
-                //                             showStatusDelivery === StatusDelivery.TOTAL
-                //                                 ? TypeDelivery.ENT_TOTAL
-                //                                 : showStatusDelivery === StatusDelivery.PARCIAL
-                //                                     ? TypeDelivery.ENT_PARCIAL
-                //                                     : TypeDelivery.RECHAZADO,
-                //                         rutaArchivo: item.base64 ?? null,
-                //                     })),
-
-                //         });
-                //     });
-                //     setShowOptionRefused(null);
-                // }
-
-                // if (facturasArray.length > 0) {
-                //     responses = await Promise.all(
-                //         facturasArray.map(facturaData =>
-                //             invoiceRepositoryImpl.createDelivery(facturaData, token)
-                //         )
-                //     );
-                //     console.log("responses: ",responses);
-
-                //     // Verificar si todas las respuestas fueron exitosas
-                //     const success = responses.every((resp: any) =>
-                //         resp?.statusCode === 200 || resp?.success === true
-                //     );
-
                 if (response?.success) {
                     listDocumentQuery();
                     setModalTitle("¡Procesado!");
@@ -994,10 +940,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     setvalidateIsBotton(false);
                 } else {
                     setLoading(false);
-                    // Opcional: mostrar detalles del primer error
-                    // const oneError = responses.find((resp: any) =>
-                    //     !(resp?.statusCode === 200 || resp?.success === true)
-                    // );
                     setModalTitle("Alerta");
                     setModalMessage("Error inesperado.");
                     setModalVisible(true);

@@ -3,7 +3,6 @@ import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { ExitAppModal } from '@/components/generals/ExitAppModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LogoText } from '@/components/generals/LogoText';
-import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { TokenExpiredModal } from '@/components/generals/TokenExpiredModal';
 import { PrimaryInput } from '@/components/inputs/PrimaryInput';
 import { authRepositoryImpl } from '@/src/features/auth/infrastructure/login/authRepositoryImpl';
@@ -12,6 +11,7 @@ import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/de
 import { decodeJWT } from '@/src/utils/jwt';
 import { heightCaldulate } from '@/src/utils/uitls';
 import NetInfo from '@react-native-community/netinfo';
+import Constants from 'expo-constants';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from "react";
@@ -117,6 +117,11 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
 
     validateToken();
   }, [tokenData, tokenEncode]);
+
+  const appVersion =
+    (Constants.expoConfig?.extra as Record<string, string> | undefined)?.VERSION_APP ||
+    (Constants.manifest?.extra as Record<string, string> | undefined)?.VERSION_APP ||
+    process.env.VERSION_APP;
 
   const handleSubmit = async () => {
     setErrorMessage("");
@@ -250,7 +255,6 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
         visible={exitModalVisible}
         onClose={() => setExitModalVisible(false)}
       />
-      <NetworkStatus />
 
       <View style={[styles.backgroundFill, { width, height }]} pointerEvents="none">
         <Image
@@ -264,7 +268,10 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
         <View key={i} style={[styles.separator, { top: (i + 1) * (height / 5) - 1 }]} />
       ))}
 
-      <LogoText style={styles.logo} />
+      <View style={styles.logoContainer}>
+        <LogoText style={styles.logo} />
+        <Text style={styles.version}>Versión {String(appVersion).replace(/"/g, '').trim()}</Text>
+      </View>
 
       {/* Panel blanco con altura fija */}
       <View style={[
@@ -341,11 +348,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     zIndex: 2,
   },
-  logo: {
-    zIndex: 10,
-    position: 'absolute',
-    top: 100,
-  },
   whitePanel: {
     position: 'absolute',
     top: 200,
@@ -387,5 +389,21 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: "100%",
     alignItems: 'center',
+  },
+  logoContainer: {
+    position: 'absolute',
+    top: 100,
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  logo: {
+  },
+  version: {
+    fontFamily: "Rubik",
+    fontWeight: "700",
+    fontSize: 10,
+    textAlign: "center",
+    marginTop: 2,
+    color: '#FFFFFF',
   },
 });

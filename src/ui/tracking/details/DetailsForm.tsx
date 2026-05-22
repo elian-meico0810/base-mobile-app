@@ -5,7 +5,6 @@ import { DetailsGudes } from '@/components/generals/DetailsGudes';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { GuideCard } from '@/components/generals/GuideCard';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
-import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { ScanQRCard } from '@/components/generals/ScanQRCard';
 import { TodayDeliveries } from '@/components/generals/TodayDeliveries';
 import { SearchInput } from '@/components/inputs/SearchInput';
@@ -108,7 +107,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
 
         initializeToken();
     }, [token]);
-
+    
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -584,7 +583,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                 paddingRight: insets.right,
             }
         ]}>
-            <NetworkStatus />
+            {/* <NetworkStatus /> */}
 
             <View style={[styles.backgroundFill,]} >
                 <Image

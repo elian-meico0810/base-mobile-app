@@ -142,5 +142,7 @@ export enum TypeStatusEnum {
 
 export enum TypeValueParameterEnum {
     TEXT_ODER = "TEXT_ODER",
-    TEXT_NOVELTY_ODER = "TEXT_NOVELTY_ODER"
+    TEXT_NOVELTY_ODER = "TEXT_NOVELTY_ODER",
+    MARGEN_TOLERANCIA = "MARGEN_TOLERANCIA"
+
 }

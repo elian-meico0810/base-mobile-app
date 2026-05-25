@@ -13,7 +13,7 @@ import { UploadPhotoOTP } from '@/components/photo/uploadPhotoOTP';
 import { OrderDetailSkeleton } from '@/components/skeleton/OrderDetailSkeleton ';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
-import { OptionsRefusedEnum, StatusDelivery, TypeCaculateValueEnum, TypeConPagoEnum, TypeInvoiceEnum, TypeQr } from '@/src/constants/GuideStates';
+import { OptionsRefusedEnum, StatusDelivery, TypeCaculateValueEnum, TypeConPagoEnum, TypeInvoiceEnum, TypeQr, TypeValueParameterEnum } from '@/src/constants/GuideStates';
 import { DeliveryStatusAction } from '@/src/features/tracking/components/checkbox/DeliveryStatusAction';
 import { NoDeliveryModal } from '@/src/features/tracking/components/checkbox/NoDeliveryModal';
 import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
@@ -59,19 +59,19 @@ interface EvidencePhoto {
 type DeliveryStatus = "total" | "parcial" | "rechazo" | null;
 type OptionsRefusedPorps = 'Dinero' | 'Dueño' | 'Tienda' | 'Productos' | null;
 
-export function InfoInvoiceForm({ 
-    initialGuide, 
-    token = "", 
-    onSubmit, 
-    numberGuide, 
-    isSelectInvocies, 
-    documentMeico, 
-    isCountryDelivery = false, 
-    IsGoBack = false, 
-    routeStartedBotton, 
-    detailsCounterDelivery, 
-    isViewDetailsPorducts, 
-    isAnticipe 
+export function InfoInvoiceForm({
+    initialGuide,
+    token = "",
+    onSubmit,
+    numberGuide,
+    isSelectInvocies,
+    documentMeico,
+    isCountryDelivery = false,
+    IsGoBack = false,
+    routeStartedBotton,
+    detailsCounterDelivery,
+    isViewDetailsPorducts,
+    isAnticipe
 }: InfoInvoiceFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [guideAny, setGuideAny] = useState<GuideDetails[]>([]);
@@ -125,6 +125,7 @@ export function InfoInvoiceForm({
     const [validateException, setValidateException] = useState(false);
     const [paymentSuccessful, setPaymentSuccessful] = useState<Invoice | undefined>();
     const [typeCash, setTypeCash] = useState<TypeParameterValue[]>([]);
+    const [valueParameter, setValueParameter] = useState<TypeParameterValue[]>([]);
     const [qrBase64, setQrBase64] = useState<string>('');
     const [qrType, setQrType] = useState<string>('');
     const [phone, setPhone] = useState("");
@@ -228,6 +229,7 @@ export function InfoInvoiceForm({
         };
         getDataProduct();
         listTypeCash();
+        listTypeParameterValue();
         // getSuccessOrderPayment();
         fetchGuide();
     }, [Number(initialGuide?.facturas[0]?.numeroFactura), token]);
@@ -369,6 +371,30 @@ export function InfoInvoiceForm({
             if (response?.statusCode === 200 && Array.isArray(response.data)) {
                 setTypeCash(response.data);
             } else {
+                setModalTitle("¡Alerta!");
+                setModalMessage(response?.message ?? "Ocurrió un error inesperado.");
+                setModalVisible(true);
+            }
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    const listTypeParameterValue = async () => {
+        try {
+            setLoading(true);
+
+
+            const response = await invoiceRepositoryImpl.typeParameterValue(TypeValueParameterEnum.MARGEN_TOLERANCIA, token);
+            if (response?.statusCode === 200 && Array.isArray(response.data)) {
+                setValueParameter(response.data);
+            } else {
+                setValueParameter([]);
                 setModalTitle("¡Alerta!");
                 setModalMessage(response?.message ?? "Ocurrió un error inesperado.");
                 setModalVisible(true);
@@ -700,44 +726,6 @@ export function InfoInvoiceForm({
     };
 
 
-    //         const response = await detailsRepositoryImpl.listInfOTP(String(guide?.idDireccion), String(initialGuide?.facturas[0]?.numeroFactura), token);
-    //         if (
-    //             response.success &&
-    //             response.data &&
-    //             typeof response.data !== "string" &&
-    //             !Array.isArray(response.data)
-    //         ) {
-    //             if (response.data.expira_en && response.data.momento_envio && guide) {
-    //                 setButtonValueOTP(true);
-    //                 router.push({
-    //                     pathname: '/views/IndexDetailsInvoice',
-    //                     params: {
-    //                         guide: JSON.stringify(guide),
-    //                         numberGuide: numberGuide,
-    //                         token: token ?? "",
-    //                         confirmationStatus: 'true',
-    //                         responseOTPInit: JSON.stringify(response.data),
-    //                         totalValue: Number(totalValue) ?? 0,
-    //                         totalRecauder: Number(totalRecauder) ?? 0,
-    //                         totalOrderPayment: Number(totalOrderPayment) ?? 0,
-    //                         expireDate: 'true',
-    //                         isSelectInvocies: isSelectInvocies
-    //                     }
-
-    //                 });
-    //                 return true;
-    //             }
-    //         }
-    //         return false;
-
-    //     } catch (error: any) {
-    //         setModalTitle("¡Error!");
-    //         setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 4.");
-    //         setModalVisible(true);
-    //     }
-    // };
-
-
     const submitData = async () => {
         try {
             if (!conceptDelivery?.tipoEntrega?.codigo) {
@@ -779,8 +767,6 @@ export function InfoInvoiceForm({
         try {
             setShowDetailInvoiceQR(false);
             setShowPayment(false);
-            // setShowDetailInvoiceQR(false);
-            // setShowPayment(false);
             if (!routeStarted && !isSelectInvocies && !detailsCounterDelivery && !closeButton) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Debe indicar que ya llegó al lugar de la dirección para poder ejecutar esta acción.");
@@ -798,11 +784,7 @@ export function InfoInvoiceForm({
                 setTypeQRSendWhatsApp(false);
                 setShowDetailInvoiceQR(false);
             }
-            // if (condPago) {
-            //     setTypeQRSendWhatsApp(true);
-            //     setModalgenerateQR(true);
-            //     setShowDetailInvoiceQR(true);
-            // }
+
             return true;
         } catch (error) {
             setModalTitle("¡Error!");
@@ -899,7 +881,6 @@ export function InfoInvoiceForm({
 
                 }
 
-                // getSuccessOrderPayment();
                 setRefreshing(false);
             }, 2000);
         } catch (error) {
@@ -944,7 +925,7 @@ export function InfoInvoiceForm({
                 };
                 const response = await detailsRepositoryImpl.reportNoveltyFileArray(payload, token);
 
-        
+
                 if (response?.success) {
                     listDocumentQuery();
                     setModalTitle("¡Procesado!");
@@ -1142,11 +1123,6 @@ export function InfoInvoiceForm({
     ]);
 
     const totalOrderPayment = Number(totalAproved);
-    // const totalImpuestos = showPorductData
-    //     ?.flatMap(p => p.detalles || [])
-    //     .reduce((acc, detalle) => acc + Number(detalle?.totalImpuestos || 0), 0);
-
-    // const totalImpuestoValues = Number(totalImpuestos);
 
     const totalValue =
         Number(
@@ -1256,15 +1232,6 @@ export function InfoInvoiceForm({
                 return;
             }
 
-            // if (Number(totalRecauder) > 0) {
-            //     btnRef.current?.reset();
-            //     setModalTitle("¡Alerta!");
-            //     setModalMessage("El valor a recaudar debe ser 0 para continuar con la confirmación.");
-            //     setModalVisible(true);
-            //     return;
-            // }
-
-
             if (!guide?.whatsapp || guide?.whatsapp == "") {
                 btnRef.current?.reset();
                 setModalTitleValidate("Evidencia requerida");
@@ -1372,9 +1339,8 @@ export function InfoInvoiceForm({
                 />
             </View>
 
-
             <ScrollView
-                style={[styles.scrollView, { marginTop: RefreshingOnPress ? 90 : 8 }]}
+                style={[styles.scrollView, { marginTop: RefreshingOnPress ? 90 : 0 }]}
                 contentContainerStyle={[
                     styles.scrollContent,
                     // Ajustar el padding cuando no hay alerta
@@ -2017,7 +1983,7 @@ export function InfoInvoiceForm({
                     onErrorPayment={() => setShowErrorQRP(true)}
                     statusTypeQR={typeQRSendWhatsApp}
                     totalRecauder={totalRecauder}
-
+                    toleranceMargin={valueParameter}
                 />
             )}
             {typePaymentTypeOthers && (
@@ -2037,6 +2003,8 @@ export function InfoInvoiceForm({
                     onErrorPayment={() => setShowErrorQRP(true)}
                     statusTypeQR={typeQRSendWhatsApp}
                     totalRecauder={totalRecauder}
+                    toleranceMargin={valueParameter}
+
                 />
             )}
 
@@ -2188,7 +2156,7 @@ const styles = StyleSheet.create({
         fontWeight: '400',
         fontSize: 14,
         color: '#788095',
-        marginBottom: 2, 
+        marginBottom: 2,
     },
     value: {
         fontFamily: 'Rubik',
@@ -2204,7 +2172,7 @@ const styles = StyleSheet.create({
         fontWeight: '400',
         fontSize: 12,
         color: '#788095',
-        marginTop: 4, 
+        marginTop: 4,
     },
     direccionText: {
         fontFamily: 'Rubik',

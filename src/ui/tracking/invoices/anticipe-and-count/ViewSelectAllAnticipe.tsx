@@ -557,7 +557,7 @@ export function ViewSelectAllAnticipe({ initialGuide, token = "", onSubmit, numb
             {/* Alert de pago pendiente */}
 
             <ScrollView
-                style={[styles.scrollView, { marginTop: RefreshingOnPress ? 90 : 8 }]}
+                style={[styles.scrollView, { marginTop: RefreshingOnPress ? 90 : 0 }]}
                 contentContainerStyle={[
                     styles.scrollContent,
                     // Ajustar el padding cuando no hay alerta

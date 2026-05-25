@@ -15,6 +15,7 @@ import {
     View
 } from "react-native";
 import { GuideDetails } from "../../domain/details/DetailsGuide";
+import { TypeParameterValue } from "../../domain/invoices/InvoicesInterFace";
 
 interface DetailsPaymenTypeOthersProps {
     data?: GuideDetails;
@@ -29,6 +30,8 @@ interface DetailsPaymenTypeOthersProps {
     onErrorPayment?: () => void;
     statusTypeQR?: boolean;
     totalRecauder?: number;
+    toleranceMargin?: TypeParameterValue[];
+
 }
 
 interface Invoice {
@@ -39,7 +42,21 @@ interface Invoice {
     valorTotal: number;
 }
 
-export function DetailsPaymenTypeOthers({ data, onClose, onChangePhone, disabled, width = 360, height = 300, phone, onGenerateQR, onPressPayment, onErrorPayment, statusTypeQR, totalRecauder}: DetailsPaymenTypeOthersProps) {
+export function DetailsPaymenTypeOthers({
+    data,
+    onClose,
+    onChangePhone,
+    disabled,
+    width = 360,
+    height = 300,
+    phone,
+    onGenerateQR,
+    onPressPayment,
+    onErrorPayment,
+    statusTypeQR,
+    totalRecauder,
+    toleranceMargin
+}: DetailsPaymenTypeOthersProps) {
     const [loading, setLoading] = useState(false);
     const [modalTitle, setModalTitle] = useState("");
     const [modalMessage, setModalMessage] = useState("");
@@ -57,6 +74,15 @@ export function DetailsPaymenTypeOthers({ data, onClose, onChangePhone, disabled
         condPago: "",
     };
     const isValidCashValue = Number(valueSet) > 0 && secondInput != '';
+    const totalTolerance = (toleranceMargin ?? []).reduce((acc, item) => {
+        const value = Number(item.valor);
+
+        return !isNaN(value) ? acc + value : acc;
+    }, 0);
+
+    const totalWithTolerance = Number(totalRecauder) + totalTolerance;
+    const isValidValue = Number(valueSet) > 0 && Number(valueSet) <= totalWithTolerance;
+    const isButtonEnabled = isValidCashValue && isValidValue;
 
     useEffect(() => {
         const keyboardDidShowListener = Keyboard.addListener(
@@ -81,8 +107,8 @@ export function DetailsPaymenTypeOthers({ data, onClose, onChangePhone, disabled
 
     const paymentGateway = async () => {
         try {
-            onPressPayment?.(Number(valueSet), String(secondInput))
-            if (isValidCashValue) {
+            if (isValidCashValue && isValidValue) {
+                onPressPayment?.(Number(valueSet), String(secondInput))
                 onClose?.();
             }
         } catch (error: any) {
@@ -116,6 +142,8 @@ export function DetailsPaymenTypeOthers({ data, onClose, onChangePhone, disabled
             maximumFractionDigits: 2,
         });
     };
+
+    const isGreaterThanTotal = Number(valueSet) > totalWithTolerance;
 
     return (
         <View style={styles.overlay} pointerEvents="box-none">
@@ -156,7 +184,10 @@ export function DetailsPaymenTypeOthers({ data, onClose, onChangePhone, disabled
 
                 {/* Primer input - Cantidad recibida */}
                 <View style={styles.phoneContainer}>
-                    <View style={styles.phoneRow}>
+                    <View style={[
+                        styles.phoneRow,
+                        isGreaterThanTotal && styles.phoneRowError
+                    ]}>
                         <TextInput
                             style={styles.phoneInput}
                             keyboardType="number-pad"
@@ -167,8 +198,12 @@ export function DetailsPaymenTypeOthers({ data, onClose, onChangePhone, disabled
                             }}
                             editable={true}
                         />
-
                     </View>
+                    {isGreaterThanTotal && (
+                        <Text style={styles.warningText}>
+                            El valor ingresado es mayor al valor a pagar
+                        </Text>
+                    )}
                 </View>
 
                 {/* Segundo input - Observaciones (más largo) */}
@@ -200,7 +235,7 @@ export function DetailsPaymenTypeOthers({ data, onClose, onChangePhone, disabled
                     <PrimaryButton
                         title="Confirmar"
                         onPress={paymentGateway}
-                        disabled={!isValidCashValue}
+                        disabled={!isButtonEnabled}
                         width={350}
                         height={43}
                     />
@@ -367,5 +402,16 @@ const styles = StyleSheet.create({
         fontSize: 20,
         color: "#141D32",
         top: 10,
+    },
+    warningText: {
+        color: "#FF4D4F",
+        fontSize: 12,
+        marginTop: 4,
+        fontFamily: "Rubik",
+        marginLeft: 4,
+    },
+    phoneRowError: {
+        borderColor: "#FF4D4F",
+        borderWidth: 1,
     },
 });

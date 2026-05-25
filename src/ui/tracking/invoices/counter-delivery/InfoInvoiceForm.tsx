@@ -1312,6 +1312,30 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setModalVisible(true);
         }
     };
+
+    const validateButtonQR = () => {
+        try {
+            setShowDetailInvoiceQR(false);
+            setShowPayment(false);
+            if (!routeStarted && !isSelectInvocies && !detailsCounterDelivery && !closeButton) {
+                setModalTitle("¡Alerta!");
+                setModalMessage("Debe indicar que ya llegó al lugar de la dirección para poder ejecutar esta acción.");
+                setModalVisible(true);
+                return false;
+            }
+
+            setShowDetailInvoiceQR(true);
+
+            return true;
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado 6.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    }
+
     useEffect(() => {
 
         const hasRejected = showPorductData?.some(pedido =>
@@ -1549,18 +1573,41 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
                                 {(isValidateCondition) && (
                                     totalRecauder != 0 ? (
-                                        <TouchableOpacity
-                                            style={styles.qrButton}
-                                            onPress={() => {
-                                                const isValidButton = validateButton();
-                                                if (!isValidButton) return;
-                                                setTypePayment(true);
-                                            }}
-                                        >
-                                            <View style={styles.qrButtonContent}>
-                                                <Text style={styles.qrButtonText}>Registrar pago</Text>
-                                            </View>
-                                        </TouchableOpacity>
+                                        <>
+                                            <TouchableOpacity
+                                                style={styles.generateQrButton}
+                                                onPress={() => {
+                                                    const isValidButton = validateButtonQR();
+                                                    if (!isValidButton) return;
+
+                                                }}
+                                            >
+                                                <View style={styles.qrButtonContent}>
+                                                    <Image
+                                                        source={require("@/assets/icons/Others.png")}
+                                                        style={styles.storeIconQR}
+                                                    />
+
+                                                    <Text style={styles.qrButtonTextGenerate}>
+                                                        Generar QR
+                                                    </Text>
+                                                </View>
+                                            </TouchableOpacity>
+
+                                            <TouchableOpacity
+                                                style={styles.qrButton}
+                                                onPress={() => {
+                                                    const isValidButton = validateButton();
+                                                    if (!isValidButton) return;
+                                                    setTypePayment(true);
+                                                }}
+                                            >
+                                                <View style={styles.qrButtonContent}>
+                                                    <Text style={styles.qrButtonText}>Registrar pago</Text>
+                                                </View>
+                                            </TouchableOpacity>
+                                        </>
+
                                     ) : (
                                         <TouchableOpacity
                                             style={styles.qrButtonDetail}
@@ -2324,6 +2371,27 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
         flexWrap: 'wrap',
         flexShrink: 1,
+    },
+    qrButtonTextGenerate: {
+        fontFamily: 'Rubik',
+        fontWeight: '700',
+        fontSize: 12,
+        color: '#1F9144',
+        textAlign: 'center',
+    },
+    generateQrButton: {
+        height: 32,
+        backgroundColor: '#EAF7ED',
+        borderRadius: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 12,
+    },
+    storeIconQR: {
+        width: 20,
+        height: 20,
+        tintColor: '#1F9144',
+        marginRight: 6,
     },
 });
 

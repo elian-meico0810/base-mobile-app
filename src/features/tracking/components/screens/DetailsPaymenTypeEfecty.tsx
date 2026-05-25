@@ -16,7 +16,6 @@ import {
 } from "react-native";
 import { GuideDetails } from "../../domain/details/DetailsGuide";
 import { TypeParameterValue } from "../../domain/invoices/InvoicesInterFace";
-
 interface DetailsPaymenTypeEfectyProps {
     data?: GuideDetails;
     onClose: () => void;
@@ -178,10 +177,12 @@ export function DetailsPaymenTypeEfecty({
                 </View>
 
                 <View style={styles.phoneContainer}>
-                    <View style={[
-                        styles.phoneRow,
-                        isGreaterThanTotal && styles.phoneRowError
-                    ]}>
+                    <View
+                        style={[
+                            styles.phoneRow,
+                            isGreaterThanTotal && styles.phoneRowError
+                        ]}
+                    >
                         <TextInput
                             style={styles.phoneInput}
                             keyboardType="number-pad"
@@ -192,6 +193,10 @@ export function DetailsPaymenTypeEfecty({
                             }}
                             editable={true}
                         />
+
+                        {isGreaterThanTotal && (
+                            <Text style={styles.warningIcon}>⚠</Text>
+                        )}
                     </View>
                     {isGreaterThanTotal && (
                         <Text style={styles.warningText}>
@@ -349,5 +354,10 @@ const styles = StyleSheet.create({
     phoneRowError: {
         borderColor: "#FF4D4F",
         borderWidth: 1,
+    },
+    warningIcon: {
+        color: "#FF4D4F",
+        fontSize: 18,
+        marginLeft: 8,
     },
 });

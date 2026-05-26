@@ -21,6 +21,7 @@ import { DetailsInvoiceQR } from '@/src/features/tracking/components/screens/Det
 import { DetailsPaymenTypeEfecty } from '@/src/features/tracking/components/screens/DetailsPaymenTypeEfecty';
 import { DetailsPaymenTypeOthers } from '@/src/features/tracking/components/screens/DetailsPaymenTypeOthers';
 import { InfoPayments } from '@/src/features/tracking/components/screens/InfoPayments';
+import { PaymentSelectionModal } from '@/src/features/tracking/components/screens/PaymentDescriptionModal';
 import { ViewQrModal } from '@/src/features/tracking/components/screens/ViewQrModal';
 import { Cause, Detail, Document, GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { CreateEntregaProps, DerliveryDocument, Invoice, TypeParameterValue } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
@@ -108,6 +109,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [typePayment, setTypePayment] = useState(false);
     const [typePaymentTypeEfecty, setTypePaymenTypeEfecty] = useState(false);
     const [typePaymentTypeOthers, setTypePaymenTypeOthers] = useState(false);
+    const [typePaymentAll, setTypePaymentAll] = useState(false);
     const [statusDOcument, setStatusDOcument] = useState(false);
     const [conceptDelivery, setConceptDelivery] = useState<DerliveryDocument | null>(null);
     const [validateException, setValidateException] = useState(false);
@@ -253,7 +255,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setLoading(false);
         }
     };
-    
+
     const handleGenerateQRNotcondPago = async (type: string, qr?: string) => {
         setModalgenerateQR(true);
         setShowDetailInvoiceQR(false);
@@ -735,15 +737,15 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 return false;
             }
 
-            if (condPago) {
-                setTypeQRSendWhatsApp(true);
-                setRouteStarted(true);
-            } else {
-                setRouteStarted(true);
-                setTypeQRSendWhatsApp(false);
-                setShowDetailInvoiceQR(false);
-            }
-           
+            // if (condPago) {
+            //     setTypeQRSendWhatsApp(true);
+            //     setRouteStarted(true);
+            // } else {
+            //     setRouteStarted(true);
+            //     setTypeQRSendWhatsApp(false);
+            //     setShowDetailInvoiceQR(false);
+            // }
+            setTypePaymentAll(true);
             return true;
         } catch (error) {
             setModalTitle("¡Error!");
@@ -1550,7 +1552,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                                 onPress={() => {
                                                     const isValidButton = validateButton();
                                                     if (!isValidButton) return;
-                                                    setTypePayment(true);
+                                                    // setTypePayment(true);
                                                 }}
                                             >
                                                 <View style={styles.qrButtonContent}>
@@ -2016,6 +2018,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
                 />
             )}
+
             {typePaymentTypeOthers && (
                 <DetailsPaymenTypeOthers
                     data={guide}
@@ -2036,12 +2039,30 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 />
             )}
 
+
+            {typePaymentAll && (
+                <PaymentSelectionModal
+                    data={guide}
+                    totalRecauder={totalRecauder}
+                    onClose={() => setTypePaymentAll(false)}
+                    onPressPayment={(payments) => {
+                        console.log('Payments:', payments);
+
+                        payments.forEach((payment) => {
+                            console.log('Tipo:', payment.tipo);
+                            console.log('Valor:', payment.valor);
+                            console.log('Descripción:', payment.descripcion);
+                        });
+                    }}
+                />
+            )}
+
             {(uploadPhotoTwo) && (
                 <UploadPhotoOTP
                     onClose={() => setUploadPhotoTwo(false)}
                     onPick={(data) => {
                         const newPhoto: EvidencePhoto = {
-                            id: Date.now().toString(), // Generar un ID único
+                            id: Date.now().toString(), 
                             uri: data.uri,
                             base64: data.base64
                         };

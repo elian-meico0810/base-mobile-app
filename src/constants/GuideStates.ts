@@ -123,3 +123,9 @@ export enum TipeCodeOTP {
     EST_OTP_ENVIADO = "EST_OTP_ENVIADO",
     EST_OTP_VALIDADO = "EST_OTP_VALIDADO"
 }
+
+
+export enum TypoPaymentEnum {
+    EFECTY = "EFECTY",
+    OTHERS = "OTHERS"
+}

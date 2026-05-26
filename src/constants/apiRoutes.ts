@@ -71,7 +71,7 @@ const appTokenQA =
   process.env.KEY_APP_QA;
 
 export const ENV_DEV = {
-  KEY_APP: String(appTokenPRD)
+  KEY_APP: String(appTokenQA)
     .replace(/"/g, '')
     .trim()
 };

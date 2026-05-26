@@ -68,6 +68,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
     const [showPayment, setShowPayment] = useState(false);
     const [showDetailInvoiceQR, setShowDetailInvoiceQR] = useState(false);
+    const [showDetailInvoiceQRTAT, setShowDetailInvoiceQRTAT] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [viewOrder, setIsOrder] = useState<GuideDetails | null>(null);
     const [typePaymentView, setTypePaymentView] = useState(false);
@@ -133,8 +134,11 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [uploadPhotoTwo, setUploadPhotoTwo] = useState(false);
     const [currentQRType, setCurrentQRType] = useState(qrType || undefined);
     const [currentQRData, setCurrentQRData] = useState(qrBase64 || undefined);
+    const [qrInfo, setQrInfo] = useState<{
+        type?: string;
+        data?: string;
+    }>({});
     const insets = useSafeAreaInsets();
-
 
     useEffect(() => {
         const backAction = () => {
@@ -249,6 +253,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setLoading(false);
         }
     };
+    
     const handleGenerateQRNotcondPago = async (type: string, qr?: string) => {
         setModalgenerateQR(true);
         setShowDetailInvoiceQR(false);
@@ -413,12 +418,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
             } else {
                 setModalTitle("¡Alerta!");
-                setModalMessage(response?.message ?? "Ocurrió un error inesperado 3.");
+                setModalMessage(response?.message ?? "Ocurrió un error inesperado.");
                 setModalVisible(true);
             }
         } catch (error: any) {
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 1.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -427,8 +432,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
 
     const condPago = guide?.facturas[0]?.condPago === TypeConPagoEnum.TAT;
-
-    // const condPagoFalse = guide?.facturasx0]?.condPago != TypeConPagoEnum.TAT;
 
     const handlSendWhatsApp = async () => {
         try {
@@ -515,12 +518,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const handleSubmitData = async () => {
         try {
 
-            // if (!deliveryStatus) {
-            //     setModalTitle("¡Alerta!");
-            //     setModalMessage("Debe especificar un estado de entrega.");
-            //     setModalVisible(true);
-            //     return;
-            // }
             const existOtp = await listInfOTByDirection();
             if (existOtp) {
                 return;
@@ -569,7 +566,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setValidateException(true);
             btnRef.current?.reset();
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 1.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -645,7 +642,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setValidateException(true);
             btnRef.current?.reset();
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 2.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -681,49 +678,11 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             }
         } catch (error: any) {
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 3.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {
         }
     };
-
-
-    //         const response = await detailsRepositoryImpl.listInfOTP(String(guide?.idDireccion), String(initialGuide?.facturas[0]?.numeroFactura), token);
-    //         if (
-    //             response.success &&
-    //             response.data &&
-    //             typeof response.data !== "string" &&
-    //             !Array.isArray(response.data)
-    //         ) {
-    //             if (response.data.expira_en && response.data.momento_envio && guide) {
-    //                 setButtonValueOTP(true);
-    //                 router.push({
-    //                     pathname: '/views/IndexDetailsInvoice',
-    //                     params: {
-    //                         guide: JSON.stringify(guide),
-    //                         numberGuide: numberGuide,
-    //                         token: token ?? "",
-    //                         confirmationStatus: 'true',
-    //                         responseOTPInit: JSON.stringify(response.data),
-    //                         totalValue: Number(totalValue) ?? 0,
-    //                         totalRecauder: Number(totalRecauder) ?? 0,
-    //                         totalOrderPayment: Number(totalOrderPayment) ?? 0,
-    //                         expireDate: 'true',
-    //                         isSelectInvocies: isSelectInvocies
-    //                     }
-
-    //                 });
-    //                 return true;
-    //             }
-    //         }
-    //         return false;
-
-    //     } catch (error: any) {
-    //         setModalTitle("¡Error!");
-    //         setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 4.");
-    //         setModalVisible(true);
-    //     }
-    // };
 
 
     const submitData = async () => {
@@ -756,7 +715,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             }
         } catch (error: any) {
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 5.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -776,25 +735,19 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 return false;
             }
 
-            if (condPago && condPago) {
+            if (condPago) {
                 setTypeQRSendWhatsApp(true);
-                setModalgenerateQR(true);
-                setShowDetailInvoiceQR(true);
                 setRouteStarted(true);
-            } else if (!condPago && !condPago) {
+            } else {
                 setRouteStarted(true);
                 setTypeQRSendWhatsApp(false);
                 setShowDetailInvoiceQR(false);
             }
-            // if (condPago) {
-            //     setTypeQRSendWhatsApp(true);
-            //     setModalgenerateQR(true);
-            //     setShowDetailInvoiceQR(true);
-            // }
+           
             return true;
         } catch (error) {
             setModalTitle("¡Error!");
-            setModalMessage("Ocurrio un error inesperado 6.");
+            setModalMessage("Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -1315,7 +1268,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     const validateButtonQR = () => {
         try {
-            setShowDetailInvoiceQR(false);
             setShowPayment(false);
             if (!routeStarted && !isSelectInvocies && !detailsCounterDelivery && !closeButton) {
                 setModalTitle("¡Alerta!");
@@ -1323,9 +1275,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 setModalVisible(true);
                 return false;
             }
-
+            setShowDetailInvoiceQRTAT(true);
             setShowDetailInvoiceQR(true);
-
             return true;
         } catch (error) {
             setModalTitle("¡Error!");
@@ -1834,7 +1785,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             {(showDetailInvoiceQR) && (
                 <DetailsInvoiceQR
                     data={guide}
-                    onClose={() => setShowDetailInvoiceQR(false)}
+                    onClose={() => {
+                        setShowDetailInvoiceQR(false);
+                        setShowDetailInvoiceQR(false);
+                    }}
                     onChangePhone={() => {
                         setShowDetailInvoiceQR(false);
                         setShowChangePhone(true);
@@ -1844,9 +1798,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     onGenerateQR={condPago ? handleGenerateQR : handleGenerateQRNotcondPago}
                     onPressPayment={() => setRefreshingOnPress(true)}
                     onErrorPayment={() => setShowErrorQRP(true)}
-                    statusTypeQR={typeQRSendWhatsApp}
+                    statusTypeQR={false}
                     totalRecauder={totalRecauder}
-
                 />
             )}
 
@@ -1856,6 +1809,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     onClose={() => {
                         setModalgenerateQR(false);
                         setCurrentQRData(undefined);
+                        setShowDetailInvoiceQR(false);
+                        setShowDetailInvoiceQR(false);
+                        setShowPayment(false);
+
                     }}
                     onChangePhone={() => {
                         setShowDetailInvoiceQR(false);
@@ -1864,7 +1821,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     }}
                     width={width}
                     phone={phone}
-                    qrData={currentQRData}
+                    qrData={qrBase64}
                     qrType={qrType}
                     onChangeQRType={() => {
                         handleChangeQRType();
@@ -2006,7 +1963,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 />
             )}
 
-            {(typePayment && !condPago && guide) && (
+            {(typePayment && guide) && (
                 <TypePayment
                     title="Registrar pago"
                     subTitle="Seleccioná el método de pago del cliente."

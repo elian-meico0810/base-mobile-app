@@ -17,7 +17,7 @@ interface ViewQrModalQRProps {
     disabled?: boolean;
     width?: number;
     height?: number;
-    qrHeight?: number; // 👈 NUEVA PROP: altura del contenedor QR
+    qrHeight?: number;
     phone?: string;
     qrData?: string;
     qrType?: string;
@@ -43,7 +43,7 @@ export function ViewQrModal({
     disabled,
     width = 360,
     height = 300,
-    qrHeight = 300, // 👈 VALOR POR DEFECTO 300
+    qrHeight = 300,
     phone,
     qrData,
     qrType = 'Aplicación Bancaria',
@@ -79,6 +79,15 @@ export function ViewQrModal({
                 return;
             }
 
+            if (!qrData) {
+                setModalTitle("Error al generar el QR");
+                setModalMessage(
+                    "No pudimos generar el código QR en este momento. Intenta nuevamente."
+                );
+                setModalVisible(true);
+                return;
+            }
+
             if (onSendWhatsApp && typeof onSendWhatsApp === 'function') {
                 onSendWhatsApp();
             }
@@ -87,24 +96,24 @@ export function ViewQrModal({
         }
     };
 
-    useEffect(() => {
-        setLocalQRData(qrData);
-    }, [qrData]);
-
     const handleChangeQRType = () => {
         if (onChangeQRType) {
             onChangeQRType();
         }
-        setLocalQRData(undefined);
     };
+
+    useEffect(() => {
+        setLocalQRData(qrData);
+    }, [qrData]);
 
     const dynamicStyles = {
         ...styles,
         qrContainer: {
             ...styles.qrContainer,
-            height: qrHeight, 
+            height: qrHeight,
         },
     };
+    console.log("qrData: ", qrData ? "Llego algo" : "No llego nada");
 
     return (
         <View style={styles.overlay}>
@@ -135,11 +144,11 @@ export function ViewQrModal({
                     phone={phone ? phone : data?.whatsapp?.replace(/\D/g, '') ?? ""}
                     onChangePhone={onChangePhone}
                     qrType={qrType}
-                    qrData={localQRData}
+                    qrData={qrData}
                     disabled={disabled}
                     handleSendWhatsApp={handleSendWhatsApp}
                     handleChangeQRType={handleChangeQRType}
-                    styles={dynamicStyles} 
+                    styles={dynamicStyles}
                     formatNumber={formatNumber}
                     Row={Row}
                     totalRecauder={totalRecauder}
@@ -348,5 +357,51 @@ const styles = StyleSheet.create({
         width: "100%",
         position: "static",
         color: "#788095",
+    },
+    errorContainer: {
+        borderWidth: 1,
+        borderColor: "#ff6b6b",
+        borderRadius: 16,
+        backgroundColor: "#fdf5f5",
+        paddingVertical: 40,
+        paddingHorizontal: 20,
+        alignItems: "center",
+        justifyContent: "center",
+        marginTop: 20,
+    },
+
+    errorIconContainer: {
+        width: 60,
+        height: 60,
+        borderRadius: 35,
+        borderWidth: 4,
+        borderColor: "#ef4444",
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: 10,
+    },
+    errorIcon: {
+        fontSize: 32,
+        color: "#ef4444",
+        fontWeight: "bold",
+    },
+    errorTitle: {
+        fontSize: 22,
+        fontWeight: "700",
+        color: "#ef4444",
+        textAlign: "center",
+        marginBottom: 12,
+    },
+    errorDescription: {
+        fontSize: 18,
+        color: "#ef4444",
+        textAlign: "center",
+    },
+    retryText: {
+        marginTop: 20,
+        fontSize: 16,
+        fontWeight: "600",
+        color: "#ef4444",
+        textDecorationLine: "underline",
     },
 });

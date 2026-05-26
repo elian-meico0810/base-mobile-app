@@ -46,7 +46,6 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
     const [loadingTwo, setLoadingTwo] = useState(
         statusTypeQR || data?.facturas?.[0]?.condPago == TypeConPagoEnum.TAT
     );
-    console.log("statusTypeQR: ", statusTypeQR);
 
     // Inicializar con el valor que viene
     useEffect(() => {
@@ -67,13 +66,6 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
     const paymentGateway = async () => {
         try {
 
-            // if ((!phone || !/^\d{10}$/.test(phone)) && Number(cleanWhatsapp?.length) != 10) {
-            //     setModalTitle("¡Alerta!");
-            //     setModalMessage("Debe ingresar un número de teléfono válido de 10 dígitos.");
-            //     setModalVisible(true);
-            //     return;
-
-            // }
 
             setLoading(true);
             if (onGenerateQR) {
@@ -154,7 +146,6 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
 
     useEffect(() => {
         if (statusTypeQR || data?.facturas?.[0]?.condPago == TypeConPagoEnum.TAT) {
-            setLoadingTwo(true);
             generateQR();
         }
     }, []);

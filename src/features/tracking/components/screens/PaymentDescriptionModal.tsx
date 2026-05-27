@@ -194,13 +194,13 @@ export function PaymentSelectionModal({
     };
 
     return (
-        <View style={styles.overlay} pointerEvents="box-none">
+        <View style={styles.overlay}>
             <TouchableOpacity
                 style={styles.backgroundOverlay}
                 activeOpacity={1}
             />
 
-            <SafeAreaView style={styles.safeArea} pointerEvents="box-none">
+            <SafeAreaView style={styles.safeArea}>
                 <Animated.View
                     style={[
                         styles.container,
@@ -209,7 +209,6 @@ export function PaymentSelectionModal({
 
                         }
                     ]}
-                    pointerEvents="box-none"
                 >
 
 
@@ -221,10 +220,15 @@ export function PaymentSelectionModal({
                         keyboardShouldPersistTaps="handled"
                         contentContainerStyle={styles.scrollContent}
                     >
-                        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+
+                        <TouchableOpacity
+                            style={styles.closeButton}
+                            onPress={onClose}
+                            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+                            activeOpacity={0.6}
+                        >
                             <Text style={styles.closeText}>X</Text>
                         </TouchableOpacity>
-                        
                         <Text style={styles.title}>Registrar Pago</Text>
                         <Text style={styles.description}>
                             Ingresa la información del pago recibido.
@@ -369,16 +373,17 @@ const styles = StyleSheet.create({
         bottom: 0,
         justifyContent: "flex-end",
         alignItems: "center",
+        zIndex: 9999,
+
     },
     backgroundOverlay: {
         ...StyleSheet.absoluteFillObject,
         backgroundColor: "rgba(0,0,0,0.5)",
-        zIndex: 1,
     },
     safeArea: {
         width: '100%',
         alignItems: 'center',
-        zIndex: 2,
+
     },
     container: {
         backgroundColor: "#F9F9FA",
@@ -387,24 +392,22 @@ const styles = StyleSheet.create({
         paddingTop: 16,
         paddingHorizontal: 16,
         paddingBottom: 0,
-        zIndex: 2,
         maxHeight: '100%',
         minHeight: '60%',
     },
     closeButton: {
         position: "absolute",
-        right: 16,
-        top: 16,
-        zIndex: 3,
+        right: 8,
+        top: 10,
+        zIndex: 1000,
     },
     closeText: {
-        fontSize: 16,
+        fontSize: 18,
         color: "#788095",
         fontWeight: "bold",
     },
     scrollView: {
         width: '100%',
-        flexGrow: 1,
     },
     scrollContent: {
         paddingBottom: 50,

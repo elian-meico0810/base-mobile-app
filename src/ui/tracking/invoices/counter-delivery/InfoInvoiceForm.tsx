@@ -12,14 +12,13 @@ import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { UploadPhotoOTP } from '@/components/photo/uploadPhotoOTP';
 import { OrderDetailSkeleton } from '@/components/skeleton/OrderDetailSkeleton ';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
-import { OptionsRefusedEnum, StatusDelivery, TypeCaculateValueEnum, TypeConPagoEnum, TypeInvoiceEnum, TypeQr } from '@/src/constants/GuideStates';
+import { OptionsRefusedEnum, StatusDelivery, TypeCaculateValueEnum, TypeConPagoEnum, TypeInvoiceEnum, TypePaymentCounterDeliveryEnum, TypeQr, TypoPaymentEnum } from '@/src/constants/GuideStates';
 import { DeliveryStatusAction } from '@/src/features/tracking/components/checkbox/DeliveryStatusAction';
 import { NoDeliveryModal } from '@/src/features/tracking/components/checkbox/NoDeliveryModal';
 import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
 import { ChangePhoneModal } from '@/src/features/tracking/components/screens/ChangePhoneModal';
 import { DetailsInvoiceQR } from '@/src/features/tracking/components/screens/DetailsInvoiceQR';
 import { DetailsPaymenTypeEfecty } from '@/src/features/tracking/components/screens/DetailsPaymenTypeEfecty';
-import { DetailsPaymenTypeOthers } from '@/src/features/tracking/components/screens/DetailsPaymenTypeOthers';
 import { InfoPayments } from '@/src/features/tracking/components/screens/InfoPayments';
 import { PaymentSelectionModal } from '@/src/features/tracking/components/screens/PaymentDescriptionModal';
 import { ViewQrModal } from '@/src/features/tracking/components/screens/ViewQrModal';
@@ -296,7 +295,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     momento: date,
                     valorRegistrado: value,
                     tipoPago: "TIP_PAG_EFECTIVO",
-                    descripcion: "Transferencia",
+                    descripcion: "Efectivo",
                     pedidos: [String(initialGuide?.pedidos?.[0]?.codigo)],
                 }
             ], token);
@@ -377,18 +376,17 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         }
     };
 
-    const handleSubmitOthers = async (value: number, observation?: string) => {
+    const handleSubmitOthers = async (
+        payments: {
+            valor: number;
+            descripcion?: string;
+            tipo?: string;
+        }[]
+    ) => {
         try {
+            
             setLoading(true);
             setRefreshingOnPress(true);
-            if (value <= 0) {
-                setModalTitle("¡Alerta!");
-                setModalMessage("El campo es requerido.");
-                setModalVisible(true);
-                return;
-            }
-
-            if (!observation) return;
 
             const now = new Date();
 
@@ -400,32 +398,48 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             const payload = token.split('.')[1];
             const decoded = JSON.parse(atob(payload));
 
+            const paymentPayload = payments.map((payment) => ({
+                usuario: decoded.transportador
+                    ? decoded.transportador
+                    : "N/A",
 
-            const response = await invoiceRepositoryImpl.createPaymentType([
-                {
-                    usuario: decoded.transportador ? decoded.transportador : "N/A",
-                    momento: date,
-                    valorRegistrado: value,
-                    tipoPago: "TIP_PAG_OTRO",
-                    descripcion: String(observation),
-                    pedidos: [String(initialGuide?.pedidos?.[0]?.codigo)],
-                }
-            ], token);
+                momento: date,
+
+                valorRegistrado: payment.valor,
+
+                tipoPago: payment.tipo === TypoPaymentEnum.EFECTY ? TypePaymentCounterDeliveryEnum.EFECTY : TypePaymentCounterDeliveryEnum.OTRO,
+
+                descripcion: String(payment.descripcion || ""),
+
+                pedidos: [
+                    String(initialGuide?.pedidos?.[0]?.codigo)
+                ],
+            }));
+
+            const response = await invoiceRepositoryImpl.createPaymentType(
+                paymentPayload,
+                token
+            );
 
             if (response?.statusCode === 200) {
                 onRefresh();
                 setModalTitle("¡Procesado!");
                 setModalMessage(`Registro(s) procesado exitosamente.`);
                 setModalVisible(true);
-
+                return;
             } else {
                 setModalTitle("¡Alerta!");
-                setModalMessage(response?.message ?? "Ocurrió un error inesperado.");
+                setModalMessage(
+                    response?.message ?? "Ocurrió un error inesperado."
+                );
                 setModalVisible(true);
+                return;
             }
         } catch (error: any) {
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalMessage(
+                error?.data?.message ?? "Ocurrio un error inesperado."
+            );
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -2019,40 +2033,13 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 />
             )}
 
-            {typePaymentTypeOthers && (
-                <DetailsPaymenTypeOthers
-                    data={guide}
-                    onClose={() => setTypePaymenTypeOthers(false)}
-                    onChangePhone={() => {
-                        setTypePaymenTypeEfecty(false);
-                        setShowChangePhone(true);
-                    }}
-                    width={width}
-                    phone={phone}
-                    onGenerateQR={handleGenerateQR}
-                    onPressPayment={(value, observation) => {
-                        handleSubmitOthers(Number(value), observation)
-                    }}
-                    onErrorPayment={() => setShowErrorQRP(true)}
-                    statusTypeQR={typeQRSendWhatsApp}
-                    totalRecauder={totalRecauder}
-                />
-            )}
-
-
             {typePaymentAll && (
                 <PaymentSelectionModal
                     data={guide}
                     totalRecauder={totalRecauder}
                     onClose={() => setTypePaymentAll(false)}
                     onPressPayment={(payments) => {
-                        console.log('Payments:', payments);
-
-                        payments.forEach((payment) => {
-                            console.log('Tipo:', payment.tipo);
-                            console.log('Valor:', payment.valor);
-                            console.log('Descripción:', payment.descripcion);
-                        });
+                        handleSubmitOthers(payments);
                     }}
                 />
             )}
@@ -2062,7 +2049,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     onClose={() => setUploadPhotoTwo(false)}
                     onPick={(data) => {
                         const newPhoto: EvidencePhoto = {
-                            id: Date.now().toString(), 
+                            id: Date.now().toString(),
                             uri: data.uri,
                             base64: data.base64
                         };

@@ -129,3 +129,9 @@ export enum TypoPaymentEnum {
     EFECTY = "EFECTY",
     OTHERS = "OTHERS"
 }
+
+
+export enum TypePaymentCounterDeliveryEnum {
+    EFECTY = "TIP_PAG_EFECTIVO",
+    OTRO = "TIP_PAG_OTRO"
+}

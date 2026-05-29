@@ -35,6 +35,7 @@ export interface GuideDetails {
   fecha_apertura?: string | null;
   facturas: Factura[];
   pedidos?: Pedidos[];
+  tieneNoEntrega: boolean;
 }
 
 export interface RuteInitPorps {

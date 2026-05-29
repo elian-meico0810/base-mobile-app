@@ -43,10 +43,10 @@ export function GuideCard({ guide, onPress, routeStarted, numberGuide, token, st
     
     return (
         <TouchableOpacity
-            disabled={(!statusValue || guide.estado !== 'Pendiente') ? true : false}
+            disabled={(!statusValue || (guide.estado !== 'Pendiente' && !guide.tieneNoEntrega)) ? true : false}
             style={[
                 styles.card,
-                (!statusValue|| guide.estado !== 'Pendiente') && {
+                (!statusValue || guide.estado !== 'Pendiente') && {
                     backgroundColor: '#F9F9FA',
                     opacity: 0.6,
                     borderColor: '#F9F9FA',
@@ -62,6 +62,12 @@ export function GuideCard({ guide, onPress, routeStarted, numberGuide, token, st
                 // );
             }}
         >
+            {guide.tieneNoEntrega && (
+                <View style={styles.noDeliveryTag}>
+                    <Ionicons name="alert-circle" size={14} color="#164194" />
+                    <Text style={styles.noDeliveryText}>Pedido no entregado por problemas en ruta</Text>
+                </View>
+            )}
             <View style={styles.header}>
                 <View style={{ flex: 1 }}>
                     <Text style={styles.name} numberOfLines={2} ellipsizeMode="tail">
@@ -241,5 +247,22 @@ const styles = StyleSheet.create({
         height: 15,
         tintColor: '#164194',
         marginLeft: 5
+    },
+    noDeliveryTag: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#E8EEF9',
+        alignSelf: 'flex-start',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 16,
+        marginBottom: 8,
+    },
+    noDeliveryText: {
+        fontFamily: 'Rubik',
+        fontWeight: '400',
+        fontSize: 12,
+        color: '#4F74C4',
+        marginLeft: 4,
     },
 });

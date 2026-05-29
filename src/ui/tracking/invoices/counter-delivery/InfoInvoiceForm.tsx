@@ -850,7 +850,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             estado: clienteEncontrado.estado,
                             facturas: clienteEncontrado.facturas,
                             whatsapp: clienteEncontrado.whatsapp,
-                            pedidos: clienteEncontrado.pedidos
+                            pedidos: clienteEncontrado.pedidos,
+                            tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
                         });
 
                     }

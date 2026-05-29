@@ -135,3 +135,10 @@ export enum TypePaymentCounterDeliveryEnum {
     EFECTY = "TIP_PAG_EFECTIVO",
     OTRO = "TIP_PAG_OTRO"
 }
+
+export enum TypeValueParameterEnum {
+    TEXT_ODER = "TEXT_ODER",
+    TEXT_NOVELTY_ODER = "TEXT_NOVELTY_ODER",
+    MARGEN_TOLERANCIA = "MARGEN_TOLERANCIA"
+
+}

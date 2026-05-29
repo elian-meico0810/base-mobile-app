@@ -27,6 +27,7 @@ export interface GuideDetails {
   poblacion: string;
   codigoCliente: string;
   nombreCliente: string;
+  razonSocial: string;
   latitud: string;
   longitud: string;
   estado: string;

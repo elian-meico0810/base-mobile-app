@@ -115,7 +115,6 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
 
                 if (finalToken && Number(guide)) {
                     const response = await detailsRepositoryImpl.listGuide(Number(guide), finalToken);
-
                     if (response?.statusCode == 200) {
                         if (response?.data) {
                             const arrayData = Array.isArray(response.data) ? response.data : [response.data];
@@ -138,10 +137,6 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                             const hasInCourse = sortedData.every(
                                 item => (item as GuideDetails).estado?.toLowerCase() === StatusInvoice.CLOSE_TWO.toLowerCase()
                             );
-
-                            if (hasInCourse) {
-                                //await finshRoute();
-                            }
                             const responseData = await detailsRepositoryImpl.paymentsByGuide(
                                 {
                                     id_guia: String(guide),

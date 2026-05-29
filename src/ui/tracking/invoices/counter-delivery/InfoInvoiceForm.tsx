@@ -12,7 +12,7 @@ import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { UploadPhotoOTP } from '@/components/photo/uploadPhotoOTP';
 import { OrderDetailSkeleton } from '@/components/skeleton/OrderDetailSkeleton ';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
-import { OptionsRefusedEnum, StatusDelivery, TypeCaculateValueEnum, TypeConPagoEnum, TypeInvoiceEnum, TypePaymentCounterDeliveryEnum, TypeQr, TypoPaymentEnum } from '@/src/constants/GuideStates';
+import { OptionsRefusedEnum, StatusDelivery, TypeCaculateValueEnum, TypeConPagoEnum, TypeInvoiceEnum, TypePaymentCounterDeliveryEnum, TypeQr, TypeValueParameterEnum, TypoPaymentEnum } from '@/src/constants/GuideStates';
 import { DeliveryStatusAction } from '@/src/features/tracking/components/checkbox/DeliveryStatusAction';
 import { NoDeliveryModal } from '@/src/features/tracking/components/checkbox/NoDeliveryModal';
 import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
@@ -114,6 +114,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [validateException, setValidateException] = useState(false);
     const [paymentSuccessful, setPaymentSuccessful] = useState<Invoice | undefined>();
     const [typeCash, setTypeCash] = useState<TypeParameterValue[]>([]);
+    const [valueParameter, setValueParameter] = useState<TypeParameterValue[]>([]);
+    const [valueParameterOTP, setValueParameterOTP] = useState<TypeParameterValue[]>([]);
     const [qrBase64, setQrBase64] = useState<string>('');
     const [qrType, setQrType] = useState<string>('');
     const [phone, setPhone] = useState("");
@@ -221,6 +223,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         };
         getDataProduct();
         listTypeCash();
+        listTypeParameterValue();
+        listTypeParameterValueOTP();
         // getSuccessOrderPayment();
         fetchGuide();
     }, [Number(initialGuide?.facturas[0]?.numeroFactura), token]);
@@ -376,6 +380,51 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         }
     };
 
+    const listTypeParameterValue = async () => {
+        try {
+            setLoading(true);
+
+            const response = await invoiceRepositoryImpl.typeParameterValue(TypeValueParameterEnum.MARGEN_TOLERANCIA, token);
+            if (response?.statusCode === 200 && Array.isArray(response.data)) {
+                setValueParameter(response.data);
+            } else {
+                setValueParameter([]);
+                setModalTitle("¡Alerta!");
+                setModalMessage(response?.message ?? "Ocurrió un error inesperado.");
+                setModalVisible(true);
+            }
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const listTypeParameterValueOTP = async () => {
+        try {
+            setLoading(true);
+
+            const response = await invoiceRepositoryImpl.typeParameterValue(TypeValueParameterEnum.MARGEN_TOLERANCIA_SEND_OTP, token);
+            console.log("listTypeParameterValueOTP: ", response.data);
+            if (response?.statusCode === 200 && Array.isArray(response.data)) {
+                setValueParameterOTP(response.data);
+            } else {
+                setValueParameterOTP([]);
+                setModalTitle("¡Alerta!");
+                setModalMessage(response?.message ?? "Ocurrió un error inesperado.");
+                setModalVisible(true);
+            }
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleSubmitOthers = async (
         payments: {
             valor: number;
@@ -384,7 +433,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         }[]
     ) => {
         try {
-            
             setLoading(true);
             setRefreshingOnPress(true);
 
@@ -820,7 +868,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             estado: clienteEncontrado.estado,
                             facturas: clienteEncontrado.facturas,
                             whatsapp: clienteEncontrado.whatsapp,
-                            pedidos: clienteEncontrado.pedidos
+                            pedidos: clienteEncontrado.pedidos,
+                            razonSocial: clienteEncontrado.razonSocial,
                         });
 
                     }

@@ -71,8 +71,6 @@ export default function RenderQRView({
     }, [qrType]);
 
     useEffect(() => {
-        console.log("qrData recibido:", qrData ? `${qrData.substring(0, 50)}...` : "undefined", "tipo esperado:", qrType);
-
         if (qrData) {
             const isValidForCurrentType = () => {
                 if (qrType === TypeQr.PASARELA && qrData.startsWith("http")) {

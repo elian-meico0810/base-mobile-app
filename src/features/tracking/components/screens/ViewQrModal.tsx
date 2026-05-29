@@ -113,8 +113,6 @@ export function ViewQrModal({
             height: qrHeight,
         },
     };
-    console.log("qrData: ", qrData ? "Llego algo" : "No llego nada");
-
     return (
         <View style={styles.overlay}>
             {/* FONDO — captura toques fuera del modal */}

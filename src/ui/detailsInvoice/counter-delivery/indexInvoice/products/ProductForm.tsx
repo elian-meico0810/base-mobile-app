@@ -478,7 +478,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
                     // Verificar si AHORA es después de medianoche del día guardado
                     // if (now > midnightOfSavedDay) {
-                        tokenData();
+                    tokenData();
                     // }
                 } else {
                     tokenData();
@@ -502,7 +502,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         }
     }, [modalStatusNovelty, productItemData?.id, successButton]);
 
-        const tokenData = async () => {
+    const tokenData = async () => {
         try {
 
             const responseData = await detailsRepositoryImpl.tokenPorducts(token);
@@ -521,7 +521,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 const testToken = await SecureStore.getItemAsync('service_token_product');
                 const testUrl = await SecureStore.getItemAsync('base_url_product');
                 const dateToken = await SecureStore.getItemAsync('date_token_product');
-                    
+
             }
         } catch (error) {
             setModalTitle("¡Error!");
@@ -542,7 +542,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
         dataProduct();
 
     }, [token]);
-    
+
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -570,11 +570,17 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                     ]}
                 >
                     <View style={styles.headerRow}>
-                        <Text style={styles.merchantName}>
-                            {capitalizeFirst(guide?.nombreCliente) ?? ''}
-                        </Text>
 
-                        {/* Icono solo visual (opcional) */}
+                        <View style={styles.namesContainer}>
+                            <Text style={styles.merchantName}>
+                                {capitalizeFirst(guide?.nombreCliente) ?? ''}
+                            </Text>
+
+                            <Text style={styles.merchantSubName}>
+                                {capitalizeFirst(guide?.razonSocial) ?? ''}
+                            </Text>
+                        </View>
+
                         <View style={styles.expandButton}>
                             <View style={styles.arrowsContainer}>
                                 <Image
@@ -584,6 +590,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                                 />
                             </View>
                         </View>
+
                     </View>
 
                     {/* Contenido expandido */}
@@ -596,11 +603,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                             <View style={styles.actionButtonsRow}>
                                 <TouchableOpacity
                                     style={styles.rejectButton}
-                                    onPress={() => {
-                                        if (showPorductData?.[0]?.detalles?.length > 0) {
-                                            setViewModalActionRefused(true);
-                                        }
-                                    }}
+                                    onPress={() => setViewModalActionRefused(true)}
                                 >
                                     <MaterialIcons name="close" size={16} color="#C62828" />
                                     <Text style={styles.rejectButtonText}> Rechazo masivo</Text>
@@ -608,11 +611,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
                                 <TouchableOpacity
                                     style={styles.acceptButton}
-                                    onPress={() => {
-                                        if (showPorductData?.[0]?.detalles?.length > 0) {
-                                            setViewModalActionSuccess(true);
-                                        }
-                                    }}
+                                    onPress={() => setViewModalActionSuccess(true)}
                                 >
                                     <MaterialIcons name="check" size={16} color="#1F9144" />
                                     <Text style={styles.acceptButtonText}> Validacion masiva</Text>
@@ -848,22 +847,10 @@ const styles = StyleSheet.create({
         minHeight: 49,
     },
     cardCollapsed: {
-        height: 49,
+        height: 60,
         justifyContent: 'center',
         paddingTop: 8,
         paddingBottom: 8,
-    },
-    headerRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        width: '100%',
-    },
-    merchantName: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#141D32',
-        flex: 1,
-        textAlign: 'center',
     },
     expandButton: {
         width: 16,
@@ -942,5 +929,29 @@ const styles = StyleSheet.create({
     reboackIcon: {
         width: 12,
         height: 12,
+    },
+    headerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '100%',
+    },
+
+    namesContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    merchantName: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#141D32',
+        textAlign: 'center',
+    },
+    merchantSubName: {
+        fontSize: 13,
+        fontWeight: '400',
+        color: '#788095',
+        textAlign: 'center',
+        marginTop: 2,
     },
 });

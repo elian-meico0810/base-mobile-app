@@ -858,6 +858,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             whatsapp: clienteEncontrado.whatsapp,
                             pedidos: clienteEncontrado.pedidos,
                             razonSocial: clienteEncontrado.razonSocial,
+                            tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
                         });
 
                     }

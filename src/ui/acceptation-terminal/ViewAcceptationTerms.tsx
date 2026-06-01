@@ -461,7 +461,6 @@ const styles = StyleSheet.create({
     },
     secondCard: {
         width: 360,
-        maxHeight: 600,
         backgroundColor: '#FFFFFF',
         borderColor: '#F0F1F5',
         borderWidth: 1,

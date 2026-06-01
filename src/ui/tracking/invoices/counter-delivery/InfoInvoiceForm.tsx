@@ -384,7 +384,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setLoading(true);
 
             const response = await invoiceRepositoryImpl.typeParameterValue(TypeValueParameterEnum.MARGEN_TOLERANCIA, token);
-            console.log("listTypeParameterValue: ", response.data);
             if (response?.statusCode === 200 && Array.isArray(response.data)) {
                 setValueParameter(response.data);
             } else {
@@ -407,7 +406,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setLoading(true);
 
             const response = await invoiceRepositoryImpl.typeParameterValue(TypeValueParameterEnum.MARGEN_TOLERANCIA_SEND_OTP, token);
-            console.log("listTypeParameterValueOTP: ", response.data);
             if (response?.statusCode === 200 && Array.isArray(response.data)) {
                 setValueParameterOTP(response.data);
             } else {
@@ -1250,8 +1248,23 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
     }, [paymentSuccessful, buttonValueOTP]);
 
+    const valueOTP = (valueParameterOTP ?? []).reduce((acc, item) => {
+        const value = Number(item.valor);
+        return !isNaN(value) ? acc + value : acc;
+    }, 0);
+    const calculatedValue = (detailsCounterDelivery || closeButton)
+        ? newTotalValue
+        : totalValueTwo || 0;
+
+    const difference = Math.abs(totalOrderPayment - calculatedValue);
+    const ressult = difference > valueOTP;
+
     const handleSubmitConfirmation = async () => {
         try {
+            if (ressult) {
+                btnRef.current?.reset();
+                return;
+            }
 
             if (!Number.isFinite(totalValue) || !Number.isFinite(totalRecauder)) {
                 btnRef.current?.reset();
@@ -1738,10 +1751,10 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             disabled={false}
                             width={328}
                             height={43}
-                            buttonColor={undefined}
-                            buttonColorEnd={undefined}
-                            titleColor={undefined}
-                            circleColor={undefined}
+                            buttonColor={ressult ? "#DDDFE8" : undefined}
+                            buttonColorEnd={ressult ? "#DDDFE8" : undefined}
+                            titleColor={ressult ? "#FFFFFF" : undefined}
+                            circleColor={ressult ? "#788095" : undefined}
                         />
                     ) : (
                         <>

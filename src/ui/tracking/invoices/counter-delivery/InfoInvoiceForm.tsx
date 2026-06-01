@@ -1405,9 +1405,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 />
             </View>
 
-
             <ScrollView
-                style={[styles.scrollView, { marginTop: RefreshingOnPress ? 90 : 2 }]}
+                style={[styles.scrollView, { marginTop: RefreshingOnPress ? 90 : 0 }]}
                 contentContainerStyle={[
                     styles.scrollContent,
                     // Ajustar el padding cuando no hay alerta
@@ -1442,6 +1441,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                         <Text style={styles.value}>
                                             {toUpperCase(guide?.nombreCliente)}
                                         </Text>
+                                        <Text style={styles.labelTwoRz}>{toUpperCase(guide?.razonSocial)}</Text>
                                     </View>
                                 </View>
 
@@ -1589,41 +1589,18 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
                                 {(isValidateCondition) && (
                                     totalRecauder != 0 ? (
-                                        <>
-                                            <TouchableOpacity
-                                                style={styles.generateQrButton}
-                                                onPress={() => {
-                                                    const isValidButton = validateButtonQR();
-                                                    if (!isValidButton) return;
-
-                                                }}
-                                            >
-                                                <View style={styles.qrButtonContent}>
-                                                    <Image
-                                                        source={require("@/assets/icons/Others.png")}
-                                                        style={styles.storeIconQR}
-                                                    />
-
-                                                    <Text style={styles.qrButtonTextGenerate}>
-                                                        Generar QR
-                                                    </Text>
-                                                </View>
-                                            </TouchableOpacity>
-
-                                            <TouchableOpacity
-                                                style={styles.qrButton}
-                                                onPress={() => {
-                                                    const isValidButton = validateButton();
-                                                    if (!isValidButton) return;
-                                                    // setTypePayment(true);
-                                                }}
-                                            >
-                                                <View style={styles.qrButtonContent}>
-                                                    <Text style={styles.qrButtonText}>Registrar pago</Text>
-                                                </View>
-                                            </TouchableOpacity>
-                                        </>
-
+                                        <TouchableOpacity
+                                            style={styles.qrButton}
+                                            onPress={() => {
+                                                const isValidButton = validateButton();
+                                                if (!isValidButton) return;
+                                                setTypePayment(true);
+                                            }}
+                                        >
+                                            <View style={styles.qrButtonContent}>
+                                                <Text style={styles.qrButtonText}>Registrar pago</Text>
+                                            </View>
+                                        </TouchableOpacity>
                                     ) : (
                                         <TouchableOpacity
                                             style={styles.qrButtonDetail}
@@ -1687,7 +1664,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 )}
 
             </ScrollView>
-
             {guide?.estado === 'Pendiente' && (
                 <View style={[styles.redBackground, { height: heightValue ? 100 : 90 }]} />
             )}
@@ -2237,9 +2213,10 @@ const styles = StyleSheet.create({
     },
     labelTwo: {
         fontFamily: 'Rubik',
-        fontWeight: '600',
+        fontWeight: '400',
         fontSize: 14,
         color: '#788095',
+        marginBottom: 2,
     },
     value: {
         fontFamily: 'Rubik',
@@ -2248,6 +2225,14 @@ const styles = StyleSheet.create({
         color: '#141D32',
         alignItems: 'flex-start',
         overflow: 'hidden',
+        marginTop: 2,
+    },
+    labelTwoRz: {
+        fontFamily: 'Rubik',
+        fontWeight: '400',
+        fontSize: 12,
+        color: '#788095',
+        marginTop: 4,
     },
     direccionText: {
         fontFamily: 'Rubik',

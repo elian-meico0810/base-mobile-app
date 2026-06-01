@@ -565,9 +565,6 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         }
     }, [selectedMultipleInvoices]);
     const isSmallScreen = height <= 780;
-    // console.log("validateCheckboxlength: ",validateCheckboxlength);
-    // console.log("conceptDelivery: ",conceptDelivery);
-    // console.log("guide?.facturas: ",guide?.facturas);
 
     return (
         <SafeAreaView style={[

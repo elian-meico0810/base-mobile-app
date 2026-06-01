@@ -251,10 +251,6 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
 
             const testToken = await SecureStore.getItemAsync('service_token');
             const testUrl = await SecureStore.getItemAsync('base_url');
-
-            // console.log("testTokenProduct: ",testTokenProduct);
-            // console.log("testUrlProduct: ",testUrlProduct);
-
             setServiceToken(testTokenProduct || "");
             setBaseUrl(testUrlProduct || "");
 
@@ -281,8 +277,6 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
         validated: new Map(),
         unidadesEntregadas: new Map(),
     });
-
-    // console.log("productsByStatus: ",productsByStatus);
 
     // 2. Calcula los totales basados en los Maps
     const totalGeneral = Array.from(productsByStatus.pending.values())
@@ -381,12 +375,6 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                                     const deliveredUnits = unidadesEntregadas ? unidadesEntregadas : item?.unidadesSolicitadas;
                                     const deliveredValue = calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, Number(deliveredUnits), undefined, Number(allProducts?.[0]?.porcentajeDFR));
                                     updateProductStatus(id, Number(deliveredValue), 'pending', unidadesEntregadas);
-
-                                    // console.log("========================================");
-                                    // console.log("=========== LOS POR VALIDAR ====================");
-                                    // console.log("id:", id, "totalProducts:", totalProducts, "unidadesEntregadas: ", unidadesEntregadas);
-                                    // console.log("TOTAL ACUMULADO:", totalGeneral);
-                                    // console.log("========================================");
                                 }}
                                 porcentajeDFR={Number(allProducts?.[0]?.porcentajeDFR)}
 

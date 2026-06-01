@@ -80,7 +80,6 @@ export function DetailsPaymenTypeEfecty({ data, onClose, onChangePhone, disabled
 
     const paymentGateway = async () => {
         try {
-            console.log("valueSet: ", valueSet);
             onPressPayment?.(Number(valueSet));
             if (isValidCashValue) {
                 onClose?.();

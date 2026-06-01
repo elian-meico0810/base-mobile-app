@@ -43,7 +43,6 @@ export function DeliveryStatusAction({
 
         if (status === 'rechazo') {
             onOpenRefusedModal?.();
-            console.log('Rechazo seleccionado');
         }
         const newStatus = status;
 

@@ -27,7 +27,6 @@ const decodeBase64 = (base64: string) => {
         if (typeof atob !== "undefined") return atob(base64);
         return Buffer.from(base64, "base64").toString("utf-8");
     } catch (error) {
-        console.log("Error decoding base64:", error);
         return base64;
     }
 };
@@ -58,7 +57,6 @@ export default function RenderQRView({
 
     useEffect(() => {
         if (expectedQRType !== qrType) {
-            console.log("Tipo de QR cambiado de", expectedQRType, "a", qrType);
             setExpectedQRType(qrType);
             // Limpiar TODO inmediatamente
             setCurrentQRData(undefined);
@@ -103,7 +101,6 @@ export default function RenderQRView({
 
             const timer = setTimeout(() => {
                 if (!currentQRData && !changingTypeLoading && qrType) {
-                    console.log("Timeout: mostrando error");
                     setShowError(true);
                     setIsQRGenerating(false);
                 }
@@ -141,9 +138,6 @@ export default function RenderQRView({
     }, [currentQRData]);
 
     const handleChangeTypeWithClean = () => {
-        console.log("=== CAMBIANDO TIPO DE QR ===");
-        console.log("Tipo actual:", qrType);
-
         // Limpiar TODO inmediatamente
         setSvgBase64(null);
         setPngBase64(null);
@@ -252,7 +246,6 @@ export default function RenderQRView({
 
         switch (type) {
             case "payment-link-to-qr":
-                console.log("Renderizando payment-link-to-qr");
                 return (
                     <View style={styles.qrContainer}>
                         <Text style={styles.qrDescription}>Escanea este QR para ir al portal de pago</Text>
@@ -272,7 +265,6 @@ export default function RenderQRView({
                 );
 
             case "svg-base64": {
-                console.log("Renderizando svg-base64");
                 if (!currentQRData) return null;
                 let svgDecoded = decodeBase64(currentQRData);
                 const svgDataUrl = `data:image/svg+xml;base64,${btoa(svgDecoded)}`;

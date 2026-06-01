@@ -284,11 +284,11 @@ const styles = StyleSheet.create({
     qrContainer: {
         backgroundColor: "#FFFFFF",
         borderRadius: 12,
-        padding: 20,
+        padding: 30,
         marginTop: 2,
         alignItems: "center",
         justifyContent: "center",
-        height: 300, // 👈 VALOR POR DEFECTO
+        height: 300,
     },
     qrTypeText: {
         fontFamily: "Rubik",

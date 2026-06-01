@@ -747,7 +747,6 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                                                 const isValid = validateInvoices(invoices);
                                                 if (!isValid) return;
 
-                                                console.log('Ir a dirección');
                                                 if (!routeStarted) return;
                                                 router.push(
                                                     `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(item))}&numberGuide=${guide}&token=${encodeURIComponent(token ?? "")}`

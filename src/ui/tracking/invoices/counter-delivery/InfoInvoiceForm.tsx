@@ -67,7 +67,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [routeStarted, setRouteStarted] = useState(routeStartedBotton ? true : false);
     const [showPayment, setShowPayment] = useState(false);
     const [showDetailInvoiceQR, setShowDetailInvoiceQR] = useState(false);
-    const [showDetailInvoiceQRTAT, setShowDetailInvoiceQRTAT] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [viewOrder, setIsOrder] = useState<GuideDetails | null>(null);
     const [typePaymentView, setTypePaymentView] = useState(false);
@@ -787,9 +786,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const validateButton = () => {
         try {
             setShowDetailInvoiceQR(false);
-            setShowPayment(false);
-            // setShowDetailInvoiceQR(false);
-            // setShowPayment(false);
+          
             if (!routeStarted && !isSelectInvocies && !detailsCounterDelivery && !closeButton) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Debe indicar que ya llegó al lugar de la dirección para poder ejecutar esta acción.");
@@ -797,14 +794,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 return false;
             }
 
-            // if (condPago) {
-            //     setTypeQRSendWhatsApp(true);
-            //     setRouteStarted(true);
-            // } else {
-            //     setRouteStarted(true);
-            //     setTypeQRSendWhatsApp(false);
-            //     setShowDetailInvoiceQR(false);
-            // }
+  
             setTypePaymentAll(true);
             return true;
         } catch (error) {
@@ -1353,7 +1343,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 setModalVisible(true);
                 return false;
             }
-            setShowDetailInvoiceQRTAT(true);
             setShowDetailInvoiceQR(true);
             return true;
         } catch (error) {
@@ -1602,18 +1591,41 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
                                 {(isValidateCondition) && (
                                     totalRecauder != 0 ? (
-                                        <TouchableOpacity
-                                            style={styles.qrButton}
-                                            onPress={() => {
-                                                const isValidButton = validateButton();
-                                                if (!isValidButton) return;
-                                                setTypePayment(true);
-                                            }}
-                                        >
-                                            <View style={styles.qrButtonContent}>
-                                                <Text style={styles.qrButtonText}>Registrar pago</Text>
-                                            </View>
-                                        </TouchableOpacity>
+                                        <>
+                                            <TouchableOpacity
+                                                style={styles.generateQrButton}
+                                                onPress={() => {
+                                                    const isValidButton = validateButtonQR();
+                                                    if (!isValidButton) return;
+
+                                                }}
+                                            >
+                                                <View style={styles.qrButtonContent}>
+                                                    <Image
+                                                        source={require("@/assets/icons/Others.png")}
+                                                        style={styles.storeIconQR}
+                                                    />
+
+                                                    <Text style={styles.qrButtonTextGenerate}>
+                                                        Generar QR
+                                                    </Text>
+                                                </View>
+                                            </TouchableOpacity>
+
+                                            <TouchableOpacity
+                                                style={styles.qrButton}
+                                                onPress={() => {
+                                                    const isValidButton = validateButton();
+                                                    if (!isValidButton) return;
+                                                    setTypePayment(true);
+                                                }}
+                                            >
+                                                <View style={styles.qrButtonContent}>
+                                                    <Text style={styles.qrButtonText}>Registrar pago</Text>
+                                                </View>
+                                            </TouchableOpacity>
+                                        </>
+
                                     ) : (
                                         <TouchableOpacity
                                             style={styles.qrButtonDetail}

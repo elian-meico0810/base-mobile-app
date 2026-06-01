@@ -7,7 +7,6 @@ import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { ExecptionModalValidate } from '@/components/generals/ExecptionModalValidate';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
-import { TypePayment } from '@/components/generals/TypePayment';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { UploadPhotoOTP } from '@/components/photo/uploadPhotoOTP';
 import { OrderDetailSkeleton } from '@/components/skeleton/OrderDetailSkeleton ';
@@ -2001,35 +2000,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             setInicilizationApi(true);
                         }
                     }}
-                />
-            )}
-
-            {(typePayment && guide) && (
-                <TypePayment
-                    title="Registrar pago"
-                    subTitle="Seleccioná el método de pago del cliente."
-                    onClose={() => {
-                        setTypePayment(false);
-                        // setAlertButton(false);
-                        // setSuccessButton(false);
-                    }}
-                    width={width}
-                    onEfecty={() => {
-                        setTypePayment(false);
-                        setTypePaymenTypeEfecty(true);
-                    }}
-                    onOthers={() => {
-                        setTypePaymenTypeOthers(true);
-                        setTypePayment(false);
-                        setTypePaymenTypeEfecty(false);
-                    }}
-                    onQr={() => {
-                        setTypePayment(false);
-                        setTypePaymenTypeEfecty(false);
-                        setShowDetailInvoiceQR(true);
-                    }}
-                    guide={guide}
-                    typeCash={typeCash}
                 />
             )}
 

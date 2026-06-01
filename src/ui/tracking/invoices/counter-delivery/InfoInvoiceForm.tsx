@@ -384,6 +384,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setLoading(true);
 
             const response = await invoiceRepositoryImpl.typeParameterValue(TypeValueParameterEnum.MARGEN_TOLERANCIA, token);
+            console.log("listTypeParameterValue: ", response.data);
             if (response?.statusCode === 200 && Array.isArray(response.data)) {
                 setValueParameter(response.data);
             } else {
@@ -2036,6 +2037,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                     onPressPayment={(payments) => {
                         handleSubmitOthers(payments);
                     }}
+                    toleranceMargin={valueParameter}
+
                 />
             )}
 

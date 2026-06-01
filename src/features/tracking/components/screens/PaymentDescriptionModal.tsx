@@ -17,6 +17,7 @@ import {
     View
 } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { TypeParameterValue } from "../../domain/invoices/InvoicesInterFace";
 
 const { width, height } = Dimensions.get('window');
 
@@ -47,6 +48,8 @@ interface PaymentSelectionModalProps {
     onErrorPayment?: (error: any) => void;
     statusTypeQR?: string;
     totalRecauder?: number;
+    toleranceMargin?: TypeParameterValue[];
+
 }
 
 
@@ -57,7 +60,8 @@ export function PaymentSelectionModal({
     disabled,
     onPressPayment,
     onErrorPayment,
-    totalRecauder
+    totalRecauder,
+    toleranceMargin
 }: PaymentSelectionModalProps) {
     const [loading, setLoading] = useState(false);
     const [modalTitle, setModalTitle] = useState("");
@@ -83,15 +87,42 @@ export function PaymentSelectionModal({
     const hasOtherAmount = Number(otherAmount) > 0;
     const hasOtherDescription = otherDescription.trim().length > 0;
 
-    let isValidPayment;
-    if (hasCashAmount) {
-        isValidPayment = true;
+    const totalTolerance = (toleranceMargin ?? []).reduce((acc, item) => {
+        const value = Number(item.valor);
+        return !isNaN(value) ? acc + value : acc;
+    }, 0);
+
+    const totalWithTolerance = Number(totalRecauder) + totalTolerance;
+
+    const isCashGreaterThanTotal = Number(cashAmount) > totalWithTolerance;
+    const isOtherGreaterThanTotal = Number(otherAmount) > totalWithTolerance;
+    
+    const totalSum = Number(cashAmount) + Number(otherAmount);
+    const isSumGreaterThanTotal = totalSum > totalWithTolerance && hasCashAmount && hasOtherAmount;
+    
+    const getExceedMessage = () => {
+        if (isSumGreaterThanTotal) {
+            return `La suma de efectivo (${formatCOP(cashAmount)}) y otros medios (${formatCOP(otherAmount)}) es ${formatCOP(totalSum)}.`;
+        }
+        if (isCashGreaterThanTotal) {
+            return `El monto en efectivo (${formatCOP(cashAmount)}) no puede ser mayor al valor a pagar (${formatCOP(totalWithTolerance)}).`;
+        }
+        if (isOtherGreaterThanTotal) {
+            return `El monto en otros medios de pago (${formatCOP(otherAmount)}) no puede ser mayor al valor a pagar (${formatCOP(totalWithTolerance)}).`;
+        }
+        return "";
+    };
+
+    let isValidPayment = false;
+    
+    if (hasCashAmount && !hasOtherAmount) {
+        isValidPayment = !isCashGreaterThanTotal;
     }
-    if (hasOtherAmount && !hasOtherDescription) {
-        isValidPayment = false;
+    else if (!hasCashAmount && hasOtherAmount) {
+        isValidPayment = !isOtherGreaterThanTotal && hasOtherDescription;
     }
-    if (hasOtherAmount && hasOtherDescription) {
-        isValidPayment = true;
+    else if (hasCashAmount && hasOtherAmount) {
+        isValidPayment = !isSumGreaterThanTotal && hasOtherDescription;
     }
 
     useEffect(() => {
@@ -128,6 +159,27 @@ export function PaymentSelectionModal({
                 setModalMessage(
                     "Debe ingresar al menos un monto en efectivo o en otros medios de pago."
                 );
+                setModalVisible(true);
+                return;
+            }
+
+            if (hasCashAmount && hasOtherAmount && isSumGreaterThanTotal) {
+                setModalTitle("¡Alerta!");
+                setModalMessage(getExceedMessage());
+                setModalVisible(true);
+                return;
+            }
+
+            if (hasCashAmount && isCashGreaterThanTotal) {
+                setModalTitle("¡Alerta!");
+                setModalMessage(getExceedMessage());
+                setModalVisible(true);
+                return;
+            }
+
+            if (hasOtherAmount && isOtherGreaterThanTotal) {
+                setModalTitle("¡Alerta!");
+                setModalMessage(getExceedMessage());
                 setModalVisible(true);
                 return;
             }
@@ -198,6 +250,7 @@ export function PaymentSelectionModal({
             <TouchableOpacity
                 style={styles.backgroundOverlay}
                 activeOpacity={1}
+                onPress={onClose}
             />
 
             <SafeAreaView style={styles.safeArea}>
@@ -206,13 +259,9 @@ export function PaymentSelectionModal({
                         styles.container,
                         {
                             width: width,
-
                         }
                     ]}
                 >
-
-
-                    {/* ScrollView solo para el contenido */}
                     <ScrollView
                         ref={scrollViewRef}
                         style={styles.scrollView}
@@ -220,7 +269,6 @@ export function PaymentSelectionModal({
                         keyboardShouldPersistTaps="handled"
                         contentContainerStyle={styles.scrollContent}
                     >
-
                         <TouchableOpacity
                             style={styles.closeButton}
                             onPress={onClose}
@@ -229,6 +277,7 @@ export function PaymentSelectionModal({
                         >
                             <Text style={styles.closeText}>X</Text>
                         </TouchableOpacity>
+                        
                         <Text style={styles.title}>Registrar Pago</Text>
                         <Text style={styles.description}>
                             Ingresa la información del pago recibido.
@@ -242,7 +291,10 @@ export function PaymentSelectionModal({
                         {/* Efectivo - Siempre visible */}
                         <View style={styles.inputContainer}>
                             <Text style={styles.inputLabel}>Efectivo</Text>
-                            <View style={styles.amountRow}>
+                            <View style={[
+                                styles.amountRow,
+                                (isCashGreaterThanTotal || (hasOtherAmount && isSumGreaterThanTotal)) && styles.amountRowError
+                            ]}>
                                 <Text style={styles.currencySymbol}>$</Text>
                                 <TextInput
                                     style={styles.amountInput}
@@ -259,7 +311,20 @@ export function PaymentSelectionModal({
                                         }, 100);
                                     }}
                                 />
+                                {(isCashGreaterThanTotal || (hasOtherAmount && isSumGreaterThanTotal)) && (
+                                    <Text style={styles.warningIcon}>⚠</Text>
+                                )}
                             </View>
+                            {isCashGreaterThanTotal && (
+                                <Text style={styles.warningText}>
+                                    El valor ingresado es mayor al valor a pagar
+                                </Text>
+                            )}
+                            {hasOtherAmount && isSumGreaterThanTotal && !isCashGreaterThanTotal && (
+                                <Text style={styles.warningText}>
+                                    La suma con otros medios excede el total permitido
+                                </Text>
+                            )}
                         </View>
 
                         {/* Botón desplegable de Otros */}
@@ -278,7 +343,10 @@ export function PaymentSelectionModal({
                             <>
                                 <View style={styles.inputContainer}>
                                     <Text style={styles.inputLabel}>Monto del pago</Text>
-                                    <View style={styles.amountRow}>
+                                    <View style={[
+                                        styles.amountRow,
+                                        (isOtherGreaterThanTotal || (hasCashAmount && isSumGreaterThanTotal)) && styles.amountRowError
+                                    ]}>
                                         <Text style={styles.currencySymbol}>$</Text>
                                         <TextInput
                                             style={styles.amountInput}
@@ -295,7 +363,20 @@ export function PaymentSelectionModal({
                                                 }, 100);
                                             }}
                                         />
+                                        {(isOtherGreaterThanTotal || (hasCashAmount && isSumGreaterThanTotal)) && (
+                                            <Text style={styles.warningIcon}>⚠</Text>
+                                        )}
                                     </View>
+                                    {isOtherGreaterThanTotal && (
+                                        <Text style={styles.warningText}>
+                                            El valor ingresado es mayor al valor a pagar
+                                        </Text>
+                                    )}
+                                    {hasCashAmount && isSumGreaterThanTotal && !isOtherGreaterThanTotal && (
+                                        <Text style={styles.warningText}>
+                                            La suma con efectivo excede el total permitido
+                                        </Text>
+                                    )}
                                 </View>
 
                                 <View style={styles.inputContainer}>
@@ -374,7 +455,6 @@ const styles = StyleSheet.create({
         justifyContent: "flex-end",
         alignItems: "center",
         zIndex: 9999,
-
     },
     backgroundOverlay: {
         ...StyleSheet.absoluteFillObject,
@@ -383,7 +463,6 @@ const styles = StyleSheet.create({
     safeArea: {
         width: '100%',
         alignItems: 'center',
-
     },
     container: {
         backgroundColor: "#F9F9FA",
@@ -545,5 +624,21 @@ const styles = StyleSheet.create({
         borderTopWidth: 1,
         borderTopColor: "#F0F1F5",
         backgroundColor: "#F9F9FA",
+    },
+    warningText: {
+        color: "#FF4D4F",
+        fontSize: 12,
+        marginTop: 4,
+        fontFamily: "Rubik",
+        marginLeft: 4,
+    },
+    amountRowError: {
+        borderColor: "#FF4D4F",
+        borderWidth: 1,
+    },
+    warningIcon: {
+        color: "#FF4D4F",
+        fontSize: 18,
+        marginLeft: 8,
     },
 });

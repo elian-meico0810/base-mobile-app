@@ -786,7 +786,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const validateButton = () => {
         try {
             setShowDetailInvoiceQR(false);
-          
+
             if (!routeStarted && !isSelectInvocies && !detailsCounterDelivery && !closeButton) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Debe indicar que ya llegó al lugar de la dirección para poder ejecutar esta acción.");
@@ -794,7 +794,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 return false;
             }
 
-  
+
             setTypePaymentAll(true);
             return true;
         } catch (error) {
@@ -1247,15 +1247,13 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         ? newTotalValue
         : totalValueTwo || 0;
 
-    const difference = Math.abs(totalOrderPayment - calculatedValue);
-    const ressult = difference > valueOTP;
+    let ressult = false;
+    if (Number(totalOrderPayment) < Number(calculatedValue)) {
+        ressult = baseTotal > 0 && baseTotal > Number(valueOTP);
+    }
 
     const handleSubmitConfirmation = async () => {
         try {
-            if (ressult) {
-                btnRef.current?.reset();
-                return;
-            }
 
             if (!Number.isFinite(totalValue) || !Number.isFinite(totalRecauder)) {
                 btnRef.current?.reset();
@@ -1265,7 +1263,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 return;
             }
 
-            if (Number(totalRecauder) > 0) {
+            if (ressult) {
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");
                 setModalMessage("El valor a recaudar debe ser 0 para continuar con la confirmación.");
@@ -1761,7 +1759,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             key="Enviar confirmación"
                             title="Enviar confirmación"
                             onPress={handleSubmitConfirmation}
-                            disabled={false}
+                            disabled={ressult}
                             width={328}
                             height={43}
                             buttonColor={ressult ? "#DDDFE8" : undefined}

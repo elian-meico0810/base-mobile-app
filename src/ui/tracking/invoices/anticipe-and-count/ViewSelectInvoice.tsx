@@ -480,7 +480,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         facturas: clienteEncontrado.facturas,
                         pedidos: clienteEncontrado.pedidos,
                         whatsapp: clienteEncontrado.whatsapp,
-                        razonSocial: clienteEncontrado.razonSocial
+                        razonSocial: clienteEncontrado.razonSocial,
+                        tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
+
 
                     });
                     listInfOTByDirection({
@@ -496,7 +498,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         facturas: clienteEncontrado.facturas,
                         pedidos: clienteEncontrado.pedidos,
                         whatsapp: clienteEncontrado.whatsapp,
-                        razonSocial: clienteEncontrado.razonSocial
+                        razonSocial: clienteEncontrado.razonSocial,
+                        tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
 
                     });
                     listInfOTPFileByDirection({
@@ -512,7 +515,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         facturas: clienteEncontrado.facturas,
                         pedidos: clienteEncontrado.pedidos,
                         whatsapp: clienteEncontrado.whatsapp,
-                        razonSocial: clienteEncontrado.razonSocial
+                        razonSocial: clienteEncontrado.razonSocial,
+                        tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
 
                     })
                     listDocumentQuery({
@@ -528,7 +532,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         facturas: clienteEncontrado.facturas,
                         pedidos: clienteEncontrado.pedidos,
                         whatsapp: clienteEncontrado.whatsapp,
-                        razonSocial: clienteEncontrado.razonSocial
+                        razonSocial: clienteEncontrado.razonSocial,
+                        tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
                     });
                 }
             }

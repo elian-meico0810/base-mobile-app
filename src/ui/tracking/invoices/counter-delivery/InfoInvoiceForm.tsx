@@ -526,7 +526,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             if (response?.statusCode === 200) {
                 setShowSuccessQRP(true);
                 setModalgenerateQR(false);
-
                 setTimeout(() => {
                     setShowPaymentPending(true);
                 }, 3000);
@@ -1516,16 +1515,16 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                     <View
                                         style={[
                                             styles.statusContainer,
-                                            totalRecauder == 0 && { backgroundColor: '#DFF5E1' },
+                                            !ressult && { backgroundColor: '#DFF5E1' },
                                         ]}
                                     >
                                         <Text
                                             style={[
                                                 styles.status,
-                                                totalRecauder == 0 && { color: '#1F9144' },
+                                                !ressult && { color: '#1F9144' },
                                             ]}
                                         >
-                                            {totalRecauder == 0 ? 'Pago realizado' : 'Pendiente'}
+                                            {!ressult? 'Pago realizado' : 'Pendiente'}
                                         </Text>
                                     </View>
                                 </View>

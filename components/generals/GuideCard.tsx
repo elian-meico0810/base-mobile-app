@@ -5,8 +5,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ExceptionModal } from './ExecptionModal';
+const { width, height } = Dimensions.get("window");
 
 interface GuideCardProps {
     guide: GuideDetails;
@@ -146,7 +147,7 @@ export function GuideCard({ guide, onPress, routeStarted, numberGuide, token, st
 
 const styles = StyleSheet.create({
     card: {
-        width: 328,
+        width: width * 0.9,
         backgroundColor: '#FFFFFF',
         borderRadius: 8,
         borderWidth: 1,
@@ -166,7 +167,6 @@ const styles = StyleSheet.create({
         lineHeight: 17,
         color: '#000',
         flexWrap: 'wrap',
-        maxWidth: 215,
         marginBottom: 2,
     },
     statusContainer: {

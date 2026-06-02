@@ -302,7 +302,10 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
 
           <View style={[
             styles.buttonContainer,
-            { marginBottom: keyboardHeight > 0 ? keyboardHeight + 40 : 25 }
+            {
+              marginBottom: keyboardHeight > 0 ? keyboardHeight + 20 : 25,
+              paddingBottom: keyboardHeight > 0 ? 10 : 0
+            }
           ]}>
             <PrimaryButton
               title="Ingresar"

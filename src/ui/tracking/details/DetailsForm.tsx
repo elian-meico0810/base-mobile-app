@@ -28,6 +28,7 @@ import {
     BackHandler,
     Dimensions,
     Image,
+    Keyboard,
     ScrollView, StyleSheet,
     Text,
     TouchableOpacity,
@@ -107,7 +108,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
 
         initializeToken();
     }, [token]);
-    
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -205,7 +206,21 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
 
         fetchToken();
     }, []);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
 
+    useEffect(() => {
+        const keyboardWillShow = Keyboard.addListener('keyboardWillShow', (e) => {
+            setKeyboardHeight(e.endCoordinates.height);
+        });
+        const keyboardWillHide = Keyboard.addListener('keyboardWillHide', () => {
+            setKeyboardHeight(0);
+        });
+
+        return () => {
+            keyboardWillShow.remove();
+            keyboardWillHide.remove();
+        };
+    }, []);
 
     // Listener de AppState mejorado
     useEffect(() => {
@@ -764,7 +779,10 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                     </View>
 
                     {(!routeStarted && (statusValue == StatusInvoice.PENDING)) && (
-                        <View style={{ alignItems: 'center', marginBottom: isSmallScreen ? 0 : 30 }}>
+                        <View style={{
+                            alignItems: 'center',
+                            marginBottom: isSmallScreen ? (keyboardHeight > 0 ? keyboardHeight + 20 : 0) : (keyboardHeight > 0 ? keyboardHeight + 20 : 30)
+                        }}>
                             <PrimaryButtonDetails
                                 ref={btnRef}
                                 title="Comenzar ruta"
@@ -921,11 +939,11 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
     );
 }
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    position: 'relative',
-    alignItems: 'center',
-  },
+    container: {
+        flex: 1,
+        position: 'relative',
+        alignItems: 'center',
+    },
     cardConsignment: {
         width: width * 0.9,
         height: 48,
@@ -962,12 +980,12 @@ const styles = StyleSheet.create({
         height: 16,
         tintColor: '#141D32',
     },
-   backgroundFill: {
+    backgroundFill: {
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
-        bottom: 0, 
+        bottom: 0,
         zIndex: 1,
     },
     backgroundImage: {

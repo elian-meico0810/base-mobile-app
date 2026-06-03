@@ -102,7 +102,7 @@ export function PaymentSelectionModal({
     
     const getExceedMessage = () => {
         if (isSumGreaterThanTotal) {
-            return `La suma de efectivo (${formatCOP(cashAmount)}) y otros medios (${formatCOP(otherAmount)}) es ${formatCOP(totalSum)}.`;
+            return `La suma de efectivo (${formatCOP(cashAmount)}) y otros medios (${formatCOP(otherAmount)}) es ${formatCOP(totalSum)} no puede ser mayor al valor a pagar.`;
         }
         if (isCashGreaterThanTotal) {
             return `El monto en efectivo (${formatCOP(cashAmount)}) no puede ser mayor al valor a pagar (${formatCOP(totalWithTolerance)}).`;

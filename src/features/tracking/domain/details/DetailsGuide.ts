@@ -37,6 +37,7 @@ export interface GuideDetails {
   facturas: Factura[];
   pedidos?: Pedidos[];
   tieneNoEntrega: boolean;
+  causalNoEntrega: string;
 }
 
 export interface RuteInitPorps {

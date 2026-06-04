@@ -66,7 +66,7 @@ export function GuideCard({ guide, onPress, routeStarted, numberGuide, token, st
             {guide.tieneNoEntrega && (
                 <View style={styles.noDeliveryTag}>
                     <Ionicons name="alert-circle" size={14} color="#164194" />
-                    <Text style={styles.noDeliveryText}>Pedido no entregado por problemas en ruta</Text>
+                    <Text style={styles.noDeliveryText}>{String(guide?.causalNoEntrega ?? '')}</Text>
                 </View>
             )}
             <View style={styles.header}>

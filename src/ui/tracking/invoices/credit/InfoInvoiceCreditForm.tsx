@@ -436,7 +436,8 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
                             longitud: clienteEncontrado.longitud,
                             estado: clienteEncontrado.estado,
                             facturas: clienteEncontrado.facturas,
-                            razonSocial: clienteEncontrado.razonSocial
+                            razonSocial: clienteEncontrado.razonSocial,
+                            tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
                         });
 
                     }

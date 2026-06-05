@@ -386,9 +386,6 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
         return () => clearInterval(interval);
     }, [checkUbication]);
 
-
-
-
     const getStatusStyle = async () => {
         try {
             const responseQuery = await detailsRepositoryImpl.listRouteByCodeGuide(Number(guide), tokenUser ? tokenUser : token);
@@ -737,8 +734,8 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                             placeholder="Buscar por cliente o código"
                         />
                         <ScrollView
-                            style={styles.guidesScroll}
-                            contentContainerStyle={{ paddingBottom: 20 }}
+                            style={[styles.guidesScroll]}
+                            contentContainerStyle={{ paddingBottom: 20 + insets.bottom }}
                         >
                             {((data.length === 0) || (waitingForPermission || !checkUbication)) ? (
                                 Array.from({ length: 3 }).map((_, i) => (
@@ -1043,7 +1040,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     guidesScroll: {
-        maxHeight: 400,
         marginTop: 12,
     },
     noResultsContainer: {
@@ -1059,7 +1055,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         lineHeight: 19,
         textAlign: "center",
-        color: "#788095",
+        color: "#95788e",
         marginBottom: 8,
     },
     noResultsSubtitle: {

@@ -44,5 +44,6 @@ module.exports = {
       BASE_PRD_MEITRUCK: env.BASE_PRD_MEITRUCK || process.env.BASE_PRD_MEITRUCK,
       BASE_PROD_CONTADO: env.BASE_QA_CONTADO || process.env.BASE_PROD_CONTADO,
     },
+     orientation: 'portrait'
   },
 };

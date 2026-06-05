@@ -5,8 +5,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { ExceptionModal } from './ExecptionModal';
+
 const { width, height } = Dimensions.get("window");
 
 interface GuideCardProps {
@@ -22,6 +23,10 @@ export function GuideCard({ guide, onPress, routeStarted, numberGuide, token, st
     const cleanAddress = `${cleanSpaces(guide.direccion)}, ${cleanSpaces(guide.poblacion)}`;
     const [modalVisible, setModalVisible] = useState(false);
     const router = useRouter();
+    const { width: windowWidth } = useWindowDimensions();
+    
+    const isTablet = windowWidth >= 768 || (Platform.OS === 'android' && windowWidth >= 600) || (Platform.OS === 'ios' && windowWidth >= 768);
+    
     const handleGoToMap = async () => {
         const lat = Number(guide.latitud);
         const lng = Number(guide.longitud);
@@ -58,23 +63,20 @@ export function GuideCard({ guide, onPress, routeStarted, numberGuide, token, st
             onPress={() => {
                 onPress?.();
                 if (!routeStarted) return;
-                // router.push(
-                //     `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
-                // );
             }}
         >
             {guide.tieneNoEntrega && (
                 <View style={styles.noDeliveryTag}>
-                    <Ionicons name="alert-circle" size={14} color="#164194" />
-                    <Text style={styles.noDeliveryText}>{String(guide?.causalNoEntrega ?? '')}</Text>
+                    <Ionicons name="alert-circle" size={isTablet ? 16 : 14} color="#164194" />
+                    <Text style={[styles.noDeliveryText, isTablet && styles.noDeliveryTextTablet]}>{String(guide?.causalNoEntrega ?? '')}</Text>
                 </View>
             )}
             <View style={styles.header}>
                 <View style={{ flex: 1 }}>
-                    <Text style={styles.name} numberOfLines={2} ellipsizeMode="tail">
+                    <Text style={[styles.name, isTablet && styles.nameTablet]} numberOfLines={2} ellipsizeMode="tail">
                         {guide.nombreCliente}
                     </Text>
-                    <Text style={styles.code}>{guide.codigoCliente}</Text>
+                    <Text style={[styles.code, isTablet && styles.codeTablet]}>{guide.codigoCliente}</Text>
                 </View>
 
                 <View
@@ -95,38 +97,33 @@ export function GuideCard({ guide, onPress, routeStarted, numberGuide, token, st
             </View>
 
             <View style={styles.addressContainer}>
-                <Ionicons name="location-outline" size={16} color="#6B7280" style={{ marginRight: 4 }} />
-                <Text style={styles.address}>{cleanAddress}</Text>
+                <Ionicons name="location-outline" size={isTablet ? 18 : 16} color="#6B7280" style={{ marginRight: 4 }} />
+                <Text style={[styles.address, isTablet && styles.addressTablet]}>{cleanAddress}</Text>
             </View>
 
             <View style={styles.addressContainer}>
-                <Ionicons name="cube-outline" size={16} color="#6B7280" style={{ marginRight: 4 }} />
-                <Text style={styles.orders}>
+                <Ionicons name="cube-outline" size={isTablet ? 18 : 16} color="#6B7280" style={{ marginRight: 4 }} />
+                <Text style={[styles.orders, isTablet && styles.ordersTablet]}>
                     {guide.facturas?.length ?? 0} Ordenes
                 </Text>
             </View>
+            
             {guide.estado === 'Pendiente' && (
                 <TouchableOpacity
-                    style={[
-                        styles.gotoButton,
-                        guide.estado !== 'Pendiente' && {
-                        }
-                    ]}
+                    style={styles.gotoButton}
                     activeOpacity={0.8}
                     onPress={() => {
                         if (!routeStarted) {
                             setModalVisible(true);
                             return;
                         }
-
                         handleGoToMap();
                     }}
                 >
                     <View style={styles.gotoContent}>
-                        <Text style={styles.gotoText}>Ir a la dirección</Text>
-                        <Image source={require('@/assets/icons/Direction.png')} style={styles.gotoIcon} />
+                        <Text style={[styles.gotoText, isTablet && styles.gotoTextTablet]}>Ir a la dirección</Text>
+                        <Image source={require('@/assets/icons/Direction.png')} style={[styles.gotoIcon, isTablet && styles.gotoIconTablet]} />
                     </View>
-
                 </TouchableOpacity>
             )}
 
@@ -155,6 +152,7 @@ const styles = StyleSheet.create({
         padding: 12,
         marginBottom: 16,
         justifyContent: 'flex-start',
+        alignSelf: 'center',
     },
     header: {
         flexDirection: 'row',
@@ -168,6 +166,11 @@ const styles = StyleSheet.create({
         color: '#000',
         flexWrap: 'wrap',
         marginBottom: 2,
+        flex: 1,
+    },
+    nameTablet: {
+        fontSize: 18,
+        lineHeight: 22,
     },
     statusContainer: {
         backgroundColor: '#E8EEF9',
@@ -178,8 +181,8 @@ const styles = StyleSheet.create({
         height: 31,
         justifyContent: 'center',
         alignItems: 'center',
+        marginLeft: 8,
     },
-
     status: {
         fontFamily: 'Rubik',
         fontWeight: '400',
@@ -195,17 +198,28 @@ const styles = StyleSheet.create({
         color: '#141D32',
         marginTop: 2,
     },
+    codeTablet: {
+        fontSize: 14,
+        lineHeight: 16,
+    },
     address: {
         fontSize: 12,
         color: '#6B7280',
         marginTop: 2,
         flexShrink: 1,
         flexWrap: 'wrap',
+        flex: 1,
+    },
+    addressTablet: {
+        fontSize: 14,
     },
     orders: {
         fontSize: 12,
         color: '#6B7280',
         marginTop: 2,
+    },
+    ordersTablet: {
+        fontSize: 14,
     },
     addressContainer: {
         flexDirection: 'row',
@@ -213,7 +227,7 @@ const styles = StyleSheet.create({
         marginTop: 6,
     },
     gotoButton: {
-        width: 303,
+        width: '100%',
         height: 32,
         borderRadius: 64,
         borderWidth: 1,
@@ -228,6 +242,9 @@ const styles = StyleSheet.create({
         fontWeight: '500',
         color: '#164194',
     },
+    gotoTextTablet: {
+        fontSize: 16,
+    },
     iconBox: {
         width: 32,
         height: 32,
@@ -240,13 +257,16 @@ const styles = StyleSheet.create({
     gotoContent: {
         flexDirection: 'row',
         alignItems: 'center',
-
     },
     gotoIcon: {
         width: 11.75,
         height: 15,
         tintColor: '#164194',
-        marginLeft: 5
+        marginLeft: 5,
+    },
+    gotoIconTablet: {
+        width: 14,
+        height: 18,
     },
     noDeliveryTag: {
         flexDirection: 'row',
@@ -264,5 +284,8 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#4F74C4',
         marginLeft: 4,
+    },
+    noDeliveryTextTablet: {
+        fontSize: 14,
     },
 });

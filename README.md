@@ -138,3 +138,77 @@ Proyecto desarrollado con React Native + Expo.
 ---
 
 ✨ ¡Listo! Con estos pasos puedes ejecutar, validar y generar versiones de tu app sin problemas.
+
+# Variables de entorno EAS (Production)
+
+## Listar variables existentes
+
+```bash
+eas env:list --environment production
+```
+
+## Crear variable VERSION_APP
+
+```bash
+eas env:create --name VERSION_APP --value 2.1.0 --environment production
+```
+
+## Actualizar variable VERSION_APP
+
+```bash
+eas env:update --environment production --name VERSION_APP --value 2.1.0
+```
+
+## Crear variable KEY_APP_PROD
+
+```bash
+eas env:create --name KEY_APP_PROD --value TU_API_KEY --environment production
+```
+
+## Actualizar variable KEY_APP_PROD
+
+```bash
+eas env:update --environment production --name KEY_APP_PROD --value NUEVA_API_KEY
+```
+
+## Eliminar una variable
+
+```bash
+eas env:delete --environment production --name VERSION_APP
+```
+
+## Ver detalles de una variable
+
+```bash
+eas env:view --environment production
+```
+
+## Publicar cambios por OTA
+
+```bash
+eas update --branch production
+```
+
+## Generar una nueva APK/AAB
+
+```bash
+eas build --platform android
+```
+
+## Generar una nueva versión para iOS
+
+```bash
+eas build --platform ios
+```
+
+## Actualizar EAS CLI
+
+```bash
+npm install -g eas-cli
+```
+
+## Ver versión instalada de EAS CLI
+
+```bash
+eas --version
+```

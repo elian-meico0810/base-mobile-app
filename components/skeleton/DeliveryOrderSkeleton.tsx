@@ -6,7 +6,7 @@ const { width, height } = Dimensions.get("window");
 export const DeliveryOrderSkeleton = () => {
     return (
         <ThemedView style={styles.container}>
-            <NetworkStatus />
+            {/* <NetworkStatus /> */}
 
             {/* Fondo gris */}
             <View style={styles.background} />

@@ -4,7 +4,6 @@ import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails'
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
-import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeDelivery } from '@/src/constants/GuideStates';
 import AllSelectedOrder from '@/src/features/tracking/components/checkbox/AllSelectedOrder';
@@ -574,7 +573,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                 paddingRight: insets.right,
             }
         ]}>
-            <NetworkStatus />
+             {/* <NetworkStatus /> */}
 
             {/* Fondo gris */}
             <View style={styles.background} />

@@ -58,19 +58,19 @@ interface EvidencePhoto {
 type DeliveryStatus = "total" | "parcial" | "rechazo" | null;
 type OptionsRefusedPorps = 'Dinero' | 'Dueño' | 'Tienda' | 'Productos' | null;
 
-export function InfoInvoiceForm({ 
-    initialGuide, 
-    token = "", 
-    onSubmit, 
-    numberGuide, 
-    isSelectInvocies, 
-    documentMeico, 
-    isCountryDelivery = false, 
-    IsGoBack = false, 
-    routeStartedBotton, 
-    detailsCounterDelivery, 
-    isViewDetailsPorducts, 
-    isAnticipe 
+export function InfoInvoiceForm({
+    initialGuide,
+    token = "",
+    onSubmit,
+    numberGuide,
+    isSelectInvocies,
+    documentMeico,
+    isCountryDelivery = false,
+    IsGoBack = false,
+    routeStartedBotton,
+    detailsCounterDelivery,
+    isViewDetailsPorducts,
+    isAnticipe
 }: InfoInvoiceFormProps) {
     const [guide, setGuide] = useState<GuideDetails | undefined>(initialGuide);
     const [guideAny, setGuideAny] = useState<GuideDetails[]>([]);
@@ -1282,7 +1282,7 @@ export function InfoInvoiceForm({
             //     setModalVisible(true);
             //     return;
             // }
-            
+
             if (ressult) {
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");
@@ -1310,8 +1310,8 @@ export function InfoInvoiceForm({
                 {
                     idDireccion: Number(guide?.idDireccion),
                     numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
-                    // numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
-                    numeroDestino: "+573112187956",
+                    numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
+                    // numeroDestino: "+573112187956",
                     valorOriginal: String(totalValue),
                     valorPagado: String(totalOrderPayment),
                 },
@@ -1401,7 +1401,7 @@ export function InfoInvoiceForm({
                 paddingRight: insets.right,
             }
         ]}>
-            {/* <NetworkStatus /> */}
+            {/*  {/* <NetworkStatus /> */}
 
             {/* Fondo gris */}
             <View style={styles.background} />
@@ -1608,15 +1608,14 @@ export function InfoInvoiceForm({
                                     </Text>
                                 </View>
 
-                                {(isValidateCondition) && (
-                                    totalRecauder != 0 ? (
+                                {isValidateCondition && (
+                                    totalRecauder !== 0 ? (
                                         <>
                                             <TouchableOpacity
                                                 style={styles.generateQrButton}
                                                 onPress={() => {
                                                     const isValidButton = validateButtonQR();
                                                     if (!isValidButton) return;
-
                                                 }}
                                             >
                                                 <View style={styles.qrButtonContent}>
@@ -1631,26 +1630,31 @@ export function InfoInvoiceForm({
                                                 </View>
                                             </TouchableOpacity>
 
-                                            <TouchableOpacity
-                                                style={styles.qrButton}
-                                                onPress={() => {
-                                                    const isValidButton = validateButton();
-                                                    if (!isValidButton) return;
-                                                    setTypePayment(true);
-                                                }}
-                                            >
-                                                <View style={styles.qrButtonContent}>
-                                                    <Text style={styles.qrButtonText}>Registrar pago</Text>
-                                                </View>
-                                            </TouchableOpacity>
+                                            {!condPago && (
+                                                <TouchableOpacity
+                                                    style={styles.qrButton}
+                                                    onPress={() => {
+                                                        const isValidButton = validateButton();
+                                                        if (!isValidButton) return;
+                                                        setTypePayment(true);
+                                                    }}
+                                                >
+                                                    <View style={styles.qrButtonContent}>
+                                                        <Text style={styles.qrButtonText}>
+                                                            Registrar pago
+                                                        </Text>
+                                                    </View>
+                                                </TouchableOpacity>
+                                            )}
                                         </>
-
                                     ) : (
                                         <TouchableOpacity
                                             style={styles.qrButtonDetail}
-                                            onPress={() => { setShowPayment(true) }}
+                                            onPress={() => setShowPayment(true)}
                                         >
-                                            <Text style={styles.qrButtonText}>Detalle de pagos</Text>
+                                            <Text style={styles.qrButtonText}>
+                                                Detalle de pagos
+                                            </Text>
                                         </TouchableOpacity>
                                     )
                                 )}

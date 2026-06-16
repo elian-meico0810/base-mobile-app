@@ -7,7 +7,6 @@ import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { ExecptionModalValidate } from '@/components/generals/ExecptionModalValidate';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
-import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { UploadPhotoOTP } from '@/components/photo/uploadPhotoOTP';
 import { OrderDetailSkeleton } from '@/components/skeleton/OrderDetailSkeleton ';
@@ -676,8 +675,8 @@ export function InfoInvoiceCreditForm({
                 {
                     idDireccion: Number(guide?.idDireccion),
                     numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
-                    // numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
-                    numeroDestino: "+573112187956",
+                    numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
+                    // numeroDestino: "+573112187956",
                     valorOriginal: '0',
                     valorPagado: '0',
                 },
@@ -776,7 +775,7 @@ export function InfoInvoiceCreditForm({
                 paddingRight: insets.right,
             }
         ]}>
-            <NetworkStatus />
+             {/* <NetworkStatus /> */}
 
             {/* Fondo gris */}
             <View style={styles.background} />

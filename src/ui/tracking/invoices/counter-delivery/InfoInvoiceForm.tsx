@@ -578,11 +578,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const handleSubmitData = async () => {
         try {
 
-            const existOtp = await listInfOTByDirection();
-            if (existOtp) {
-                return;
-            }
-
             setLoading(true);
             const location = await Location.getCurrentPositionAsync({
                 accuracy: Location.Accuracy.Highest,
@@ -1171,74 +1166,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         : baseTotal;
 
 
-    const listInfOTByDirection = async () => {
-        try {
-            if (buttonValueOTP) return;
-
-            const response = await detailsRepositoryImpl.listInfOTP(String(guide?.idDireccion), String(initialGuide?.facturas[0]?.numeroFactura), token);
-            if (
-                response.success &&
-                response.data &&
-                typeof response.data !== "string" &&
-                !Array.isArray(response.data)
-            ) {
-                if (response.data.expira_en && response.data.momento_envio && guide) {
-                    setButtonValueOTP(true);
-                    router.push({
-                        pathname: '/views/IndexDetailsInvoice',
-                        params: {
-                            guide: JSON.stringify(guide),
-                            numberGuide: numberGuide,
-                            token: token ?? "",
-                            confirmationStatus: 'true',
-                            responseOTPInit: JSON.stringify(response.data),
-                            totalValue: Number(totalValue) ?? 0,
-                            totalRecauder: Number(totalRecauder) ?? 0,
-                            totalOrderPayment: Number(totalOrderPayment) ?? 0,
-                            expireDate: 'true',
-                            isSelectInvocies: isSelectInvocies,
-                            isAnticipe: isAnticipe,
-
-                        }
-
-                    });
-                    return true;
-                }
-            }
-            return false;
-        } catch (error: any) {
-            setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
-            setModalVisible(true);
-        }
-    };
-
-    useEffect(() => {
-        if (buttonValueOTP || isSelectInvocies === 'true') return;
-        const totalApprovedPayments = paymentSuccessful?.pagos
-            ?.filter(pago => pago.estado === "APPROVED")
-            .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0) || 0;
-
-        if (buttonValueOTP) return;
-
-        const executeLogic = async () => {
-            if (totalApprovedPayments > 0) {
-                setModalVisible(false);
-                await listInfOTByDirection();
-            }
-        };
-        executeLogic();
-
-        const interval = setInterval(() => {
-            executeLogic();
-        }, 5000);
-
-        return () => {
-            clearInterval(interval);
-        };
-
-    }, [paymentSuccessful, buttonValueOTP]);
-
     const valueOTP = (valueParameterOTP ?? []).reduce((acc, item) => {
         const value = Number(item.valor);
         return !isNaN(value) ? acc + value : acc;
@@ -1272,15 +1199,13 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             }
 
 
-            if (!guide?.whatsapp || guide?.whatsapp == "") {
-                btnRef.current?.reset();
-                setModalTitleValidate("Evidencia requerida");
-                setModalMessageValidate("Para finalizar la entrega del pedido debes");
-                setHighlightText("Registrar evidencia.");
-                setModalButtonLabelValidate("Registrar evidencia");
-                setModalVisibleValidate(true);
-                return;
-            }
+            // if (!guide?.whatsapp || guide?.whatsapp == "") {
+            //     btnRef.current?.reset();
+            //     setModalTitle("¡Alerta!");
+            //     setModalMessage("El numero de telefono es requerido.");
+            //     setModalVisible(true);
+            //     return;
+            // }
 
             setLoading(true);
 
@@ -1290,33 +1215,43 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 {
                     idDireccion: Number(guide?.idDireccion),
                     numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
-                    numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
-                    // numeroDestino: "+573112187956",
+                    // numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
+                    numeroDestino: "+573112187956",
                     valorOriginal: String(totalValue),
                     valorPagado: String(totalOrderPayment),
+                    validarCodigo: false
                 },
                 token
             );
             if (responseData?.statusCode === 200) {
                 btnRef.current?.reset();
                 setLoading(true);
-                router.push({
-                    pathname: '/views/IndexDetailsInvoice',
-                    params: {
-                        guide: JSON.stringify(guide),
-                        numberGuide: numberGuide,
-                        token: token ?? "",
-                        confirmationStatus: 'true',
-                        responseOTPInit: JSON.stringify(responseData.data),
-                        totalValue: String(totalValue) ?? 0,
-                        totalRecauder: String(totalRecauder) ?? 0,
-                        totalOrderPayment: String(totalOrderPayment) ?? 0,
-                        isViewDetailsPorducts: 'true',
-                        isSelectInvocies: isSelectInvocies,
-                        isAnticipe: isAnticipe
+                if (isSelectInvocies) {
+                    if (isAnticipe == 'true') {
+                        router.push(
+                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}&isAnticipe=${'true'}&isCountryDelivery=${'true'}&isAnticipeInvoice=${'true'}`
+                        );
+                    } else {
+                        router.push(
+                            `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}`
+                        );
                     }
-
-                });
+                } else {
+                    const response = await invoiceRepositoryImpl.closeAddresses(
+                        guide?.idDireccion || 0,
+                        token
+                    );
+                    if (response?.statusCode === 200) {
+                        router.push(
+                            `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+                        );
+                    } else {
+                        setModalTitle("¡Error!");
+                        setModalVisible(response?.message || "Ocurrio un error inesperado");
+                        setModalVisible(true);
+                        return
+                    }
+                }
             } else {
                 setValidateException(true);
                 btnRef.current?.reset();
@@ -1328,7 +1263,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             setValidateException(true);
             btnRef.current?.reset();
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 222.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
         }
     };
@@ -1756,8 +1691,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                         <PrimaryButtonDetails
                             ref={btnRef}
                             autoReset={validateException}
-                            key="Enviar confirmación"
-                            title="Enviar confirmación"
+                            key="Entregar"
+                            title="Entregar"
                             onPress={handleSubmitConfirmation}
                             disabled={ressult}
                             width={328}

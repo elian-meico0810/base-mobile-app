@@ -190,6 +190,7 @@ export interface SendOTOPProps {
   numeroDestino: string;
   valorOriginal: string;
   valorPagado: string;
+  validarCodigo?: boolean;
 }
 
 export interface ResponseOTPInitPorps {

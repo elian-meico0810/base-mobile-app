@@ -438,6 +438,7 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
                             facturas: clienteEncontrado.facturas,
                             razonSocial: clienteEncontrado.razonSocial,
                             tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
+                            causalNoEntrega: clienteEncontrado.causalNoEntrega,
                         });
 
                     }

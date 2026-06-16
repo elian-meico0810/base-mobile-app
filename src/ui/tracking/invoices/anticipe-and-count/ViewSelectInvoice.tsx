@@ -482,8 +482,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         whatsapp: clienteEncontrado.whatsapp,
                         razonSocial: clienteEncontrado.razonSocial,
                         tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
-
-
+                        causalNoEntrega: clienteEncontrado.causalNoEntrega,
                     });
                     listInfOTByDirection({
                         idDireccion: clienteEncontrado.idDireccion,
@@ -500,7 +499,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         whatsapp: clienteEncontrado.whatsapp,
                         razonSocial: clienteEncontrado.razonSocial,
                         tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
-
+                        causalNoEntrega: clienteEncontrado.causalNoEntrega,
                     });
                     listInfOTPFileByDirection({
                         idDireccion: clienteEncontrado.idDireccion,
@@ -517,8 +516,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         whatsapp: clienteEncontrado.whatsapp,
                         razonSocial: clienteEncontrado.razonSocial,
                         tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
-
-                    })
+                        causalNoEntrega: clienteEncontrado.causalNoEntrega,
+                    });
                     listDocumentQuery({
                         idDireccion: clienteEncontrado.idDireccion,
                         direccion: clienteEncontrado.direccion,
@@ -534,6 +533,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         whatsapp: clienteEncontrado.whatsapp,
                         razonSocial: clienteEncontrado.razonSocial,
                         tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
+                        causalNoEntrega: clienteEncontrado.causalNoEntrega,
                     });
                 }
             }

@@ -185,7 +185,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         whatsapp: clienteEncontrado.whatsapp,
                         razonSocial: clienteEncontrado.razonSocial,
                         tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
-
+                        causalNoEntrega: clienteEncontrado.causalNoEntrega,
                     });
                     listDocumentQuery(clienteEncontrado);
                     listInfOTByDirection({
@@ -203,6 +203,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         whatsapp: clienteEncontrado.whatsapp,
                         razonSocial: clienteEncontrado.razonSocial,
                         tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
+                        causalNoEntrega: clienteEncontrado.causalNoEntrega,
                     });
                     listInfOTPFileByDirection({
                         idDireccion: clienteEncontrado.idDireccion,
@@ -219,6 +220,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         whatsapp: clienteEncontrado.whatsapp,
                         razonSocial: clienteEncontrado.razonSocial,
                         tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
+                        causalNoEntrega: clienteEncontrado.causalNoEntrega,
                     });
 
                 }

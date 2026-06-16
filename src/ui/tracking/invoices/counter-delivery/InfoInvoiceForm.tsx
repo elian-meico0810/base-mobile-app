@@ -858,6 +858,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             pedidos: clienteEncontrado.pedidos,
                             razonSocial: clienteEncontrado.razonSocial,
                             tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
+                            causalNoEntrega: clienteEncontrado.causalNoEntrega,
                         });
 
                     }
@@ -1524,7 +1525,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                                 !ressult && { color: '#1F9144' },
                                             ]}
                                         >
-                                            {!ressult? 'Pago realizado' : 'Pendiente'}
+                                            {!ressult ? 'Pago realizado' : 'Pendiente'}
                                         </Text>
                                     </View>
                                 </View>

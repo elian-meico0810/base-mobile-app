@@ -5,13 +5,13 @@ import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LogoText } from '@/components/generals/LogoText';
 import { TokenExpiredModal } from '@/components/generals/TokenExpiredModal';
 import { PrimaryInput } from '@/components/inputs/PrimaryInput';
-import { ThemedView } from '@/components/themed-view';
 import { authRepositoryImpl } from '@/src/features/auth/infrastructure/login/authRepositoryImpl';
 import { ListAceptationGuide } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { decodeJWT } from '@/src/utils/jwt';
 import { heightCaldulate } from '@/src/utils/uitls';
 import NetInfo from '@react-native-community/netinfo';
+import Constants from 'expo-constants';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from "react";
@@ -23,6 +23,7 @@ import {
   Text,
   View
 } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 
@@ -38,6 +39,8 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
   const [showErrorQRP, setShowErrorQRP] = useState(false);
   const [showErrorQRPMessage, setShowErrorQRPMessage] = useState("");
   const [exitModalVisible, setExitModalVisible] = useState(false);
+  const insets = useSafeAreaInsets();
+
   const isValid = guide.length >= 5;
   const router = useRouter();
 
@@ -114,6 +117,11 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
 
     validateToken();
   }, [tokenData, tokenEncode]);
+
+  const appVersion =
+    (Constants.expoConfig?.extra as Record<string, string> | undefined)?.VERSION_APP ||
+    (Constants.manifest?.extra as Record<string, string> | undefined)?.VERSION_APP ||
+    process.env.VERSION_APP;
 
   const handleSubmit = async () => {
     setErrorMessage("");
@@ -272,15 +280,20 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
   }, []);
 
   return (
-    <ThemedView style={styles.container}>
+    <SafeAreaView style={[
+      styles.container,
+      {
+        paddingLeft: insets.left,
+        paddingRight: insets.right,
+      }
+    ]}>
       <TokenExpiredModal visible={showModal} onClose={() => setShowModal(false)} />
       <ExitAppModal
         visible={exitModalVisible}
         onClose={() => setExitModalVisible(false)}
       />
-      {/* <NetworkStatus /> */}
 
-      <View style={[styles.backgroundFill, { width, height: '100%' }]} pointerEvents="none">
+      <View style={[styles.backgroundFill, { width, height }]} pointerEvents="none">
         <Image
           source={require('@/assets/icons/Welcome.png')}
           style={[styles.backgroundImage, { width, height: '100%' }]}
@@ -292,12 +305,15 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
         <View key={i} style={[styles.separator, { top: (i + 1) * (height / 5) - 1 }]} />
       ))}
 
-      <LogoText style={styles.logo} />
+      <View style={styles.logoContainer}>
+        <LogoText style={styles.logo} />
+        <Text style={styles.version}>Versión {String(appVersion).replace(/"/g, '').trim()}</Text>
+      </View>
 
       {/* Panel blanco con altura fija */}
       <View style={[
         styles.whitePanel,
-        { height: height - (heightValue ? 150 : 210) }
+        { height: height - (heightValue ? 150 : 200) }
       ]}>
         <View style={styles.content}>
           <View style={styles.topContent}>
@@ -323,7 +339,10 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
 
           <View style={[
             styles.buttonContainer,
-            { marginBottom: keyboardHeight > 0 ? keyboardHeight + 40 : 25 }
+            {
+              marginBottom: keyboardHeight > 0 ? keyboardHeight + 20 : 25,
+              paddingBottom: keyboardHeight > 0 ? 10 : 0
+            }
           ]}>
             <PrimaryButton
               title="Ingresar"
@@ -343,7 +362,8 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
         />
       )}
       {isLoading && <LoadingBlue />}
-    </ThemedView>
+    </SafeAreaView>
+
   );
 }
 
@@ -355,20 +375,18 @@ const styles = StyleSheet.create({
   },
   backgroundFill: {
     backgroundColor: '#143881ff',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   backgroundImage: {
     zIndex: 1,
   },
   separator: {
     position: 'absolute',
-    height: 5,
-    transform: [{ rotate: '-15deg' }],
     zIndex: 2,
-  },
-  logo: {
-    zIndex: 10,
-    position: 'absolute',
-    top: 100,
   },
   whitePanel: {
     position: 'absolute',
@@ -411,5 +429,21 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: "100%",
     alignItems: 'center',
+  },
+  logoContainer: {
+    position: 'absolute',
+    top: 100,
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  logo: {
+  },
+  version: {
+    fontFamily: "Rubik",
+    fontWeight: "700",
+    fontSize: 10,
+    textAlign: "center",
+    marginTop: 2,
+    color: '#FFFFFF',
   },
 });

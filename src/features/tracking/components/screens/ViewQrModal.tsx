@@ -17,6 +17,7 @@ interface ViewQrModalQRProps {
     disabled?: boolean;
     width?: number;
     height?: number;
+    qrHeight?: number;
     phone?: string;
     qrData?: string;
     qrType?: string;
@@ -42,6 +43,7 @@ export function ViewQrModal({
     disabled,
     width = 360,
     height = 300,
+    qrHeight = 300,
     phone,
     qrData,
     qrType = 'Aplicación Bancaria',
@@ -65,16 +67,23 @@ export function ViewQrModal({
         condPago: "",
     };
 
-
     const condPago = dataInvoice?.condPago == TypeConPagoEnum.TAT;
     const cleanWhatsapp = data?.whatsapp?.replace(/\D/g, '');
 
     const handleSendWhatsApp = () => {
         try {
-
             if ((!phone || !/^\d{10}$/.test(phone)) && Number(cleanWhatsapp?.length) != 10) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Debe ingresar un número de teléfono válido de 10 dígitos.");
+                setModalVisible(true);
+                return;
+            }
+
+            if (!qrData) {
+                setModalTitle("Error al generar el QR");
+                setModalMessage(
+                    "No pudimos generar el código QR en este momento. Intenta nuevamente."
+                );
                 setModalVisible(true);
                 return;
             }
@@ -85,20 +94,25 @@ export function ViewQrModal({
         } catch (error) {
             throw error;
         }
+    };
 
+    const handleChangeQRType = () => {
+        if (onChangeQRType) {
+            onChangeQRType();
+        }
     };
 
     useEffect(() => {
         setLocalQRData(qrData);
     }, [qrData]);
 
-    const handleChangeQRType = () => {
-        if (onChangeQRType) {
-            onChangeQRType();
-        }
-        setLocalQRData(undefined);
+    const dynamicStyles = {
+        ...styles,
+        qrContainer: {
+            ...styles.qrContainer,
+            height: qrHeight,
+        },
     };
-
     return (
         <View style={styles.overlay}>
             {/* FONDO — captura toques fuera del modal */}
@@ -110,8 +124,8 @@ export function ViewQrModal({
                 activeOpacity={1}
             />
 
-            {/* MODAL — ahora SIN pointerEvents="box-none" */}
-            <View style={[styles.container, { width: width, height: condPago ? 700 : 750, }]}>
+            {/* MODAL */}
+            <View style={[styles.container, { width: width, height: condPago ? 720 : 770 }]}>
                 {/* BOTÓN X */}
                 <TouchableOpacity
                     style={styles.closeButton}
@@ -122,21 +136,20 @@ export function ViewQrModal({
                     <Text style={styles.closeText}>X</Text>
                 </TouchableOpacity>
 
-                {/* Renderizar contenido */}
-                < RenderQRView
+                {/* Renderizar contenido con los estilos dinámicos */}
+                <RenderQRView
                     dataInvoice={dataInvoice}
                     phone={phone ? phone : data?.whatsapp?.replace(/\D/g, '') ?? ""}
                     onChangePhone={onChangePhone}
                     qrType={qrType}
-                    qrData={localQRData}
+                    qrData={qrData}
                     disabled={disabled}
                     handleSendWhatsApp={handleSendWhatsApp}
                     handleChangeQRType={handleChangeQRType}
-                    styles={styles}
+                    styles={dynamicStyles}
                     formatNumber={formatNumber}
                     Row={Row}
                     totalRecauder={totalRecauder}
-
                 />
             </View>
 
@@ -150,7 +163,6 @@ export function ViewQrModal({
             />
         </View>
     );
-
 }
 
 const styles = StyleSheet.create({
@@ -166,13 +178,11 @@ const styles = StyleSheet.create({
         zIndex: 9999,
         elevation: 9999,
         pointerEvents: "box-none",
-
     },
     backgroundOverlay: {
         ...StyleSheet.absoluteFillObject,
         backgroundColor: "rgba(0,0,0,0.5)",
         zIndex: 0,
-
     },
     container: {
         height: 750,
@@ -208,7 +218,6 @@ const styles = StyleSheet.create({
         backgroundColor: "#FFFFFF",
         borderRadius: 12,
         padding: 16,
-        marginTop: 10,
         gap: 8,
     },
     phoneContainer: {
@@ -252,8 +261,6 @@ const styles = StyleSheet.create({
         color: "#164194",
     },
     buttonsContainer: {
-        marginTop: 24,
-        gap: 12,
     },
     button: {
         height: 48,
@@ -277,11 +284,11 @@ const styles = StyleSheet.create({
     qrContainer: {
         backgroundColor: "#FFFFFF",
         borderRadius: 12,
-        padding: 20,
-        marginTop: 20,
+        padding: 30,
+        marginTop: 2,
         alignItems: "center",
         justifyContent: "center",
-        height: 220,
+        height: 300,
     },
     qrTypeText: {
         fontFamily: "Rubik",
@@ -295,7 +302,6 @@ const styles = StyleSheet.create({
         height: 180,
         alignSelf: "center",
     },
-
     qrPlaceholder: {
         alignItems: "center",
         justifyContent: "center",
@@ -317,7 +323,6 @@ const styles = StyleSheet.create({
         textAlign: "center",
     },
     qrButtonsContainer: {
-        marginTop: 20,
         gap: 12,
     },
     whatsappButton: {
@@ -350,6 +355,51 @@ const styles = StyleSheet.create({
         width: "100%",
         position: "static",
         color: "#788095",
-    }
+    },
+    errorContainer: {
+        borderWidth: 1,
+        borderColor: "#ff6b6b",
+        borderRadius: 16,
+        backgroundColor: "#fdf5f5",
+        paddingVertical: 40,
+        paddingHorizontal: 20,
+        alignItems: "center",
+        justifyContent: "center",
+        marginTop: 20,
+    },
 
+    errorIconContainer: {
+        width: 60,
+        height: 60,
+        borderRadius: 35,
+        borderWidth: 4,
+        borderColor: "#ef4444",
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: 10,
+    },
+    errorIcon: {
+        fontSize: 32,
+        color: "#ef4444",
+        fontWeight: "bold",
+    },
+    errorTitle: {
+        fontSize: 22,
+        fontWeight: "700",
+        color: "#ef4444",
+        textAlign: "center",
+        marginBottom: 12,
+    },
+    errorDescription: {
+        fontSize: 18,
+        color: "#ef4444",
+        textAlign: "center",
+    },
+    retryText: {
+        marginTop: 20,
+        fontSize: 16,
+        fontWeight: "600",
+        color: "#ef4444",
+        textDecorationLine: "underline",
+    },
 });

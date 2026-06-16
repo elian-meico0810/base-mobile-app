@@ -127,4 +127,23 @@ export enum TipeCodeOTP {
 export enum TypeEntry {
     ENTREGA_OTRO_DIA = "ENTREGA_OTRO_DIA",
     NO_ENTREGADO = "NO_ENTREGADO"
+
+}
+    
+export enum TypoPaymentEnum {
+    EFECTY = "EFECTY",
+    OTHERS = "OTHERS"
+}
+
+
+export enum TypePaymentCounterDeliveryEnum {
+    EFECTY = "TIP_PAG_EFECTIVO",
+    OTRO = "TIP_PAG_OTRO"
+}
+
+export enum TypeValueParameterEnum {
+    TEXT_ODER = "TEXT_ODER",
+    TEXT_NOVELTY_ODER = "TEXT_NOVELTY_ODER",
+    MARGEN_TOLERANCIA = "MARGEN_TOLERANCIA",
+    MARGEN_TOLERANCIA_SEND_OTP = "MARGEN_TOLERANCIA_SEND_OTP"
 }

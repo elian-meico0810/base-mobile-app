@@ -4,11 +4,11 @@ import {
     Animated,
     Keyboard,
     Platform,
+    ScrollView,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    TouchableWithoutFeedback,
     View
 } from "react-native";
 import { Cause } from "../../tracking/domain/details/DetailsGuide";
@@ -41,6 +41,7 @@ interface ReasonData {
     type: string;
     units: number;
     description?: string;
+    codigo?: string;
 }
 
 export function ReportNoveltyScreen({
@@ -96,17 +97,18 @@ export function ReportNoveltyScreen({
 
     const reasons = showTypeDetails?.map(item => item.nombre);
 
-    
+
     // Función para obtener los datos estructurados
     const getReasonValues = (): ReasonData[] => {
         const data: ReasonData[] = [];
+        if (!showTypeDetails || !reasons) return [];
 
         reasons?.forEach((reason, index) => {
             const unitValue = units[index] ? parseInt(units[index], 10) : 0;
             data.push({
                 type: reason,
                 units: unitValue,
-                codigo: showTypeDetails[index]?.codigo    
+                codigo: showTypeDetails[index]?.codigo
             });
         });
 
@@ -185,50 +187,54 @@ export function ReportNoveltyScreen({
 
     return (
         <View style={styles.overlay}>
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <View style={styles.touchableOverlay}>
-                    {/* Fondo gris */}
-                    <TouchableOpacity
-                        style={styles.backgroundOverlay}
-                        onPress={handleClose}
-                        activeOpacity={1}
-                    />
+            <View style={styles.touchableOverlay}>
+                {/* Fondo gris */}
+                <TouchableOpacity
+                    style={styles.backgroundOverlay}
+                    onPress={handleClose}
+                    activeOpacity={1}
+                />
 
-                    <Animated.View
-                        style={[
-                            styles.container,
-                            {
-                                width,
-                                height,
-                                marginBottom: keyboardHeight
-                            }
-                        ]}
-                    >
-                        {/* Fondo blanco redondeado */}
-                        <View style={styles.track} />
+                <Animated.View
+                    style={[
+                        styles.container,
+                        {
+                            width,
+                            height,
+                            marginBottom: keyboardHeight
+                        }
+                    ]}
+                >
+                    {/* Fondo blanco redondeado */}
+                    <View style={styles.track} />
 
-                        {/* Botón cerrar */}
-                        <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-                            <Text style={styles.closeText}>✕</Text>
-                        </TouchableOpacity>
+                    {/* Botón cerrar */}
+                    <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+                        <Text style={styles.closeText}>✕</Text>
+                    </TouchableOpacity>
 
-                        {/* Título */}
-                        <View style={styles.titleContainer}>
-                            <Text style={styles.title}>{title}</Text>
-                        </View>
+                    {/* Título */}
+                    <View style={styles.titleContainer}>
+                        <Text style={styles.title}>{title}</Text>
+                    </View>
 
-                        {/* Descripción */}
-                        <Text>
-                            <Text style={styles.description}>
-                                Elige el motivo e ingresa la cantidad de unidades
-                            </Text>
-                            <Text style={styles.subTitle}>
-                                {" "}que rechazo el cliente
-                            </Text>
+                    {/* Descripción */}
+                    <Text>
+                        <Text style={styles.description}>
+                            Elige el motivo e ingresa la cantidad de unidades
                         </Text>
+                        <Text style={styles.subTitle}>
+                            {" "}que rechazo el cliente
+                        </Text>
+                    </Text>
 
-                        {/* CONTENEDOR ÚNICO DE NOVEDADES */}
-                        <View style={styles.noveltyBox}>
+                    {/* CONTENEDOR ÚNICO DE NOVEDADES */}
+                    <View>
+                        <ScrollView
+                            style={styles.noveltyBox}
+                            showsVerticalScrollIndicator={false}
+                            nestedScrollEnabled={true}
+                        >
                             {reasons?.map((reason, index) => (
                                 <View key={index} style={styles.reasonRow}>
                                     <Text style={styles.reasonText}>{reason}</Text>
@@ -236,7 +242,6 @@ export function ReportNoveltyScreen({
                                         style={[
                                             styles.unitsPlaceholder,
                                             focusedIndex === index && styles.unitsPlaceholderFocused,
-                                            units[index] !== "" && styles.unitsPlaceholderFilled
                                         ]}
                                         value={units[index]}
                                         onChangeText={(text) => handleUnitChange(text, index)}
@@ -250,21 +255,22 @@ export function ReportNoveltyScreen({
                                     />
                                 </View>
                             ))}
-                        </View>
-                        {/* Botón Confirmar - ahora se habilita cuando hay valores */}
-                        <View style={styles.buttonRow}>
-                            <PrimaryButton
-                                title={'Confirmar '}
-                                onPress={handleFinalize}
-                                disabled={!hasValues} // Usamos el estado separado
-                                width={348}
-                                height={43}
-                            />
+                        </ScrollView>
+                    </View>
 
-                        </View>
-                    </Animated.View>
-                </View>
-            </TouchableWithoutFeedback>
+                    {/* Botón Confirmar - ahora se habilita cuando hay valores */}
+                    <View style={styles.buttonRow}>
+                        <PrimaryButton
+                            title={'Confirmar '}
+                            onPress={handleFinalize}
+                            disabled={!hasValues} // Usamos el estado separado
+                            width={348}
+                            height={43}
+                        />
+
+                    </View>
+                </Animated.View>
+            </View>
         </View>
     );
 }
@@ -403,6 +409,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#E6E8EC",
         overflow: "hidden",
+        maxHeight: 260,
     },
     buttonRow: {
         alignItems: 'center',

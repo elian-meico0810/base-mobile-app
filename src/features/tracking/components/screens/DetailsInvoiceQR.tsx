@@ -43,6 +43,9 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
     const [actionBottonQR, setActionBottonQR] = useState(false);
     const [actionBottonPayment, setActionBottonPayment] = useState(false);
     const [localPhone, setLocalPhone] = useState('');
+    const [loadingTwo, setLoadingTwo] = useState(
+        statusTypeQR || data?.facturas?.[0]?.condPago == TypeConPagoEnum.TAT
+    );
 
     // Inicializar con el valor que viene
     useEffect(() => {
@@ -63,13 +66,6 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
     const paymentGateway = async () => {
         try {
 
-            // if ((!phone || !/^\d{10}$/.test(phone)) && Number(cleanWhatsapp?.length) != 10) {
-            //     setModalTitle("¡Alerta!");
-            //     setModalMessage("Debe ingresar un número de teléfono válido de 10 dígitos.");
-            //     setModalVisible(true);
-            //     return;
-
-            // }
 
             setLoading(true);
             if (onGenerateQR) {
@@ -91,6 +87,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
             );
 
             if (response?.statusCode === 200) {
+                setLoadingTwo(false);
                 onPressPayment();
                 onGenerateQR?.(TypeQr.PASARELA, response?.data?.linkPagoVirtual);
             } else {
@@ -132,6 +129,7 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
             );
 
             if (response?.statusCode === 200) {
+                setLoadingTwo(false);
                 onPressPayment();
                 onGenerateQR?.(TypeQr.BANCARIA, response?.data?.qr);
             } else {
@@ -182,80 +180,84 @@ export function DetailsInvoiceQR({ data, onClose, onChangePhone, disabled, width
     return (
 
         <View style={styles.overlay} pointerEvents="box-none">
+            {loadingTwo ? (
+                <LoadingBlue />
+            ) : (
+                <>
+                    {/* FONDO — SOLO CAPTURA TOQUES FUERA */}
+                    <TouchableOpacity
+                        style={styles.backgroundOverlay}
+                        onPress={onClose}
+                        activeOpacity={1}
+                    />
 
-            {/* FONDO — SOLO CAPTURA TOQUES FUERA */}
-            <TouchableOpacity
-                style={styles.backgroundOverlay}
-                onPress={onClose}
-                activeOpacity={1}
-            />
+                    {/* MODAL — NO ES BLOQUEADO POR EL FONDO */}
+                    <View style={[styles.container, { width: width }]} pointerEvents="box-none">
 
-            {/* MODAL — NO ES BLOQUEADO POR EL FONDO */}
-            <View style={[styles.container, { width: width }]} pointerEvents="box-none">
-
-                {/* BOTÓN X */}
-                <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                    <Text style={styles.closeText}>X</Text>
-                </TouchableOpacity>
-
-                <Text style={styles.title}>QR de pago</Text>
-
-                <View style={styles.box}>
-                    <Row label="N° de factura" value={dataInvoice.numeroFactura} />
-                    <Row label="Valor total" value={`$${formatNumber(dataInvoice.valorTotal)}`} />
-                    <Row bold label="Valor a pagar" value={`$${formatNumber(Number(totalRecauder))}`} />
-                </View>
-
-                <View style={styles.phoneContainer}>
-                    <Text style={styles.phoneLabel}>N° de teléfono asociado</Text>
-                    <Text style={styles.phoneDescription}>
-                        Usaremos este número para enviarte el QR.
-                    </Text>
-
-                    <View style={styles.phoneRow}>
-                        <TextInput
-                            style={styles.phoneInput}
-                            value={ phone ? phone?.replace(/\D/g, ''): data?.whatsapp?.replace(/\D/g, '')}
-                            onChangeText={handlePhoneChange}
-                            keyboardType="phone-pad"
-                            maxLength={10}
-                            editable={false}
-                        />
-                        <TouchableOpacity onPress={onChangePhone}>
-                            <Text style={styles.phoneChange}>Cambiar</Text>
+                        {/* BOTÓN X */}
+                        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                            <Text style={styles.closeText}>X</Text>
                         </TouchableOpacity>
+
+                        <Text style={styles.title}>QR de pago</Text>
+
+                        <View style={styles.box}>
+                            <Row label="N° de factura" value={dataInvoice.numeroFactura} />
+                            <Row label="Valor total" value={`$${formatNumber(dataInvoice.valorTotal)}`} />
+                            <Row bold label="Valor a pagar" value={`$${formatNumber(Number(totalRecauder))}`} />
+                        </View>
+
+                        <View style={styles.phoneContainer}>
+                            <Text style={styles.phoneLabel}>N° de teléfono asociado</Text>
+                            <Text style={styles.phoneDescription}>
+                                Usaremos este número para enviarte el QR.
+                            </Text>
+
+                            <View style={styles.phoneRow}>
+                                <TextInput
+                                    style={styles.phoneInput}
+                                    value={phone ? phone?.replace(/\D/g, '') : data?.whatsapp?.replace(/\D/g, '')}
+                                    onChangeText={handlePhoneChange}
+                                    keyboardType="phone-pad"
+                                    maxLength={10}
+                                    editable={false}
+                                />
+                                <TouchableOpacity onPress={onChangePhone}>
+                                    <Text style={styles.phoneChange}>Cambiar</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+                        <Text style={styles.QrTitle}>Generar QR de pago</Text>
+                        <View style={styles.buttonsContainer}>
+                            <SecondaryButton
+                                title="Pasarela de Pago"
+                                onPress={paymentGateway}
+                                disabled={disabled}
+                                width={350}
+                                height={43}
+                            />
+
+                            <SecondaryButton
+                                title="Aplicación Bancaria"
+                                onPress={generateQR}
+                                disabled={disabled}
+                                width={350}
+                                height={43}
+                            />
+                        </View>
+
+
+                        <ExceptionModal
+                            visible={modalVisible}
+                            onClose={() => setModalVisible(false)}
+                            title={modalTitle}
+                            message={modalMessage}
+                            buttonLabel={modalButtonLabel}
+                        />
                     </View>
-                </View>
-
-                <Text style={styles.QrTitle}>Generar QR de pago</Text>
-                <View style={styles.buttonsContainer}>
-                    <SecondaryButton
-                        title="Pasarela de Pago"
-                        onPress={paymentGateway}
-                        disabled={disabled}
-                        width={350}
-                        height={43}
-                    />
-
-                    <SecondaryButton
-                        title="Aplicación Bancaria"
-                        onPress={generateQR}
-                        disabled={disabled}
-                        width={350}
-                        height={43}
-                    />
-                </View>
-
-
-                <ExceptionModal
-                    visible={modalVisible}
-                    onClose={() => setModalVisible(false)}
-                    title={modalTitle}
-                    message={modalMessage}
-                    buttonLabel={modalButtonLabel}
-                />
-            </View>
-            {loading && <LoadingBlue />}
+                </>
+            )}
 
         </View>
     );

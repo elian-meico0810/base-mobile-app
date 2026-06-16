@@ -34,7 +34,6 @@ export function ConciliationSummary({ guide, token }: Props) {
       );
       setData(res);
     } catch (error) {
-      console.log("Error loading conciliation:", error);
     } finally {
       setLoading(false);
     }

@@ -105,7 +105,6 @@ export const ProductItem = ({
         code?: string
     ): string | null => {
         if (!baseUrl || !token || !code) return null;
-        // console.log("web: ", `${baseUrl}/${code}.webp${token}`);
         return `${baseUrl}/${code}.webp${token}`;
     };
 

@@ -7,10 +7,14 @@ import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { ExecptionModalValidate } from '@/components/generals/ExecptionModalValidate';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
+import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
+<<<<<<< HEAD
 import { UploadPhotoOTP } from '@/components/photo/uploadPhotoOTP';
 import { OrderDetailSkeleton } from '@/components/skeleton/OrderDetailSkeleton ';
 import { ThemedView } from '@/components/themed-view';
+=======
+>>>>>>> production
 import { ENV_DEV } from '@/src/constants/apiRoutes';
 import { OptionsRefusedEnum, StatusDelivery, TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import { DeliveryStatus } from '@/src/features/tracking/components/checkbox/DeliveryStatus';
@@ -27,6 +31,7 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useRef, useState } from "react";
 import { BackHandler, Dimensions, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 const { width, height } = Dimensions.get('window');
 
 interface InfoInvoiceCreditFormProps {
@@ -108,6 +113,7 @@ export function InfoInvoiceCreditForm({
     const [checkUbication, setCheckUbication] = useState(false);
     const router = useRouter();
     const heightValue = heightCaldulate();
+<<<<<<< HEAD
     const [statusDOcument, setStatusDOcument] = useState(false);
     const [buttonValueOTP, setButtonValueOTP] = useState(false);
     const [sasToken, setSasToken] = useState("");
@@ -124,6 +130,9 @@ export function InfoInvoiceCreditForm({
     const [highlightText, setHighlightText] = useState("");
     const [multiplePhotosTwo, setMultiplePhotosTwo] = useState<EvidencePhoto[]>([]);
     const orderId = initialGuide?.pedidos?.[0]?.id;
+=======
+    const insets = useSafeAreaInsets();
+>>>>>>> production
 
     const closeButton = routeStarted;
 
@@ -369,7 +378,9 @@ export function InfoInvoiceCreditForm({
                             estado: clienteEncontrado.estado,
                             facturas: clienteEncontrado.facturas,
                             whatsapp: clienteEncontrado.whatsapp,
-                            pedidos: clienteEncontrado.pedidos
+                            pedidos: clienteEncontrado.pedidos,
+                            razonSocial: clienteEncontrado.razonSocial,
+                            tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
                         });
                     }
                 }
@@ -764,8 +775,14 @@ export function InfoInvoiceCreditForm({
     }
 
     return (
-        <ThemedView style={styles.container}>
-            {/* <NetworkStatus /> */}
+        <SafeAreaView style={[
+            styles.container,
+            {
+                paddingLeft: insets.left,
+                paddingRight: insets.right,
+            }
+        ]}>
+            <NetworkStatus />
 
             {/* Fondo gris */}
             <View style={styles.background} />
@@ -947,7 +964,39 @@ export function InfoInvoiceCreditForm({
                 <View style={[styles.redBackground, { height: heightValue ? 100 : 90 }]} />
             )}
 
+<<<<<<< HEAD
             {guide && (
+=======
+            <View style={[styles.footer, { marginBottom: 10 }]}>
+                {isSelectInvocies ? (
+                    <PrimaryButton
+                        title="Entregar"
+                        onPress={handleSubmitData}
+                        disabled={!showStatusDelivery ? true : false}
+                        width={328}
+                        height={43}
+                    />
+                ) : (
+                    <PrimaryButtonDetails
+                        ref={btnRef}
+                        autoReset={validateException}
+                        key={routeStarted || buttonValue ? "cerrar" : "llegue"}
+                        title={routeStarted || buttonValue ? "Cerrar pedido" : "Ya llegué"}
+                        onPress={routeStarted || buttonValue ? submitData : handleSubmit}
+                        disabled={false}
+                        width={328}
+                        height={43}
+                        buttonColor={conceptDelivery ? undefined : closeButton || validateIsBotton ? "#DDDFE8" : undefined}
+                        buttonColorEnd={conceptDelivery ? undefined : closeButton || validateIsBotton ? "#DDDFE8" : undefined}
+                        titleColor={conceptDelivery ? undefined : closeButton || routeStarted ? "#FFFFFF" : undefined}
+                        circleColor={conceptDelivery ? undefined : closeButton || validateIsBotton ? "#788095" : undefined}
+                    />
+                )
+                }
+
+
+            </View>
+>>>>>>> production
 
                 <View style={[styles.footer, { marginBottom: 10 }]}>
                     {confirmNoDelivery ? (
@@ -1224,7 +1273,7 @@ export function InfoInvoiceCreditForm({
                 />
             )}
             {loading && <LoadingBlue />}
-        </ThemedView>
+        </SafeAreaView>
     );
 }
 
@@ -1254,8 +1303,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
-        paddingTop: 35,
-        paddingBottom: 5,
+        paddingTop: 10,
         backgroundColor: '#F9F9FA',
     },
     backButton: {

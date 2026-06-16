@@ -263,7 +263,7 @@ export const ProductValidationSection = ({
         return validatedDetails;
     };
 
-  useEffect(() => {
+    useEffect(() => {
         // if (serviceUrl == "" || serviceToken == "") {
         const loadSecureData = async () => {
 
@@ -272,10 +272,6 @@ export const ProductValidationSection = ({
 
             const testToken = await SecureStore.getItemAsync('service_token');
             const testUrl = await SecureStore.getItemAsync('base_url');
-            
-            // console.log("testTokenProduct: ",testTokenProduct);
-            // console.log("testUrlProduct: ",testUrlProduct);
-            
             setServiceToken(testTokenProduct || "");
             setBaseUrl(testUrlProduct || "");
 
@@ -311,9 +307,7 @@ export const ProductValidationSection = ({
         .reduce((sum, value) => sum + value, 0);
 
     // Valor a recaudar estimado: validados + por validar
-    const valueRealTotal = totalGeneralValidate + totalGeneral;
-
-
+    const valueRealTotal = totalGeneralValidate + totalGeneral
 
     // 3. Función para actualizar el estado de un producto
     const updateProductStatus = (
@@ -402,12 +396,6 @@ export const ProductValidationSection = ({
                                     const deliveredUnits = unidadesEntregadas ? unidadesEntregadas : item?.unidadesSolicitadas;
                                     const deliveredValue = calculateVlueByPorducts(item, TypeCaculateValueEnum.ACTION_5, Number(deliveredUnits), undefined, Number(allProducts?.[0]?.porcentajeDFR));
                                     updateProductStatus(id, Number(deliveredValue), 'pending', unidadesEntregadas);
-
-                                    // console.log("========================================");
-                                    // console.log("=========== LOS POR VALIDAR ====================");
-                                    // console.log("id:", id, "totalProducts:", totalProducts, "unidadesEntregadas: ", unidadesEntregadas);
-                                    // console.log("TOTAL ACUMULADO:", totalGeneral);
-                                    // console.log("========================================");
                                 }}
                                 porcentajeDFR={Number(allProducts?.[0]?.porcentajeDFR)}
                                 notDetails={notDetails}
@@ -471,59 +459,54 @@ export const ProductValidationSection = ({
                 </View>
             </ScrollView>
 
-            <View style={styles.bottomBar}>
-                <View style={styles.progressRow}>
-                    {pendingCount > 0 ? (
-                        <Text style={styles.pendingText}>
-                            Te faltan{' '}
-                            <Text style={styles.pendingBold}>{pendingCount} productos</Text>
-                            {' '}por validar
-                        </Text>
-                    ) : (
-                        <Text style={styles.pendingText}>
-                            Productos validados
-                        </Text>
-                    )}
+            {pendingDetailsFlat.length > 0 && (
+                <View style={styles.bottomBar}>
+                    <View style={styles.progressRow}>
+                        {pendingCount > 0 ? (
+                            <Text style={styles.pendingText}>
+                                Te faltan{' '}
+                                <Text style={styles.pendingBold}>{pendingCount} productos</Text>
+                                {' '}por validar
+                            </Text>
+                        ) : (
+                            <Text style={styles.pendingText}>
+                                Productos validados
+                            </Text>
+                        )}
 
-                    <View style={styles.progressContainer}>
-                        <View style={styles.progressBarBackground}>
-                            <View
-                                style={[
-                                    styles.progressBarFill,
-                                    {
-                                        width: `${progressPercentage}%`,
-                                        backgroundColor:
-                                            progressPercentage === 100 ? '#1F9144' : '#164194',
-                                    },
-                                ]}
-                            />
+                        <View style={styles.progressContainer}>
+                            <View style={styles.progressBarBackground}>
+                                <View
+                                    style={[
+                                        styles.progressBarFill,
+                                        {
+                                            width: `${progressPercentage}%`,
+                                            backgroundColor:
+                                                progressPercentage === 100 ? '#1F9144' : '#164194',
+                                        },
+                                    ]}
+                                />
+                            </View>
                         </View>
                     </View>
-                </View>
 
-                {/* {(allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CREDITO ||
-                    allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CONTADO_EFECTIVO ? ( */}
-                {!notDetails ? (
                     <View style={styles.valueRow}>
                         <Text style={styles.valueLabel}>Valor a recaudar:</Text>
                         <Text style={styles.valueAmount}>$ {formatNumber(Number(valueRealTotal))}</Text>
                     </View>
-                ) : null
-                }
 
-                {/* // ) : null
-                // )} */}
-
-                <View style={styles.buttonRow}>
-                    <PrimaryButton
-                        title="Finalizar"
-                        onPress={handleFinalize}
-                        disabled={!isValid}
-                        width={348}
-                        height={43}
-                    />
+                    <View style={styles.buttonRow}>
+                        <PrimaryButton
+                            title="Finalizar"
+                            onPress={handleFinalize}
+                            disabled={!isValid}
+                            width={348}
+                            height={43}
+                        />
+                    </View>
                 </View>
-            </View>
+            )}
+
         </View>
     );
 };

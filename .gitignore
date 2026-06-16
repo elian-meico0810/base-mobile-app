@@ -77,9 +77,12 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
 .env*.local
 
 # typescript
 *.tsbuildinfo
 
 # @end expo-cli
+
+.gradle-user-home*/

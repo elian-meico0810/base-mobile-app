@@ -4,9 +4,9 @@ import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails'
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
+import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { OrderDetailSkeletonSelect } from '@/components/skeleton/OrderDetailSkeletonSelect';
-import { ThemedView } from '@/components/themed-view';
 import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TipeCodeOTP, TypeDelivery, TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import OneSelectedOrder from '@/src/features/tracking/components/checkbox/OneSelectedOrder';
 import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
@@ -20,6 +20,7 @@ import * as Location from "expo-location";
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from "react";
 import { BackHandler, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 const { width, height } = Dimensions.get('window');
 
 interface ViewSelectInvoiceProps {
@@ -85,6 +86,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [checkUbication, setCheckUbication] = useState(false);
     const router = useRouter();
     const heightValue = heightCaldulate();
+    const insets = useSafeAreaInsets();
 
     useEffect(() => {
         const backAction = () => {
@@ -478,6 +480,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         facturas: clienteEncontrado.facturas,
                         pedidos: clienteEncontrado.pedidos,
                         whatsapp: clienteEncontrado.whatsapp,
+                        razonSocial: clienteEncontrado.razonSocial,
+                        tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
+
 
                     });
                     listInfOTByDirection({
@@ -493,6 +498,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         facturas: clienteEncontrado.facturas,
                         pedidos: clienteEncontrado.pedidos,
                         whatsapp: clienteEncontrado.whatsapp,
+                        razonSocial: clienteEncontrado.razonSocial,
+                        tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
 
                     });
                     listInfOTPFileByDirection({
@@ -508,6 +515,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         facturas: clienteEncontrado.facturas,
                         pedidos: clienteEncontrado.pedidos,
                         whatsapp: clienteEncontrado.whatsapp,
+                        razonSocial: clienteEncontrado.razonSocial,
+                        tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
+
                     })
                     listDocumentQuery({
                         idDireccion: clienteEncontrado.idDireccion,
@@ -522,6 +532,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         facturas: clienteEncontrado.facturas,
                         pedidos: clienteEncontrado.pedidos,
                         whatsapp: clienteEncontrado.whatsapp,
+                        razonSocial: clienteEncontrado.razonSocial,
+                        tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
                     });
                 }
             }
@@ -782,8 +794,14 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const closeButton = routeStarted || buttonValue;
 
     return (
-        <ThemedView style={styles.container}>
-            {/* <NetworkStatus /> */}
+        <SafeAreaView style={[
+            styles.container,
+            {
+                paddingLeft: insets.left,
+                paddingRight: insets.right,
+            }
+        ]}>
+            <NetworkStatus />
 
             {/* Fondo gris */}
             <View style={styles.background} />
@@ -1034,7 +1052,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             )}
 
             {loading && <LoadingBlue />}
-        </ThemedView>
+        </SafeAreaView>
     );
 }
 

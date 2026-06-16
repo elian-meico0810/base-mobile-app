@@ -1,6 +1,6 @@
-import { Ionicons } from "@expo/vector-icons"; // <-- import correcto en Expo
-import React, { useEffect, useState } from "react";
-import { StyleSheet, TextInput, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useEffect, useState } from "react";
+import { Platform, StyleSheet, TextInput, View, useWindowDimensions } from "react-native";
 
 interface SearchInputProps<T> {
   data: T[]; 
@@ -16,6 +16,9 @@ export function SearchInput<T>({
   keyExtractor = (item: any) => item.toString(),
 }: SearchInputProps<T>) {
   const [searchText, setSearchText] = useState("");
+  const { width: windowWidth } = useWindowDimensions();
+  
+  const isTablet = windowWidth >= 768 || (Platform.OS === 'android' && windowWidth >= 600) || (Platform.OS === 'ios' && windowWidth >= 768);
 
   useEffect(() => {
     const filtered = data.filter(item =>
@@ -25,10 +28,10 @@ export function SearchInput<T>({
   }, [searchText, data]);
 
   return (
-    <View style={styles.container}>
-      <Ionicons name="search-outline" size={18} color="#AAAAAA" style={styles.icon} />
+    <View style={[styles.container, { width: isTablet ? '100%' : 328 }]}>
+      <Ionicons name="search-outline" size={isTablet ? 22 : 18} color="#AAAAAA" style={styles.icon} />
       <TextInput
-        style={styles.input}
+        style={[styles.input, isTablet && styles.inputTablet]}
         value={searchText}
         onChangeText={setSearchText}
         placeholder={placeholder || "Buscar..."}
@@ -42,7 +45,6 @@ export function SearchInput<T>({
 
 const styles = StyleSheet.create({
   container: {
-    width: 328,
     height: 41,
     borderRadius: 20,
     borderWidth: 1,
@@ -59,5 +61,9 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: "#000000",
+  },
+  inputTablet: {
+    fontSize: 16,
+    height: 50,
   },
 });

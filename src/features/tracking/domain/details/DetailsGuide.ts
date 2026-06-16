@@ -27,6 +27,7 @@ export interface GuideDetails {
   poblacion: string;
   codigoCliente: string;
   nombreCliente: string;
+  razonSocial: string;
   latitud: string;
   longitud: string;
   estado: string;
@@ -35,6 +36,8 @@ export interface GuideDetails {
   fecha_apertura?: string | null;
   facturas: Factura[];
   pedidos?: Pedidos[];
+  tieneNoEntrega: boolean;
+  causalNoEntrega: string;
 }
 
 export interface RuteInitPorps {

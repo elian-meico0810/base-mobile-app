@@ -871,6 +871,7 @@ export function InfoInvoiceForm({
                             pedidos: clienteEncontrado.pedidos,
                             razonSocial: clienteEncontrado.razonSocial,
                             tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
+                            causalNoEntrega: clienteEncontrado.causalNoEntrega,
                         });
 
                     }
@@ -1546,7 +1547,7 @@ export function InfoInvoiceForm({
                                                 !ressult && { color: '#1F9144' },
                                             ]}
                                         >
-                                            {!ressult? 'Pago realizado' : 'Pendiente'}
+                                            {!ressult ? 'Pago realizado' : 'Pendiente'}
                                         </Text>
                                     </View>
                                 </View>

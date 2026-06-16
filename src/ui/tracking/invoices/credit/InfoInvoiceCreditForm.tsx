@@ -381,6 +381,7 @@ export function InfoInvoiceCreditForm({
                             pedidos: clienteEncontrado.pedidos,
                             razonSocial: clienteEncontrado.razonSocial,
                             tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
+                            causalNoEntrega: clienteEncontrado.causalNoEntrega,
                         });
                     }
                 }

@@ -1275,7 +1275,6 @@ export function InfoInvoiceForm({
                 return;
             }
 
-<<<<<<< HEAD
             // if (Number(totalRecauder) > 0) {
             //     btnRef.current?.reset();
             //     setModalTitle("¡Alerta!");
@@ -1283,7 +1282,7 @@ export function InfoInvoiceForm({
             //     setModalVisible(true);
             //     return;
             // }
-=======
+            
             if (ressult) {
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");
@@ -1291,7 +1290,6 @@ export function InfoInvoiceForm({
                 setModalVisible(true);
                 return;
             }
->>>>>>> production
 
 
             if (!guide?.whatsapp || guide?.whatsapp == "") {

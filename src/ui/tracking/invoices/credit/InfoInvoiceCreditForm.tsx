@@ -9,12 +9,8 @@ import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
-<<<<<<< HEAD
 import { UploadPhotoOTP } from '@/components/photo/uploadPhotoOTP';
 import { OrderDetailSkeleton } from '@/components/skeleton/OrderDetailSkeleton ';
-import { ThemedView } from '@/components/themed-view';
-=======
->>>>>>> production
 import { ENV_DEV } from '@/src/constants/apiRoutes';
 import { OptionsRefusedEnum, StatusDelivery, TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import { DeliveryStatus } from '@/src/features/tracking/components/checkbox/DeliveryStatus';
@@ -113,7 +109,6 @@ export function InfoInvoiceCreditForm({
     const [checkUbication, setCheckUbication] = useState(false);
     const router = useRouter();
     const heightValue = heightCaldulate();
-<<<<<<< HEAD
     const [statusDOcument, setStatusDOcument] = useState(false);
     const [buttonValueOTP, setButtonValueOTP] = useState(false);
     const [sasToken, setSasToken] = useState("");
@@ -130,9 +125,7 @@ export function InfoInvoiceCreditForm({
     const [highlightText, setHighlightText] = useState("");
     const [multiplePhotosTwo, setMultiplePhotosTwo] = useState<EvidencePhoto[]>([]);
     const orderId = initialGuide?.pedidos?.[0]?.id;
-=======
     const insets = useSafeAreaInsets();
->>>>>>> production
 
     const closeButton = routeStarted;
 
@@ -965,39 +958,7 @@ export function InfoInvoiceCreditForm({
                 <View style={[styles.redBackground, { height: heightValue ? 100 : 90 }]} />
             )}
 
-<<<<<<< HEAD
             {guide && (
-=======
-            <View style={[styles.footer, { marginBottom: 10 }]}>
-                {isSelectInvocies ? (
-                    <PrimaryButton
-                        title="Entregar"
-                        onPress={handleSubmitData}
-                        disabled={!showStatusDelivery ? true : false}
-                        width={328}
-                        height={43}
-                    />
-                ) : (
-                    <PrimaryButtonDetails
-                        ref={btnRef}
-                        autoReset={validateException}
-                        key={routeStarted || buttonValue ? "cerrar" : "llegue"}
-                        title={routeStarted || buttonValue ? "Cerrar pedido" : "Ya llegué"}
-                        onPress={routeStarted || buttonValue ? submitData : handleSubmit}
-                        disabled={false}
-                        width={328}
-                        height={43}
-                        buttonColor={conceptDelivery ? undefined : closeButton || validateIsBotton ? "#DDDFE8" : undefined}
-                        buttonColorEnd={conceptDelivery ? undefined : closeButton || validateIsBotton ? "#DDDFE8" : undefined}
-                        titleColor={conceptDelivery ? undefined : closeButton || routeStarted ? "#FFFFFF" : undefined}
-                        circleColor={conceptDelivery ? undefined : closeButton || validateIsBotton ? "#788095" : undefined}
-                    />
-                )
-                }
-
-
-            </View>
->>>>>>> production
 
                 <View style={[styles.footer, { marginBottom: 10 }]}>
                     {confirmNoDelivery ? (

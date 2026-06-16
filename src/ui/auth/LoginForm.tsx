@@ -38,7 +38,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
   const [showErrorQRP, setShowErrorQRP] = useState(false);
   const [showErrorQRPMessage, setShowErrorQRPMessage] = useState("");
   const [exitModalVisible, setExitModalVisible] = useState(false);
-  const isValid = guide.length >= 5;
+  const isValid = guide.length >= 1;
   const router = useRouter();
 
   const heightValue = heightCaldulate();
@@ -123,7 +123,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
     setErrorMessage("");
 
     if (!isValid) {
-      setErrorMessage("El número de guía debe tener al menos 5 dígitos.");
+      setErrorMessage("El número de guía debe tener al menos 1 dígitos.");
       return;
     }
     try {

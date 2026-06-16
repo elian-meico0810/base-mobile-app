@@ -3,7 +3,7 @@ import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { ThemedView } from '@/components/themed-view';
-import { CausalRefusedEnum, TyepeCausalRefusedEnum, TypeCaculateValueEnum, TypeDetailsEnum } from '@/src/constants/GuideStates';
+import { CausalRefusedEnum, TyepeCausalRefusedEnum, TypeCaculateValueEnum, TypeConPagoEnum, TypeDetailsEnum } from '@/src/constants/GuideStates';
 import { ProductValidationSection } from '@/src/features/detailsInvoice/components/ProductValidationScreen';
 import { ReportMassiveRejectScreen } from '@/src/features/detailsInvoice/components/ReportMassiveRejectScreen';
 import { ReportNoveltyScreen } from '@/src/features/detailsInvoice/components/ReportNoveltyScreen';
@@ -100,8 +100,25 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     const handleExpand = () => setIsExpanded(true);
     const handleCollapse = () => setIsExpanded(false);
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (data: Detail[]) => {
         try {
+            const difference = data.some(
+                item => item.unidadesSolicitadas !== item.unidadesEntregadas
+            );
+
+            if (difference) {
+                setUploadPhoto(true);
+            } else {
+                if (isSelectInvocies) {
+                    router.push(
+                        `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&detailsCounterDelivery=${true}&isSelectInvocies=${'true'}&isViewDetailsPorducts=${'true'}&isAnticipe=${isAnticipe}`
+                    );
+                } else {
+                    router.push(
+                        `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&detailsCounterDelivery=${true}`
+                    );
+                }
+            }
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");
@@ -542,6 +559,8 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
     }, [token]);
 
+    const condPago = guide?.facturas?.[0]?.condPago;
+
     return (
         <ThemedView style={styles.container}>
             {/* <NetworkStatus /> */}
@@ -633,9 +652,12 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
                 {/** Listado de productos */}
                 <ProductValidationSection
-                    onFinalize={() => {
-                        handleSubmit;
-                        setUploadPhoto(true);
+                    onFinalize={(data) => {
+                        if (condPago && ![TypeConPagoEnum.TAT, TypeConPagoEnum.PGM].includes(condPago as TypeConPagoEnum) || !condPago) {
+                            setUploadPhoto(true);
+                        } else {
+                            handleSubmit(data);
+                        }
                     }}
                     onSuccessAlet={successButton}
                     onErrorAlert={alertButton}

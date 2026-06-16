@@ -36,7 +36,7 @@ interface FinalizedData {
 }
 
 interface ProductValidationSectionProps {
-    onFinalize?: () => void;
+    onFinalize?: (data: Detail[]) => void;
     onErrorAlert?: boolean;
     onSuccessAlet?: boolean;
     onStatusNovelty?: (direction: 'left' | 'right' | null) => void;
@@ -213,7 +213,7 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
     const handleFinalize = () => {
         try {
             if (productsPending.length == 0) {
-                onFinalize?.();
+                onFinalize?.(productsSold);
                 setShowValidatedModal(true);
             }
         } catch (error) {

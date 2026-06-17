@@ -640,7 +640,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
 
                             {((data.length != 0)) && (
                                 <>
-                                    {(hasValidInvoice && !valueParameterized) && (
+                                    {(guide && hasValidInvoice && !valueParameterized) && (
 
                                         <TouchableOpacity style={styles.cardConsignment} onPress={() => {
                                             router.push({

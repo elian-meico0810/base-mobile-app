@@ -294,7 +294,7 @@ export interface EvidenciaOTPItemOTP {
 
 export interface ReEntryDeliveryProps {
   id_pedido: number;
-  reporgrmacion: string;
+  reprogrmacion: string;
 }
 
 export interface OrderGroup {

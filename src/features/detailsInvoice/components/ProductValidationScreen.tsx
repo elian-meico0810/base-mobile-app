@@ -1,6 +1,6 @@
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { ProductItemSkeleton } from '@/components/skeleton/ProductItemSkeleton';
-import { TypeCaculateValueEnum } from '@/src/constants/GuideStates';
+import { TypeCaculateValueEnum, TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import { calculateVlueByPorducts, formatNumber } from '@/src/utils/uitls';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
@@ -490,10 +490,14 @@ export const ProductValidationSection = ({
                         </View>
                     </View>
 
-                    <View style={styles.valueRow}>
-                        <Text style={styles.valueLabel}>Valor a recaudar:</Text>
-                        <Text style={styles.valueAmount}>$ {formatNumber(Number(valueRealTotal))}</Text>
-                    </View>
+                    {(allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CONTADO_EFECTIVO ? (
+                            <View style={styles.valueRow}>
+                                <Text style={styles.valueLabel}>Valor a recaudar:</Text>
+                                <Text style={styles.valueAmount}>$ {formatNumber(Number(valueRealTotal))}</Text>
+                            </View>
+                        ) : null
+                    )}
+
 
                     <View style={styles.buttonRow}>
                         <PrimaryButton

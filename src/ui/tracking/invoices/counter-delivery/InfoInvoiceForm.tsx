@@ -1104,7 +1104,7 @@ export function InfoInvoiceForm({
     var value = '';
     switch (guide?.facturas[0]?.tipo) {
         case TypeInvoiceEnum.CONTADO_EFECTIVO:
-            value = 'Contra-entrega';
+            value = 'Contra entrega';
             break;
 
         case TypeInvoiceEnum.CREDITO:
@@ -1112,11 +1112,11 @@ export function InfoInvoiceForm({
             break;
 
         case TypeInvoiceEnum.ANTICIPO:
-            value = 'Anticipado';
+            value = 'Contado Anticipado';
             break;
 
         case TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO:
-            value = 'Aplicativo-meico';
+            value = 'Aplicativo meico';
             break;
     }
 

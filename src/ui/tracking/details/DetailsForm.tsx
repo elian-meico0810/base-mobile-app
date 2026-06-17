@@ -191,16 +191,9 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
 
     useEffect(() => {
         const fetchToken = async () => {
-            const savedToken = await SecureStore.getItemAsync('user_token');
-
-            if (!savedToken) return;
-
-            setToken(savedToken);
-
             const currentGuide = guide || initialGuide;
-
             if (currentGuide) {
-                await listReportPaymentByCOideGuide(savedToken, initialGuide);
+                await listReportPaymentByCOideGuide(token, initialGuide);
             }
         };
 

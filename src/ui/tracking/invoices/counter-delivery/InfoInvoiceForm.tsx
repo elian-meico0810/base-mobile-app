@@ -875,7 +875,6 @@ export function InfoInvoiceForm({
                             facturas: clienteEncontrado.facturas,
                             whatsapp: clienteEncontrado.whatsapp,
                             pedidos: clienteEncontrado.pedidos,
-                            razonSocial: clienteEncontrado.razonSocial,
                             tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
                             causalNoEntrega: clienteEncontrado.causalNoEntrega,
                         });

@@ -147,6 +147,7 @@ export function InfoInvoiceForm({
     const [uploadPhotoTwo, setUploadPhotoTwo] = useState(false);
     const [currentQRType, setCurrentQRType] = useState(qrType || undefined);
     const [currentQRData, setCurrentQRData] = useState(qrBase64 || undefined);
+    const buttonValueOTPRef = useRef(false);
     const orderId = initialGuide?.pedidos?.[0]?.id;
     const [qrInfo, setQrInfo] = useState<{
         type?: string;
@@ -590,11 +591,6 @@ export function InfoInvoiceForm({
 
     const handleSubmitData = async () => {
         try {
-
-            const existOtp = await listInfOTByDirection();
-            if (existOtp) {
-                return;
-            }
 
             setLoading(true);
             const location = await Location.getCurrentPositionAsync({
@@ -1224,6 +1220,10 @@ export function InfoInvoiceForm({
             setModalVisible(true);
         }
     };
+    
+    useEffect(() => {
+        buttonValueOTPRef.current = buttonValueOTP;
+    }, [buttonValueOTP]);
 
     useEffect(() => {
         if (buttonValueOTP || isSelectInvocies === 'true') return;
@@ -1231,23 +1231,16 @@ export function InfoInvoiceForm({
             ?.filter(pago => pago.estado === "APPROVED")
             .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0) || 0;
 
-        if (buttonValueOTP) return;
+        if (!detailsCounterDelivery) {
+            if (!detailsCounterDelivery) {
+                const executeLogic = async () => {
+                    await listInfOTByDirection();
+                };
 
-        const executeLogic = async () => {
-            if (totalApprovedPayments > 0) {
-                setModalVisible(false);
-                await listInfOTByDirection();
+                executeLogic();
             }
-        };
-        executeLogic();
 
-        const interval = setInterval(() => {
-            executeLogic();
-        }, 5000);
-
-        return () => {
-            clearInterval(interval);
-        };
+        }
 
     }, [paymentSuccessful, buttonValueOTP]);
 
@@ -1274,14 +1267,6 @@ export function InfoInvoiceForm({
                 setModalVisible(true);
                 return;
             }
-
-            // if (Number(totalRecauder) > 0) {
-            //     btnRef.current?.reset();
-            //     setModalTitle("¡Alerta!");
-            //     setModalMessage("El valor a recaudar debe ser 0 para continuar con la confirmación.");
-            //     setModalVisible(true);
-            //     return;
-            // }
 
             if (ressult) {
                 btnRef.current?.reset();
@@ -1783,7 +1768,7 @@ export function InfoInvoiceForm({
                             key="Enviar confirmación"
                             title="Enviar confirmación"
                             onPress={handleSubmitConfirmation}
-                            disabled={ressult}
+                            disabled={false}
                             width={328}
                             height={43}
                             buttonColor={ressult ? "#DDDFE8" : undefined}

@@ -345,6 +345,11 @@ export const ProductValidationSection = ({
         });
     };
 
+    const isPaymentType =
+        allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO ||
+        allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CONTADO_EFECTIVO;
+
+
     return (
         <View style={styles.mainContainer}>
             {(hasItemsToValidate && pendingDetailsFlat.length > 0) && (
@@ -463,13 +468,21 @@ export const ProductValidationSection = ({
                 <View style={styles.bottomBar}>
                     <View style={styles.progressRow}>
                         {pendingCount > 0 ? (
-                            <Text style={styles.pendingText}>
+                            <Text style={[
+                                styles.pendingText,
+                                { marginBottom: isPaymentType ? 2 : 10 }
+                            ]}>
                                 Te faltan{' '}
                                 <Text style={styles.pendingBold}>{pendingCount} productos</Text>
                                 {' '}por validar
                             </Text>
                         ) : (
-                            <Text style={styles.pendingText}>
+                            <Text
+                                style={[
+                                    styles.pendingText,
+                                    { marginBottom: isPaymentType ? 2 : 10 }
+                                ]}
+                            >
                                 Productos validados
                             </Text>
                         )}
@@ -490,8 +503,7 @@ export const ProductValidationSection = ({
                         </View>
                     </View>
 
-                    {(allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO ||
-                        allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CONTADO_EFECTIVO ? (
+                    {(isPaymentType ? (
                         <View style={styles.valueRow}>
                             <Text style={styles.valueLabel}>Valor a recaudar:</Text>
                             <Text style={styles.valueAmount}>$ {formatNumber(Number(valueRealTotal))}</Text>
@@ -510,9 +522,10 @@ export const ProductValidationSection = ({
                         />
                     </View>
                 </View>
-            )}
+            )
+            }
 
-        </View>
+        </View >
     );
 };
 // Estilos para el ValidPorductScreen
@@ -737,7 +750,6 @@ const styles = StyleSheet.create({
         fontWeight: '400',
         lineHeight: 14,
         color: '#141D32',
-        marginBottom: 2,
     },
     progressRow: {
         flexDirection: 'row',

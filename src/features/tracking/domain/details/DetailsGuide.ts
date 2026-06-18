@@ -36,6 +36,8 @@ export interface GuideDetails {
   fecha_apertura?: string | null;
   facturas: Factura[];
   pedidos?: Pedidos[];
+  tieneNoEntrega: boolean;
+  causalNoEntrega: string;
 }
 
 export interface RuteInitPorps {
@@ -294,7 +296,7 @@ export interface EvidenciaOTPItemOTP {
 
 export interface ReEntryDeliveryProps {
   id_pedido: number;
-  reprogrmacion: string;
+  reporgramacion: string;
 }
 
 export interface OrderGroup {

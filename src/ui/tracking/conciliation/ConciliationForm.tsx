@@ -68,7 +68,6 @@ export function ConciliationForm({
       );
       setData(res);
     } catch (e) {
-      console.log("Error conciliation:", e);
       setError(true);
     } finally {
       setLoading(false);
@@ -77,11 +76,9 @@ export function ConciliationForm({
 
   const handelClick = async () => {
     try {
-      console.log("Finalizar ruta")
       setStatusValue(StatusInvoice.CLOSE);
       await finshRoute();
     } catch (e) {
-      console.log("Error conciliation:", e);
       setError(true);
     } finally {
       setLoading(false);

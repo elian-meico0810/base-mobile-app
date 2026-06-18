@@ -2,15 +2,17 @@ import { TopErrorAlert } from '@/components/alerts/TopErrorAlert';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { ExitAppModal } from '@/components/generals/ExitAppModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
+import { LogoText } from '@/components/generals/LogoText';
 import { TokenExpiredModal } from '@/components/generals/TokenExpiredModal';
 import { PrimaryInputLogin } from '@/components/inputs/PrimaryInputLogin';
-import { ThemedView } from '@/components/themed-view';
 import { authRepositoryImpl } from '@/src/features/auth/infrastructure/login/authRepositoryImpl';
 import { ListAceptationGuide } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { detailsRepositoryImpl } from '@/src/features/tracking/infrastructure/details/detailsRepositoryImpl';
 import { decodeJWT } from '@/src/utils/jwt';
 import { heightCaldulate } from '@/src/utils/uitls';
 import NetInfo from '@react-native-community/netinfo';
+import Constants from 'expo-constants';
+import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from "react";
@@ -20,9 +22,9 @@ import {
   Keyboard,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View
 } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 
@@ -38,6 +40,8 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
   const [showErrorQRP, setShowErrorQRP] = useState(false);
   const [showErrorQRPMessage, setShowErrorQRPMessage] = useState("");
   const [exitModalVisible, setExitModalVisible] = useState(false);
+  const insets = useSafeAreaInsets();
+
   const isValid = guide.length >= 1;
   const router = useRouter();
 
@@ -119,11 +123,16 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
     validateToken();
   }, [tokenData, tokenEncode]);
 
+  const appVersion =
+    (Constants.expoConfig?.extra as Record<string, string> | undefined)?.VERSION_APP ||
+    (Constants.manifest?.extra as Record<string, string> | undefined)?.VERSION_APP ||
+    process.env.VERSION_APP;
+
   const handleSubmit = async () => {
     setErrorMessage("");
 
     if (!isValid) {
-      setErrorMessage("El número de guía debe tener al menos 1 dígitos.");
+      setErrorMessage("El número de guía debe tener al menos 1 dígito.");
       return;
     }
     try {
@@ -277,23 +286,41 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
   }, []);
 
   return (
-    <ThemedView style={styles.container}>
+    <SafeAreaView style={[
+      styles.container,
+      {
+        paddingLeft: insets.left,
+        paddingRight: insets.right,
+      }
+    ]}>
       <TokenExpiredModal visible={showModal} onClose={() => setShowModal(false)} />
       <ExitAppModal
         visible={exitModalVisible}
         onClose={() => setExitModalVisible(false)}
       />
-      <View style={styles.whitePanel}>
 
-        {/* Header arriba del todo */}
-        <View style={styles.headerContainer}>
-          <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-            <Text style={styles.backArrow}>‹</Text>
-          </TouchableOpacity>
-          <View style={styles.placeholder} />
-        </View>
+      <View style={[styles.backgroundFill, { width, height }]} pointerEvents="none">
+        <Image
+          source={require('@/assets/icons/Welcome.png')}
+          style={[styles.backgroundImage, { width, height: '100%' }]}
+          resizeMode="cover"
+        />
+      </View>
 
-        {/* Contenido separado */}
+      {[...Array(4)].map((_, i) => (
+        <View key={i} style={[styles.separator, { top: (i + 1) * (height / 5) - 1 }]} />
+      ))}
+
+      <View style={styles.logoContainer}>
+        <LogoText style={styles.logo} />
+        <Text style={styles.version}>Versión QA {String("2.2.0").replace(/"/g, '').trim()}</Text>
+      </View>
+
+      {/* Panel blanco con altura fija */}
+      <View style={[
+        styles.whitePanel,
+        { height: height - (heightValue ? 150 : 200) }
+      ]}>
         <View style={styles.content}>
           <View style={styles.topContent}>
             <Text style={styles.title}>Número de guía</Text>
@@ -318,7 +345,10 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
 
           <View style={[
             styles.buttonContainer,
-            { marginBottom: keyboardHeight > 0 ? keyboardHeight + 60 : 50 }
+            {
+              marginBottom: keyboardHeight > 0 ? keyboardHeight + 20 : 25,
+              paddingBottom: keyboardHeight > 0 ? 10 : 0
+            }
           ]}>
             <PrimaryButton
               title="Confirmar"
@@ -338,7 +368,8 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
         />
       )}
       {isLoading && <LoadingBlue />}
-    </ThemedView>
+    </SafeAreaView>
+
   );
 }
 
@@ -348,22 +379,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#F2F4F7',
   },
   backgroundFill: {
-    borderColor: '#F0F1F5',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#143881ff',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   backgroundImage: {
     zIndex: 1,
   },
   separator: {
     position: 'absolute',
-    height: 5,
-    transform: [{ rotate: '-15deg' }],
     zIndex: 2,
-  },
-  logo: {
-    zIndex: 10,
-    position: 'absolute',
-    top: 100,
   },
   whitePanel: {
     flex: 1,
@@ -431,5 +459,21 @@ const styles = StyleSheet.create({
   },
   placeholder: {
     width: 40,
+  },
+  logoContainer: {
+    position: 'absolute',
+    top: 100,
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  logo: {
+  },
+  version: {
+    fontFamily: "Rubik",
+    fontWeight: "700",
+    fontSize: 10,
+    textAlign: "center",
+    marginTop: 2,
+    color: '#FFFFFF',
   },
 });

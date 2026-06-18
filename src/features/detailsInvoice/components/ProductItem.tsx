@@ -96,7 +96,7 @@ export const ProductItem = ({
     const hasAutoValidated = useRef(false);
     const isAnimating = useRef(false);
     const swipeThreshold = width * 0.15;
-    const minSwipeDistance = 20;
+    const minSwipeDistance = 40;
     const itemIdString = item.id.toString();
 
     const buildImageUrl = (
@@ -105,7 +105,6 @@ export const ProductItem = ({
         code?: string
     ): string | null => {
         if (!baseUrl || !token || !code) return null;
-        // console.log("web: ", `${baseUrl}/${code}.webp${token}`);
         return `${baseUrl}/${code}.webp${token}`;
     };
 
@@ -114,7 +113,7 @@ export const ProductItem = ({
     const formattedImagUrl = imagUrl
         ? imagUrl.replace(/\s+/g, '')
         : null;
-    
+
     useEffect(() => {
         if (onDataProduct) {
             const deliveredEstimate = Math.max(Number(item.unidadesSolicitadas) - noveltySum, 0);
@@ -309,12 +308,15 @@ export const ProductItem = ({
     const panResponder = useRef(
         PanResponder.create({
             onStartShouldSetPanResponder: () => {
-                // No permitir gestos si ya hay una animación en curso
                 return !isAnimating.current;
             },
             onMoveShouldSetPanResponder: (_, gestureState) => {
                 if (isAnimating.current) return false;
-                return Math.abs(gestureState.dx) > Math.abs(gestureState.dy * 2);
+
+                return (
+                    Math.abs(gestureState.dx) > 20 &&
+                    Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 3
+                );
             },
             onPanResponderMove: (_, gestureState) => {
                 if (isAnimating.current) return;

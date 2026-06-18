@@ -10,7 +10,6 @@ import { TodayDeliveries } from '@/components/generals/TodayDeliveries';
 import { SearchInput } from '@/components/inputs/SearchInput';
 import { UploadPhotoItem } from '@/components/photo/uploadPhotoItem';
 import { GuideCardSkeleton } from '@/components/skeleton/GuideCardSkeleton';
-import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
 import { GuideState, StatusInvoice, StatusInvoiceID, TypeConPagoEnum, TypeDetailsEnum, TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import { ConsignmentData } from '@/src/features/detailsInvoice/components/ConsignmentData';
@@ -29,11 +28,13 @@ import {
     BackHandler,
     Dimensions,
     Image,
+    Keyboard,
     ScrollView, StyleSheet,
     Text,
     TouchableOpacity,
     View
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 
@@ -81,6 +82,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
     const [retryScan, setRetryScan] = useState(false);
     const btnRef = useRef<any>(null);
     const router = useRouter();
+    const insets = useSafeAreaInsets();
 
     const isValid = guide.length >= 5;
     const isSmallScreen = height <= 780;
@@ -114,7 +116,6 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
 
                 if (finalToken && Number(guide)) {
                     const response = await detailsRepositoryImpl.listGuide(Number(guide), finalToken);
-
                     if (response?.statusCode == 200) {
                         if (response?.data) {
                             const arrayData = Array.isArray(response.data) ? response.data : [response.data];
@@ -137,10 +138,6 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                             const hasInCourse = sortedData.every(
                                 item => (item as GuideDetails).estado?.toLowerCase() === StatusInvoice.CLOSE_TWO.toLowerCase()
                             );
-
-                            if (hasInCourse) {
-                                //await finshRoute();
-                            }
                             const responseData = await detailsRepositoryImpl.paymentsByGuide(
                                 {
                                     id_guia: String(guide),
@@ -209,7 +206,21 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
 
         fetchToken();
     }, []);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
 
+    useEffect(() => {
+        const keyboardWillShow = Keyboard.addListener('keyboardWillShow', (e) => {
+            setKeyboardHeight(e.endCoordinates.height);
+        });
+        const keyboardWillHide = Keyboard.addListener('keyboardWillHide', () => {
+            setKeyboardHeight(0);
+        });
+
+        return () => {
+            keyboardWillShow.remove();
+            keyboardWillHide.remove();
+        };
+    }, []);
 
     // Listener de AppState mejorado
     useEffect(() => {
@@ -374,9 +385,6 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
 
         return () => clearInterval(interval);
     }, [checkUbication]);
-
-
-
 
     const getStatusStyle = async () => {
         try {
@@ -613,7 +621,13 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
     };
 
     return (
-        <ThemedView style={styles.container}>
+        <SafeAreaView style={[
+            styles.container,
+            {
+                paddingLeft: insets.left,
+                paddingRight: insets.right,
+            }
+        ]}>
             {/* <NetworkStatus /> */}
 
             <View style={[styles.backgroundFill,]} >
@@ -758,8 +772,8 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                             placeholder="Buscar por cliente o código"
                         />
                         <ScrollView
-                            style={styles.guidesScroll}
-                            contentContainerStyle={{ paddingBottom: 20 }}
+                            style={[styles.guidesScroll]}
+                            contentContainerStyle={{ paddingBottom: 20 + insets.bottom }}
                         >
                             {((data.length === 0) || (waitingForPermission || !checkUbication)) ? (
                                 Array.from({ length: 3 }).map((_, i) => (
@@ -783,7 +797,6 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                                                 const isValid = await validateInvoices(invoices);
                                                 if (!isValid) return;
 
-                                                console.log('Ir a dirección');
                                                 if (!routeStarted) return;
                                                 router.push(
                                                     `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(item))}&numberGuide=${guide}&token=${encodeURIComponent(token ?? "")}`
@@ -801,7 +814,10 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                     </View>
 
                     {(!routeStarted && (statusValue == StatusInvoice.PENDING)) && (
-                        <View style={{ alignItems: 'center', marginBottom: isSmallScreen ? 0 : 30 }}>
+                        <View style={{
+                            alignItems: 'center',
+                            marginBottom: isSmallScreen ? (keyboardHeight > 0 ? keyboardHeight + 20 : 0) : (keyboardHeight > 0 ? keyboardHeight + 20 : 30)
+                        }}>
                             <PrimaryButtonDetails
                                 ref={btnRef}
                                 title="Comenzar ruta"
@@ -954,11 +970,12 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
             )}
             {loading && <LoadingBlue />}
 
-        </ThemedView>
+        </SafeAreaView>
     );
 }
 const styles = StyleSheet.create({
     container: {
+        flex: 1,
         position: 'relative',
         alignItems: 'center',
     },
@@ -999,7 +1016,12 @@ const styles = StyleSheet.create({
         tintColor: '#141D32',
     },
     backgroundFill: {
-        backgroundColor: '#164194',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 1,
     },
     backgroundImage: {
         zIndex: 1,
@@ -1011,7 +1033,7 @@ const styles = StyleSheet.create({
         zIndex: 2,
     },
     logo: {
-        zIndex: 10,
+        zIndex: 8,
         position: 'absolute',
         top: 100,
     },
@@ -1056,7 +1078,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     guidesScroll: {
-        maxHeight: 400,
         marginTop: 12,
     },
     noResultsContainer: {
@@ -1072,7 +1093,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         lineHeight: 19,
         textAlign: "center",
-        color: "#788095",
+        color: "#95788e",
         marginBottom: 8,
     },
     noResultsSubtitle: {

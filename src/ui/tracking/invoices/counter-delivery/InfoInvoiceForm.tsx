@@ -7,21 +7,19 @@ import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { ExecptionModalValidate } from '@/components/generals/ExecptionModalValidate';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
-import { TypePayment } from '@/components/generals/TypePayment';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { UploadPhotoOTP } from '@/components/photo/uploadPhotoOTP';
 import { OrderDetailSkeleton } from '@/components/skeleton/OrderDetailSkeleton ';
-import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
-import { OptionsRefusedEnum, StatusDelivery, TypeCaculateValueEnum, TypeConPagoEnum, TypeInvoiceEnum, TypeQr, TypeValueParameterEnum } from '@/src/constants/GuideStates';
+import { OptionsRefusedEnum, StatusDelivery, TypeCaculateValueEnum, TypeConPagoEnum, TypeInvoiceEnum, TypePaymentCounterDeliveryEnum, TypeQr, TypeValueParameterEnum, TypoPaymentEnum } from '@/src/constants/GuideStates';
 import { DeliveryStatusAction } from '@/src/features/tracking/components/checkbox/DeliveryStatusAction';
 import { NoDeliveryModal } from '@/src/features/tracking/components/checkbox/NoDeliveryModal';
 import { OptionsRefused } from '@/src/features/tracking/components/checkbox/OptionsRefused';
 import { ChangePhoneModal } from '@/src/features/tracking/components/screens/ChangePhoneModal';
 import { DetailsInvoiceQR } from '@/src/features/tracking/components/screens/DetailsInvoiceQR';
 import { DetailsPaymenTypeEfecty } from '@/src/features/tracking/components/screens/DetailsPaymenTypeEfecty';
-import { DetailsPaymenTypeOthers } from '@/src/features/tracking/components/screens/DetailsPaymenTypeOthers';
 import { InfoPayments } from '@/src/features/tracking/components/screens/InfoPayments';
+import { PaymentSelectionModal } from '@/src/features/tracking/components/screens/PaymentDescriptionModal';
 import { ViewQrModal } from '@/src/features/tracking/components/screens/ViewQrModal';
 import { Cause, Detail, Document, GuideDetails } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { CreateEntregaProps, DerliveryDocument, Invoice, TypeParameterValue } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
@@ -33,6 +31,7 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useRef, useState } from "react";
 import { BackHandler, Dimensions, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 const { width, height } = Dimensions.get('window');
 
 interface InfoInvoiceFormProps {
@@ -120,12 +119,14 @@ export function InfoInvoiceForm({
     const [typePayment, setTypePayment] = useState(false);
     const [typePaymentTypeEfecty, setTypePaymenTypeEfecty] = useState(false);
     const [typePaymentTypeOthers, setTypePaymenTypeOthers] = useState(false);
+    const [typePaymentAll, setTypePaymentAll] = useState(false);
     const [statusDOcument, setStatusDOcument] = useState(false);
     const [conceptDelivery, setConceptDelivery] = useState<DerliveryDocument | null>(null);
     const [validateException, setValidateException] = useState(false);
     const [paymentSuccessful, setPaymentSuccessful] = useState<Invoice | undefined>();
     const [typeCash, setTypeCash] = useState<TypeParameterValue[]>([]);
     const [valueParameter, setValueParameter] = useState<TypeParameterValue[]>([]);
+    const [valueParameterOTP, setValueParameterOTP] = useState<TypeParameterValue[]>([]);
     const [qrBase64, setQrBase64] = useState<string>('');
     const [qrType, setQrType] = useState<string>('');
     const [phone, setPhone] = useState("");
@@ -146,8 +147,13 @@ export function InfoInvoiceForm({
     const [uploadPhotoTwo, setUploadPhotoTwo] = useState(false);
     const [currentQRType, setCurrentQRType] = useState(qrType || undefined);
     const [currentQRData, setCurrentQRData] = useState(qrBase64 || undefined);
-
+    const buttonValueOTPRef = useRef(false);
     const orderId = initialGuide?.pedidos?.[0]?.id;
+    const [qrInfo, setQrInfo] = useState<{
+        type?: string;
+        data?: string;
+    }>({});
+    const insets = useSafeAreaInsets();
 
     useEffect(() => {
         const backAction = () => {
@@ -230,6 +236,7 @@ export function InfoInvoiceForm({
         getDataProduct();
         listTypeCash();
         listTypeParameterValue();
+        listTypeParameterValueOTP();
         // getSuccessOrderPayment();
         fetchGuide();
     }, [Number(initialGuide?.facturas[0]?.numeroFactura), token]);
@@ -263,6 +270,7 @@ export function InfoInvoiceForm({
             setLoading(false);
         }
     };
+
     const handleGenerateQRNotcondPago = async (type: string, qr?: string) => {
         setModalgenerateQR(true);
         setShowDetailInvoiceQR(false);
@@ -303,7 +311,7 @@ export function InfoInvoiceForm({
                     momento: date,
                     valorRegistrado: value,
                     tipoPago: "TIP_PAG_EFECTIVO",
-                    descripcion: "Transferencia",
+                    descripcion: "Efectivo",
                     pedidos: [String(initialGuide?.pedidos?.[0]?.codigo)],
                 }
             ], token);
@@ -384,11 +392,9 @@ export function InfoInvoiceForm({
         }
     };
 
-
     const listTypeParameterValue = async () => {
         try {
             setLoading(true);
-
 
             const response = await invoiceRepositoryImpl.typeParameterValue(TypeValueParameterEnum.MARGEN_TOLERANCIA, token);
             if (response?.statusCode === 200 && Array.isArray(response.data)) {
@@ -408,18 +414,38 @@ export function InfoInvoiceForm({
         }
     };
 
-    const handleSubmitOthers = async (value: number, observation?: string) => {
+    const listTypeParameterValueOTP = async () => {
+        try {
+            setLoading(true);
+
+            const response = await invoiceRepositoryImpl.typeParameterValue(TypeValueParameterEnum.MARGEN_TOLERANCIA_SEND_OTP, token);
+            if (response?.statusCode === 200 && Array.isArray(response.data)) {
+                setValueParameterOTP(response.data);
+            } else {
+                setValueParameterOTP([]);
+                setModalTitle("¡Alerta!");
+                setModalMessage(response?.message ?? "Ocurrió un error inesperado.");
+                setModalVisible(true);
+            }
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSubmitOthers = async (
+        payments: {
+            valor: number;
+            descripcion?: string;
+            tipo?: string;
+        }[]
+    ) => {
         try {
             setLoading(true);
             setRefreshingOnPress(true);
-            if (value <= 0) {
-                setModalTitle("¡Alerta!");
-                setModalMessage("El campo es requerido.");
-                setModalVisible(true);
-                return;
-            }
-
-            if (!observation) return;
 
             const now = new Date();
 
@@ -431,32 +457,48 @@ export function InfoInvoiceForm({
             const payload = token.split('.')[1];
             const decoded = JSON.parse(atob(payload));
 
+            const paymentPayload = payments.map((payment) => ({
+                usuario: decoded.transportador
+                    ? decoded.transportador
+                    : "N/A",
 
-            const response = await invoiceRepositoryImpl.createPaymentType([
-                {
-                    usuario: decoded.transportador ? decoded.transportador : "N/A",
-                    momento: date,
-                    valorRegistrado: value,
-                    tipoPago: "TIP_PAG_OTRO",
-                    descripcion: String(observation),
-                    pedidos: [String(initialGuide?.pedidos?.[0]?.codigo)],
-                }
-            ], token);
+                momento: date,
+
+                valorRegistrado: payment.valor,
+
+                tipoPago: payment.tipo === TypoPaymentEnum.EFECTY ? TypePaymentCounterDeliveryEnum.EFECTY : TypePaymentCounterDeliveryEnum.OTRO,
+
+                descripcion: String(payment.descripcion || ""),
+
+                pedidos: [
+                    String(initialGuide?.pedidos?.[0]?.codigo)
+                ],
+            }));
+
+            const response = await invoiceRepositoryImpl.createPaymentType(
+                paymentPayload,
+                token
+            );
 
             if (response?.statusCode === 200) {
                 onRefresh();
                 setModalTitle("¡Procesado!");
                 setModalMessage(`Registro(s) procesado exitosamente.`);
                 setModalVisible(true);
-
+                return;
             } else {
                 setModalTitle("¡Alerta!");
-                setModalMessage(response?.message ?? "Ocurrió un error inesperado 3.");
+                setModalMessage(
+                    response?.message ?? "Ocurrió un error inesperado."
+                );
                 setModalVisible(true);
+                return;
             }
         } catch (error: any) {
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 1.");
+            setModalMessage(
+                error?.data?.message ?? "Ocurrio un error inesperado."
+            );
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -465,8 +507,6 @@ export function InfoInvoiceForm({
 
 
     const condPago = guide?.facturas[0]?.condPago === TypeConPagoEnum.TAT;
-
-    // const condPagoFalse = guide?.facturasx0]?.condPago != TypeConPagoEnum.TAT;
 
     const handlSendWhatsApp = async () => {
         try {
@@ -500,7 +540,6 @@ export function InfoInvoiceForm({
             if (response?.statusCode === 200) {
                 setShowSuccessQRP(true);
                 setModalgenerateQR(false);
-
                 setTimeout(() => {
                     setShowPaymentPending(true);
                 }, 3000);
@@ -553,17 +592,6 @@ export function InfoInvoiceForm({
     const handleSubmitData = async () => {
         try {
 
-            // if (!deliveryStatus) {
-            //     setModalTitle("¡Alerta!");
-            //     setModalMessage("Debe especificar un estado de entrega.");
-            //     setModalVisible(true);
-            //     return;
-            // }
-            const existOtp = await listInfOTByDirection();
-            if (existOtp) {
-                return;
-            }
-
             setLoading(true);
             const location = await Location.getCurrentPositionAsync({
                 accuracy: Location.Accuracy.Highest,
@@ -607,7 +635,7 @@ export function InfoInvoiceForm({
             setValidateException(true);
             btnRef.current?.reset();
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 1.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -683,7 +711,7 @@ export function InfoInvoiceForm({
             setValidateException(true);
             btnRef.current?.reset();
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 2.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -719,7 +747,7 @@ export function InfoInvoiceForm({
             }
         } catch (error: any) {
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 3.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {
         }
@@ -756,7 +784,7 @@ export function InfoInvoiceForm({
             }
         } catch (error: any) {
             setModalTitle("¡Error!");
-            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado 5.");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -766,14 +794,12 @@ export function InfoInvoiceForm({
     const validateButton = () => {
         try {
             setShowDetailInvoiceQR(false);
-            setShowPayment(false);
             if (!routeStarted && !isSelectInvocies && !detailsCounterDelivery && !closeButton) {
                 setModalTitle("¡Alerta!");
                 setModalMessage("Debe indicar que ya llegó al lugar de la dirección para poder ejecutar esta acción.");
                 setModalVisible(true);
                 return false;
             }
-
             if (condPago && condPago) {
                 setTypeQRSendWhatsApp(true);
                 setModalgenerateQR(true);
@@ -785,10 +811,13 @@ export function InfoInvoiceForm({
                 setShowDetailInvoiceQR(false);
             }
 
+
+            setTypePaymentAll(true);
             return true;
+
         } catch (error) {
             setModalTitle("¡Error!");
-            setModalMessage("Ocurrio un error inesperado 6.");
+            setModalMessage("Ocurrio un error inesperado.");
             setModalVisible(true);
         } finally {
             setLoading(false);
@@ -845,7 +874,10 @@ export function InfoInvoiceForm({
                             estado: clienteEncontrado.estado,
                             facturas: clienteEncontrado.facturas,
                             whatsapp: clienteEncontrado.whatsapp,
-                            pedidos: clienteEncontrado.pedidos
+                            pedidos: clienteEncontrado.pedidos,
+                            razonSocial: clienteEncontrado.razonSocial,
+                            tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
+                            causalNoEntrega: clienteEncontrado.causalNoEntrega,
                         });
 
                     }
@@ -924,8 +956,6 @@ export function InfoInvoiceForm({
                     files: validBase64
                 };
                 const response = await detailsRepositoryImpl.reportNoveltyFileArray(payload, token);
-
-
                 if (response?.success) {
                     listDocumentQuery();
                     setModalTitle("¡Procesado!");
@@ -1079,7 +1109,7 @@ export function InfoInvoiceForm({
     var value = '';
     switch (guide?.facturas[0]?.tipo) {
         case TypeInvoiceEnum.CONTADO_EFECTIVO:
-            value = 'Contra-entrega';
+            value = 'Contra entrega';
             break;
 
         case TypeInvoiceEnum.CREDITO:
@@ -1087,11 +1117,11 @@ export function InfoInvoiceForm({
             break;
 
         case TypeInvoiceEnum.ANTICIPO:
-            value = 'Anticipado';
+            value = 'Contado Anticipado';
             break;
 
         case TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO:
-            value = 'Aplicativo-meico';
+            value = 'Aplicativo meico';
             break;
     }
 
@@ -1196,30 +1226,40 @@ export function InfoInvoiceForm({
     };
 
     useEffect(() => {
+        buttonValueOTPRef.current = buttonValueOTP;
+    }, [buttonValueOTP]);
+
+    useEffect(() => {
         if (buttonValueOTP || isSelectInvocies === 'true') return;
         const totalApprovedPayments = paymentSuccessful?.pagos
             ?.filter(pago => pago.estado === "APPROVED")
             .reduce((sum, pago) => sum + (Number(pago?.valorPagado) || 0), 0) || 0;
 
-        if (buttonValueOTP) return;
+        if (!detailsCounterDelivery) {
+            if (!detailsCounterDelivery) {
+                const executeLogic = async () => {
+                    await listInfOTByDirection();
+                };
 
-        const executeLogic = async () => {
-            if (totalApprovedPayments > 0) {
-                setModalVisible(false);
-                await listInfOTByDirection();
+                executeLogic();
             }
-        };
-        executeLogic();
 
-        const interval = setInterval(() => {
-            executeLogic();
-        }, 5000);
-
-        return () => {
-            clearInterval(interval);
-        };
+        }
 
     }, [paymentSuccessful, buttonValueOTP]);
+
+    const valueOTP = (valueParameterOTP ?? []).reduce((acc, item) => {
+        const value = Number(item.valor);
+        return !isNaN(value) ? acc + value : acc;
+    }, 0);
+    const calculatedValue = (detailsCounterDelivery || closeButton)
+        ? newTotalValue
+        : totalValueTwo || 0;
+
+    let ressult = false;
+    if (Number(totalOrderPayment) < Number(calculatedValue)) {
+        ressult = baseTotal > 0 && baseTotal > Number(valueOTP);
+    }
 
     const handleSubmitConfirmation = async () => {
         try {
@@ -1228,6 +1268,14 @@ export function InfoInvoiceForm({
                 btnRef.current?.reset();
                 setModalTitle("Cargando...");
                 setModalMessage("Los valores aún no están listos, espere un momento.");
+                setModalVisible(true);
+                return;
+            }
+
+            if (ressult) {
+                btnRef.current?.reset();
+                setModalTitle("¡Alerta!");
+                setModalMessage("El valor a recaudar debe ser 0 para continuar con la confirmación.");
                 setModalVisible(true);
                 return;
             }
@@ -1250,8 +1298,8 @@ export function InfoInvoiceForm({
                 {
                     idDireccion: Number(guide?.idDireccion),
                     numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
-                    // numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
-                    numeroDestino: "+573112187956",
+                    numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
+                    // numeroDestino: "+573112187956",
                     valorOriginal: String(totalValue),
                     valorPagado: String(totalOrderPayment),
                 },
@@ -1292,6 +1340,27 @@ export function InfoInvoiceForm({
             setModalVisible(true);
         }
     };
+
+    const validateButtonQR = () => {
+        try {
+            setShowPayment(false);
+            if (!routeStarted && !isSelectInvocies && !detailsCounterDelivery && !closeButton) {
+                setModalTitle("¡Alerta!");
+                setModalMessage("Debe indicar que ya llegó al lugar de la dirección para poder ejecutar esta acción.");
+                setModalVisible(true);
+                return false;
+            }
+            setShowDetailInvoiceQR(true);
+            return true;
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado 6.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    }
+
     useEffect(() => {
 
         const hasRejected = showPorductData?.some(pedido =>
@@ -1313,8 +1382,14 @@ export function InfoInvoiceForm({
     const isZero = discount === 0;
     const isValidateCondition = (detailsCounterDelivery || closeButton || isViewDetailsPorducts);
     return (
-        <ThemedView style={styles.container}>
-            {/* <NetworkStatus /> */}
+        <SafeAreaView style={[
+            styles.container,
+            {
+                paddingLeft: insets.left,
+                paddingRight: insets.right,
+            }
+        ]}>
+            {/*  {/* <NetworkStatus /> */}
 
             {/* Fondo gris */}
             <View style={styles.background} />
@@ -1449,16 +1524,16 @@ export function InfoInvoiceForm({
                                     <View
                                         style={[
                                             styles.statusContainer,
-                                            totalRecauder == 0 && { backgroundColor: '#DFF5E1' },
+                                            !ressult && { backgroundColor: '#DFF5E1' },
                                         ]}
                                     >
                                         <Text
                                             style={[
                                                 styles.status,
-                                                totalRecauder == 0 && { color: '#1F9144' },
+                                                !ressult && { color: '#1F9144' },
                                             ]}
                                         >
-                                            {totalRecauder == 0 ? 'Pago realizado' : 'Pendiente'}
+                                            {!ressult ? 'Pago realizado' : 'Pendiente'}
                                         </Text>
                                     </View>
                                 </View>
@@ -1521,26 +1596,53 @@ export function InfoInvoiceForm({
                                     </Text>
                                 </View>
 
-                                {(isValidateCondition) && (
-                                    totalRecauder != 0 ? (
-                                        <TouchableOpacity
-                                            style={styles.qrButton}
-                                            onPress={() => {
-                                                const isValidButton = validateButton();
-                                                if (!isValidButton) return;
-                                                setTypePayment(true);
-                                            }}
-                                        >
-                                            <View style={styles.qrButtonContent}>
-                                                <Text style={styles.qrButtonText}>Registrar pago</Text>
-                                            </View>
-                                        </TouchableOpacity>
+                                {isValidateCondition && (
+                                    totalRecauder !== 0 ? (
+                                        <>
+                                            <TouchableOpacity
+                                                style={styles.generateQrButton}
+                                                onPress={() => {
+                                                    const isValidButton = validateButtonQR();
+                                                    if (!isValidButton) return;
+                                                }}
+                                            >
+                                                <View style={styles.qrButtonContent}>
+                                                    <Image
+                                                        source={require("@/assets/icons/Others.png")}
+                                                        style={styles.storeIconQR}
+                                                    />
+
+                                                    <Text style={styles.qrButtonTextGenerate}>
+                                                        Generar QR
+                                                    </Text>
+                                                </View>
+                                            </TouchableOpacity>
+
+                                            {!condPago && (
+                                                <TouchableOpacity
+                                                    style={styles.qrButton}
+                                                    onPress={() => {
+                                                        const isValidButton = validateButton();
+                                                        if (!isValidButton) return;
+                                                        setTypePayment(true);
+                                                    }}
+                                                >
+                                                    <View style={styles.qrButtonContent}>
+                                                        <Text style={styles.qrButtonText}>
+                                                            Registrar pago
+                                                        </Text>
+                                                    </View>
+                                                </TouchableOpacity>
+                                            )}
+                                        </>
                                     ) : (
                                         <TouchableOpacity
                                             style={styles.qrButtonDetail}
-                                            onPress={() => { setShowPayment(true) }}
+                                            onPress={() => setShowPayment(true)}
                                         >
-                                            <Text style={styles.qrButtonText}>Detalle de pagos</Text>
+                                            <Text style={styles.qrButtonText}>
+                                                Detalle de pagos
+                                            </Text>
                                         </TouchableOpacity>
                                     )
                                 )}
@@ -1598,7 +1700,6 @@ export function InfoInvoiceForm({
                 )}
 
             </ScrollView>
-
             {guide?.estado === 'Pendiente' && (
                 <View style={[styles.redBackground, { height: heightValue ? 100 : 90 }]} />
             )}
@@ -1673,10 +1774,10 @@ export function InfoInvoiceForm({
                             disabled={false}
                             width={328}
                             height={43}
-                            buttonColor={undefined}
-                            buttonColorEnd={undefined}
-                            titleColor={undefined}
-                            circleColor={undefined}
+                            buttonColor={ressult ? "#DDDFE8" : undefined}
+                            buttonColorEnd={ressult ? "#DDDFE8" : undefined}
+                            titleColor={ressult ? "#FFFFFF" : undefined}
+                            circleColor={ressult ? "#788095" : undefined}
                         />
                     ) : (
                         <>
@@ -1761,7 +1862,10 @@ export function InfoInvoiceForm({
             {(showDetailInvoiceQR) && (
                 <DetailsInvoiceQR
                     data={guide}
-                    onClose={() => setShowDetailInvoiceQR(false)}
+                    onClose={() => {
+                        setShowDetailInvoiceQR(false);
+                        setShowDetailInvoiceQR(false);
+                    }}
                     onChangePhone={() => {
                         setShowDetailInvoiceQR(false);
                         setShowChangePhone(true);
@@ -1771,9 +1875,8 @@ export function InfoInvoiceForm({
                     onGenerateQR={condPago ? handleGenerateQR : handleGenerateQRNotcondPago}
                     onPressPayment={() => setRefreshingOnPress(true)}
                     onErrorPayment={() => setShowErrorQRP(true)}
-                    statusTypeQR={typeQRSendWhatsApp}
+                    statusTypeQR={false}
                     totalRecauder={totalRecauder}
-
                 />
             )}
 
@@ -1783,6 +1886,10 @@ export function InfoInvoiceForm({
                     onClose={() => {
                         setModalgenerateQR(false);
                         setCurrentQRData(undefined);
+                        setShowDetailInvoiceQR(false);
+                        setShowDetailInvoiceQR(false);
+                        setShowPayment(false);
+
                     }}
                     onChangePhone={() => {
                         setShowDetailInvoiceQR(false);
@@ -1791,7 +1898,7 @@ export function InfoInvoiceForm({
                     }}
                     width={width}
                     phone={phone}
-                    qrData={currentQRData}
+                    qrData={qrBase64}
                     qrType={qrType}
                     onChangeQRType={() => {
                         handleChangeQRType();
@@ -1933,35 +2040,6 @@ export function InfoInvoiceForm({
                 />
             )}
 
-            {(typePayment && !condPago && guide) && (
-                <TypePayment
-                    title="Registrar pago"
-                    subTitle="Seleccioná el método de pago del cliente."
-                    onClose={() => {
-                        setTypePayment(false);
-                        // setAlertButton(false);
-                        // setSuccessButton(false);
-                    }}
-                    width={width}
-                    onEfecty={() => {
-                        setTypePayment(false);
-                        setTypePaymenTypeEfecty(true);
-                    }}
-                    onOthers={() => {
-                        setTypePaymenTypeOthers(true);
-                        setTypePayment(false);
-                        setTypePaymenTypeEfecty(false);
-                    }}
-                    onQr={() => {
-                        setTypePayment(false);
-                        setTypePaymenTypeEfecty(false);
-                        setShowDetailInvoiceQR(true);
-                    }}
-                    guide={guide}
-                    typeCash={typeCash}
-                />
-            )}
-
             {typePaymentTypeEfecty && (
                 <DetailsPaymenTypeEfecty
                     data={guide}
@@ -1986,23 +2064,15 @@ export function InfoInvoiceForm({
                     toleranceMargin={valueParameter}
                 />
             )}
-            {typePaymentTypeOthers && (
-                <DetailsPaymenTypeOthers
+
+            {typePaymentAll && (
+                <PaymentSelectionModal
                     data={guide}
-                    onClose={() => setTypePaymenTypeOthers(false)}
-                    onChangePhone={() => {
-                        setTypePaymenTypeEfecty(false);
-                        setShowChangePhone(true);
-                    }}
-                    width={width}
-                    phone={phone}
-                    onGenerateQR={handleGenerateQR}
-                    onPressPayment={(value, observation) => {
-                        handleSubmitOthers(Number(value), observation)
-                    }}
-                    onErrorPayment={() => setShowErrorQRP(true)}
-                    statusTypeQR={typeQRSendWhatsApp}
                     totalRecauder={totalRecauder}
+                    onClose={() => setTypePaymentAll(false)}
+                    onPressPayment={(payments) => {
+                        handleSubmitOthers(payments);
+                    }}
                     toleranceMargin={valueParameter}
 
                 />
@@ -2013,7 +2083,7 @@ export function InfoInvoiceForm({
                     onClose={() => setUploadPhotoTwo(false)}
                     onPick={(data) => {
                         const newPhoto: EvidencePhoto = {
-                            id: Date.now().toString(), // Generar un ID único
+                            id: Date.now().toString(),
                             uri: data.uri,
                             base64: data.base64
                         };
@@ -2030,7 +2100,7 @@ export function InfoInvoiceForm({
                 />
             )}
             {loading && <LoadingBlue />}
-        </ThemedView>
+        </SafeAreaView>
     );
 }
 
@@ -2060,8 +2130,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
-        paddingTop: 35,
-        paddingBottom: 5,
+        paddingTop: 10,
         backgroundColor: '#F9F9FA',
     },
     backButton: {
@@ -2310,6 +2379,27 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
         flexWrap: 'wrap',
         flexShrink: 1,
+    },
+    qrButtonTextGenerate: {
+        fontFamily: 'Rubik',
+        fontWeight: '700',
+        fontSize: 12,
+        color: '#1F9144',
+        textAlign: 'center',
+    },
+    generateQrButton: {
+        height: 32,
+        backgroundColor: '#EAF7ED',
+        borderRadius: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 12,
+    },
+    storeIconQR: {
+        width: 20,
+        height: 20,
+        tintColor: '#1F9144',
+        marginRight: 6,
     },
 });
 

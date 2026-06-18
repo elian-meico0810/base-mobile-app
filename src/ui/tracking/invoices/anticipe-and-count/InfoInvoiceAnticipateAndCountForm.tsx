@@ -426,6 +426,8 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
                             estado: clienteEncontrado.estado,
                             facturas: clienteEncontrado.facturas,
                             razonSocial: clienteEncontrado.razonSocial,
+                            tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
+                            causalNoEntrega: clienteEncontrado.causalNoEntrega,
                         });
 
                     }
@@ -608,7 +610,7 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
     var value = '';
     switch (guide?.facturas[0]?.tipo) {
         case TypeInvoiceEnum.CONTADO_EFECTIVO:
-            value = 'Contra-entrega';
+            value = 'Contra entrega';
             break;
 
         case TypeInvoiceEnum.CREDITO:
@@ -616,10 +618,11 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
             break;
 
         case TypeInvoiceEnum.ANTICIPO:
-            value = 'Anticipado';
+            value = 'Contado Anticipado';
             break;
+
         case TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO:
-            value = 'Aplicativo-meico';
+            value = 'Aplicativo meico';
             break;
     }
 

@@ -139,10 +139,21 @@ export enum TypeStatusEnum {
     EST_PEDIDO_ACEPT = "EST_PEDIDO_ACEPT"
 }
 
+    
+export enum TypoPaymentEnum {
+    EFECTY = "EFECTY",
+    OTHERS = "OTHERS"
+}
+
+
+export enum TypePaymentCounterDeliveryEnum {
+    EFECTY = "TIP_PAG_EFECTIVO",
+    OTRO = "TIP_PAG_OTRO"
+}
 
 export enum TypeValueParameterEnum {
     TEXT_ODER = "TEXT_ODER",
     TEXT_NOVELTY_ODER = "TEXT_NOVELTY_ODER",
-    MARGEN_TOLERANCIA = "MARGEN_TOLERANCIA"
-
+    MARGEN_TOLERANCIA = "MARGEN_TOLERANCIA",
+    MARGEN_TOLERANCIA_SEND_OTP = "MARGEN_TOLERANCIA_SEND_OTP"
 }

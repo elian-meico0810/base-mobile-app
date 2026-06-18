@@ -99,7 +99,6 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
     const handleSubmit = async () => {
         try {
-            console.log("entor aca: ");
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");

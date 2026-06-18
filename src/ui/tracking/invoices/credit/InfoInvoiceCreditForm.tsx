@@ -10,7 +10,6 @@ import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { UploadPhotoOTP } from '@/components/photo/uploadPhotoOTP';
 import { OrderDetailSkeleton } from '@/components/skeleton/OrderDetailSkeleton ';
-import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
 import { OptionsRefusedEnum, StatusDelivery, TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import { DeliveryStatus } from '@/src/features/tracking/components/checkbox/DeliveryStatus';
@@ -27,6 +26,7 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useRef, useState } from "react";
 import { BackHandler, Dimensions, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 const { width, height } = Dimensions.get('window');
 
 interface InfoInvoiceCreditFormProps {
@@ -124,7 +124,8 @@ export function InfoInvoiceCreditForm({
     const [highlightText, setHighlightText] = useState("");
     const [multiplePhotosTwo, setMultiplePhotosTwo] = useState<EvidencePhoto[]>([]);
     const orderId = initialGuide?.pedidos?.[0]?.id;
-
+    const insets = useSafeAreaInsets();
+    const buttonValueOTPRef = useRef(false);
     const closeButton = routeStarted;
 
     useEffect(() => {
@@ -153,7 +154,9 @@ export function InfoInvoiceCreditForm({
 
     }, []);
 
-
+    useEffect(() => {
+        buttonValueOTPRef.current = buttonValueOTP;
+    }, [buttonValueOTP]);
 
     const handleGoBack = async () => {
         // router.back();
@@ -222,11 +225,6 @@ export function InfoInvoiceCreditForm({
 
     const handleSubmitData = async () => {
         try {
-
-            const existOtp = await listInfOTByDirection();
-            if (existOtp) {
-                return;
-            }
 
             setLoading(true);
             const location = await Location.getCurrentPositionAsync({
@@ -370,7 +368,10 @@ export function InfoInvoiceCreditForm({
                             facturas: clienteEncontrado.facturas,
                             razonSocial: clienteEncontrado.razonSocial,
                             whatsapp: clienteEncontrado.whatsapp,
-                            pedidos: clienteEncontrado.pedidos
+                            pedidos: clienteEncontrado.pedidos,
+                            razonSocial: clienteEncontrado.razonSocial,
+                            tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
+                            causalNoEntrega: clienteEncontrado.causalNoEntrega,
                         });
                     }
                 }
@@ -540,27 +541,27 @@ export function InfoInvoiceCreditForm({
     };
 
     useEffect(() => {
-        if (buttonValueOTP || isSelectInvocies === 'true') return;
+        if (buttonValueOTP) {
+            return;
+        }
 
-        const executeLogic = async () => {
-            setModalVisible(false);
-            await listInfOTByDirection();
-        };
-        executeLogic();
+        if (isSelectInvocies === 'true') {
+            return;
+        }
 
-        const interval = setInterval(() => {
+        if (!detailsCounterDelivery) {
+            const executeLogic = async () => {
+                await listInfOTByDirection();
+            };
+
             executeLogic();
-        }, 5000);
+        }
 
-        return () => {
-            clearInterval(interval);
-        };
-
-    }, [paymentSuccessful, buttonValueOTP]);
+    }, [buttonValueOTP, isSelectInvocies, detailsCounterDelivery]);
 
     const listInfOTByDirection = async () => {
         try {
-            if (buttonValueOTP) return;
+            if (buttonValueOTPRef.current) return;
 
             const response = await detailsRepositoryImpl.listInfOTP(String(guide?.idDireccion), String(initialGuide?.facturas[0]?.numeroFactura), token);
             if (
@@ -571,6 +572,7 @@ export function InfoInvoiceCreditForm({
             ) {
                 if (response.data.expira_en && response.data.momento_envio && guide) {
                     setButtonValueOTP(true);
+
                     router.push({
                         pathname: '/views/IndexDetailsInvoice',
                         params: {
@@ -628,7 +630,7 @@ export function InfoInvoiceCreditForm({
                 const responseQuery = await detailsRepositoryImpl.reEntryDelivery(
                     {
                         id_pedido: Number(orderId),
-                        reporgrmacion: String(selectedOption)
+                        reporgramacion: String(selectedOption)
                     },
                     token
                 );
@@ -672,8 +674,8 @@ export function InfoInvoiceCreditForm({
                 {
                     idDireccion: Number(guide?.idDireccion),
                     numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
-                    // numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
-                    numeroDestino: "+573112187956",
+                    numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
+                    // numeroDestino: "+573112187956",
                     valorOriginal: '0',
                     valorPagado: '0',
                 },
@@ -686,7 +688,7 @@ export function InfoInvoiceCreditForm({
                     const responseQuery = await detailsRepositoryImpl.reEntryDelivery(
                         {
                             id_pedido: Number(orderId),
-                            reporgrmacion: String(selectedOption)
+                            reporgramacion: String(selectedOption)
                         },
                         token
                     );
@@ -748,7 +750,7 @@ export function InfoInvoiceCreditForm({
     var value = '';
     switch (guide?.facturas[0]?.tipo) {
         case TypeInvoiceEnum.CONTADO_EFECTIVO:
-            value = 'Contra-entrega';
+            value = 'Contra entrega';
             break;
 
         case TypeInvoiceEnum.CREDITO:
@@ -756,16 +758,22 @@ export function InfoInvoiceCreditForm({
             break;
 
         case TypeInvoiceEnum.ANTICIPO:
-            value = 'Anticipado';
+            value = 'Contado Anticipado';
             break;
 
         case TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO:
-            value = 'Aplicativo-meico';
+            value = 'Aplicativo meico';
             break;
     }
 
     return (
-        <ThemedView style={styles.container}>
+        <SafeAreaView style={[
+            styles.container,
+            {
+                paddingLeft: insets.left,
+                paddingRight: insets.right,
+            }
+        ]}>
             {/* <NetworkStatus /> */}
 
             {/* Fondo gris */}
@@ -1226,7 +1234,7 @@ export function InfoInvoiceCreditForm({
                 />
             )}
             {loading && <LoadingBlue />}
-        </ThemedView>
+        </SafeAreaView>
     );
 }
 
@@ -1256,8 +1264,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
-        paddingTop: 35,
-        paddingBottom: 5,
+        paddingTop: 10,
         backgroundColor: '#F9F9FA',
     },
     backButton: {
@@ -1353,6 +1360,13 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#788095',
         marginBottom: 2,
+    },
+    labelTwoRz: {
+        fontFamily: 'Rubik',
+        fontWeight: '400',
+        fontSize: 12,
+        color: '#788095',
+        marginTop: 4,
     },
     value: {
         fontFamily: 'Rubik',

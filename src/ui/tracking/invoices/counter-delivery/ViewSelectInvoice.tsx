@@ -4,7 +4,6 @@ import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { OrderDetailSkeletonSelect } from '@/components/skeleton/OrderDetailSkeletonSelect';
-import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
 import { TipeCodeOTP, TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import InvoicesList from '@/src/features/tracking/components/tabs/InvoicesList';
@@ -18,6 +17,7 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useRef, useState } from "react";
 import { BackHandler, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 const { width, height } = Dimensions.get('window');
 
 interface ViewSelectInvoiceProps {
@@ -72,6 +72,7 @@ export function ViewSelectInvoice({
     const btnRef = useRef<any>(null);
     const router = useRouter();
     const heightValue = heightCaldulate();
+    const insets = useSafeAreaInsets();
 
     useEffect(() => {
         const backAction = () => {
@@ -193,6 +194,8 @@ export function ViewSelectInvoice({
                         pedidos: clienteEncontrado.pedidos,
                         whatsapp: clienteEncontrado.whatsapp,
                         razonSocial: clienteEncontrado.razonSocial,
+                        tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
+                        causalNoEntrega: clienteEncontrado.causalNoEntrega,
                     });
                     listDocumentQuery(clienteEncontrado);
                     listInfOTByDirection({
@@ -209,6 +212,8 @@ export function ViewSelectInvoice({
                         pedidos: clienteEncontrado.pedidos,
                         whatsapp: clienteEncontrado.whatsapp,
                         razonSocial: clienteEncontrado.razonSocial,
+                        tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
+                        causalNoEntrega: clienteEncontrado.causalNoEntrega,
                     });
                     listInfOTPFileByDirection({
                         idDireccion: clienteEncontrado.idDireccion,
@@ -224,7 +229,9 @@ export function ViewSelectInvoice({
                         pedidos: clienteEncontrado.pedidos,
                         whatsapp: clienteEncontrado.whatsapp,
                         razonSocial: clienteEncontrado.razonSocial,
-                    })
+                        tieneNoEntrega: clienteEncontrado.tieneNoEntrega,
+                        causalNoEntrega: clienteEncontrado.causalNoEntrega,
+                    });
 
                 }
             }
@@ -551,8 +558,14 @@ export function ViewSelectInvoice({
             factura.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO
     );
     return (
-        <ThemedView style={styles.container}>
-            {/* <NetworkStatus /> */}
+        <SafeAreaView style={[
+            styles.container,
+            {
+                paddingLeft: insets.left,
+                paddingRight: insets.right,
+            }
+        ]}>
+             {/* <NetworkStatus /> */}
 
             {/* Fondo gris */}
             <View style={styles.background} />
@@ -728,7 +741,7 @@ export function ViewSelectInvoice({
 
 
             {loading && <LoadingBlue />}
-        </ThemedView>
+        </SafeAreaView>
     );
 }
 
@@ -750,8 +763,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
-        paddingTop: 35,
-        paddingBottom: 5,
+        paddingTop: 10,
         backgroundColor: '#F9F9FA',
     },
     backButton: {

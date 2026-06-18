@@ -38,11 +38,9 @@ export const processProductData = (
     
     if (existingIndex !== -1) {
       // Si existe, actualizar el valor (reemplazar el viejo con el nuevo)
-      console.log(`Actualizando id ${id}: viejo valor ${dataArray[existingIndex].tatolValue}, nuevo valor ${value}`);
       dataArray[existingIndex].tatolValue = value;
     } else {
       // Si no existe, agregar nuevo elemento
-      console.log(`Agregando nuevo id ${id} con valor ${value}`);
       dataArray.push({
         id: id,
         tatolValue: value

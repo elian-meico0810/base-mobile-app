@@ -105,6 +105,8 @@ export function DetailsPaymenTypeEfecty({
         try {
             if (isValidValue) {
                 onPressPayment?.(Number(valueSet));
+            }
+            if (isValidCashValue) {
                 onClose?.();
             }
         } catch (error: any) {

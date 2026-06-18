@@ -1,4 +1,3 @@
-import React from "react";
 import { StyleSheet, TextInput, TextInputProps } from "react-native";
 
 interface PrimaryInputProps extends TextInputProps {
@@ -23,7 +22,7 @@ export function PrimaryInput({ value, onChangeText, placeholder, error, ...rest 
       style={[styles.input, error && styles.inputError]}
       placeholderTextColor="#A0A0A0"
       keyboardType="numeric"
-      maxLength={10} // opcional
+      maxLength={10} 
       {...rest}
     />
   );
@@ -32,15 +31,25 @@ export function PrimaryInput({ value, onChangeText, placeholder, error, ...rest 
 const styles = StyleSheet.create({
   input: {
     width: 328,
-    height: 43,
+    height: 44,
+    justifyContent: 'space-between',
+
+    paddingTop: 10,
+    paddingRight: 16,
+    paddingBottom: 10,
+    paddingLeft: 16,
+
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#D1D3D8',
-    borderRadius: 10,
     paddingHorizontal: 12,
     backgroundColor: '#fff',
     alignSelf: 'center',
+
     fontSize: 14,
+    color: '#141D32',
   },
+
   inputError: {
     borderColor: 'red',
   },

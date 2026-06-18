@@ -122,7 +122,6 @@ export function ProductForm({
 
     const handleSubmit = async () => {
         try {
-            console.log("entor aca: ");
         } catch (error) {
             setModalTitle("¡Error!");
             setModalMessage("Ocurrio un error inesperado.");

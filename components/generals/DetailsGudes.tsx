@@ -46,7 +46,7 @@ export const DetailsGudes = ({ style, guide, onExit, date, routeStarted, statusN
                 <View
                     style={[
                         styles.statusContainer,
-                       ( (statusName != StatusInvoice.PENDING) &&( routeStarted)) && { backgroundColor: '#DFF5E1' }
+                        ((statusName != StatusInvoice.PENDING) && (routeStarted)) && { backgroundColor: '#DFF5E1' }
                     ]}
                 >
                     <Text
@@ -78,6 +78,7 @@ const styles = StyleSheet.create({
     revertContainer: {
         flexDirection: 'row',
         alignItems: 'center',
+        flex: 1,
     },
     revertText: {
         fontFamily: 'Rubik',

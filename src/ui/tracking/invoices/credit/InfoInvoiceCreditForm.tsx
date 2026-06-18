@@ -629,7 +629,7 @@ export function InfoInvoiceCreditForm({
                 const responseQuery = await detailsRepositoryImpl.reEntryDelivery(
                     {
                         id_pedido: Number(orderId),
-                        reporgrmacion: String(selectedOption)
+                        reporgramacion: String(selectedOption)
                     },
                     token
                 );
@@ -687,7 +687,7 @@ export function InfoInvoiceCreditForm({
                     const responseQuery = await detailsRepositoryImpl.reEntryDelivery(
                         {
                             id_pedido: Number(orderId),
-                            reporgrmacion: String(selectedOption)
+                            reporgramacion: String(selectedOption)
                         },
                         token
                     );

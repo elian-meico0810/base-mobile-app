@@ -296,7 +296,7 @@ export interface EvidenciaOTPItemOTP {
 
 export interface ReEntryDeliveryProps {
   id_pedido: number;
-  reporgrmacion: string;
+  reporgramacion: string;
 }
 
 export interface Modulo {

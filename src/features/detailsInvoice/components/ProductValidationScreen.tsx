@@ -490,12 +490,13 @@ export const ProductValidationSection = ({
                         </View>
                     </View>
 
-                    {(allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CONTADO_EFECTIVO ? (
-                            <View style={styles.valueRow}>
-                                <Text style={styles.valueLabel}>Valor a recaudar:</Text>
-                                <Text style={styles.valueAmount}>$ {formatNumber(Number(valueRealTotal))}</Text>
-                            </View>
-                        ) : null
+                    {(allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO ||
+                        allProducts?.[0]?.condicionPago?.codigo === TypeInvoiceEnum.CONTADO_EFECTIVO ? (
+                        <View style={styles.valueRow}>
+                            <Text style={styles.valueLabel}>Valor a recaudar:</Text>
+                            <Text style={styles.valueAmount}>$ {formatNumber(Number(valueRealTotal))}</Text>
+                        </View>
+                    ) : null
                     )}
 
 

@@ -773,7 +773,7 @@ export function InfoInvoiceCreditForm({
                 paddingRight: insets.right,
             }
         ]}>
-             {/* <NetworkStatus /> */}
+            {/* <NetworkStatus /> */}
 
             {/* Fondo gris */}
             <View style={styles.background} />
@@ -835,6 +835,7 @@ export function InfoInvoiceCreditForm({
                                         <Text style={styles.value}>
                                             {toUpperCase(guide?.nombreCliente)}
                                         </Text>
+                                        <Text style={styles.labelTwoRz}>{toUpperCase(guide?.razonSocial)}</Text>
                                     </View>
                                 </View>
 
@@ -1357,6 +1358,13 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         fontSize: 14,
         color: '#788095',
+    },
+    labelTwoRz: {
+        fontFamily: 'Rubik',
+        fontWeight: '400',
+        fontSize: 12,
+        color: '#788095',
+        marginTop: 4,
     },
     value: {
         fontFamily: 'Rubik',

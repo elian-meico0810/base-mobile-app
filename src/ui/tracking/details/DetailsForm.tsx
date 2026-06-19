@@ -513,6 +513,12 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
         )
     );
 
+    const hasAtLeastContadEfec = data.some((direccion) =>
+        direccion.facturas?.some(
+            (factura) => factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO
+        )
+    );
+
     const consignmentSubmit = async () => {
         try {
             setShowSuccess(true);
@@ -681,7 +687,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                                 </>
                             )}
 
-                            {routeCompleted && statusValue !== StatusInvoice.CLOSE && (
+                            {routeCompleted && hasAtLeastContadEfec && statusValue !== StatusInvoice.CLOSE && (
                                 <ScanQRCard onScan={() => setShowScanner(true)} />
                             )}
 

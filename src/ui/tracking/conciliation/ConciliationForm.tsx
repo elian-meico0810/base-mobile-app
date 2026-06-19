@@ -206,11 +206,8 @@ export function ConciliationForm({
             onPress={() => {
               router.push({
                 pathname: '/views/consignaciones',
-                params: { codigoGuia: guide }
+                params: { codigoGuia: guide, token: token }
               })
-              // router.push(
-              //   `/views/consignaciones?guide=${guide}&token=${encodeURIComponent(token ?? "")}`,
-              // );
             }}
           >
             <View style={styles.cardRowContent}>

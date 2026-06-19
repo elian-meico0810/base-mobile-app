@@ -692,7 +692,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                             )}
 
                             {/* Si estado es CLOSE → Mostrar botón Cuadre de ruta */}
-                            {statusValue === StatusInvoice.CLOSE && (
+                            {hasAtLeastContadEfec && statusValue === StatusInvoice.CLOSE && (
                                 <TouchableOpacity
                                     style={styles.cardConsignment}
                                     onPress={() => {

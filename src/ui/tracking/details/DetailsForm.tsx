@@ -771,7 +771,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                     {(!routeStarted && (statusValue == StatusInvoice.PENDING)) && (
                         <View style={{
                             alignItems: 'center',
-                            marginBottom: isSmallScreen ? (keyboardHeight > 0 ? keyboardHeight + 20 : 0) : (keyboardHeight > 0 ? keyboardHeight + 20 : 30)
+                            marginBottom: isSmallScreen ? (keyboardHeight > 0 ? keyboardHeight + 20 : 0) : (keyboardHeight > 0 ? keyboardHeight + 20 : 45)
                         }}>
                             <PrimaryButtonDetails
                                 ref={btnRef}

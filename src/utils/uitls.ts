@@ -106,7 +106,7 @@ export function capitalizeFirst(text?: string) {
 }
 
 
-export function heightCaldulate(heightValue = 853.3333333333334) {
+export const heightCaldulate = (heightValue: number = 853.33) => {
     const { width, height } = Dimensions.get('window');
     return height < heightValue;
 }

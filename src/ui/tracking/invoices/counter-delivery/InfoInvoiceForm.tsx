@@ -1523,15 +1523,14 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                     </Text>
                                 </View>
 
-                                {(isValidateCondition) && (
-                                    totalRecauder != 0 ? (
+                               {isValidateCondition && (
+                                    totalRecauder !== 0 ? (
                                         <>
                                             <TouchableOpacity
                                                 style={styles.generateQrButton}
                                                 onPress={() => {
                                                     const isValidButton = validateButtonQR();
                                                     if (!isValidButton) return;
-
                                                 }}
                                             >
                                                 <View style={styles.qrButtonContent}>
@@ -1546,26 +1545,31 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                                 </View>
                                             </TouchableOpacity>
 
-                                            <TouchableOpacity
-                                                style={styles.qrButton}
-                                                onPress={() => {
-                                                    const isValidButton = validateButton();
-                                                    if (!isValidButton) return;
-                                                    setTypePayment(true);
-                                                }}
-                                            >
-                                                <View style={styles.qrButtonContent}>
-                                                    <Text style={styles.qrButtonText}>Registrar pago</Text>
-                                                </View>
-                                            </TouchableOpacity>
+                                            {!condPago && (
+                                                <TouchableOpacity
+                                                    style={styles.qrButton}
+                                                    onPress={() => {
+                                                        const isValidButton = validateButton();
+                                                        if (!isValidButton) return;
+                                                        setTypePayment(true);
+                                                    }}
+                                                >
+                                                    <View style={styles.qrButtonContent}>
+                                                        <Text style={styles.qrButtonText}>
+                                                            Registrar pago
+                                                        </Text>
+                                                    </View>
+                                                </TouchableOpacity>
+                                            )}
                                         </>
-
                                     ) : (
                                         <TouchableOpacity
                                             style={styles.qrButtonDetail}
-                                            onPress={() => { setShowPayment(true) }}
+                                            onPress={() => setShowPayment(true)}
                                         >
-                                            <Text style={styles.qrButtonText}>Detalle de pagos</Text>
+                                            <Text style={styles.qrButtonText}>
+                                                Detalle de pagos
+                                            </Text>
                                         </TouchableOpacity>
                                     )
                                 )}

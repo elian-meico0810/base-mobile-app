@@ -28,11 +28,12 @@ interface ProductItemProps {
     id?: number;
     testToken?: string;
     testUrl?: string;
-    onItemData?: (data: Detail | null) => void; 
+    onItemData?: (data: Detail | null) => void;
     refreshing?: boolean;
     onRefreshing?: () => void;
-    onDataProduct?: (id: number, total: number, unidadesEntregadas?: number | null) => void; 
+    onDataProduct?: (id: number, total: number, unidadesEntregadas?: number | null) => void;
     porcentajeDFR?: number;
+    notDetails?: string;
 }
 
 export const ProductItem = ({
@@ -49,7 +50,8 @@ export const ProductItem = ({
     refreshing,
     onRefreshing,
     onDataProduct,
-    porcentajeDFR
+    porcentajeDFR,
+    notDetails
 }: ProductItemProps) => {
     const isValidated = item?.estado?.codigo === 'EST_DET_VALIDADO';
     const deliveredUnits = Number(item?.unidadesEntregadas ?? 0);
@@ -94,7 +96,7 @@ export const ProductItem = ({
     const hasAutoValidated = useRef(false);
     const isAnimating = useRef(false);
     const swipeThreshold = width * 0.15;
-    const minSwipeDistance = 20;
+    const minSwipeDistance = 40;
     const itemIdString = item.id.toString();
 
     const buildImageUrl = (
@@ -111,7 +113,7 @@ export const ProductItem = ({
     const formattedImagUrl = imagUrl
         ? imagUrl.replace(/\s+/g, '')
         : null;
-    
+
     useEffect(() => {
         if (onDataProduct) {
             const deliveredEstimate = Math.max(Number(item.unidadesSolicitadas) - noveltySum, 0);
@@ -306,12 +308,15 @@ export const ProductItem = ({
     const panResponder = useRef(
         PanResponder.create({
             onStartShouldSetPanResponder: () => {
-                // No permitir gestos si ya hay una animación en curso
                 return !isAnimating.current;
             },
             onMoveShouldSetPanResponder: (_, gestureState) => {
                 if (isAnimating.current) return false;
-                return Math.abs(gestureState.dx) > Math.abs(gestureState.dy * 2);
+
+                return (
+                    Math.abs(gestureState.dx) > 20 &&
+                    Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 3
+                );
             },
             onPanResponderMove: (_, gestureState) => {
                 if (isAnimating.current) return;
@@ -467,11 +472,11 @@ export const ProductItem = ({
                                     style={styles.productImage}
                                     resizeMode="cover"
                                 />
-                                {(statusIcon === 'success' && item.estado?.codigo === 'EST_DET_VALIDADO')? (
+                                {(statusIcon === 'success' && item.estado?.codigo === 'EST_DET_VALIDADO') ? (
                                     <View style={styles.statusDot}>
                                         <MaterialIcons name="check" size={9} color="#FFFFFF" />
                                     </View>
-                                ) :( statusIcon === 'error'&& item.estado?.codigo === 'EST_DET_VALIDADO') ? (
+                                ) : (statusIcon === 'error' && item.estado?.codigo === 'EST_DET_VALIDADO') ? (
                                     <View style={styles.errorDot}>
                                         <MaterialIcons name="close" size={9} color="#FFFFFF" />
                                     </View>
@@ -483,11 +488,11 @@ export const ProductItem = ({
                             </View>
                         ) : (
                             <View style={styles.imagePlaceholder}>
-                                   {(statusIcon === 'success' && item.estado?.codigo === 'EST_DET_VALIDADO')? (
+                                {(statusIcon === 'success' && item.estado?.codigo === 'EST_DET_VALIDADO') ? (
                                     <View style={styles.statusDot}>
                                         <MaterialIcons name="check" size={9} color="#FFFFFF" />
                                     </View>
-                                ) :( statusIcon === 'error'&& item.estado?.codigo === 'EST_DET_VALIDADO') ? (
+                                ) : (statusIcon === 'error' && item.estado?.codigo === 'EST_DET_VALIDADO') ? (
                                     <View style={styles.errorDot}>
                                         <MaterialIcons name="close" size={9} color="#FFFFFF" />
                                     </View>
@@ -522,7 +527,7 @@ export const ProductItem = ({
                                 <Text style={styles.productSku}>
                                     {item.producto.codigo.trim()}
                                 </Text>
-                                
+
                             </View>
 
                             <View style={styles.priceRow}>

@@ -30,7 +30,7 @@ import * as Location from "expo-location";
 import { useRouter } from 'expo-router';
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useRef, useState } from "react";
-import { BackHandler, Dimensions, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BackHandler, Dimensions, Image, Keyboard, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 const { width, height } = Dimensions.get('window');
 
@@ -135,6 +135,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [uploadPhotoTwo, setUploadPhotoTwo] = useState(false);
     const [currentQRType, setCurrentQRType] = useState(qrType || undefined);
     const [currentQRData, setCurrentQRData] = useState(qrBase64 || undefined);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+
     const [qrInfo, setQrInfo] = useState<{
         type?: string;
         data?: string;
@@ -156,6 +158,22 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
         return () => backHandler.remove();
     }, [allowBack, numberGuide, token]);
+
+    useEffect(() => {
+        const show = Keyboard.addListener("keyboardDidShow", (e) => {
+            setKeyboardHeight(e.endCoordinates.height);
+        });
+
+        const hide = Keyboard.addListener("keyboardDidHide", () => {
+            setKeyboardHeight(0);
+        });
+
+        return () => {
+            show.remove();
+            hide.remove();
+        };
+    }, []);
+
 
     const handleGoBack = async () => {
         // router.back();
@@ -1524,7 +1542,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                     </Text>
                                 </View>
 
-                               {isValidateCondition && (
+                                {isValidateCondition && (
                                     totalRecauder !== 0 ? (
                                         <>
                                             <TouchableOpacity
@@ -1634,7 +1652,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
             {guide && Number.isFinite(totalValue) && Number.isFinite(totalRecauder) && Number.isFinite(totalOrderPayment) && (
 
-                <View style={[styles.footer, { marginBottom: 10 }]}>
+                <View style={[styles.footer, { marginBottom: keyboardHeight > 0 ? keyboardHeight + 25 : 15 }]}>
                     {confirmNoDelivery ? (
                         <PrimaryButton
                             title="Confirmar no entrega"

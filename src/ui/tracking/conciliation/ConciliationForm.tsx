@@ -157,10 +157,6 @@ export function ConciliationForm({
     return !isNaN(value) ? acc + value : acc;
   }, 0);
 
-  console.log("toleranceValue:", toleranceValue);
-  console.log("expectedAmount:", data?.valor_total);
-  console.log("collectedAmount:", data?.valor_recaudado);
-
   const expectedAmount = Number(data?.valor_total ?? 0);
   const collectedAmount = Number(data?.valor_recaudado ?? 0);
   const rejectedAmount = Number(data?.total_rechazado ?? 0);
@@ -185,7 +181,6 @@ export function ConciliationForm({
     }
   }
 
-  console.log("canProceed:", isSuccess);
   return (
     <ThemedView style={styles.container}>
       <View style={styles.headerContainer}>

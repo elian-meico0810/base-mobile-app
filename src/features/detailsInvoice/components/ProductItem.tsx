@@ -314,8 +314,8 @@ export const ProductItem = ({
                 if (isAnimating.current) return false;
 
                 return (
-                    Math.abs(gestureState.dx) > 20 &&
-                    Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 3
+                    Math.abs(gestureState.dx) > 40 &&
+                    Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 6
                 );
             },
             onPanResponderMove: (_, gestureState) => {

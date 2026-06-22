@@ -209,7 +209,11 @@ export function ReportNoveltyScreen({
                     <View style={styles.track} />
 
                     {/* Botón cerrar */}
-                    <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+                    <TouchableOpacity
+                        style={styles.closeButton}
+                        onPress={handleClose}
+                        hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                    >
                         <Text style={styles.closeText}>✕</Text>
                     </TouchableOpacity>
 

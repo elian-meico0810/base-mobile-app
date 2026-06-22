@@ -1,9 +1,11 @@
 import { PrimaryButton } from "@/components/buttons/PrimaryButton";
 import { LoadingBlue } from "@/components/generals/LoadingBlue";
 import { ThemedView } from "@/components/themed-view";
-import { StatusInvoice } from "@/src/constants/GuideStates";
+import { StatusInvoice, TypeValueParameterEnum } from "@/src/constants/GuideStates";
 import { ConciliationRouteResponse } from "@/src/features/tracking/domain/details/DetailsGuide";
+import { TypeParameterValue } from "@/src/features/tracking/domain/invoices/InvoicesInterFace";
 import { detailsRepositoryImpl } from "@/src/features/tracking/infrastructure/details/detailsRepositoryImpl";
+import { invoiceRepositoryImpl } from "@/src/features/tracking/infrastructure/invoices/invoiceRepositoryImpl";
 import { getDeviceDateTime, heightCaldulate } from "@/src/utils/uitls";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as Location from 'expo-location';
@@ -38,6 +40,7 @@ export function ConciliationForm({
   const [modalMessage, setModalMessage] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [statusValue, setStatusValue] = useState("");
+  const [valueParameter, setValueParameter] = useState<TypeParameterValue[]>([]);
 
   const format = useMemo(
     () => (n?: number) => `$${Number(n ?? 0).toLocaleString("es-CO")}`,
@@ -46,15 +49,11 @@ export function ConciliationForm({
 
 
   // Se suma el valor de los productos rechazados poder igualar el valor a recaudar 
-  let value = Number(data?.valor_recaudado ?? 0) + Number(data?.total_rechazado ?? 0);
-  let isSuccess = false
-  if (data && value >= Number(data?.valor_total ?? 0)) {
-    isSuccess = true
-  }
-  // const isSuccess = data?.recaudo_completo ?? false;
+
 
   useEffect(() => {
     loadConciliation();
+    listTypeParameterValue();
   }, []);
 
   const loadConciliation = async () => {
@@ -90,9 +89,6 @@ export function ConciliationForm({
 
   const handleGoBack = () => {
     router.back();
-    //router.push(
-    //`/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`,
-    //);
   };
 
   const finshRoute = async () => {
@@ -115,8 +111,8 @@ export function ConciliationForm({
         router.replace({
           pathname: "/views/details",
           params: {
-            guide,
-            token,
+            guide: guide,
+            token: token,
             success: "route_closed",
           },
         });
@@ -134,6 +130,62 @@ export function ConciliationForm({
     }
   }
 
+  const listTypeParameterValue = async () => {
+    try {
+      setLoading(true);
+
+      const response = await invoiceRepositoryImpl.typeParameterValue(TypeValueParameterEnum.TOLERANCE_MARGIN_FINISH_GUIDE, token);
+      if (response?.statusCode === 200 && Array.isArray(response.data)) {
+        setValueParameter(response.data);
+      } else {
+        setValueParameter([]);
+        setModalTitle("¡Alerta!");
+        setModalMessage(response?.message ?? "Ocurrió un error inesperado.");
+        setModalVisible(true);
+      }
+    } catch (error: any) {
+      setModalTitle("¡Error!");
+      setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+      setModalVisible(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toleranceValue = (valueParameter ?? []).reduce((acc, item) => {
+    const value = Number(item.valor);
+    return !isNaN(value) ? acc + value : acc;
+  }, 0);
+
+  console.log("toleranceValue:", toleranceValue);
+  console.log("expectedAmount:", data?.valor_total);
+  console.log("collectedAmount:", data?.valor_recaudado);
+
+  const expectedAmount = Number(data?.valor_total ?? 0);
+  const collectedAmount = Number(data?.valor_recaudado ?? 0);
+  const rejectedAmount = Number(data?.total_rechazado ?? 0);
+
+  const totalAmount = collectedAmount + rejectedAmount;
+
+  let isSuccess = false;
+
+  if (data) {
+
+    if (data && totalAmount >= expectedAmount) {
+      isSuccess = true;
+
+    } else if (collectedAmount >= expectedAmount) {
+      isSuccess = true;
+
+    } else {
+      const difference = expectedAmount - collectedAmount;
+      if (difference <= toleranceValue) {
+        isSuccess = true;
+      }
+    }
+  }
+
+  console.log("canProceed:", isSuccess);
   return (
     <ThemedView style={styles.container}>
       <View style={styles.headerContainer}>

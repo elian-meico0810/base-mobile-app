@@ -1170,6 +1170,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         const value = Number(item.valor);
         return !isNaN(value) ? acc + value : acc;
     }, 0);
+
     const calculatedValue = (detailsCounterDelivery || closeButton)
         ? newTotalValue
         : totalValueTwo || 0;
@@ -1199,13 +1200,13 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             }
 
 
-            if (!guide?.whatsapp || guide?.whatsapp == "") {
-                btnRef.current?.reset();
-                setModalTitle("¡Alerta!");
-                setModalMessage("El numero de telefono es requerido.");
-                setModalVisible(true);
-                return;
-            }
+            // if (!guide?.whatsapp || guide?.whatsapp == "") {
+            //     btnRef.current?.reset();
+            //     setModalTitle("¡Alerta!");
+            //     setModalMessage("El numero de telefono es requerido.");
+            //     setModalVisible(true);
+            //     return;
+            // }
 
             setLoading(true);
 
@@ -1215,8 +1216,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 {
                     idDireccion: Number(guide?.idDireccion),
                     numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
-                    numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
-                    // numeroDestino: "+573015752485",
+                    // numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
+                    numeroDestino: "+573015752485",
                     valorOriginal: String(totalValue),
                     valorPagado: String(totalOrderPayment),
                     validarCodigo: false

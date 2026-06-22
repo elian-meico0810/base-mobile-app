@@ -191,16 +191,9 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
 
     useEffect(() => {
         const fetchToken = async () => {
-            const savedToken = await SecureStore.getItemAsync('user_token');
-
-            if (!savedToken) return;
-
-            setToken(savedToken);
-
             const currentGuide = guide || initialGuide;
-
             if (currentGuide) {
-                await listReportPaymentByCOideGuide(savedToken, initialGuide);
+                await listReportPaymentByCOideGuide(token, initialGuide);
             }
         };
 
@@ -520,6 +513,12 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
         )
     );
 
+    const hasAtLeastContadEfec = data.some((direccion) =>
+        direccion.facturas?.some(
+            (factura) => factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO
+        )
+    );
+
     const consignmentSubmit = async () => {
         try {
             setShowSuccess(true);
@@ -647,7 +646,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
 
                             {((data.length != 0)) && (
                                 <>
-                                    {(hasValidInvoice && !valueParameterized) && (
+                                    {(guide && hasValidInvoice && !valueParameterized) && (
 
                                         <TouchableOpacity style={styles.cardConsignment} onPress={() => {
                                             router.push({
@@ -688,12 +687,12 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                                 </>
                             )}
 
-                            {routeCompleted && statusValue !== StatusInvoice.CLOSE && (
+                            {routeCompleted && hasAtLeastContadEfec && statusValue !== StatusInvoice.CLOSE && (
                                 <ScanQRCard onScan={() => setShowScanner(true)} />
                             )}
 
                             {/* Si estado es CLOSE → Mostrar botón Cuadre de ruta */}
-                            {statusValue === StatusInvoice.CLOSE && (
+                            {hasAtLeastContadEfec && statusValue === StatusInvoice.CLOSE && (
                                 <TouchableOpacity
                                     style={styles.cardConsignment}
                                     onPress={() => {
@@ -778,7 +777,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                     {(!routeStarted && (statusValue == StatusInvoice.PENDING)) && (
                         <View style={{
                             alignItems: 'center',
-                            marginBottom: isSmallScreen ? (keyboardHeight > 0 ? keyboardHeight + 20 : 0) : (keyboardHeight > 0 ? keyboardHeight + 20 : 30)
+                            marginBottom: isSmallScreen ? (keyboardHeight > 0 ? keyboardHeight + 20 : 0) : (keyboardHeight > 0 ? keyboardHeight + 20 : 45)
                         }}>
                             <PrimaryButtonDetails
                                 ref={btnRef}

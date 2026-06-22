@@ -3,7 +3,7 @@ import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { ThemedView } from '@/components/themed-view';
-import { CausalRefusedEnum, TyepeCausalRefusedEnum, TypeCaculateValueEnum, TypeConPagoEnum, TypeDetailsEnum } from '@/src/constants/GuideStates';
+import { CausalRefusedEnum, TyepeCausalRefusedEnum, TypeCaculateValueEnum, TypeConPagoEnum, TypeDetailsEnum, TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import { ProductValidationSection } from '@/src/features/detailsInvoice/components/ProductValidationScreen';
 import { ReportMassiveRejectScreen } from '@/src/features/detailsInvoice/components/ReportMassiveRejectScreen';
 import { ReportNoveltyScreen } from '@/src/features/detailsInvoice/components/ReportNoveltyScreen';
@@ -560,6 +560,18 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     }, [token]);
 
     const condPago = guide?.facturas?.[0]?.condPago;
+    const pagoTipo = guide?.facturas?.[0]?.tipo;
+
+    const pagoTipoNormalizado = pagoTipo?.trim();
+
+    const requirePhoto = condPago
+        ? ![TypeConPagoEnum.TAT, TypeConPagoEnum.PGM].includes(
+            condPago as TypeConPagoEnum
+        )
+        : [
+            TypeInvoiceEnum.CONTADO_EFECTIVO,
+            TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO,
+        ].includes(pagoTipoNormalizado as TypeInvoiceEnum);
 
     return (
         <ThemedView style={styles.container}>
@@ -653,7 +665,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
                 {/** Listado de productos */}
                 <ProductValidationSection
                     onFinalize={(data) => {
-                        if (condPago && ![TypeConPagoEnum.TAT, TypeConPagoEnum.PGM].includes(condPago as TypeConPagoEnum) || !condPago) {
+                        if (!requirePhoto) {
                             setUploadPhoto(true);
                         } else {
                             handleSubmit(data);

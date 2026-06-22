@@ -560,18 +560,23 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     }, [token]);
 
     const condPago = guide?.facturas?.[0]?.condPago;
-    const pagoTipo = guide?.facturas?.[0]?.tipo;
+    const paymentType = guide?.facturas?.[0]?.tipo;
 
-    const pagoTipoNormalizado = pagoTipo?.trim();
+    const normalizedPaymentType = paymentType?.trim();
 
-    const requirePhoto = condPago
-        ? ![TypeConPagoEnum.TAT, TypeConPagoEnum.PGM].includes(
-            condPago as TypeConPagoEnum
-        )
-        : [
+    const noPhotoRequiredByCondPago =
+        condPago &&
+        [TypeConPagoEnum.TAT, TypeConPagoEnum.PGM].includes(condPago as TypeConPagoEnum);
+
+    const noPhotoRequiredByInvoiceType =
+        !condPago &&
+        [
             TypeInvoiceEnum.CONTADO_EFECTIVO,
             TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO,
-        ].includes(pagoTipoNormalizado as TypeInvoiceEnum);
+        ].includes(normalizedPaymentType as TypeInvoiceEnum);
+
+    const requirePhoto =
+        !noPhotoRequiredByCondPago || !noPhotoRequiredByInvoiceType;
 
     return (
         <ThemedView style={styles.container}>

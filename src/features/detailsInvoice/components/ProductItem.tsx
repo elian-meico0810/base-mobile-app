@@ -313,17 +313,24 @@ export const ProductItem = ({
             onMoveShouldSetPanResponder: (_, gestureState) => {
                 if (isAnimating.current) return false;
 
+                // Aumentar estos valores para hacerlo menos sensible
+                const horizontalDistance = Math.abs(gestureState.dx);
+                const verticalDistance = Math.abs(gestureState.dy);
+
+                // Aumentar el umbral mínimo de 40 a 80
                 return (
-                    Math.abs(gestureState.dx) > 40 &&
-                    Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 6
+                    horizontalDistance > 80 && // Antes era 40
+                    horizontalDistance > verticalDistance * 4 // Antes era 6, ahora 4 (menos estricto)
                 );
             },
             onPanResponderMove: (_, gestureState) => {
                 if (isAnimating.current) return;
 
+                // Mantener el límite de movimiento
                 const limitedDx = Math.max(Math.min(gestureState.dx, 100), -100);
 
-                if (Math.abs(gestureState.dx) > minSwipeDistance) {
+                // Aumentar el umbral para cambiar la dirección
+                if (Math.abs(gestureState.dx) > 60) { // Antes era minSwipeDistance (40)
                     if (gestureState.dx < 0) {
                         setSwipeDirection('left');
                     } else if (gestureState.dx > 0) {

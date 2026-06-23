@@ -1194,7 +1194,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         : totalValueTwo || 0;
 
     let ressult = false;
-    
+
     if (Number(totalOrderPayment) < Number(calculatedValue)) {
         ressult = baseTotal > 0 && baseTotal > Number(valueOTP);
     }
@@ -1208,17 +1208,19 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 token
             );
             if (responseOder?.statusCode !== 200) {
+                btnRef.current?.reset();
+                setLoading(false);
                 setModalTitle("¡Error!");
                 setModalVisible(responseOder?.message || "Ocurrio un error inesperado");
                 setModalVisible(true);
-                return
+                return false;
             }
+            return true;
         } catch (error) {
+            btnRef.current?.reset();
             setModalTitle("¡Error!");
-            setModalMessage("Ocurrio un error inesperado 6.");
+            setModalMessage("Ocurrio un error inesperado.");
             setModalVisible(true);
-        } finally {
-            setLoading(false);
         }
     }
 
@@ -1251,9 +1253,14 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             }
 
             setLoading(true);
-
             setButtonValueOTP(true);
 
+            if (isSelectInvocies) {
+                const orderSuccess = await sendOder();
+                if (!orderSuccess) {
+                    return;
+                }
+            }
             const responseData = await detailsRepositoryImpl.sendOTP(
                 {
                     idDireccion: Number(guide?.idDireccion),
@@ -1270,7 +1277,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 btnRef.current?.reset();
                 setLoading(true);
                 if (isSelectInvocies) {
-                    sendOder();
                     if (isAnticipe == 'true') {
                         router.push(
                             `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}&isAnticipe=${'true'}&isCountryDelivery=${'true'}&isAnticipeInvoice=${'true'}`

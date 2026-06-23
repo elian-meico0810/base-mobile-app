@@ -19,6 +19,7 @@ export interface Pedidos {
   codigoGuia: string;
   dfr: number;
   porcentajeDFR: number;
+  estado?: string | null;
 }
 
 export interface GuideDetails {
@@ -34,6 +35,7 @@ export interface GuideDetails {
   whatsapp?: string;
   CondPagoCliente?: string;
   fecha_apertura?: string | null;
+  fecha_cierre?: string | null;
   facturas: Factura[];
   pedidos?: Pedidos[];
   tieneNoEntrega: boolean;
@@ -293,4 +295,8 @@ export interface EvidenciaOTPItemOTP {
   evidencia: EvidenciaOTP;
   direccion: number;
   eliminado: boolean;
+}
+
+export interface ValidateOrderProps {
+  id_pedido: number;
 }

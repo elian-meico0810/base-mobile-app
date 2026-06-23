@@ -5,6 +5,7 @@ import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
 import { OrderDetailSkeletonSelect } from '@/components/skeleton/OrderDetailSkeletonSelect';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
+import { TypeEstusOrderEnum } from '@/src/constants/GuideStates';
 import InvoicesList from '@/src/features/tracking/components/tabs/InvoicesList';
 import { GuideDetails, NovletyOrder } from '@/src/features/tracking/domain/details/DetailsGuide';
 import { DerliveryDocument, Invoice } from '@/src/features/tracking/domain/invoices/InvoicesInterFace';
@@ -55,8 +56,6 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [buttonValue, setButtonValue] = useState(false);
     const [allowBack, setAllowBack] = useState(false);
     const [disabledInvoices, setDisabledInvoices] = useState<Set<string>>(new Set());
-    const [disabledOTPInvoices, setDisabledOTPInvoices] = useState<Set<string>>(new Set());
-    const [disabledFileInvoices, setDisabledFileInvoices] = useState<Set<string>>(new Set());
     const btnRef = useRef<any>(null);
     const router = useRouter();
     const heightValue = heightCaldulate();
@@ -128,14 +127,6 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
         }
     };
 
-    useEffect(() => {
-        const merged = new Set<string>([
-            ...disabledOTPInvoices,
-            ...disabledFileInvoices
-        ]);
-        setDisabledInvoices(merged);
-    }, [disabledOTPInvoices, disabledFileInvoices]);
-
     const listDocumentQuery = async (guide?: GuideDetails) => {
         try {
 
@@ -173,6 +164,10 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             listDocumentQuery();
         }
     }, [token]);
+
+    const allOrdersClosed = guide?.pedidos?.every(
+        pedido => pedido.estado === TypeEstusOrderEnum.CLOSE_ORDER
+    ) ?? false;
 
     const handleInvoiceSelect = (selectedGuide: GuideDetails | null) => {
         try {
@@ -271,7 +266,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
     const submitData = async () => {
         try {
-            if (conceptDeliverySelect?.length != guide?.facturas?.length) {
+            if (conceptDeliverySelect?.length != guide?.facturas?.length && !allOrdersClosed) {
                 setValidateException(true);
                 btnRef.current?.reset();
                 setModalTitle("¡Alerta!");
@@ -348,11 +343,12 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             ?.reduce((sum, f) => sum + (Number(f?.valorRecaudar) || 0), 0) || 0;
 
 
+
     const totalRecauder = Math.max(0, totalvalorRecaudar - totalAproved);
-    const conditionButton = conceptDeliverySelect.length == guide?.facturas?.length;
-    const validateCheckboxlength = conceptDeliverySelect.length == guide?.facturas?.length;
+    const conditionButton = conceptDeliverySelect.length == guide?.facturas?.length || allOrdersClosed;
+    const validateCheckboxlength = conceptDeliverySelect.length == guide?.facturas?.length || allOrdersClosed;
     const isSmallScreen = height <= 780;
-    const conceptDeliveryValue = conceptDeliverySelect.length > 0;
+    const conceptDeliveryValue = conceptDeliverySelect.length > 0 || allOrdersClosed;
     const conditionEntryVisible = !conditionButton && conceptDeliveryValue || EntryVisible;
     const conditionEntryVisibleTwo = conditionEntryVisible || guide?.fecha_apertura || EntryVisible || conditionButton;
 

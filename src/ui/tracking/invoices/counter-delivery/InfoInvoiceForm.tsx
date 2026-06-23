@@ -1194,8 +1194,32 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         : totalValueTwo || 0;
 
     let ressult = false;
+    
     if (Number(totalOrderPayment) < Number(calculatedValue)) {
         ressult = baseTotal > 0 && baseTotal > Number(valueOTP);
+    }
+
+    const sendOder = async () => {
+        try {
+            const responseOder = await detailsRepositoryImpl.sendValidateOrder(
+                {
+                    id_pedido: Number(guide?.pedidos?.[0]?.id)
+                },
+                token
+            );
+            if (responseOder?.statusCode !== 200) {
+                setModalTitle("¡Error!");
+                setModalVisible(responseOder?.message || "Ocurrio un error inesperado");
+                setModalVisible(true);
+                return
+            }
+        } catch (error) {
+            setModalTitle("¡Error!");
+            setModalMessage("Ocurrio un error inesperado 6.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
     }
 
     const handleSubmitConfirmation = async () => {
@@ -1246,6 +1270,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 btnRef.current?.reset();
                 setLoading(true);
                 if (isSelectInvocies) {
+                    sendOder();
                     if (isAnticipe == 'true') {
                         router.push(
                             `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}&isAnticipe=${'true'}&isCountryDelivery=${'true'}&isAnticipeInvoice=${'true'}`

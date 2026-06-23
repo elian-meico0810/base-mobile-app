@@ -1,6 +1,6 @@
 "use client";
 import { AddEvidenceButton } from '@/components/inputs/AddEvidenceButton';
-import { TypeInvoiceEnum } from '@/src/constants/GuideStates';
+import { TypeEstusOrderEnum, TypeInvoiceEnum } from '@/src/constants/GuideStates';
 import { formatNumber } from '@/src/utils/uitls';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { GuideDetails, NovletyOrder } from '../../domain/details/DetailsGuide';
@@ -51,9 +51,14 @@ const InvoiceItem = ({
 
       if (!pedido) return false;
 
+      if (pedido.estado === TypeEstusOrderEnum.CLOSE_ORDER && String(factura.numeroFactura) === String(numeroFactura)) {
+        return true;
+      }
+
       return conceptDeliverySelect.some(
         doc => Number(doc.id_pedido) === Number(pedido.id)
       );
+
     }
 
     else if (Array.isArray(conceptDelivery) && conceptDelivery.length > 0) {

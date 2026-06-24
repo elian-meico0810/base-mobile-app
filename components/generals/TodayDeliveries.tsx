@@ -27,13 +27,18 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
     const totalVisits = data?.length || 0;
     const completedVisits = data?.filter(item => item.estado === GuideState.Cerrada).length || 0;
 
-    const totalValueTotal = data ? data.reduce((sum, item) => {
-        const facturas = item.facturas || [];
-        const subtotal = facturas
-            .filter(f => f.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO)
-            .reduce((fSum, f) => fSum + (f.valorRecaudar || 0), 0);
-        return sum + subtotal;
-    }, 0) : 0;
+    const totalValueTotal = data
+        ? data.reduce((sum, item) => {
+            if (item.tieneNoEntrega) {
+                return sum;
+            }
+            const subtotal = (item.facturas || [])
+                .filter(f => f.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO)
+                .reduce((fSum, f) => fSum + (f.valorRecaudar || 0), 0);
+
+            return sum + subtotal;
+        }, 0)
+        : 0;
 
     const TotalAmountToCollect =
         Number(dataResult?.total_pagado ?? 0) +
@@ -56,7 +61,7 @@ export const TodayDeliveries = ({ style, data, routeStarted, waitingForPermissio
     const isCompleteVisits = progressVisits === 1;
 
     const circlePosition = Math.min(progressVisits * 100, 100);
-   
+
     // Animación del círculo de progreso
     useEffect(() => {
         if (showSummary && !isAnimating) {

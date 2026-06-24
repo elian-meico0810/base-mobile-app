@@ -1194,7 +1194,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         : totalValueTwo || 0;
 
     let ressult = false;
-
     if (Number(totalOrderPayment) < Number(calculatedValue)) {
         ressult = baseTotal > 0 && baseTotal > Number(valueOTP);
     }
@@ -1392,11 +1391,18 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
             </View>
 
             <ScrollView
-                style={[styles.scrollView, { marginTop: RefreshingOnPress ? 90 : 0 }]}
+                style={[
+                    styles.scrollView,
+                    {
+                        marginTop: RefreshingOnPress ? 90 : 0,
+                        flex: 1,
+                    }
+                ]}
                 contentContainerStyle={[
                     styles.scrollContent,
-                    // Ajustar el padding cuando no hay alerta
-                ]} refreshControl={
+                    RefreshingOnPress && { paddingTop: 10 },
+                ]}
+                refreshControl={
                     <RefreshControl
                         refreshing={false}
                         onRefresh={onRefresh}
@@ -1595,22 +1601,20 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                                 </View>
                                             </TouchableOpacity>
 
-                                            {!condPago && (
-                                                <TouchableOpacity
-                                                    style={styles.qrButton}
-                                                    onPress={() => {
-                                                        const isValidButton = validateButton();
-                                                        if (!isValidButton) return;
-                                                        setTypePayment(true);
-                                                    }}
-                                                >
-                                                    <View style={styles.qrButtonContent}>
-                                                        <Text style={styles.qrButtonText}>
-                                                            Registrar pago
-                                                        </Text>
-                                                    </View>
-                                                </TouchableOpacity>
-                                            )}
+                                            <TouchableOpacity
+                                                style={styles.qrButton}
+                                                onPress={() => {
+                                                    const isValidButton = validateButton();
+                                                    if (!isValidButton) return;
+                                                    setTypePayment(true);
+                                                }}
+                                            >
+                                                <View style={styles.qrButtonContent}>
+                                                    <Text style={styles.qrButtonText}>
+                                                        Registrar pago
+                                                    </Text>
+                                                </View>
+                                            </TouchableOpacity>
                                         </>
                                     ) : (
                                         <TouchableOpacity

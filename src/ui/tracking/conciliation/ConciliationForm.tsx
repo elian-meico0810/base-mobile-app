@@ -162,6 +162,7 @@ export function ConciliationForm({
   const rejectedAmount = Number(data?.total_rechazado ?? 0);
 
   const totalAmount = collectedAmount + rejectedAmount;
+  const expectedAmountTotal = expectedAmount - rejectedAmount;
 
   let isSuccess = false;
 
@@ -174,7 +175,7 @@ export function ConciliationForm({
       isSuccess = true;
 
     } else {
-      const difference = expectedAmount - collectedAmount;
+      const difference = expectedAmountTotal - collectedAmount;
       if (difference <= toleranceValue) {
         isSuccess = true;
       }

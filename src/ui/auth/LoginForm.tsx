@@ -270,7 +270,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
 
       <View style={styles.logoContainer}>
         <LogoText style={styles.logo} />
-        <Text style={styles.version}>Versión QA {String('2.1.3').replace(/"/g, '').trim()}</Text>
+        <Text style={styles.version}>Versión QA {String('2.1.4').replace(/"/g, '').trim()}</Text>
       </View>
 
       {/* Panel blanco con altura fija */}

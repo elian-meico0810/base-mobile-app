@@ -125,7 +125,7 @@ export function ViewQrModal({
             />
 
             {/* MODAL */}
-            <View style={[styles.container, { width: width, height: condPago ? 720 : 770 }]}>
+            <View style={[styles.container, { width: width, height: 700}]}>
                 {/* BOTÓN X */}
                 <TouchableOpacity
                     style={styles.closeButton}
@@ -185,14 +185,18 @@ const styles = StyleSheet.create({
         zIndex: 0,
     },
     container: {
-        height: 750,
+        width: '92%', 
+        maxWidth: 400, 
+        height: '80%', 
+        maxHeight: 770,
         backgroundColor: "#F9F9FA",
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         paddingTop: 16,
-        paddingHorizontal: 16,
+        paddingHorizontal: '4%',
         paddingBottom: 24,
         zIndex: 10,
+        alignSelf: 'center',
     },
     closeButton: {
         position: "absolute",
@@ -260,19 +264,8 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: "#164194",
     },
-    buttonsContainer: {
-    },
-    button: {
-        height: 48,
-        borderWidth: 1,
-        borderColor: "#164194",
-        borderRadius: 30,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    buttonText: {
-        color: "#164194",
-        fontWeight: "700",
+    qrButtonsContainer: {
+        gap: 12,
     },
     QrTitle: {
         fontFamily: "Rubik",
@@ -290,116 +283,9 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         height: 300,
     },
-    qrTypeText: {
-        fontFamily: "Rubik",
-        fontWeight: "800",
-        fontSize: 16,
-        color: "#141D32",
-        marginBottom: 16,
+     scrollView: {
+        flex: 1,
     },
-    qrImage: {
-        width: 180,
-        height: 180,
-        alignSelf: "center",
-    },
-    qrPlaceholder: {
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 20,
-    },
-    qrPlaceholderText: {
-        fontFamily: "Rubik",
-        fontWeight: "600",
-        fontSize: 14,
-        color: "#141D32",
-        textAlign: "center",
-        marginBottom: 8,
-    },
-    qrDescription: {
-        fontFamily: "Rubik",
-        fontWeight: "400",
-        fontSize: 12,
-        color: "#788095",
-        textAlign: "center",
-    },
-    qrButtonsContainer: {
-        gap: 12,
-    },
-    whatsappButton: {
-        height: 48,
-        backgroundColor: "#25D366",
-        borderRadius: 30,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    whatsappButtonText: {
-        color: "#FFFFFF",
-        fontWeight: "700",
-        fontSize: 14,
-    },
-    changeQRButton: {
-        height: 48,
-        borderWidth: 1,
-        borderColor: "#164194",
-        borderRadius: 30,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    changeQRButtonText: {
-        color: "#164194",
-        fontWeight: "700",
-        fontSize: 14,
-    },
-    bottomCenterText: {
-        textAlign: "center",
-        width: "100%",
-        position: "static",
-        color: "#788095",
-    },
-    errorContainer: {
-        borderWidth: 1,
-        borderColor: "#ff6b6b",
-        borderRadius: 16,
-        backgroundColor: "#fdf5f5",
-        paddingVertical: 40,
-        paddingHorizontal: 20,
-        alignItems: "center",
-        justifyContent: "center",
-        marginTop: 20,
-    },
-
-    errorIconContainer: {
-        width: 60,
-        height: 60,
-        borderRadius: 35,
-        borderWidth: 4,
-        borderColor: "#ef4444",
-        alignItems: "center",
-        justifyContent: "center",
-        marginBottom: 10,
-    },
-    errorIcon: {
-        fontSize: 32,
-        color: "#ef4444",
-        fontWeight: "bold",
-    },
-    errorTitle: {
-        fontSize: 22,
-        fontWeight: "700",
-        color: "#ef4444",
-        textAlign: "center",
-        marginBottom: 12,
-    },
-    errorDescription: {
-        fontSize: 18,
-        color: "#ef4444",
-        textAlign: "center",
-    },
-    retryText: {
-        marginTop: 20,
-        fontSize: 16,
-        fontWeight: "600",
-        color: "#ef4444",
-        textDecorationLine: "underline",
-    },
+    scrollContent: {
+},
 });

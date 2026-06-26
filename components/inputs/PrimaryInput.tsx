@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput, TextInputProps } from "react-native";
+import { Dimensions, Platform, StyleSheet, TextInput, TextInputProps, useWindowDimensions } from "react-native";
 
 interface PrimaryInputProps extends TextInputProps {
   value: string;
@@ -8,6 +8,11 @@ interface PrimaryInputProps extends TextInputProps {
 }
 
 export function PrimaryInput({ value, onChangeText, placeholder, error, ...rest }: PrimaryInputProps) {
+  const { width: windowWidth } = useWindowDimensions();
+  const isTablet = windowWidth >= 768 || (Platform.OS === 'android' && windowWidth >= 600) || (Platform.OS === 'ios' && windowWidth >= 768);
+  const { width } = Dimensions.get("window");
+  const inputWidth = isTablet ? '100%' : width * 0.9;
+
   const handleChange = (text: string) => {
     const numericText = text.replace(/[^0-9]/g, '');
     const limitedText = numericText.slice(0, 10); 
@@ -19,7 +24,12 @@ export function PrimaryInput({ value, onChangeText, placeholder, error, ...rest 
       value={value}
       onChangeText={handleChange}
       placeholder={placeholder}
-      style={[styles.input, error && styles.inputError]}
+      style={[
+        styles.input, 
+        { width: inputWidth },
+        isTablet && styles.inputTablet,
+        error && styles.inputError
+      ]}
       placeholderTextColor="#A0A0A0"
       keyboardType="numeric"
       maxLength={10} 
@@ -30,26 +40,26 @@ export function PrimaryInput({ value, onChangeText, placeholder, error, ...rest 
 
 const styles = StyleSheet.create({
   input: {
-    width: 328,
     height: 44,
     justifyContent: 'space-between',
-
     paddingTop: 10,
     paddingRight: 16,
     paddingBottom: 10,
     paddingLeft: 16,
-
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#D1D3D8',
     paddingHorizontal: 12,
     backgroundColor: '#fff',
     alignSelf: 'center',
-
     fontSize: 14,
     color: '#141D32',
   },
-
+  inputTablet: {
+    height: 50,
+    fontSize: 16,
+    paddingVertical: 14,
+  },
   inputError: {
     borderColor: 'red',
   },

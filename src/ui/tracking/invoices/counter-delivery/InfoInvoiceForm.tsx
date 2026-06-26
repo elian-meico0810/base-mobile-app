@@ -1734,7 +1734,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                 }
                             }}
                             disabled={false}
-                            width={328}
                             height={43}
                         />
                     ) : (!isViewDetailsPorducts && isSelectInvocies === 'true') ? (
@@ -1742,7 +1741,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             title="Entregar"
                             onPress={handleSubmitData}
                             disabled={false}
-                            width={328}
                             height={43}
                         />
                     ) : detailsCounterDelivery ? (
@@ -1753,7 +1751,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             title="Entregar"
                             onPress={handleSubmitConfirmation}
                             disabled={ressult}
-                            width={328}
                             height={43}
                             buttonColor={ressult ? "#DDDFE8" : undefined}
                             buttonColorEnd={ressult ? "#DDDFE8" : undefined}
@@ -1767,7 +1764,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                     title="Continuar"
                                     onPress={redirectContinue}
                                     disabled={false}
-                                    width={328}
                                     height={43}
                                 />
                             ) : (
@@ -1778,7 +1774,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                                     title={closeButton ? "Cerrar pedido" : "Ya llegué"}
                                     onPress={closeButton ? submitData : handleSubmit}
                                     disabled={false}
-                                    width={328}
                                     height={43}
                                     buttonColor={conceptDelivery ? undefined : closeButton ? "#DDDFE8" : undefined}
                                     buttonColorEnd={conceptDelivery ? undefined : closeButton ? "#DDDFE8" : undefined}
@@ -2140,7 +2135,8 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     card: {
-        width: 360,
+        width: '92%',
+        maxWidth: 400,
         minHeight: 300,
         backgroundColor: '#FFFFFF',
         borderColor: '#F0F1F5',
@@ -2148,25 +2144,27 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         paddingTop: 10,
         paddingBottom: 16,
-        paddingLeft: 12,
-        paddingRight: 12,
+        paddingHorizontal: '4%',
         gap: 5,
         shadowColor: "#000",
         marginTop: 1,
+        alignSelf: 'center',
     },
     cardTwo: {
-        width: 360,
+        width: '92%',
+        maxWidth: 400,
         backgroundColor: '#FFFFFF',
         borderColor: '#F0F1F5',
         borderWidth: 1,
         borderRadius: 8,
         paddingTop: 10,
         paddingBottom: 16,
-        paddingLeft: 12,
-        paddingRight: 12,
+        paddingHorizontal: '4%',
         gap: 5,
         shadowColor: "#000",
         marginTop: 10,
+        alignSelf: 'center',
+        minHeight: 229,
     },
     cardHeader: {
         alignItems: 'center',

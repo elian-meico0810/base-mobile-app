@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 
 interface AddEvidenceButtonProps {
     onPress?: () => void;
@@ -29,36 +29,62 @@ export const AddEvidenceButton = ({
     showEndIcon = false,
     spaced = false,
     disabled = false,
-    height = undefined,
-    width = undefined,
+    height,
+    width,
 }: AddEvidenceButtonProps) => {
+    const { width: windowWidth } = useWindowDimensions();
+    const isTablet = windowWidth >= 768 || (Platform.OS === 'android' && windowWidth >= 600) || (Platform.OS === 'ios' && windowWidth >= 768);
+    const { width: screenWidth } = Dimensions.get("window");
+    
+    // Calcular ancho responsivo
+    const responsiveWidth = isTablet ? '100%' : screenWidth * 0.92;
+    const finalWidth = width !== undefined ? width : responsiveWidth;
+    
+    // Calcular altura responsiva
+    const defaultHeight = isTablet ? 48 : 40;
+    const finalHeight = height !== undefined ? height : defaultHeight;
+
     return (
         <TouchableOpacity
             disabled={disabled}
             style={[
                 styles.container,
-                { backgroundColor },
-                spaced && {
-                    justifyContent: "space-between", height: height ? height: null, width: width ?width: null
-                }
+                { 
+                    backgroundColor,
+                    width: finalWidth,
+                    height: finalHeight,
+                },
+                spaced && styles.spacedContainer,
+                disabled && styles.disabledContainer,
             ]}
             onPress={onPress}
         >
-
             {/* IZQUIERDA: icono + texto */}
             <View style={styles.startContent}>
                 {showStartIcon && (
-                    <Ionicons name={iconName} size={18} color={iconColor} />
+                    <Ionicons 
+                        name={iconName} 
+                        size={isTablet ? 20 : 18} 
+                        color={iconColor} 
+                    />
                 )}
 
-                <Text style={[styles.text, { color: textColor }]}>
+                <Text style={[
+                    styles.text, 
+                    { color: textColor },
+                    isTablet && styles.textTablet
+                ]}>
                     {title}
                 </Text>
             </View>
 
             {/* DERECHA: icono final */}
             {showEndIcon && (
-                <Ionicons name={endIconName} size={18} color={iconColor} />
+                <Ionicons 
+                    name={endIconName} 
+                    size={isTablet ? 20 : 18} 
+                    color={iconColor} 
+                />
             )}
         </TouchableOpacity>
     );
@@ -73,6 +99,13 @@ const styles = StyleSheet.create({
         marginTop: 8,
         paddingVertical: 6,
         paddingHorizontal: 14,
+        alignSelf: 'center',
+    },
+    spacedContainer: {
+        justifyContent: 'space-between',
+    },
+    disabledContainer: {
+        opacity: 0.6,
     },
     startContent: {
         flexDirection: 'row',
@@ -82,5 +115,8 @@ const styles = StyleSheet.create({
     text: {
         fontSize: 14,
         fontWeight: '600',
+    },
+    textTablet: {
+        fontSize: 16,
     },
 });

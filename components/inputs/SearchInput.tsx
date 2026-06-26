@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import { Platform, StyleSheet, TextInput, View, useWindowDimensions } from "react-native";
+import { Dimensions, Platform, StyleSheet, TextInput, View, useWindowDimensions } from "react-native";
 
 interface SearchInputProps<T> {
   data: T[]; 
@@ -18,7 +18,14 @@ export function SearchInput<T>({
   const [searchText, setSearchText] = useState("");
   const { width: windowWidth } = useWindowDimensions();
   
+  // Same responsive logic from GuideCardSkeleton
   const isTablet = windowWidth >= 768 || (Platform.OS === 'android' && windowWidth >= 600) || (Platform.OS === 'ios' && windowWidth >= 768);
+  
+  // Get window width for responsive sizing
+  const { width } = Dimensions.get("window");
+  
+  // Calculate responsive width based on device
+  const searchWidth = isTablet ? '100%' : width * 0.9;
 
   useEffect(() => {
     const filtered = data.filter(item =>
@@ -28,7 +35,7 @@ export function SearchInput<T>({
   }, [searchText, data]);
 
   return (
-    <View style={[styles.container, { width: isTablet ? '100%' : 328 }]}>
+    <View style={[styles.container, { width: searchWidth }]}>
       <Ionicons name="search-outline" size={isTablet ? 22 : 18} color="#AAAAAA" style={styles.icon} />
       <TextInput
         style={[styles.input, isTablet && styles.inputTablet]}
@@ -53,6 +60,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",     
     alignItems: "center",
     paddingHorizontal: 12,
+    alignSelf: "center", // Added to center the component
   },
   icon: {
     marginRight: 8,

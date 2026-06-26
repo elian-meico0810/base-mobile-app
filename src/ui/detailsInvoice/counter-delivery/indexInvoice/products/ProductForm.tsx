@@ -869,7 +869,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     card: {
-        width: 360,
+        width: '92%',
         backgroundColor: '#FFFFFF',
         alignSelf: 'center',
         borderColor: '#F0F1F5',
@@ -903,7 +903,9 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     expandedContent: {
-        gap: 8,
+        width: '100%',
+        paddingTop: 8,
+        paddingHorizontal: '2%',
     },
     address: {
         fontWeight: '400',
@@ -918,7 +920,8 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     rejectButton: {
-        width: 160,
+        width: '48%',
+        maxWidth: 160,
         height: 32,
         borderRadius: 20,
         borderWidth: 1,
@@ -927,15 +930,20 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 6,
+        paddingHorizontal: 4,
+        gap: 3,
     },
     rejectButtonText: {
         fontSize: 12,
         fontWeight: '500',
         color: '#C62828',
+        textAlign: 'center',
+        flexShrink: 1,
+
     },
     acceptButton: {
-        width: 160,
+        width: '48%',
+        maxWidth: 160,
         height: 32,
         borderRadius: 20,
         borderWidth: 1,
@@ -944,12 +952,15 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 6,
+        paddingHorizontal: 4,
+        gap: 3,
     },
     acceptButtonText: {
         fontSize: 12,
         fontWeight: '500',
         color: '#1F9144',
+        textAlign: 'center',
+        flexShrink: 1,
     },
     arrowsContainer: {
         flexDirection: 'column',

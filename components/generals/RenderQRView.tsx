@@ -1,6 +1,6 @@
 import { TypeConPagoEnum, TypeQr } from "@/src/constants/GuideStates";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Dimensions, Image, Linking, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Dimensions, Image, Linking, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import QRCode from 'react-native-qrcode-svg';
 import { WebView } from 'react-native-webview';
 import { PrimaryButton } from "../buttons/PrimaryButton";
@@ -354,6 +354,11 @@ export default function RenderQRView({
 
     return (
         <>
+           <ScrollView 
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+            style={styles.scrollView}
+        >
             <Text style={styles.title}>QR de pago</Text>
 
             <View style={styles.box}>
@@ -385,7 +390,6 @@ export default function RenderQRView({
                     title="Enviar por Whatsapp"
                     onPress={handleSendWhatsApp}
                     disabled={disabled || !currentQRData || isQRGenerating || !phone}
-                    width={350}
                     height={43}
                 />
 
@@ -394,11 +398,11 @@ export default function RenderQRView({
                         title="Cambiar tipo de QR"
                         onPress={handleChangeTypeWithClean}
                         disabled={disabled || isQRGenerating}
-                        width={350}
                         height={43}
                     />
                 )}
             </View>
+            </ScrollView>
         </>
     );
 }

@@ -1,11 +1,22 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
-import { Animated, PanResponder, PanResponderInstance, StyleSheet, Text, View } from "react-native";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import {
+  Animated,
+  Dimensions,
+  DimensionValue,
+  PanResponder,
+  PanResponderInstance,
+  Platform,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View
+} from "react-native";
 
-interface PrimaryButtonProps {
+interface PrimaryButtonDetailsProps {
   title: string;
   onPress: () => void;
   disabled?: boolean;
-  width?: number;
+  width?: DimensionValue;
   height?: number;
   titleColor?: string;
   buttonColor?: string;
@@ -21,16 +32,31 @@ export const PrimaryButtonDetails = forwardRef(
       title,
       onPress,
       disabled = false,
-      width = 328,
-      height = 44,
+      width,
+      height,
       titleColor = "#FFFFFF",
       buttonColor = "#164194",
       buttonColorEnd = "#0E2B68",
       circleColor = "#0E2B68",
       autoReset = false,
-    }: PrimaryButtonProps,
+    }: PrimaryButtonDetailsProps,
     ref
   ) => {
+    const { width: windowWidth } = useWindowDimensions();
+    
+    const isTablet = windowWidth >= 768 || (Platform.OS === 'android' && windowWidth >= 600) || (Platform.OS === 'ios' && windowWidth >= 768);
+    
+    const { width: screenWidth } = Dimensions.get("window");
+    
+    const responsiveWidth: DimensionValue = isTablet ? '100%' : screenWidth * 0.9;
+    
+    const finalWidth = width !== undefined ? width : responsiveWidth;
+    const finalHeight = height || (isTablet ? 56 : 50);
+    
+    // Convertir a número para cálculos
+    const numericWidth = typeof finalWidth === 'number' ? finalWidth : screenWidth * 0.9;
+    const numericHeight = finalHeight;
+
     const pan = useRef(new Animated.ValueXY()).current;
     const [panResponder, setPanResponder] = useState<PanResponderInstance | null>(null);
 
@@ -50,12 +76,12 @@ export const PrimaryButtonDetails = forwardRef(
         onStartShouldSetPanResponder: () => !disabled,
         onMoveShouldSetPanResponder: () => !disabled,
         onPanResponderGrant: () => {
-          // Ampliar el área de respuesta
           return true;
         },
         onPanResponderMove: (_, gestureState) => {
           if (disabled) return;
-          let newX = Math.max(0, Math.min(gestureState.dx, width - 56));
+          const circleSize = numericHeight;
+          let newX = Math.max(0, Math.min(gestureState.dx, numericWidth - circleSize));
           pan.setValue({ x: newX, y: 0 });
         },
         onPanResponderRelease: (_, gestureState) => {
@@ -64,9 +90,9 @@ export const PrimaryButtonDetails = forwardRef(
             return;
           }
           
-          if (gestureState.dx > width / 2) {
+          if (gestureState.dx > numericWidth / 2) {
             Animated.spring(pan, {
-              toValue: { x: width - 56, y: 0 },
+              toValue: { x: numericWidth - numericHeight, y: 0 },
               useNativeDriver: false,
             }).start(async () => {
               try {
@@ -85,7 +111,7 @@ export const PrimaryButtonDetails = forwardRef(
       });
 
       setPanResponder(newPanResponder);
-    }, [disabled, width, onPress, autoReset]);
+    }, [disabled, numericWidth, numericHeight, onPress, autoReset]);
 
     useEffect(() => {
       if (disabled) {
@@ -95,11 +121,11 @@ export const PrimaryButtonDetails = forwardRef(
 
     if (!panResponder) {
       return (
-        <View style={[styles.container, { width, height }]}>
-          <View style={[styles.track, { width, height }]} />
-          <View style={[styles.button, { width, height, backgroundColor: "#D9DCE5" }]}>
+        <View style={[styles.container, { width: finalWidth, height: finalHeight }]}>
+          <View style={[styles.track, { width: finalWidth, height: finalHeight }]} />
+          <View style={[styles.button, { width: finalWidth, height: finalHeight, backgroundColor: "#D9DCE5" }]}>
             <View style={styles.centerTextContainer}>
-              <Text style={styles.buttonText}>{title}</Text>
+              <Text style={[styles.buttonText, isTablet && styles.buttonTextTablet]}>{title}</Text>
             </View>
           </View>
         </View>
@@ -107,35 +133,34 @@ export const PrimaryButtonDetails = forwardRef(
     }
 
     return (
-      <View style={[styles.container, { width, height }]}>
-        <View style={[styles.track, { width, height }]} />
+      <View style={[styles.container, { width: finalWidth, height: finalHeight }]}>
+        <View style={[styles.track, { width: finalWidth, height: finalHeight }]} />
 
-        {/* Capa del botón con el color de fondo */}
         <Animated.View
           style={[
             styles.button,
             {
-              width,
-              height,
+              width: finalWidth,
+              height: finalHeight,
               backgroundColor: disabled
                 ? "#D9DCE5"
                 : pan.x.interpolate({
-                    inputRange: [0, width - 56],
+                    inputRange: [0, numericWidth - numericHeight],
                     outputRange: [buttonColor, buttonColorEnd],
                     extrapolate: "clamp",
                   }),
             },
           ]}
         >
-          {/* Texto que cambia de color según la posición de la bolita */}
           <View style={styles.centerTextContainer}>
             <Animated.Text
               style={[
                 styles.buttonText,
+                isTablet && styles.buttonTextTablet,
                 {
                   color: pan.x.interpolate({
-                    inputRange: [0, width - 56],
-                    outputRange: [titleColor, buttonColor], // Cambia de blanco al color del botón
+                    inputRange: [0, numericWidth - numericHeight],
+                    outputRange: [titleColor, buttonColor],
                     extrapolate: "clamp",
                   }),
                 },
@@ -145,22 +170,20 @@ export const PrimaryButtonDetails = forwardRef(
             </Animated.Text>
           </View>
 
-          {/* Capa adicional que "cubre" el texto con el color de la bolita según la posición */}
           <Animated.View
             style={[
               styles.textMask,
               {
                 width: pan.x.interpolate({
-                  inputRange: [0, width - 56],
-                  outputRange: [0, width], // Se expande según la posición
+                  inputRange: [0, numericWidth - numericHeight],
+                  outputRange: [0, numericWidth],
                   extrapolate: "clamp",
                 }),
-                backgroundColor: disabled ? "#A0A4B0" : circleColor, // Color de la bolita
+                backgroundColor: disabled ? "#A0A4B0" : circleColor,
               },
             ]}
           />
 
-          {/* Contenedor más grande para el área sensible */}
           <Animated.View
             style={[
               styles.touchArea,
@@ -168,8 +191,8 @@ export const PrimaryButtonDetails = forwardRef(
                 transform: [
                   {
                     translateX: pan.x.interpolate({
-                      inputRange: [0, width - 56],
-                      outputRange: [0, width - 56],
+                      inputRange: [0, numericWidth - numericHeight],
+                      outputRange: [0, numericWidth - numericHeight],
                       extrapolate: "clamp",
                     }),
                   },
@@ -178,11 +201,13 @@ export const PrimaryButtonDetails = forwardRef(
             ]}
             {...panResponder.panHandlers}
           >
-            {/* Flecha que se mueve */}
             <View style={[styles.arrowContainerInline, { 
-              backgroundColor: disabled ? "#A0A4B0" : circleColor 
+              backgroundColor: disabled ? "#A0A4B0" : circleColor,
+              width: numericHeight,
+              height: numericHeight,
+              borderRadius: numericHeight / 2,
             }]}>
-              <Text style={styles.arrow}>→</Text>
+              <Text style={[styles.arrow, isTablet && styles.arrowTablet]}>→</Text>
             </View>
           </Animated.View>
         </Animated.View>
@@ -196,6 +221,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "flex-start",
     marginTop: 20,
+    alignSelf: "center",
   },
   track: {
     position: "absolute",
@@ -218,8 +244,12 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   buttonText: {
-    fontSize: 16,
+    color: '#fff',
     fontWeight: "bold",
+    fontSize: 16,
+  },
+  buttonTextTablet: {
+    fontSize: 18,
   },
   touchArea: {
     justifyContent: "center",
@@ -227,9 +257,6 @@ const styles = StyleSheet.create({
     zIndex: 3,
   },
   arrowContainerInline: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -237,6 +264,9 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  arrowTablet: {
+    fontSize: 22,
   },
   textMask: {
     position: "absolute",

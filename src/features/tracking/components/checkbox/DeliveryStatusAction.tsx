@@ -89,7 +89,6 @@ export function DeliveryStatusAction({
                     onPress={onUploadPhoto}
                     showEndIcon={true}
                     spaced={true}
-                    width={360}
                     height={33}
                 />
             ) : null

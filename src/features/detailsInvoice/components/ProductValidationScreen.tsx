@@ -479,7 +479,6 @@ export const ProductValidationSection = ({ onFinalize, onErrorAlert, onSuccessAl
                             title="Finalizar"
                             onPress={handleFinalize}
                             disabled={!isValid}
-                            width={348}
                             height={43}
                         />
                     </View>

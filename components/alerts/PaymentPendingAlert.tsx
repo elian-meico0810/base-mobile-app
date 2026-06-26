@@ -1,5 +1,5 @@
 import { AntDesign } from "@expo/vector-icons";
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 
 interface Props {
@@ -22,7 +22,6 @@ export function PaymentPendingAlert({
 
     useEffect(() => {
         if (visible) {
-            // Mostrar animación
             Animated.parallel([
                 Animated.timing(slideAnim, {
                     toValue: 0,
@@ -36,8 +35,12 @@ export function PaymentPendingAlert({
                 })
             ]).start();
 
+            const timer = setTimeout(() => {
+                onHide();
+            }, 5000);
+
+            return () => clearTimeout(timer);
         } else {
-            // Ocultar animación
             Animated.parallel([
                 Animated.timing(opacityAnim, {
                     toValue: 0,
@@ -62,7 +65,7 @@ export function PaymentPendingAlert({
                 { 
                     transform: [{ translateY: slideAnim }], 
                     opacity: opacityAnim,
-                    top: topMargin
+                    top: topMargin,
                 }
             ]}
         >
@@ -85,21 +88,22 @@ export function PaymentPendingAlert({
 const styles = StyleSheet.create({
     container: {
         position: "absolute",
-        top: 24, // valor por defecto
         left: 0,
         right: 0,
-        zIndex: 100, // zIndex bajo para que quede debajo de modales
+        zIndex: 100,
         alignItems: "center",
+        paddingHorizontal: '4%',
     },
     alertBox: {
-        width: 350,
+        width: '94%', 
+        maxWidth: 400, 
         minHeight: 54,
         backgroundColor: "#E8EEF9",
         borderWidth: 1,
         borderColor: "#4F74C4",
         borderRadius: 8,
         paddingVertical: 6,
-        paddingHorizontal: 10,
+        paddingHorizontal: '4%',
         flexDirection: "row",
         alignItems: "center",
         gap: 8,
@@ -107,6 +111,7 @@ const styles = StyleSheet.create({
     iconContainer: {
         justifyContent: "center",
         alignItems: "center",
+        flexShrink: 0,
     },
     iconWrapper: {
         width: 24,

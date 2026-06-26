@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
   keyboardAvoidingView: {
     flex: 1,
     width: '100%',
-    marginTop: 140, // Ajustado para que el panel blanco empiece donde debe
+    marginTop: 140,
   },
   whitePanel: {
     flex: 1,

@@ -68,6 +68,7 @@ export function ViewQrModal({
     };
 
     const condPago = dataInvoice?.condPago == TypeConPagoEnum.TAT;
+    
     const cleanWhatsapp = data?.whatsapp?.replace(/\D/g, '');
 
     const handleSendWhatsApp = () => {
@@ -125,7 +126,7 @@ export function ViewQrModal({
             />
 
             {/* MODAL */}
-            <View style={[styles.container, { width: width, height: 700}]}>
+            <View style={[styles.container, { width: width, height: "95%"}]}>
                 {/* BOTÓN X */}
                 <TouchableOpacity
                     style={styles.closeButton}
@@ -215,7 +216,7 @@ const styles = StyleSheet.create({
         fontWeight: "800",
         fontSize: 20,
         color: "#141D32",
-        marginBottom: 10,
+        marginBottom: 20,
         top: 10,
     },
     box: {

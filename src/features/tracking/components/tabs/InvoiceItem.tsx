@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Rubik',
   },
   invoiceContainer: {
-    width: '92%',
+    width: '98%',
     maxWidth: 400,
     padding: 10,
     borderRadius: 8,

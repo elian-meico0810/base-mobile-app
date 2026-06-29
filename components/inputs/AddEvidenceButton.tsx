@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { DimensionValue, Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 
 interface AddEvidenceButtonProps {
     onPress?: () => void;
@@ -14,7 +14,7 @@ interface AddEvidenceButtonProps {
     spaced?: boolean;
     disabled?: boolean;
     height?: number;
-    width?: number;
+    width?: DimensionValue;
 }
 
 export const AddEvidenceButton = ({
@@ -35,11 +35,11 @@ export const AddEvidenceButton = ({
     const { width: windowWidth } = useWindowDimensions();
     const isTablet = windowWidth >= 768 || (Platform.OS === 'android' && windowWidth >= 600) || (Platform.OS === 'ios' && windowWidth >= 768);
     const { width: screenWidth } = Dimensions.get("window");
-    
+
     // Calcular ancho responsivo
-    const responsiveWidth = isTablet ? '100%' : screenWidth * 0.92;
+    const responsiveWidth = isTablet ? '82%' : screenWidth * 0.82;
     const finalWidth = width !== undefined ? width : responsiveWidth;
-    
+
     // Calcular altura responsiva
     const defaultHeight = isTablet ? 48 : 40;
     const finalHeight = height !== undefined ? height : defaultHeight;
@@ -49,7 +49,7 @@ export const AddEvidenceButton = ({
             disabled={disabled}
             style={[
                 styles.container,
-                { 
+                {
                     backgroundColor,
                     width: finalWidth,
                     height: finalHeight,
@@ -62,15 +62,15 @@ export const AddEvidenceButton = ({
             {/* IZQUIERDA: icono + texto */}
             <View style={styles.startContent}>
                 {showStartIcon && (
-                    <Ionicons 
-                        name={iconName} 
-                        size={isTablet ? 20 : 18} 
-                        color={iconColor} 
+                    <Ionicons
+                        name={iconName}
+                        size={isTablet ? 20 : 18}
+                        color={iconColor}
                     />
                 )}
 
                 <Text style={[
-                    styles.text, 
+                    styles.text,
                     { color: textColor },
                     isTablet && styles.textTablet
                 ]}>
@@ -80,10 +80,10 @@ export const AddEvidenceButton = ({
 
             {/* DERECHA: icono final */}
             {showEndIcon && (
-                <Ionicons 
-                    name={endIconName} 
-                    size={isTablet ? 20 : 18} 
-                    color={iconColor} 
+                <Ionicons
+                    name={endIconName}
+                    size={isTablet ? 20 : 18}
+                    color={iconColor}
                 />
             )}
         </TouchableOpacity>

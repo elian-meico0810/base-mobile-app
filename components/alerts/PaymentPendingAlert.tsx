@@ -92,7 +92,6 @@ const styles = StyleSheet.create({
         right: 0,
         zIndex: 100,
         alignItems: "center",
-        paddingHorizontal: '4%',
     },
     alertBox: {
         width: '94%', 

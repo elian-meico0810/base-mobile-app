@@ -99,6 +99,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             hide.remove();
         };
     }, []);
+    
     const listGuideData = async () => {
         try {
             setLoading(true);

@@ -6,7 +6,6 @@ import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails'
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
-import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
 import { CausalDelivery, OptionsRefusedEnum, StatusDelivery, TypeDelivery, TypeInvoiceEnum, TypeQr } from '@/src/constants/GuideStates';
@@ -649,7 +648,7 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
                 paddingRight: insets.right,
             }
         ]}>
-            <NetworkStatus />
+            {/* <NetworkStatus /> */}
 
             {/* Fondo gris */}
             <View style={styles.background} />
@@ -769,7 +768,6 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
                         title="Entregar"
                         onPress={handleSubmitData}
                         disabled={!showStatusDelivery ? true : false}
-                        width={328}
                         height={43}
                     />
                 ) : (
@@ -780,7 +778,6 @@ export function InfoInvoiceCreditForm({ initialGuide, token = "", onSubmit, numb
                         title={routeStarted || buttonValue ? "Cerrar pedido" : "Ya llegué"}
                         onPress={routeStarted || buttonValue ? submitData : handleSubmit}
                         disabled={false}
-                        width={328}
                         height={43}
                         buttonColor={conceptDelivery ? undefined : closeButton || validateIsBotton ? "#DDDFE8" : undefined}
                         buttonColorEnd={conceptDelivery ? undefined : closeButton || validateIsBotton ? "#DDDFE8" : undefined}
@@ -987,18 +984,19 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     card: {
-        width: 360,
+        width: '92%',
+        maxWidth: 400,
         backgroundColor: '#FFFFFF',
         borderColor: '#F0F1F5',
         borderWidth: 1,
         borderRadius: 8,
         paddingTop: 10,
         paddingBottom: 16,
-        paddingLeft: 12,
-        paddingRight: 12,
+        paddingHorizontal: '4%',
         gap: 5,
         shadowColor: "#000",
         marginTop: 1,
+        alignSelf: 'center',
     },
     cardHeader: {
         alignItems: 'center',

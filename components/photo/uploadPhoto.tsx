@@ -393,7 +393,6 @@ export function UploadPhoto({
                         title={isLoading ? "Procesando..." : "Continuar"}
                         onPress={handleContinue}
                         disabled={isLoading}
-                        width={328}
                         height={43}
                     />
                 )}

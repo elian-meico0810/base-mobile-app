@@ -19,6 +19,8 @@ import {
   BackHandler,
   Dimensions,
   Image, Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   View
@@ -39,6 +41,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
   const [showErrorQRP, setShowErrorQRP] = useState(false);
   const [showErrorQRPMessage, setShowErrorQRPMessage] = useState("");
   const [exitModalVisible, setExitModalVisible] = useState(false);
+
   const insets = useSafeAreaInsets();
 
   const isValid = guide.length >= 1;
@@ -256,67 +259,64 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
         onClose={() => setExitModalVisible(false)}
       />
 
+      {/* Fondo con imagen */}
       <View style={[styles.backgroundFill, { width, height }]} pointerEvents="none">
         <Image
           source={require('@/assets/icons/Welcome.png')}
-          style={[styles.backgroundImage, { width, height: '100%' }]}
+          style={[styles.backgroundImage, { width, height: '92%' }]}
           resizeMode="cover"
         />
       </View>
+      <View style={styles.whiteBackground} pointerEvents="none" />
 
-      {[...Array(4)].map((_, i) => (
-        <View key={i} style={[styles.separator, { top: (i + 1) * (height / 5) - 1 }]} />
-      ))}
-
+      {/* Logo */}
       <View style={styles.logoContainer}>
         <LogoText style={styles.logo} />
         <Text style={styles.version}>Versión {String(appVersion).replace(/"/g, '').trim()}</Text>
       </View>
 
-      {/* Panel blanco con altura fija */}
-      <View style={[
-        styles.whitePanel,
-        { height: height - (heightValue ? 150 : 200) }
-      ]}>
-        <View style={styles.content}>
-          <View style={styles.topContent}>
-            <Text style={styles.title}>¡Bienvenido!</Text>
-            <Text style={styles.subtitle}>
-              Ingresa el número de guía para comenzar tu ruta
-            </Text>
+      {/* Panel blanco con KeyboardAvoidingView */}
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoidingView}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <View style={styles.whitePanel}>
+          <View style={styles.content}>
+            <View style={styles.topContent}>
+              <Text style={styles.title}>¡Bienvenido!</Text>
+              <Text style={styles.subtitle}>
+                Ingresa el número de guía para comenzar tu ruta
+              </Text>
 
-            <PrimaryInput
-              placeholder="Número de guía"
-              value={guide}
-              onChangeText={(text) => {
-                setGuide(text);
-                setErrorMessage("");
-              }}
-              error={errorMessage !== ""}
-            />
+              <PrimaryInput
+                placeholder="Número de guía"
+                value={guide}
+                onChangeText={(text) => {
+                  setGuide(text);
+                  setErrorMessage("");
+                }}
+                error={errorMessage !== ""}
+              />
 
-            {errorMessage !== "" && (
-              <Text style={styles.errorText}>{errorMessage}</Text>
-            )}
+              {errorMessage !== "" && (
+                <Text style={styles.errorText}>{errorMessage}</Text>
+              )}
+            </View>
           </View>
-
-          <View style={[
-            styles.buttonContainer,
-            {
-              marginBottom: keyboardHeight > 0 ? keyboardHeight + 25 : 45,
-              paddingBottom: keyboardHeight > 0 ? 10 : 0
-            }
-          ]}>
+          {/* Contenedor del botón */}
+          <View style={[styles.buttonContainer, {
+            marginBottom: keyboardHeight > 0 ? 10 : 2,
+          },]}>
             <PrimaryButton
               title="Ingresar"
               onPress={handleSubmit}
               disabled={!isValid}
-              width={328}
               height={43}
             />
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
+
       {showErrorQRP && (
         <TopErrorAlert
           visible={showErrorQRP}
@@ -326,48 +326,40 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
       )}
       {isLoading && <LoadingBlue />}
     </SafeAreaView>
-
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    position: 'relative',
-    alignItems: 'center',
+    backgroundColor: '#143881ff',
   },
   backgroundFill: {
     backgroundColor: '#143881ff',
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
   },
   backgroundImage: {
     zIndex: 1,
   },
-  separator: {
-    position: 'absolute',
-    zIndex: 2,
+  keyboardAvoidingView: {
+    flex: 1,
+    width: '100%',
+    marginTop: 140,
   },
   whitePanel: {
-    position: 'absolute',
-    top: 200,
-    left: 0,
-    right: 0,
+    flex: 1,
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    padding: 27,
-    zIndex: 3,
+    paddingHorizontal: 27,
+    paddingTop: 27,
   },
   content: {
     flex: 1,
-    justifyContent: 'space-between',
   },
   topContent: {
-    flex: 1,
+    justifyContent: 'center',
+    paddingTop: 10,
   },
   title: {
     fontFamily: "Rubik",
@@ -375,6 +367,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     textAlign: "center",
     marginBottom: 8,
+    color: '#141D32',
   },
   subtitle: {
     fontFamily: "Rubik",
@@ -382,6 +375,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: "center",
     marginBottom: 24,
+    color: '#6B7280',
+    paddingHorizontal: 10,
   },
   errorText: {
     color: "red",
@@ -395,11 +390,14 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     position: 'absolute',
-    top: 100,
+    top: 80, // Ajustado para mejor posición
+    left: 0,
+    right: 0,
     alignItems: 'center',
     zIndex: 10,
   },
   logo: {
+    // tus estilos de logo
   },
   version: {
     fontFamily: "Rubik",
@@ -408,5 +406,15 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 2,
     color: '#FFFFFF',
+  },
+  whiteBackground: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 200,
+    bottom: 0,
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
   },
 });

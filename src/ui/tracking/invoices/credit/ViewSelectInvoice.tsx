@@ -18,7 +18,7 @@ import { cleanSpaces, getDeviceDateTime, getDistanceInMeters, heightCaldulate } 
 import * as Location from "expo-location";
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from "react";
-import { BackHandler, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BackHandler, Dimensions, Keyboard, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 const { width, height } = Dimensions.get('window');
 
@@ -78,6 +78,9 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [buttonValue, setButtonValue] = useState(false);
     const [allowBack, setAllowBack] = useState(false);
     const [checkUbication, setCheckUbication] = useState(false);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const [selectionContentHeight, setSelectionContentHeight] = useState(0);
+
     const insets = useSafeAreaInsets();
     const router = useRouter();
 
@@ -129,6 +132,21 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             setShowCheckboxes(false);
         }
     }, [conceptDelivery]);
+
+    useEffect(() => {
+        const show = Keyboard.addListener("keyboardDidShow", (e) => {
+            setKeyboardHeight(e.endCoordinates.height);
+        });
+
+        const hide = Keyboard.addListener("keyboardDidHide", () => {
+            setKeyboardHeight(0);
+        });
+
+        return () => {
+            show.remove();
+            hide.remove();
+        };
+    }, []);
 
     const handleMultiSelect = (selectedGuides: GuideDetails[]) => {
         try {
@@ -564,8 +582,6 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
 
         }
     }, [selectedMultipleInvoices]);
-    const isSmallScreen = height <= 780;
-
     return (
         <SafeAreaView style={[
             styles.container,
@@ -638,24 +654,22 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                     </View>
                 </View>
                 <View style={styles.headerContainerTwo}>
-                    <View style={{ width: '100%' }}>
-                        <Text style={styles.headerTitleTWO}>Ordenes a entregar</Text>
-                        {/* Solo mostrar espacio y alerta cuando se cumpla la condición */}
-                        {(validateCheckbox && selectedMultipleInvoices.length <= 1) && (
-                            <View style={styles.alertSpacer}>
-                                <PaymentPendingAlert
-                                    visible={true}
-                                    title="Evidencia pendiente"
-                                    subtitle="Para cerrar el pedido, debes cargar la evidencia de todas las ordenes."
-                                    onHide={() => setShowPaymentPending(false)}
-                                />
-                            </View>
-                        )}
-                    </View>
+                    <Text style={styles.headerTitleTWO}>Ordenes a entregar</Text>
+                    {/* Solo mostrar espacio y alerta cuando se cumpla la condición */}
+                    {(validateCheckbox && selectedMultipleInvoices.length <= 1) && (
+                        <View style={styles.alertSpacer}>
+                            <PaymentPendingAlert
+                                visible={true}
+                                title="Evidencia pendiente"
+                                subtitle="Para cerrar el pedido, debes cargar la evidencia de todas las ordenes."
+                                onHide={() => setShowPaymentPending(false)}
+                            />
+                        </View>
+                    )}
                 </View>
 
                 {((!showCheckbox || activateSelect) && guide) && (
-                    <View style={{ flex: 1, padding: 16 }}>
+                    <View style={styles.invoicesListWrapper}>
                         <InvoicesList
                             guide={guide}
                             onInvoicesMultiSelect={handleMultiSelect}
@@ -705,12 +719,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             {guide?.estado === 'Pendiente' && (
                 <View style={[styles.redBackground, { height: heightValue ? 100 : 90 }]} />
             )}
-
-            <View style={[styles.footer, {
-
-                marginBottom: isSmallScreen ? 0 : heightValue ? 0 : 20,
-                bottom: isSmallScreen ? 12 : heightValue ? 60 : 30
-            }]}>
+            <View style={[styles.footer, { marginBottom: keyboardHeight > 0 ? keyboardHeight + 25 : 15 }]}>
 
                 {(() => {
                     if (guide?.estado !== 'Pendiente') return null;
@@ -720,7 +729,6 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                                 title={"Continuar"}
                                 onPress={nextPages ? handleNextPage : handleSubmitData}
                                 disabled={false}
-                                width={328}
                                 height={43}
                             />
                         );
@@ -735,7 +743,6 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                                     title={conditionButton || buttonValue ? "Cerrar pedido" : "Ya llegué"}
                                     onPress={conditionButton || buttonValue ? submitData : handleSubmit}
                                     disabled={false}
-                                    width={328}
                                     height={43}
                                     buttonColor={validateCheckboxlength ? undefined : conditionButton ? "#DDDFE8" : undefined}
                                     buttonColorEnd={validateCheckboxlength ? undefined : conditionButton ? "#DDDFE8" : undefined}
@@ -851,8 +858,13 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         marginBottom: 10,
     },
+    invoicesListWrapper: {
+        width: '92%',
+        paddingHorizontal: 0,
+    },
     card: {
-        width: 360,
+        width: '92%',
+        maxWidth: 400,
         backgroundColor: '#FFFFFF',
         borderColor: '#F0F1F5',
         borderWidth: 1,
@@ -864,6 +876,12 @@ const styles = StyleSheet.create({
         gap: 5,
         shadowColor: "#000",
         marginTop: 1,
+        alignSelf: 'center',
+    },
+    invoicesWrapper: {
+        width: '100%',
+        alignItems: 'center',
+        paddingHorizontal: 0, // Elimina el padding
     },
     cardHeader: {
         alignItems: 'center',
@@ -994,7 +1012,6 @@ const styles = StyleSheet.create({
     alertSpacer: {
         minHeight: 80,
         width: '100%',
-        position: 'relative',
     },
     qrButtonContent: {
         flexDirection: 'row',

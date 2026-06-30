@@ -15,7 +15,7 @@ import { cleanSpaces, getDeviceDateTime, getDistanceInMeters, heightCaldulate } 
 import * as Location from "expo-location";
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from "react";
-import { BackHandler, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BackHandler, Dimensions, Keyboard, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 const { width, height } = Dimensions.get('window');
 
@@ -53,7 +53,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     const [validateIsBotton, setvalidateIsBotton] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState<GuideDetails | null>(null);
     const [activeView, setActiveView] = useState(true);
-    const [buttonValue, setButtonValue] = useState(false);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [allowBack, setAllowBack] = useState(false);
     const [disabledInvoices, setDisabledInvoices] = useState<Set<string>>(new Set());
     const btnRef = useRef<any>(null);
@@ -85,6 +85,20 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
     };
 
 
+    useEffect(() => {
+        const show = Keyboard.addListener("keyboardDidShow", (e) => {
+            setKeyboardHeight(e.endCoordinates.height);
+        });
+
+        const hide = Keyboard.addListener("keyboardDidHide", () => {
+            setKeyboardHeight(0);
+        });
+
+        return () => {
+            show.remove();
+            hide.remove();
+        };
+    }, []);
 
     const listGuideData = async () => {
         try {
@@ -469,7 +483,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                             <Text style={styles.headerTitleTWO}>Ordenes a entregar</Text>
                         </View>
                         {guide && (
-                            <View style={{ flex: 1, padding: 16 }}>
+                            <View style={styles.invoicesListWrapper}>
+
                                 <InvoicesList
                                     guide={guide}
                                     onInvoiceSelect={handleInvoiceSelect}
@@ -490,10 +505,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                         <View style={[styles.redBackground, { height: heightValue ? 100 : 90 }]} />
                     )}
 
-                    <View style={[styles.footer, {
-                        marginBottom: isSmallScreen ? 0 : heightValue ? 0 : 20,
-                        bottom: isSmallScreen ? 12 : heightValue ? 60 : 30
-                    }]}>
+                    <View style={[styles.footer, { marginBottom: keyboardHeight > 0 ? keyboardHeight + 25 : 15 }]}>
+
 
                         {guide?.estado === 'Pendiente' && (
                             <PrimaryButtonDetails
@@ -503,7 +516,6 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                                 title={conditionEntryVisibleTwo ? "Cerrar pedido" : "Ya llegué"}
                                 onPress={conditionEntryVisibleTwo ? submitData : handleSubmit}
                                 disabled={false}
-                                width={328}
                                 height={43}
                                 buttonColor={conditionEntryVisible ? "#DDDFE8" : undefined}
                                 buttonColorEnd={conditionEntryVisible ? "#DDDFE8" : undefined}
@@ -576,7 +588,8 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     card: {
-        width: 360,
+        width: '92%',
+        maxWidth: 400,
         minHeight: 240,
         backgroundColor: '#FFFFFF',
         borderColor: '#F0F1F5',
@@ -589,6 +602,7 @@ const styles = StyleSheet.create({
         gap: 5,
         shadowColor: "#000",
         marginTop: 1,
+        alignSelf: 'center',
     },
     cardHeader: {
         alignItems: 'center',
@@ -747,6 +761,11 @@ const styles = StyleSheet.create({
         height: 90,
         backgroundColor: "#F9F9FA",
         zIndex: 0,
+    },
+    invoicesListWrapper: {
+        width: '92%',
+        paddingHorizontal: 0,
+        padding: 16
     },
 });
 

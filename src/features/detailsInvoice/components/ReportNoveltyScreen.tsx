@@ -267,8 +267,7 @@ export function ReportNoveltyScreen({
                         <PrimaryButton
                             title={'Confirmar '}
                             onPress={handleFinalize}
-                            disabled={!hasValues} // Usamos el estado separado
-                            width={348}
+                            disabled={!hasValues} 
                             height={43}
                         />
 

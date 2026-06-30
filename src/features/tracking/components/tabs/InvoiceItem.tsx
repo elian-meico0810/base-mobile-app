@@ -186,6 +186,8 @@ const InvoiceItem = ({
           showEndIcon={true}
           spaced={true}
           disabled={true}
+          height={33}
+
         />
       )}
     </TouchableOpacity>
@@ -226,7 +228,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Rubik',
   },
   invoiceContainer: {
-    width: 340,
+    width: '98%',
+    maxWidth: 400,
     padding: 10,
     borderRadius: 8,
     borderWidth: 1,

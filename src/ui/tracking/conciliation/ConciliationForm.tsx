@@ -294,7 +294,6 @@ export function ConciliationForm({
           }
           }
           disabled={!isSuccess}
-          width={328}
           height={43}
         />
       </View>

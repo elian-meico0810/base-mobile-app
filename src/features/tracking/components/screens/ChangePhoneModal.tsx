@@ -18,7 +18,6 @@ interface ChangePhoneModalProps {
     onClose: () => void;
     onConfirm: (phone: string) => void;
     onAlert: () => void;
-
 }
 
 export function ChangePhoneModal({ visible, onClose, onConfirm, onAlert }: ChangePhoneModalProps) {
@@ -100,19 +99,12 @@ export function ChangePhoneModal({ visible, onClose, onConfirm, onAlert }: Chang
                                     const onlyNumbers = text.replace(/[^0-9]/g, '');
                                     setPhone(onlyNumbers);
                                 }}
-                                style={[
-                                    styles.input,
-                                    {
-                                        width: 350,
-                                        height: 43,
-                                    }
-                                ]}
+                                style={styles.input}
                                 placeholder="Número de teléfono"
                                 keyboardType="number-pad"
                                 maxLength={10}
                                 autoFocus={true}
                             />
-
 
                             <PrimaryButton
                                 title="Confirmar"
@@ -126,16 +118,13 @@ export function ChangePhoneModal({ visible, onClose, onConfirm, onAlert }: Chang
                                         setPhone("");
                                     }, 300);
                                 }}
-                                width={350}
                                 height={43}
-
                                 disabled={!isValid}
                             />
                         </View>
                     </Animated.View>
                 </View>
             </TouchableWithoutFeedback>
-
         </Modal>
     );
 }
@@ -153,12 +142,14 @@ const styles = StyleSheet.create({
         justifyContent: "flex-end",
     },
     modal: {
+        width: '100%',
+        maxWidth: 400, 
+        alignSelf: 'center',
         backgroundColor: "#FFFFFF",
-        padding: 20,
+        padding: '5%',
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         minHeight: 280,
-        maxHeight: "70%",
     },
     title: {
         fontFamily: "Rubik",
@@ -175,6 +166,7 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     input: {
+        width: '100%', 
         height: 46,
         borderRadius: 10,
         borderWidth: 1,

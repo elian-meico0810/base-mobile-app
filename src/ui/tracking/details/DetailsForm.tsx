@@ -95,6 +95,9 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
     const [routeCompleted, setRouteCompleted] = useState(false);
     const [showScanner, setShowScanner] = useState(false);
     const [qrToken, setQrToken] = useState<string | null>(null);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+    const availableHeight = height - 200 - (keyboardHeight > 0 ? keyboardHeight : 0);
 
     useEffect(() => {
         const initializeToken = async () => {
@@ -199,7 +202,6 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
 
         fetchToken();
     }, []);
-    const [keyboardHeight, setKeyboardHeight] = useState(0);
 
     useEffect(() => {
         const keyboardWillShow = Keyboard.addListener('keyboardWillShow', (e) => {
@@ -628,7 +630,10 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
 
             <View style={[
                 styles.whitePanel,
-                { height: height - (heightValue ? 150 : 200) }
+                {
+                    height: availableHeight,
+                    paddingBottom: keyboardHeight > 0 ? 10 : 50
+                }
             ]}>
 
                 <View style={styles.content}>
@@ -777,14 +782,13 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                     {(!routeStarted && (statusValue == StatusInvoice.PENDING)) && (
                         <View style={{
                             alignItems: 'center',
-                            marginBottom: isSmallScreen ? (keyboardHeight > 0 ? keyboardHeight + 20 : 0) : (keyboardHeight > 0 ? keyboardHeight + 20 : 45)
+                            marginBottom: keyboardHeight > 0 ? 10 : 2,
                         }}>
                             <PrimaryButtonDetails
                                 ref={btnRef}
                                 title="Comenzar ruta"
                                 onPress={handleSubmit}
                                 disabled={!isValid}
-                                width={328}
                                 height={43}
                                 autoReset={validateException}
                             />

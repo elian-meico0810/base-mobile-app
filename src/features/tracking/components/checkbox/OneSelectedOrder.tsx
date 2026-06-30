@@ -137,34 +137,27 @@ const OneSelectedOrder: React.FC<OneSelectedOrderProps> = ({
                         </TouchableOpacity>
                         <View style={styles.contentContainer}>
                             {/* Estado */}
-                            <View style={[
-                                styles.statusContainer,
-                            ]}>
-                                <Text style={[
-                                    styles.status,
-                                    // ]}>{hasEvidence(invoice.estado) ? "Entregado" : "Pendiente"}</Text>
-                                ]}>{capitalizeFirst(invoice?.estado)}</Text>
+                            <View style={styles.statusContainer}>
+                                <Text style={styles.status}>
+                                    {capitalizeFirst(invoice?.estado)}
+                                </Text>
                             </View>
 
-                            {/* Order + Valor + Flecha */}
-                            <View style={styles.rowBetween}>
-                                <Text style={styles.orderText}>
-                                    Factura n° {invoiceOne.numeroFactura || '00000'}
+                            {/* Order + Valor */}
+                            <View style={styles.infoRow}>
+                                <Text style={styles.orderText} numberOfLines={1} ellipsizeMode="tail">
+                                    Factura n° {invoiceOne?.numeroFactura || '00000'}
                                 </Text>
 
-                                <View style={styles.priceRow}>
-                                    <Text style={styles.amountText}>
-                                        {capitalizeFirst(value)}
-                                    </Text>
-
-                                </View>
+                                <Text style={styles.amountText}>
+                                    {capitalizeFirst(value)}
+                                </Text>
                             </View>
 
                             {/* Tipo de factura */}
                             <Text style={styles.codText} numberOfLines={1} ellipsizeMode="tail">
                                 {capitalizeFirst(value)}
                             </Text>
-
                         </View>
                     </View>
                 </View>
@@ -172,6 +165,7 @@ const OneSelectedOrder: React.FC<OneSelectedOrderProps> = ({
                 <ScrollView
                     style={styles.scrollView}
                     showsVerticalScrollIndicator={false}
+                    contentContainerStyle={styles.scrollContent}
                 >
                     <DeliveryStatus
                         onStatusChange={handleStatusChange}
@@ -184,7 +178,7 @@ const OneSelectedOrder: React.FC<OneSelectedOrderProps> = ({
                         selectedStatus={selectedStatus}
                         conceptDelivery={conceptDelivery}
                         typeDerlivery={typeDerlivery}
-                        containerWidth={300}
+                        
                     />
                 </ScrollView>
             </View>
@@ -195,28 +189,37 @@ const OneSelectedOrder: React.FC<OneSelectedOrderProps> = ({
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: '#ffffffff',
+        backgroundColor: '#FFFFFF',
+        width: '100%',
     },
     container: {
-        width: 340,
+        width: '92%', // Cambiado de 340 fijo
         padding: 12,
         borderRadius: 8,
         borderWidth: 1,
         borderColor: '#F0F1F5',
         backgroundColor: '#FFFFFF',
         opacity: 1,
+        alignSelf: 'center',
+        marginHorizontal: 16, 
     },
     header: {
         padding: 12,
         borderRadius: 6,
         marginBottom: 12,
+        width: '100%',
     },
     headerRow: {
         flexDirection: 'row',
-        alignItems: 'center',
+        width: '100%',
     },
     scrollView: {
         flex: 1,
+        width: '100%',
+    },
+    scrollContent: {
+        flexGrow: 1,
+        paddingBottom: 20,
     },
     checkbox: {
         width: 20,
@@ -228,6 +231,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginRight: 10,
         backgroundColor: '#FFFFFF',
+        flexShrink: 0, // Evita que el checkbox se encoja
     },
     checkboxSelected: {
         backgroundColor: '#164194',
@@ -252,6 +256,36 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#4F74C4',
     },
+    contentContainer: {
+        flex: 1,
+        marginLeft: 10,
+        minWidth: 0, // Permite que el contenido se ajuste
+    },
+    infoRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%',
+        flexWrap: 'wrap', // Permite wrap en pantallas pequeñas
+        gap: 4, // Espacio entre elementos
+    },
+    orderText: {
+        fontFamily: 'Rubik',
+        fontWeight: '400',
+        fontSize: 12,
+        color: '#141D32',
+        flex: 1, // Ocupa el espacio disponible
+        marginRight: 8,
+        minWidth: 100, // Ancho mínimo para el texto
+    },
+    amountText: {
+        fontFamily: 'Rubik',
+        fontSize: 14,
+        fontWeight: '800',
+        color: '#141D32',
+        lineHeight: 16,
+        flexShrink: 0, // Evita que el precio se encoja
+    },
     codText: {
         fontFamily: 'Rubik',
         fontWeight: '400',
@@ -260,34 +294,19 @@ const styles = StyleSheet.create({
         color: '#788095',
         marginTop: 8,
         flexWrap: 'wrap',
-    },
-    amountText: {
-        fontFamily: 'Rubik',
-        fontSize: 14,
-        fontWeight: '800',
-        color: '#141D32',
-        lineHeight: 16,
-    },
-    rowBetween: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
-    orderText: {
-        fontFamily: 'Rubik',
-        fontWeight: '400',
-        fontSize: 12,
-        color: '#141D32',
+        flex: 1,
     },
     priceRow: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 15,
+        flexShrink: 0,
     },
-    contentContainer: {
-        flex: 1,
-        marginLeft: 10,
+    rowBetween: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%',
     },
 });
-
 export default OneSelectedOrder;

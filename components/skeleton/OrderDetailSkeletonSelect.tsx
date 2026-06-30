@@ -84,10 +84,6 @@ export const OrderDetailSkeletonSelect = () => {
 
             </View>
 
-            {/* Footer con botón skeleton */}
-            <View style={styles.footer}>
-                <View style={[styles.skeletonButton, { width: 328, height: 43 }]} />
-            </View>
         </View>
     );
 };
@@ -100,7 +96,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F9F9FA',
     },
     headerContainer: {
-        width: '100%',
+        width: '92%',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -110,7 +106,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F9F9FA',
     },
     headerContainerTwo: {
-        width: '100%',
+        width: '92%',
         backgroundColor: '#F9F9FA',
         marginTop: 15,
         paddingLeft: 16,
@@ -118,7 +114,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     card: {
-        width: 360,
+        width: '92%',
+        maxWidth: 400,
         minHeight: 240,
         backgroundColor: '#FFFFFF',
         borderColor: '#F0F1F5',
@@ -131,6 +128,7 @@ const styles = StyleSheet.create({
         gap: 5,
         shadowColor: "#000",
         marginTop: 1,
+        alignSelf: 'center',
     },
     cardHeader: {
         alignItems: 'center',
@@ -143,7 +141,8 @@ const styles = StyleSheet.create({
     divider: {
         height: 1,
         backgroundColor: '#E0E0E0',
-        width: '100%',
+        width: '92%',
+        maxWidth: 400,
         marginVertical: 8,
     },
     row: {
@@ -178,10 +177,10 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
     footer: {
-        position: 'absolute',
-        bottom: 60,
-        width: '100%',
+        width: '92%',
         alignItems: 'center',
+        minHeight: 240,
+
     },
     skeletonIcon: {
         backgroundColor: "#E0E0E0",

@@ -24,7 +24,8 @@ export function PrimaryButton({
   const responsiveWidth: DimensionValue = isTablet ? '100%' : screenWidth * 0.9;
   
   const finalWidth: DimensionValue = width !== undefined ? width : responsiveWidth;
-  const finalHeight = height || (isTablet ? 56 : 50);
+  
+  const finalMinHeight = height || (isTablet ? 56 : 50);
 
   return (
     <TouchableOpacity
@@ -32,15 +33,25 @@ export function PrimaryButton({
         styles.button, 
         { 
           backgroundColor: disabled ? '#D9DCE5' : '#164194', 
-          width: finalWidth, 
-          height: finalHeight,
-          paddingVertical: isTablet ? 16 : 0,
+          width: finalWidth,
+          minHeight: finalMinHeight, 
+          paddingVertical: isTablet ? 14 : 12,
+          paddingHorizontal: isTablet ? 24 : 16,
         }
       ]}
       onPress={onPress}
       disabled={disabled}
+      activeOpacity={0.7}
     >
-      <Text style={[styles.buttonText, isTablet && styles.buttonTextTablet]}>
+      <Text 
+        style={[
+          styles.buttonText, 
+          isTablet && styles.buttonTextTablet
+        ]}
+        numberOfLines={1} 
+        adjustsFontSizeToFit 
+        minimumFontScale={0.8}
+      >
         {title}
       </Text>
     </TouchableOpacity>
@@ -53,13 +64,19 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     alignItems: "center",
     justifyContent: "center",
+    flexDirection: 'row',
+    shadowColor: "#000",
+  
   },
   buttonText: {
     color: '#fff',
     fontWeight: "bold",
     fontSize: 16,
+    textAlign: 'center',
+    textAlignVertical: 'center',
   },
   buttonTextTablet: {
-    fontSize: 18,
+    fontSize: 20,
+   
   },
 });

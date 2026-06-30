@@ -99,7 +99,7 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
             hide.remove();
         };
     }, []);
-    
+
     const listGuideData = async () => {
         try {
             setLoading(true);
@@ -483,7 +483,8 @@ export function ViewSelectInvoice({ initialGuide, token = "", onSubmit, numberGu
                             <Text style={styles.headerTitleTWO}>Ordenes a entregar</Text>
                         </View>
                         {guide && (
-                            <View style={{ flex: 1, padding: 16 }}>
+                            <View style={styles.invoicesListWrapper}>
+
                                 <InvoicesList
                                     guide={guide}
                                     onInvoiceSelect={handleInvoiceSelect}
@@ -760,6 +761,11 @@ const styles = StyleSheet.create({
         height: 90,
         backgroundColor: "#F9F9FA",
         zIndex: 0,
+    },
+    invoicesListWrapper: {
+        width: '92%',
+        paddingHorizontal: 0,
+        padding: 16
     },
 });
 

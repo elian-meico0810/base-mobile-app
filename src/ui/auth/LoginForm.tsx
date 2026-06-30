@@ -263,7 +263,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
       <View style={[styles.backgroundFill, { width, height }]} pointerEvents="none">
         <Image
           source={require('@/assets/icons/Welcome.png')}
-          style={[styles.backgroundImage, { width, height: '100%' }]}
+          style={[styles.backgroundImage, { width, height: '92%' }]}
           resizeMode="cover"
         />
       </View>
@@ -272,7 +272,7 @@ export function LoginForm({ onSubmit }: { onSubmit: (guide: string) => void | Pr
       {/* Logo */}
       <View style={styles.logoContainer}>
         <LogoText style={styles.logo} />
-        <Text style={styles.version}>Versión QA {String('2.1.5').replace(/"/g, '').trim()}</Text>
+        <Text style={styles.version}>Versión {String('2.1.5').replace(/"/g, '').trim()}</Text>
       </View>
 
       {/* Panel blanco con KeyboardAvoidingView */}

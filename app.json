@@ -2,7 +2,7 @@
   "expo": {
     "name": "MeiTruck",
     "slug": "Meico-Track",
-    "version": "2.1.0",
+    "version": "2.1.5",
     "orientation": "portrait",
     "icon": "./assets/meitruck/1024.png",
     "scheme": "basemobileapp",
@@ -12,7 +12,7 @@
       "supportsTablet": true
     },
     "android": {
-      "versionCode": 4,
+      "versionCode": 5,
       "adaptiveIcon": {
         "foregroundImage": "./assets/meitruck/meitruck_adaptive_fore.png",
         "backgroundColor": "#164194",

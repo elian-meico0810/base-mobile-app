@@ -3,6 +3,7 @@ import { SecondaryButtonCancel } from '@/components/buttons/SecondaryButtonCance
 import { ExcetptionModalProducts } from '@/components/generals/ExcetptionModalProducts';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
+import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { GuideDetailSkeleton } from '@/components/skeleton/GuideDetailSkeleton';
 import { ThemedView } from '@/components/themed-view';
@@ -210,7 +211,7 @@ export function ViewAcceptationTerms({ token = "", onSubmit, numberGuide, isSele
     const pedidosFlat = guide?.details?.flatMap(d => d.pedidos) || [];
     return (
         <ThemedView style={styles.container}>
-            {/* <NetworkStatus /> */}
+            <NetworkStatus /> 
 
             {/* Fondo gris */}
             <View style={styles.background} />

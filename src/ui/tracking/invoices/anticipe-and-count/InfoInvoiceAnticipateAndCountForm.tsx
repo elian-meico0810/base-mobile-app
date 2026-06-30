@@ -6,6 +6,7 @@ import { PrimaryButtonDetails } from '@/components/buttons/PrimaryButtonDetails'
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
+import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { ENV_DEV } from '@/src/constants/apiRoutes';
@@ -627,7 +628,7 @@ export function InfoInvoiceAnticipateAndCountForm({ initialGuide, token = "", on
 
     return (
         <ThemedView style={styles.container}>
-            {/* <NetworkStatus /> */}
+            <NetworkStatus />
 
             {/* Fondo gris */}
             <View style={styles.background} />

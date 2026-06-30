@@ -1,6 +1,7 @@
 import { TopErrorAlert } from "@/components/alerts/TopErrorAlert";
 import { PrimaryButton } from "@/components/buttons/PrimaryButton";
 import { LoadingBlue } from "@/components/generals/LoadingBlue";
+import { NetworkStatus } from "@/components/generals/NetworkStatus";
 import { ThemedView } from "@/components/themed-view";
 import { GuideDetails } from "@/src/features/tracking/domain/details/DetailsGuide";
 import { detailsRepositoryImpl } from "@/src/features/tracking/infrastructure/details/detailsRepositoryImpl";
@@ -360,7 +361,7 @@ export function ViewFileFormOTP({
 
     return (
         <ThemedView style={styles.mainContainer}>
-            {/* <NetworkStatus /> */}
+           <NetworkStatus /> 
 
             {/* Header con título */}
             <View style={styles.headerContainer}>

@@ -1,6 +1,7 @@
 import { ActionAllData } from '@/components/generals/ActionAllData';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
+import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { CausalRefusedEnum, TyepeCausalRefusedEnum, TypeCaculateValueEnum, TypeDetailsEnum } from '@/src/constants/GuideStates';
@@ -467,7 +468,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
                     // Verificar si AHORA es después de medianoche del día guardado
                     // if (now > midnightOfSavedDay) {
-                        tokenData();
+                    tokenData();
                     // }
                 } else {
                     tokenData();
@@ -492,7 +493,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
     }, [modalStatusNovelty, productItemData?.id, successButton]);
 
 
-        const tokenData = async () => {
+    const tokenData = async () => {
         try {
 
             const responseData = await detailsRepositoryImpl.tokenPorducts(token);
@@ -536,7 +537,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
     return (
         <ThemedView style={styles.container}>
-            {/* <NetworkStatus /> */}
+            <NetworkStatus />
 
             {/* Fondo gris */}
             <View style={styles.background} />

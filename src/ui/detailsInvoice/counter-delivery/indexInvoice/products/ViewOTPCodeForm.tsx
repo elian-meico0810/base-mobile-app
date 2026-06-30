@@ -3,6 +3,7 @@ import { TopSuccessAlert } from '@/components/alerts/TopSuccessAlert';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
+import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhotoOTP } from '@/components/photo/uploadPhotoOTP';
 import { ThemedView } from '@/components/themed-view';
 import { GuideDetails, ResponseOTPInitPorps, ResponseOTPInitTwoPorps } from '@/src/features/tracking/domain/details/DetailsGuide';
@@ -536,7 +537,7 @@ export function ViewOTPCodeForm({
 
     return (
         <ThemedView style={styles.container}>
-            {/* <NetworkStatus /> */}
+            <NetworkStatus />
 
             {/* Fondo gris */}
             <View style={styles.background} />

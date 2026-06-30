@@ -1,6 +1,7 @@
 import { ActionAllData } from '@/components/generals/ActionAllData';
 import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
+import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { ThemedView } from '@/components/themed-view';
 import { CausalRefusedEnum, TyepeCausalRefusedEnum, TypeCaculateValueEnum, TypeConPagoEnum, TypeDetailsEnum, TypeInvoiceEnum } from '@/src/constants/GuideStates';
@@ -580,7 +581,7 @@ export function ProductForm({ initialGuide, token = "", onSubmit, numberGuide, i
 
     return (
         <ThemedView style={styles.container}>
-            {/* <NetworkStatus /> */}
+            <NetworkStatus /> 
 
             {/* Fondo gris */}
             <View style={styles.background} />

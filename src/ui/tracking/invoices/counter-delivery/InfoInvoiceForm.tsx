@@ -7,7 +7,6 @@ import { ExceptionModal } from '@/components/generals/ExecptionModal';
 import { ExecptionModalValidate } from '@/components/generals/ExecptionModalValidate';
 import { LoadingBlue } from '@/components/generals/LoadingBlue';
 import { LoadingSunburst } from '@/components/generals/LoadingSunburst';
-import { NetworkStatus } from '@/components/generals/NetworkStatus';
 import { UploadPhoto } from '@/components/photo/uploadPhoto';
 import { UploadPhotoOTP } from '@/components/photo/uploadPhotoOTP';
 import { OrderDetailSkeleton } from '@/components/skeleton/OrderDetailSkeleton ';
@@ -137,6 +136,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const [currentQRType, setCurrentQRType] = useState(qrType || undefined);
     const [currentQRData, setCurrentQRData] = useState(qrBase64 || undefined);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const condPago = guide?.facturas[0]?.condPago === TypeConPagoEnum.TAT;
 
     const [qrInfo, setQrInfo] = useState<{
         type?: string;
@@ -511,7 +511,6 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     };
 
 
-    const condPago = guide?.facturas[0]?.condPago === TypeConPagoEnum.TAT;
 
     const handlSendWhatsApp = async () => {
         try {
@@ -1224,8 +1223,12 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
         }
     }
 
+
     const handleSubmitConfirmation = async () => {
         try {
+            console.log("condPago: ", guide?.facturas[0]?.condPago);
+
+            console.log("Paso por aca handleSubmitConfirmation");
 
             if (!Number.isFinite(totalValue) || !Number.isFinite(totalRecauder)) {
                 btnRef.current?.reset();
@@ -1254,7 +1257,7 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
 
             setLoading(true);
             setButtonValueOTP(true);
-
+            
             if (isSelectInvocies) {
                 const orderSuccess = await sendOder();
                 if (!orderSuccess) {
@@ -1265,8 +1268,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 {
                     idDireccion: Number(guide?.idDireccion),
                     numeroFactura: String(guide?.facturas?.[0]?.numeroFactura),
-                    numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
-                    // numeroDestino: "+573015752485",
+                    // numeroDestino: "+57" + String(guide?.whatsapp).replace(/\D/g, ''),
+                    numeroDestino: "+573015752485",
                     valorOriginal: String(totalValue),
                     valorPagado: String(totalOrderPayment),
                     validarCodigo: false
@@ -1358,6 +1361,52 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
     const discount = Number(guide?.facturas[0]?.dfr ?? 0);
     const isZero = discount === 0;
     const isValidateCondition = (detailsCounterDelivery || closeButton || isViewDetailsPorducts);
+
+    const submitDataTAT = async () => {
+        try {
+            console.log("condPago: ", guide?.facturas[0]?.condPago);
+
+            console.log("Paso por aca submitDataTAT");
+            if (isSelectInvocies) {
+                const orderSuccess = await sendOder();
+                if (!orderSuccess) {
+                    return;
+                }
+            }
+            setLoading(true);
+            const response = await invoiceRepositoryImpl.closeAddresses(
+                guide?.idDireccion || 0,
+                token
+            );
+
+            if (response?.statusCode === 200) {
+                setEntryVisible(true);
+                setRouteStarted(true);
+                if (isSelectInvocies) {
+                    router.push(
+                        `/views/indexInvoice?guide=${encodeURIComponent(JSON.stringify(guide))}&numberGuide=${numberGuide}&token=${encodeURIComponent(token ?? "")}&isSelectInvocies=${'true'}&documentMeico=${guide?.facturas[0]?.numeroFactura}&routeStarted=${'true'}`
+                    );
+                } else {
+                    router.push(
+                        `/views/details?guide=${numberGuide}&token=${encodeURIComponent(token ?? "")}`
+                    );
+                }
+            } else {
+                setValidateException(true);
+                btnRef.current?.reset();
+                setModalTitle("¡Alerta!");
+                setModalMessage(response?.message || "No se pudo iniciar la ruta. Intente nuevamente.");
+                setModalVisible(true);
+            }
+        } catch (error: any) {
+            setModalTitle("¡Error!");
+            setModalMessage(error?.data?.message ?? "Ocurrio un error inesperado.");
+            setModalVisible(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <SafeAreaView style={[
             styles.container,
@@ -1366,7 +1415,8 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                 paddingRight: insets.right,
             }
         ]}>
-            <NetworkStatus />
+            {/* <NetworkStatus /> */}
+
 
             {/* Fondo gris */}
             <View style={styles.background} />
@@ -1750,7 +1800,13 @@ export function InfoInvoiceForm({ initialGuide, token = "", onSubmit, numberGuid
                             autoReset={validateException}
                             key="Entregar"
                             title="Entregar"
-                            onPress={handleSubmitConfirmation}
+                            onPress={() => {
+                                if (condPago) {
+                                    submitDataTAT();
+                                } else {
+                                    handleSubmitConfirmation();
+                                }
+                            }}
                             disabled={ressult}
                             height={43}
                             buttonColor={ressult ? "#DDDFE8" : undefined}

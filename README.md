@@ -192,8 +192,15 @@ eas update --branch production
 ## Generar una nueva APK/AAB
 
 ```bash
-eas build --platform android
+eas build --platform android --profile production-apk
 ```
+
+## Generar una nueva AAB
+
+```bash
+eas build --platform android --profile production-aab
+```
+
 
 ## Generar una nueva versión para iOS
 

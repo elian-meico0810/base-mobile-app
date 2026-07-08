@@ -114,6 +114,16 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
     }, [token]);
 
     useEffect(() => {
+        const fetchPermissions = async () => {
+            await checkLocationPermissions();
+        };
+
+        if (token && !waitingForPermission) {
+            fetchPermissions();
+        }
+    }, [token, !waitingForPermission]);
+
+    useEffect(() => {
         const fetchData = async () => {
             try {
                 const finalToken = token;
@@ -142,6 +152,26 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                             const hasInCourse = sortedData.every(
                                 item => (item as GuideDetails).estado?.toLowerCase() === StatusInvoice.CLOSE_TWO.toLowerCase()
                             );
+                            const guideData = arrayData?.[0];
+
+                            let hasValidInvoiceTwo = false;
+
+                            if (guideData && typeof guideData !== "string") {
+                                hasValidInvoiceTwo = guideData.facturas.every((factura) =>
+                                    factura.tipo === TypeInvoiceEnum.CONTADO_EFECTIVO ||
+                                    factura.tipo === TypeInvoiceEnum.PAGOS_APLICATIVO_MEICO ||
+                                    factura.tipoCliente === TypeConPagoEnum.TAT
+                                );
+
+                            }
+
+                            if (
+                                hasInCourse &&
+                                statusValue !== "Finalizada" &&
+                                !hasValidInvoiceTwo
+                            ) {
+                                await finshRoute();
+                            }
                             const responseData = await detailsRepositoryImpl.paymentsByGuide(
                                 {
                                     id_guia: String(guide),
@@ -331,15 +361,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
     };
 
 
-    useEffect(() => {
-        const fetchPermissions = async () => {
-            await checkLocationPermissions();
-        };
 
-        if (token && !waitingForPermission) {
-            fetchPermissions();
-        }
-    }, [token, !waitingForPermission]);
 
     useEffect(() => {
         if (success === "route_closed") {
@@ -430,23 +452,29 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
 
     const finshRoute = async () => {
         try {
-            const location = await Location.getCurrentPositionAsync({
-                accuracy: Location.Accuracy.Highest,
-            });
 
-            const responseData = await detailsRepositoryImpl.closeRouteInit(
-                {
-                    codigoGuia: String(guide),
-                    latitud: String(location.coords.latitude),
-                    longitud: String(location.coords.longitude),
-                    fechaHoraDispositivo: getDeviceDateTime()
-                },
-                token
-            );
-            if (responseData?.statusCode != 200) {
-                setModalTitle("¡Alerta!");
-                setModalMessage(responseData?.message ?? "Ocurrio un error inesperado 4.");
-                setModalVisible(true);
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status === 'granted') {
+                
+                const location = await Location.getCurrentPositionAsync({
+                    accuracy: Location.Accuracy.Highest,
+                });
+
+                const responseData = await detailsRepositoryImpl.closeRouteInit(
+                    {
+                        codigoGuia: String(guide),
+                        latitud: String(location.coords.latitude),
+                        longitud: String(location.coords.longitude),
+                        fechaHoraDispositivo: getDeviceDateTime()
+                    },
+                    token
+                );
+
+                if (responseData?.statusCode != 200) {
+                    setModalTitle("¡Alerta!");
+                    setModalMessage(responseData?.message ?? "Ocurrio un error inesperado 4.");
+                    setModalVisible(true);
+                }
             }
         } catch (error: any) {
             setModalTitle("¡Error!");
@@ -592,7 +620,7 @@ export function DetailsForm({ initialGuide = "", token = "", onSubmit, showAlert
                 paddingRight: insets.right,
             }
         ]}>
-            <NetworkStatus /> 
+            <NetworkStatus />
 
             <View style={[styles.backgroundFill,]} >
                 <Image
